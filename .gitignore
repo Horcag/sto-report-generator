@@ -7,9 +7,7 @@ __pycache__/
 
 # Игнорируем сгенерированные вордовские файлы в корне
 *.docx
-!test_report.docx
-!report_sem6.docx
-!modular_report.docx
+
 
 # Игнорируем распакованные папки для отладки
 *_unpacked/
@@ -17,3 +15,7 @@ __pycache__/
 # ПРИВАТНАЯ ПАПКА ДЛЯ ОТЧЕТОВ (не попадет в публичный репозиторий)
 reports/
 
+
+# Word temporary files
+~$*.doc*
+~$*.dot*
