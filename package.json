@@ -1,0 +1,42 @@
+{
+    "name": "sto-report-generator",
+    "version": "1.0.0",
+    "description": "Generates docx reports complying with university STO requirements from Markdown",
+    "main": "index.js",
+    "scripts": {
+        "unpack": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/unpack.py",
+        "validate": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/validate.py",
+        "build": "npx tsx src/index.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "dependencies": {
+        "@hungknguyen/docx-math-converter": "^1.1.4",
+        "docx": "^9.6.1",
+        "gray-matter": "^4.0.3",
+        "image-size": "^2.0.2",
+        "jsdom": "^29.1.0",
+        "marked": "^18.0.2",
+        "mathjax": "^4.1.1",
+        "tsconfig-paths": "^4.2.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@feature-sliced/steiger-plugin": "^0.5.7",
+        "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+        "@types/image-size": "^0.7.0",
+        "@types/node": "^25.6.0",
+        "eslint": "^10.2.1",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-prettier": "^5.5.5",
+        "globals": "^17.5.0",
+        "prettier": "^3.8.3",
+        "steiger": "^0.5.11",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.21.0",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.59.0"
+    }
+}

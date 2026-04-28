@@ -1,0 +1,19 @@
+node_modules/
+dist/
+build/
+.DS_Store
+*.log
+__pycache__/
+
+# Игнорируем сгенерированные вордовские файлы в корне
+*.docx
+!test_report.docx
+!report_sem6.docx
+!modular_report.docx
+
+# Игнорируем распакованные папки для отладки
+*_unpacked/
+
+# ПРИВАТНАЯ ПАПКА ДЛЯ ОТЧЕТОВ (не попадет в публичный репозиторий)
+reports/
+
