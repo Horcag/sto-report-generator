@@ -6,7 +6,8 @@
     "scripts": {
         "unpack": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/unpack.py",
         "validate": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/validate.py",
-        "build": "npx tsx src/index.ts"
+        "build": "npx tsx src/index.ts",
+        "test:validator": "npx tsx tests/run_validator_tests.ts"
     },
     "keywords": [],
     "author": "",
