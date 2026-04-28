@@ -7,7 +7,8 @@
         "unpack": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/unpack.py",
         "validate": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/validate.py",
         "build": "npx tsx src/index.ts",
-        "test:validator": "npx tsx tests/run_validator_tests.ts"
+        "test:validator": "npx tsx tests/run_validator_tests.ts",
+        "test:generator": "npx tsx tests/run_generator_snapshot_test.ts"
     },
     "keywords": [],
     "author": "",
@@ -27,8 +28,10 @@
         "@eslint/js": "^10.0.1",
         "@feature-sliced/steiger-plugin": "^0.5.7",
         "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+        "@types/adm-zip": "^0.5.8",
         "@types/image-size": "^0.7.0",
         "@types/node": "^25.6.0",
+        "adm-zip": "^0.5.17",
         "eslint": "^10.2.1",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.5",

@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document mc:Ignorable="w14 w15 wp14" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex">
+<w:body>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Министерство науки и высшего образования Российской Федерации</w:t>
+</w:r>
+<w:r>
+<w:rPr>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:br/>
+</w:r>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Федеральное государственное автономное образовательное</w:t>
+</w:r>
+<w:r>
+<w:rPr>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:br/>
+</w:r>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">учреждение высшего образования</w:t>
+</w:r>
+<w:r>
+<w:rPr>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:br/>
+</w:r>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">«Самарский национальный исследовательский университет </w:t>
+</w:r>
+<w:r>
+<w:rPr>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:br/>
+</w:r>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">имени академика С.П. Королева»</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Институт информатики и кибернетики</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="left" w:pos="1680"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:br/>
+</w:r>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Кафедра технической кибернетики</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:b/>
+<w:bCs/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Отчёт о научно-исследовательской работе</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:b/>
+<w:bCs/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">бакалавра</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:b/>
+<w:bCs/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Семестр 6</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="left" w:pos="8190"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="left" w:pos="8190"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Направление подготовки: 01.03.02 Прикладная математика и информатика: </w:t>
+</w:r>
+<w:r>
+<w:rPr>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:br/>
+</w:r>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Профиль – «Искусственный интеллект и компьютерные науки» </w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="left" w:pos="1701"/>
+<w:tab w:val="left" w:pos="9638"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="left" w:pos="1701"/>
+<w:tab w:val="left" w:pos="9638"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Студент Иванов Иван Иванович</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="left" w:pos="1701"/>
+<w:tab w:val="left" w:pos="9638"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">группы 6300 – 010302D</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="left" w:pos="1701"/>
+<w:tab w:val="left" w:pos="9638"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9638"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Тема научно-исследовательской работы: «Исследование методов повышения робастности нейросетевых моделей для прогнозирования кредитного дефолта МСБ в России»</w:t>
+</w:r>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9638"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9638"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Научный руководитель Бибиков Сергей Алексеевич кандидат технических наук, доцент кафедры технической кибернетики</w:t>
+</w:r>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9638"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Научный руководитель</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">________________________</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:i/>
+<w:iCs/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">                    (подпись)</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">“___”_____________ 20___ г.</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Студент</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">________________________</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:i/>
+<w:iCs/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">                    (подпись)</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="5670" w:firstLine="0"/>
+<w:jc w:val="left"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">“___”_____________ 20___ г.</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">
+</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TitlePageText"/>
+<w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+<w:ind w:left="0" w:firstLine="0"/>
+<w:jc w:val="center"/>
+</w:pPr>
+<w:r>
+<w:rPr>
+<w:rFonts w:ascii="Times New Roman" w:cs="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman"/>
+<w:b/>
+<w:bCs/>
+<w:sz w:val="24"/>
+<w:szCs w:val="24"/>
+</w:rPr>
+<w:t xml:space="preserve">Самара 2026</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading1"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">Введение</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Normal"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">В данной работе рассматриваются методы повышения робастности нейросетевых моделей. Актуальность темы обусловлена необходимостью точного прогнозирования кредитных дефолтов в условиях экономической нестабильности.</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Heading1"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">Обзор литературы</w:t>
+</w:r>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Normal"/>
+</w:pPr>
+<w:r>
+<w:t xml:space="preserve">Исследование базируется на работах ведущих специалистов в области машинного обучения и финансового анализа.</w:t>
+</w:r>
+</w:p>
+<w:sectPr>
+<w:footerReference w:type="default" r:id="rId7"/>
+<w:footerReference w:type="first" r:id="rId8"/>
+<w:pgSz w:w="11906" w:h="16838" w:orient="portrait"/>
+<w:pgMar w:top="1134" w:right="850" w:bottom="1134" w:left="1701" w:header="708" w:footer="708" w:gutter="0"/>
+<w:pgNumType w:start="1"/>
+<w:titlePg/>
+<w:docGrid w:linePitch="360"/>
+</w:sectPr>
+</w:body>
+</w:document>
