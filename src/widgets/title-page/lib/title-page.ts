@@ -247,19 +247,7 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 			children: [t({ text: '“___”_____________ 20___ г.' })],
 		}),
 
-		// Empty paragraphs to push to bottom (7 paragraphs as in original)
-		empty({
-			alignment: AlignmentType.CENTER,
-			spacing: { line: 240, lineRule: 'auto' },
-		}),
-		empty({
-			alignment: AlignmentType.CENTER,
-			spacing: { line: 240, lineRule: 'auto' },
-		}),
-		empty({
-			alignment: AlignmentType.CENTER,
-			spacing: { line: 240, lineRule: 'auto' },
-		}),
+		// Empty paragraphs to push to bottom
 		empty({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 240, lineRule: 'auto' },

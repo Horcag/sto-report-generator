@@ -160,9 +160,9 @@ export async function parseMarkdownToDocx(markdownText: string): Promise<(Paragr
 						);
 						if (text === 'СОДЕРЖАНИЕ') {
 							elements.push(
-								new TableOfContents("Оглавление", {
+								new TableOfContents("", {
 									hyperlink: true,
-									headingStyleRange: "1-6",
+									headingStyleRange: "1-4",
 									stylesWithLevels: [new StyleLevel("StructuralHeading", 1)]
 								})
 							);

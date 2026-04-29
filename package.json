@@ -7,6 +7,7 @@
         "unpack": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/unpack.py",
         "validate": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/validate.py",
         "build": "npx tsx src/index.ts",
+        "build:full": "npx tsx src/index.ts reports/report_sem6 output.docx && uv run --with pywin32 --with lxml python scripts/post_build.py output.docx",
         "test:validator": "npx tsx tests/run_validator_tests.ts",
         "test:generator": "npx tsx tests/run_generator_snapshot_test.ts"
     },
