@@ -114,28 +114,54 @@ export async function handleList(
 	token: MarkedTokens.List,
 	context: ParserContext,
 	parseInline: (tokens: Token[]) => Promise<InlineDocxElement[]>,
+	processTokens: (
+		tokens: Token[],
+		currentContext?: ProcessTokensContext,
+	) => Promise<DocxElement[]>,
+	currentContext: ProcessTokensContext = {},
+	listLevel: number = 0,
 ): Promise<DocxElement[]> {
-	context.listInstanceCounter++;
-	const elements: Paragraph[] = [];
+	if (listLevel === 0) {
+		context.listInstanceCounter++;
+	}
+	const instance = context.listInstanceCounter;
+	const elements: DocxElement[] = [];
+
 	for (const item of token.items) {
+		// Separation of inline vs nested block tokens
+		const textTokens = item.tokens.filter((t: Token) => t.type !== 'list');
+		const nestedListTokens = item.tokens.filter((t: Token) => t.type === 'list');
+
 		elements.push(
 			new Paragraph({
 				style: 'Normal',
-				indent: { left: 0, firstLine: 709 },
 				numbering: token.ordered
 					? {
 							reference: 'ordered-numbering',
-							level: 0,
-							instance: context.listInstanceCounter,
+							level: listLevel,
+							instance: instance,
 						}
 					: {
 							reference: 'list-numbering',
-							level: 0,
-							instance: context.listInstanceCounter,
+							level: listLevel,
+							instance: instance,
 						},
-				children: await parseInline(item.tokens || []),
+				children: await parseInline(textTokens),
 			}),
 		);
+
+		for (const nestedList of nestedListTokens) {
+			elements.push(
+				...(await handleList(
+					nestedList as MarkedTokens.List,
+					context,
+					parseInline,
+					processTokens,
+					currentContext,
+					listLevel + 1,
+				)),
+			);
+		}
 	}
 	return elements;
 }

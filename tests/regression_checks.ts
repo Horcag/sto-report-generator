@@ -34,8 +34,8 @@ async function runTests() {
   for (const file of mdFiles) {
     const content = fs.readFileSync(path.join(reportsDir, file), 'utf8');
     
-    // Pattern for metrics like "ROC-AUC: 0.744" or "ROC-AUC = 0.744"
-    const metricMatches = content.match(/(?:ROC-AUC|PR-AUC|F1-score)(?:\s*[:=]\s*)(\d+\.\d+)/gi);
+    // Pattern for metrics like "ROC-AUC: 0.744" or "CV = 1.26"
+    const metricMatches = content.match(/(?:ROC-AUC|PR-AUC|F1-score|CV)(?:\s*[:=]\s*)(\d+\.\d+)/gi);
     if (metricMatches) {
         for (const match of metricMatches) {
             errors.push(`FAIL: [${file}] contains decimal dot in metric: ${match}. Use comma instead.`);

@@ -172,6 +172,8 @@ class MarkdownParser {
 									this.getCitationNum,
 									this.replaceRefs,
 								),
+							this.processTokens.bind(this),
+							currentContext
 						)),
 					);
 					break;

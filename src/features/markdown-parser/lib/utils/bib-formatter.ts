@@ -5,20 +5,38 @@ import { BibItem } from '../types';
  */
 export function formatBibItem(item: BibItem): string {
 	const tags = item.entryTags;
-	let authors = tags.author || '';
-	if (authors) {
-		const authorList = authors.split(' and ');
-		if (authorList.length > 3) {
-			const firstAuthor = authorList[0]
-				.split(',')
-				.reverse()
-				.join(' ')
-				.trim();
-			authors = `${firstAuthor} [и др.]`;
+	let rawAuthors = tags.author || '';
+	let authors = '';
+	let isCollective = false;
+	let isManyAuthors = false;
+	let firstAuthorPrefix = '';
+
+	if (rawAuthors) {
+		// Check for collective author enclosed in braces
+		if (rawAuthors.includes('{') && rawAuthors.includes('}')) {
+			isCollective = true;
+			authors = rawAuthors.replace(/[{}]/g, '').trim();
 		} else {
-			authors = authorList
-				.map((a: string) => a.split(',').reverse().join(' ').trim())
-				.join(', ');
+			const authorList = rawAuthors.split(' and ');
+			if (authorList.length > 3) {
+				isManyAuthors = true;
+				const firstAuthor = authorList[0]
+					.split(',')
+					.reverse()
+					.join(' ')
+					.trim();
+				authors = `${firstAuthor} [и др.]`;
+			} else {
+				authors = authorList
+					.map((a: string) => a.split(',').reverse().join(' ').trim())
+					.join(', ');
+				// First author for prefix
+				firstAuthorPrefix = authorList[0].split(',')[0].trim();
+				const initialsMatch = authorList[0].match(/,\s*([A-ZА-ЯЁ].*)/);
+				if (initialsMatch) {
+					firstAuthorPrefix += ', ' + initialsMatch[1].trim();
+				}
+			}
 		}
 	}
 
@@ -26,16 +44,14 @@ export function formatBibItem(item: BibItem): string {
 	const year = tags.year || '';
 
 	let res = '';
-	if (authors) {
-		const firstAuthor = authors.split(' ')[0] || '';
-		res += `${firstAuthor} ${title}`;
-		if (authors.includes('[и др.]')) {
-			res += ` / ${authors}`;
-		} else {
+	if (isCollective || isManyAuthors || !authors) {
+		res += `${title}`;
+		if (authors) {
 			res += ` / ${authors}`;
 		}
 	} else {
-		res += `${title}`;
+		// 1 to 3 authors: prefix title with the first author
+		res += `${firstAuthorPrefix} ${title} / ${authors}`;
 	}
 
 	if (item.entryType === 'article') {

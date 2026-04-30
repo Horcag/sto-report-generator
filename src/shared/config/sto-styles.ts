@@ -22,6 +22,7 @@ export const STO_STYLES: IStylesOptions = {
 				font: 'Times New Roman',
 				size: 28, // 14pt (28 half-points)
 				color: '000000',
+				language: 'ru-RU', // Set language for native 'lowerLetter' numbering
 			},
 			paragraph: {
 				spacing: { line: 360, lineRule: 'auto' }, // 1.5 spacing
@@ -252,12 +253,24 @@ export const STO_NUMBERING: INumberingOptions = {
 				},
 				{
 					level: 1,
-					format: 'lowerLetter',
+					format: 'russianLower', // STO: lowercase letters a) b) c)
 					text: '%2)',
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 0, firstLine: 1069 }, // Slightly indented
+							indent: { left: 709, firstLine: 709 },
+						},
+					},
+					suffix: 'space',
+				},
+				{
+					level: 2,
+					format: 'decimal', // STO: decimal numbers 1) 2) 3)
+					text: '%3)',
+					alignment: AlignmentType.LEFT,
+					style: {
+						paragraph: {
+							indent: { left: 1418, firstLine: 709 },
 						},
 					},
 					suffix: 'space',
@@ -275,6 +288,30 @@ export const STO_NUMBERING: INumberingOptions = {
 					style: {
 						paragraph: {
 							indent: { left: 0, firstLine: 709 },
+						},
+					},
+					suffix: 'space',
+				},
+				{
+					level: 1,
+					format: 'decimal',
+					text: '%2)',
+					alignment: AlignmentType.LEFT,
+					style: {
+						paragraph: {
+							indent: { left: 709, firstLine: 709 },
+						},
+					},
+					suffix: 'space',
+				},
+				{
+					level: 2,
+					format: 'russianLower',
+					text: '%3)',
+					alignment: AlignmentType.LEFT,
+					style: {
+						paragraph: {
+							indent: { left: 1418, firstLine: 709 },
 						},
 					},
 					suffix: 'space',
