@@ -125,19 +125,20 @@ def post_build(docx_path):
             "{{SOURCES}}": src_text
         }
         
-        for placeholder, value in replacements.items():
-            # In MS Word COM, Find object:
-            word.Selection.HomeKey(Unit=6) # wdStory = 6
-            find = word.Selection.Find
-            find.Text = placeholder
-            find.Replacement.Text = value
-            find.Execute(Replace=2) # wdReplaceAll = 2
-            
-        # Clean up any leftover commas if some counts were 0 (e.g., ", ,")
-        word.Selection.HomeKey(Unit=6)
-        word.Selection.Find.Execute(FindText=" ,", ReplaceWith="", Replace=2)
-        word.Selection.HomeKey(Unit=6)
-        word.Selection.Find.Execute(FindText=", ,", ReplaceWith=",", Replace=2)
+        for p in doc.Paragraphs:
+            text = p.Range.Text
+            if "{{" in text or " ," in text:
+                new_text = text
+                for placeholder, value in replacements.items():
+                    new_text = new_text.replace(placeholder, value)
+                
+                # Clean up any leftover commas if some counts were 0 (e.g., ", ,")
+                for _ in range(2):
+                    new_text = new_text.replace(" ,", "")
+                    new_text = new_text.replace(", ,", ",")
+                    
+                if new_text != text:
+                    p.Range.Text = new_text
         
         doc.Save()
         print(f"Post-build complete: {pages} pages, {figures} figures, {tables} tables, {sources} sources.")

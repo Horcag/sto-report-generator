@@ -20,6 +20,12 @@ reports/
 ~$*.doc*
 ~$*.dot*
 
+# Папки для артефактов и личных исследований
+output/
+research/
+
 # MemPalace per-project files (issue #185)
 mempalace.yaml
 entities.json
+
+.gemini-local/

@@ -1,16 +1,23 @@
-import { AlignmentType, Paragraph, TabStopType, TextRun } from 'docx';
+import {
+	AlignmentType,
+	IParagraphOptions,
+	ITextRunOptions,
+	Paragraph,
+	TabStopType,
+	TextRun,
+} from 'docx';
 
 import { ReportMetadata } from '@/entities/report';
 
 export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 	// Helper to ensure 12pt (24 half-points) and Times New Roman
-	const t = (options: any) =>
+	const t = (options: ITextRunOptions) =>
 		new TextRun({ size: 24, font: 'Times New Roman', ...options });
-	const br = (options: any = {}) =>
+	const br = (options: ITextRunOptions = {}) =>
 		new TextRun({ size: 24, break: 1, ...options });
 
 	// Helper for paragraphs to reset default indents from "Normal" style and disable justification stretch
-	const p = (options: any) => {
+	const p = (options: IParagraphOptions) => {
 		const { spacing, ...rest } = options;
 		return new Paragraph({
 			style: 'TitlePageText',
@@ -21,7 +28,7 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 		});
 	};
 
-	const empty = (options: any = {}) =>
+	const empty = (options: IParagraphOptions = {}) =>
 		p({ children: [t({ text: '' })], ...options });
 
 	return [

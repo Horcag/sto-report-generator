@@ -1,15 +1,29 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Document, Packer, Footer, Paragraph, AlignmentType, TextRun, PageNumber } from 'docx';
+import {
+	AlignmentType,
+	Document,
+	Footer,
+	Packer,
+	PageNumber,
+	Paragraph,
+	TextRun,
+} from 'docx';
 
 import { createTitlePage } from '@/widgets/title-page';
 import {
 	parseFrontmatter,
 	parseMarkdownToDocx,
 } from '@/features/markdown-parser';
+import { ReportMetadata } from '@/entities/report';
 import { MARGINS, STO_NUMBERING, STO_STYLES } from '@/shared/config';
 
+/**
+ * Builds the final STO-compliant report from markdown files.
+ * @param inputPath Path to a markdown file or directory containing markdown files.
+ * @param outputPath Path where the generated .docx file will be saved.
+ */
 export async function buildReport(
 	inputPath: string,
 	outputPath: string,
@@ -19,7 +33,7 @@ export async function buildReport(
 	}
 
 	let finalContent = '';
-	let finalMetadata: any = null;
+	let finalMetadata: Record<string, unknown> | null = null;
 
 	const stats = fs.statSync(inputPath);
 
@@ -27,7 +41,7 @@ export async function buildReport(
 		// Modular assembly: sort all .md files and merge
 		const files = fs
 			.readdirSync(inputPath)
-			.filter((f) => f.endsWith('.md'))
+			.filter(f => f.endsWith('.md'))
 			.sort();
 
 		for (const file of files) {
@@ -36,8 +50,12 @@ export async function buildReport(
 			const { metadata, content } = parseFrontmatter(fileContent);
 
 			// Take metadata from the first file that has it
-			if (!finalMetadata && Object.keys(metadata).length > 0) {
-				finalMetadata = metadata;
+			if (
+				!finalMetadata &&
+				metadata &&
+				Object.keys(metadata).length > 0
+			) {
+				finalMetadata = metadata as Record<string, unknown>;
 			}
 
 			if (content) {
@@ -48,20 +66,27 @@ export async function buildReport(
 		// Single file mode
 		const fileContent = fs.readFileSync(inputPath, 'utf8');
 		const { metadata, content } = parseFrontmatter(fileContent);
-		finalMetadata = metadata;
+		finalMetadata = metadata as Record<string, unknown>;
 		finalContent = content;
 	}
 
 	if (!finalMetadata) {
-		throw new Error('No metadata (frontmatter) found in input.');
+		throw new Error(
+			'No metadata (frontmatter) found in input. Please ensure at least one markdown file contains a YAML block.',
+		);
 	}
 
-	const titlePage = createTitlePage(finalMetadata);
-	const documentBody = await parseMarkdownToDocx(finalContent);
+	const titlePage = createTitlePage(
+		finalMetadata as unknown as ReportMetadata,
+	);
+	const documentBody = await parseMarkdownToDocx(finalContent, finalMetadata);
 
 	const doc = new Document({
 		styles: STO_STYLES,
 		numbering: STO_NUMBERING,
+		features: {
+			updateFields: true,
+		},
 		sections: [
 			{
 				properties: {
@@ -69,7 +94,7 @@ export async function buildReport(
 						margin: MARGINS,
 						pageNumbers: {
 							start: 1,
-						}
+						},
 					},
 					titlePage: true,
 				},
@@ -87,13 +112,19 @@ export async function buildReport(
 						],
 					}),
 					first: new Footer({
-						children: [new Paragraph("")]
+						children: [new Paragraph('')],
 					}),
 				},
 				children: [...titlePage, ...documentBody],
 			},
 		],
 	});
+
+	// Ensure output directory exists
+	const outputDir = path.dirname(outputPath);
+	if (!fs.existsSync(outputDir)) {
+		fs.mkdirSync(outputDir, { recursive: true });
+	}
 
 	const buffer = await Packer.toBuffer(doc);
 	fs.writeFileSync(outputPath, buffer);

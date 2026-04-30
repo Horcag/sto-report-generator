@@ -1,4 +1,11 @@
-import { AlignmentType, IStylesOptions, INumberingOptions } from 'docx';
+import {
+	AlignmentType,
+	INumberingOptions,
+	IStylesOptions,
+	LeaderType,
+	TabStopType,
+} from 'docx';
+
 import { MM_TO_DXA } from '@/shared/lib';
 
 export const MARGINS = {
@@ -38,88 +45,113 @@ export const STO_STYLES: IStylesOptions = {
 			},
 		},
 		{
-		        id: 'Heading1',
-		        name: 'Heading 1',
-		        basedOn: 'Normal',
-		        next: 'Normal',
-		        quickFormat: true,
-		        run: { bold: true, size: 28 },
-		        paragraph: {
-		                spacing: { before: 120, after: 120 }, // 6pt before and after
-		                alignment: AlignmentType.LEFT, // STO: numbered headings left-aligned (with indent)
-		                indent: { firstLine: 709 }, // STO: paragraph indent
-		                outlineLevel: 0,
-		                // @ts-ignore
-		                pageBreakBefore: true,
-		        },
+			id: 'Heading1',
+			name: 'Heading 1',
+			basedOn: 'Normal',
+			next: 'Normal',
+			quickFormat: true,
+			run: { bold: true, size: 28 },
+			paragraph: {
+				spacing: { before: 120, after: 120 }, // 6pt before and after
+				alignment: AlignmentType.LEFT, // STO: numbered headings left-aligned (with indent)
+				indent: { firstLine: 709 }, // STO: paragraph indent
+				outlineLevel: 0,
+				// @ts-expect-error missing type in docx library for some properties
+				pageBreakBefore: true,
+			},
 		},
 		{
-		        id: 'StructuralHeading',
-		        name: 'Structural Heading',
-		        basedOn: 'Heading1',
-		        next: 'Normal',
-		        quickFormat: true,
-		        run: { bold: true, size: 28 },
-		        paragraph: {
-		                spacing: { before: 120, after: 240 }, // 12pt after
-		                alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
-		                indent: { firstLine: 0 },
-		                outlineLevel: 0,
-		                // @ts-ignore
-		                pageBreakBefore: true,
-		        },
+			id: 'StructuralHeading',
+			name: 'Structural Heading',
+			basedOn: 'Heading1',
+			next: 'Normal',
+			quickFormat: true,
+			run: { bold: true, size: 28, allCaps: true },
+			paragraph: {
+				spacing: { before: 120, after: 240 }, // 12pt after
+				alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
+				indent: { firstLine: 0 },
+				outlineLevel: 0,
+				// @ts-expect-error missing type in docx library for some properties
+				pageBreakBefore: true,
+			},
 		},
 		{
-		        id: 'Heading2',
-		        name: 'Heading 2',
-		        basedOn: 'Normal',
-		        next: 'Normal',
-		        quickFormat: true,
-		        run: { bold: true, size: 28 },
-		        paragraph: {
-		                spacing: { before: 200, after: 0 }, // 0pt after
-		                alignment: AlignmentType.LEFT,
-		                indent: { firstLine: 709 },
-		                outlineLevel: 1,
-		                // @ts-ignore
-		                pageBreakBefore: false,
-		        },
+			id: 'StructuralHeadingNoTOC',
+			name: 'Structural Heading No TOC',
+			basedOn: 'Normal',
+			next: 'Normal',
+			quickFormat: true,
+			run: { bold: true, size: 28, allCaps: true },
+			paragraph: {
+				spacing: { before: 120, after: 240 }, // 12pt after
+				alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
+				indent: { firstLine: 0 },
+				// @ts-expect-error missing type in docx library for some properties
+				pageBreakBefore: true,
+			},
 		},
 		{
-		        id: 'FigureCaption',
-		        name: 'Figure Caption',
-		        basedOn: 'Normal',
-		        next: 'Normal',
-		        run: { size: 28 },
-		        paragraph: {
-		                alignment: AlignmentType.CENTER,
-		                indent: { firstLine: 0 },
-		                spacing: { before: 120, after: 240, line: 240, lineRule: 'auto' }, // Single spacing, 6pt before, 12pt after
-		        },
+			id: 'Heading2',
+			name: 'Heading 2',
+			basedOn: 'Normal',
+			next: 'Normal',
+			quickFormat: true,
+			run: { bold: true, size: 28 },
+			paragraph: {
+				spacing: { before: 200, after: 0 }, // 0pt after
+				alignment: AlignmentType.LEFT,
+				indent: { firstLine: 709 },
+				outlineLevel: 1,
+				// @ts-expect-error missing type in docx library for some properties
+				pageBreakBefore: false,
+			},
 		},
 		{
-		        id: 'TableCaption',
-		        name: 'Table Caption',
-		        basedOn: 'Normal',
-		        next: 'Normal',
-		        run: { size: 28 },
-		        paragraph: {
-		                alignment: AlignmentType.LEFT,
-		                indent: { firstLine: 0 },
-		                spacing: { before: 120, after: 120, line: 240, lineRule: 'auto' }, // Single spacing, 6pt before, 6pt after
-		        },
+			id: 'FigureCaption',
+			name: 'Figure Caption',
+			basedOn: 'Normal',
+			next: 'Normal',
+			run: { size: 28 },
+			paragraph: {
+				alignment: AlignmentType.CENTER,
+				indent: { firstLine: 0 },
+				spacing: {
+					before: 120,
+					after: 240,
+					line: 240,
+					lineRule: 'auto',
+				}, // Single spacing, 6pt before, 12pt after
+			},
 		},
 		{
-		        id: 'TableText',
-		        name: 'Table Text',
-		        basedOn: 'Normal',
-		        next: 'Normal',
-		        run: { size: 28 },
-		        paragraph: {
-		                alignment: AlignmentType.LEFT,
-		                indent: { firstLine: 0 },
-		                spacing: { before: 0, after: 0, line: 240, lineRule: 'auto' }, // Single spacing
-		        },
+			id: 'TableCaption',
+			name: 'Table Caption',
+			basedOn: 'Normal',
+			next: 'Normal',
+			run: { size: 28 },
+			paragraph: {
+				alignment: AlignmentType.LEFT,
+				indent: { firstLine: 0 },
+				spacing: {
+					before: 120,
+					after: 120,
+					line: 240,
+					lineRule: 'auto',
+				}, // Single spacing, 6pt before, 6pt after
+			},
+		},
+		{
+			id: 'TableText',
+			name: 'Table Text',
+			basedOn: 'Normal',
+			next: 'Normal',
+			run: { size: 28 },
+			paragraph: {
+				alignment: AlignmentType.LEFT,
+				indent: { firstLine: 0 },
+				spacing: { before: 0, after: 0, line: 240, lineRule: 'auto' }, // Single spacing
+			},
 		},
 		{
 			id: 'TitlePageText',
@@ -139,8 +171,14 @@ export const STO_STYLES: IStylesOptions = {
 			next: 'Normal',
 			paragraph: {
 				indent: { left: 0, firstLine: 0 },
-				rightTabStop: 9026
-			}
+				tabStops: [
+					{
+						type: TabStopType.RIGHT,
+						position: 9026,
+						leader: LeaderType.DOT, // "dot" usually maps correctly, or cast as any if enum is needed
+					},
+				],
+			},
 		},
 		{
 			id: 'TOC2',
@@ -149,11 +187,17 @@ export const STO_STYLES: IStylesOptions = {
 			next: 'Normal',
 			paragraph: {
 				indent: { left: 200, firstLine: 0 },
-				rightTabStop: 9026
-			}
-		}
-		],
-		};
+				tabStops: [
+					{
+						type: TabStopType.RIGHT,
+						position: 9026,
+						leader: LeaderType.DOT,
+					},
+				],
+			},
+		},
+	],
+};
 
 export const STO_NUMBERING: INumberingOptions = {
 	config: [

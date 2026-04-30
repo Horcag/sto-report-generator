@@ -6,8 +6,10 @@
     "scripts": {
         "unpack": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/unpack.py",
         "validate": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/validate.py",
+        "lint": "eslint \"src/**/*.ts\" && npx steiger src",
+        "lint:fix": "eslint \"src/**/*.ts\" --fix && npx steiger src",
         "build": "npx tsx src/index.ts",
-        "build:full": "npx tsx src/index.ts reports/report_sem6 output.docx && uv run --with pywin32 --with lxml python scripts/post_build.py output.docx",
+        "build:full": "npx tsx src/index.ts reports/report_sem6 output/output.docx && uv run --with pywin32 --with lxml python scripts/post_build.py output/output.docx",
         "test:validator": "npx tsx tests/run_validator_tests.ts",
         "test:generator": "npx tsx tests/run_generator_snapshot_test.ts"
     },
@@ -17,6 +19,7 @@
     "type": "commonjs",
     "dependencies": {
         "@hungknguyen/docx-math-converter": "^1.1.4",
+        "@orcid/bibtex-parse-js": "^0.0.25",
         "docx": "^9.6.1",
         "gray-matter": "^4.0.3",
         "image-size": "^2.0.2",
