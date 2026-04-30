@@ -28,9 +28,9 @@ export async function handleImage(
 
 	const imgBuffer = fs.readFileSync(imgPath);
 	const dimensions = imageSize(imgBuffer);
-	const maxWidth = 600;
+	const maxWidth = 450;
 
-	let w = dimensions.width ?? 500;
+	let w = dimensions.width ?? 400;
 	let h = dimensions.height ?? 300;
 
 	if (w > maxWidth) {

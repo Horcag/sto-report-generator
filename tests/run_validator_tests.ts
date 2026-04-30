@@ -56,7 +56,10 @@ function runTests() {
 			// Using uv to run python to ensure dependencies like lxml are available
 			actualOutput = execSync(
 				`uv run --with lxml python "${validatorScript}" "${docxPath}"`,
-				{ encoding: 'utf-8' },
+				{
+					encoding: 'utf-8',
+					env: { ...process.env, PYTHONUTF8: '1' },
+				},
 			).trim();
 		} catch (error: any) {
 			actualOutput = (error.stdout || '').toString().trim();

@@ -9,9 +9,11 @@
         "lint": "eslint \"src/**/*.ts\" && npx steiger src",
         "lint:fix": "eslint \"src/**/*.ts\" --fix && npx steiger src",
         "build": "npx tsx src/index.ts",
-        "build:full": "npx tsx src/index.ts reports/report_sem6 output/output.docx && uv run --with pywin32 --with lxml python scripts/post_build.py output/output.docx",
+        "build:full": "npx tsx tests/regression_checks.ts reports/report_sem6 && npx tsx src/index.ts reports/report_sem6 output/output.docx && uv run --with pywin32 --with lxml python scripts/post_build.py output/output.docx",
+        "test:regression": "npx tsx tests/regression_checks.ts",
         "test:validator": "npx tsx tests/run_validator_tests.ts",
-        "test:generator": "npx tsx tests/run_generator_snapshot_test.ts"
+        "test:generator": "npx tsx tests/run_generator_snapshot_test.ts",
+        "test:toc": "npx tsx tests/toc_regression.ts"
     },
     "keywords": [],
     "author": "",

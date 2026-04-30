@@ -23,13 +23,26 @@ export async function handleStoFlag(
 ): Promise<DocxElement[]> {
 	if (token.flagType === 'structural_heading') {
 		const text = token.text.trim();
+		const upperText = text.toUpperCase();
+
+		// Convert to Sentence Case: first letter capitalized, rest lowercase
+		// This ensures they look correct in TOC, while StructuralHeading style handles caps in the document body
+		const sentenceCaseText =
+			text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+
+		const noTocHeadings = ['РЕФЕРАТ', 'СОДЕРЖАНИЕ'];
+		const useNoTocStyle = noTocHeadings.includes(upperText);
+
 		const result: DocxElement[] = [
 			new Paragraph({
-				style: 'StructuralHeading',
-				children: [new TextRun(text)],
+				style: useNoTocStyle
+					? 'StructuralHeadingNoTOC'
+					: 'StructuralHeading',
+				children: [new TextRun(sentenceCaseText)],
 			}),
 		];
-		if (text.toUpperCase() === 'СОДЕРЖАНИЕ') {
+
+		if (upperText === 'СОДЕРЖАНИЕ') {
 			result.push(
 				new TableOfContents('', {
 					hyperlink: true,
@@ -60,21 +73,8 @@ export async function handleStoFlag(
 						}),
 					);
 				} else {
-					bibElements.push(
-						new Paragraph({
-							style: 'Normal',
-							indent: { left: 0, firstLine: 709 },
-							numbering: {
-								reference: 'bib-numbering',
-								level: 0,
-							},
-							children: [
-								new TextRun({
-									text: `[Источник не найден: ${citKey}]`,
-									color: 'FF0000',
-								}),
-							],
-						}),
+					throw new Error(
+						`СТО violation: Citation source not found in bibliography for key: "${citKey}". Ensure the key exists in references.bib.`,
 					);
 				}
 			}

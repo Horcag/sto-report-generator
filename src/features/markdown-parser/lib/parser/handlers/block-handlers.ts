@@ -20,10 +20,29 @@ export async function handleParagraph(
 ): Promise<DocxElement[]> {
 	const text = token.text;
 
-	// Math block
-	const blockMathMatch = text.match(/^\$\$([\s\S]+)\$\$/);
-	if (blockMathMatch) {
-		return [await handleBlockMath(blockMathMatch[1].trim(), context)];
+	// Check for block math. We use a more robust split to handle multiple blocks
+	// and ensure they are processed as separate Table elements for centering.
+	if (text.includes('$$')) {
+		const parts = text.split(/(\$\$[\s\S]+?\$\$)/g);
+		const result: DocxElement[] = [];
+		for (const part of parts) {
+			const match = part.match(/^\$\$([\s\S]+?)\$\$/);
+			if (match) {
+				result.push(
+					await handleBlockMath(match[1].trim(), context),
+				);
+			} else if (part.trim().length > 0) {
+				// Handle potential text around math blocks in the same paragraph
+				// though usually STO expects math blocks to be separate
+				result.push(
+					new Paragraph({
+						style: 'Normal',
+						children: await parseInline([{ type: 'text', raw: part, text: part } as Token]),
+					}),
+				);
+			}
+		}
+		if (result.length > 0) return result;
 	}
 
 	if (currentContext.isStoList) {

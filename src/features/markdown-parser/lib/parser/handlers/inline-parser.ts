@@ -102,28 +102,46 @@ async function handleText(
 		.replace(/&quot;/g, '"')
 		.replace(/&#39;/g, "'");
 
-	// Process citations [@key]
-	text = text.replace(/\[@([^\]]+)\]/g, (_: string, key: string) => {
-		return `[${getCitationNum(key)}]`;
+	// Process citations [@key] or [@key1; @key2]
+	text = text.replace(/\[@([^\]]+)\]/g, (_: string, keysRaw: string) => {
+		const keys = keysRaw.split(/[;,]/).map(k => k.trim().replace(/^@/, ''));
+		const nums = keys.map(k => getCitationNum(k));
+		return `[${nums.join(', ')}]`;
 	});
 
 	// Replace references @fig:key, etc.
 	text = replaceRefs(text);
 
-	// Process inline math $...$
-	const mathParts = text.split(/(\$[^$]+\$)/g);
-	for (const part of mathParts) {
-		if (part.startsWith('$') && part.endsWith('$')) {
-			const mathText = part.substring(1, part.length - 1);
-			try {
-				const mathEl = await convertLatex2Math(mathText);
-				runs.push(mathEl as MathConversionResult);
-			} catch {
-				runs.push(new TextRun({ text: part, italics: true }));
-			}
-		} else if (part.length > 0) {
-			runs.push(new TextRun({ text: part }));
+	// Process inline math $...$ using a more robust approach
+	// Regex: $ (any non-$ character or escaped \$) $
+	const mathRegex = /\$((?:\\\$|[^$])+)\$/g;
+	let lastIndex = 0;
+	let match;
+
+	while ((match = mathRegex.exec(text)) !== null) {
+		// Add text before math
+		const before = text.substring(lastIndex, match.index);
+		if (before.length > 0) {
+			runs.push(new TextRun({ text: before }));
 		}
+
+		const mathText = match[1];
+		try {
+			const mathEl = await convertLatex2Math(mathText);
+			runs.push(mathEl as MathConversionResult);
+		} catch (e) {
+			console.warn(`Math conversion failed for: ${mathText}`, e);
+			runs.push(new TextRun({ text: match[0], italics: true }));
+		}
+
+		lastIndex = mathRegex.lastIndex;
 	}
+
+	// Add remaining text
+	const remaining = text.substring(lastIndex);
+	if (remaining.length > 0) {
+		runs.push(new TextRun({ text: remaining }));
+	}
+
 	return runs;
 }

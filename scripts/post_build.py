@@ -59,13 +59,16 @@ def get_counts_from_docx(docx_path):
         # A simpler way to count sources: regex over all text for `\[(\d+)\]` and find the max, OR
         # parse the bibliography text.
         
-        # Let's count citations in text: [1], [2], etc.
+        # Let's count citations in text: [1], [2], [1, 2], etc.
         max_source = 0
         import re
         for t in root.xpath('.//w:t/text()', namespaces=ns):
-            matches = re.findall(r'\[(\d+)\]', t)
+            matches = re.findall(r'\[([\d,\s]+)\]', t)
             for m in matches:
-                max_source = max(max_source, int(m))
+                # Split by comma in case of [1, 2]
+                nums = [int(n.strip()) for n in m.split(',') if n.strip().isdigit()]
+                if nums:
+                    max_source = max(max_source, max(nums))
         
         sources = max_source
 
@@ -109,15 +112,7 @@ def post_build(docx_path):
         doc.Repaginate()
         pages = doc.ComputeStatistics(2) # wdStatisticPages
         
-        # 3. Replace placeholders
-        # We will look for placeholders: {{PAGE_COUNT}}, {{FIGURE_COUNT}}, {{TABLE_COUNT}}, {{SOURCE_COUNT}}
-        # But wait, what if the user wrote "Пояснительная записка: {{PAGE_COUNT}} с., {{FIGURES_TEXT}}, {{TABLES_TEXT}}, {{SOURCES_TEXT}}"?
-        # Let's just define strict placeholders for the user to use in Markdown:
-        # {{PAGES}} -> 31
-        # {{FIGURES}} -> 2 рисунка (or empty if 0)
-        # {{TABLES}} -> 1 таблица (or empty if 0)
-        # {{SOURCES}} -> 18 источников (or empty if 0)
-        
+        # 3. Replace placeholders and VALIDATE
         replacements = {
             "{{PAGES}}": str(pages),
             "{{FIGURES}}": fig_text,
@@ -125,8 +120,14 @@ def post_build(docx_path):
             "{{SOURCES}}": src_text
         }
         
+        errors = []
         for p in doc.Paragraphs:
             text = p.Range.Text
+            
+            # Check for build-time errors that might have slipped through
+            if "Источник не найден" in text or "NOT FOUND" in text:
+                errors.append(f"CRITICAL: Broken reference or source found: {text.strip()}")
+
             if "{{" in text or " ," in text:
                 new_text = text
                 for placeholder, value in replacements.items():
@@ -139,6 +140,12 @@ def post_build(docx_path):
                     
                 if new_text != text:
                     p.Range.Text = new_text
+
+        if errors:
+            print("\n".join(errors), file=sys.stderr)
+            # We don't exit(1) immediately to let it save, but we should fail the build
+            # Actually, let's fail it.
+            sys.exit(1)
         
         doc.Save()
         print(f"Post-build complete: {pages} pages, {figures} figures, {tables} tables, {sources} sources.")
