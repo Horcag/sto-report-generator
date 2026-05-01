@@ -41,29 +41,59 @@ async function runTests() {
             errors.push(`FAIL: [${file}] contains decimal dot in metric: ${match}. Use comma instead.`);
         }
     }
-    
-    // Check for "0.744" in plain text (not in math blocks or code)
-    // This is a bit heuristic, but useful.
-    const rawDots = content.match(/(?:\s|^)(\d+\.\d+)(?:\s|$)/g);
-    if (rawDots) {
-        // Just a warning for now as it's too aggressive
-        // console.warn(`Warning: Found potential decimal dots in ${file}: ${rawDots.join(', ')}`);
+  }
+
+  // 3. Verify Abstract Placeholders
+  const referatPath = path.join(reportsDir, '01_referat.md');
+  if (fs.existsSync(referatPath)) {
+    const referat = fs.readFileSync(referatPath, 'utf8');
+    if (!referat.includes('{{PAGES}}') || !referat.includes('{{FIGURES}}') || !referat.includes('{{TABLES}}') || !referat.includes('{{SOURCES}}')) {
+      const figureRefs = mdFiles.reduce((acc, file) => {
+          const content = fs.readFileSync(path.join(reportsDir, file), 'utf8');
+          const matches = content.match(/!\[.*?\]\(.*?\)/g) || [];
+          return acc + matches.length;
+      }, 0);
+
+      const abstractFiguresMatch = referat.match(/(\d+)\s+рис/);
+      if (abstractFiguresMatch && parseInt(abstractFiguresMatch[1]) !== figureRefs) {
+          errors.push(`FAIL: Abstract says ${abstractFiguresMatch[1]} figures, but found ${figureRefs} in source images. Use {{FIGURES}} placeholder.`);
+      }
     }
   }
 
-  // 3. Verify Abstract Placeholders (Should remain as placeholders for post-build)
-  const referat = fs.readFileSync(path.join(reportsDir, '01_referat.md'), 'utf8');
-  if (!referat.includes('{{PAGES}}') || !referat.includes('{{FIGURES}}') || !referat.includes('{{TABLES}}') || !referat.includes('{{SOURCES}}')) {
-    // If they are hardcoded, we want to know, but only if they don't match source
-    const figureRefs = mdFiles.reduce((acc, file) => {
-        const content = fs.readFileSync(path.join(reportsDir, file), 'utf8');
-        const matches = content.match(/!\[.*?\]\(.*?\)/g) || [];
-        return acc + matches.length;
-    }, 0);
+  // 4. GOST Rule: Mention before appearance (Hanging References)
+  // Check that every table and figure is referenced in text before it appears.
+  for (const file of mdFiles) {
+    const content = fs.readFileSync(path.join(reportsDir, file), 'utf8');
+    const lines = content.split('\n');
+    let textSoFar = '';
 
-    const abstractFiguresMatch = referat.match(/(\d+)\s+рис/);
-    if (abstractFiguresMatch && parseInt(abstractFiguresMatch[1]) !== figureRefs) {
-        errors.push(`FAIL: Abstract says ${abstractFiguresMatch[1]} figures, but found ${figureRefs} in source images. Use {{FIGURES}} placeholder.`);
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // Match Table Title: "Таблица 1 – Название"
+        const tableMatch = line.match(/^Таблица\s+(\d+)/i);
+        if (tableMatch) {
+            const tableNum = tableMatch[1];
+            // Check if there's a reference to "таблиц* X" in the text preceding this line
+            const refRegex = new RegExp(`(?:таблиц[а-я]{1,3}|таблица)\\s+${tableNum}`, 'i');
+            if (!refRegex.test(textSoFar)) {
+                errors.push(`GOST VIOLATION: [${file}:L${i+1}] Table ${tableNum} appears before being referenced in text. (Found: "${line}")`);
+            }
+        }
+
+        // Match Figure Caption: "Рисунок 1 – Название"
+        const figMatch = line.match(/^Рисунок\s+(\d+)/i);
+        if (figMatch) {
+            const figNum = figMatch[1];
+            // Check if there's a reference to "рисунк* X" in the text preceding this line
+            const refRegex = new RegExp(`(?:рисунк[а-я]{1,3}|рисунок)\\s+${figNum}`, 'i');
+            if (!refRegex.test(textSoFar)) {
+                errors.push(`GOST VIOLATION: [${file}:L${i+1}] Figure ${figNum} appears before being referenced in text. (Found: "${line}")`);
+            }
+        }
+
+        textSoFar += line + '\n';
     }
   }
 
@@ -72,7 +102,7 @@ async function runTests() {
     errors.forEach(e => console.error(e));
     process.exit(1);
   } else {
-    console.log('All regression tests passed.');
+    console.log('All regression tests passed. No hanging references found.');
   }
 }
 

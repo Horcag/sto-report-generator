@@ -4,7 +4,7 @@ import { execSync } from 'child_process';
 import AdmZip from 'adm-zip';
 
 const projectRoot = path.join(__dirname, '..');
-const sampleDir = path.join(projectRoot, 'reports', 'modular_sample');
+const sampleDir = path.join(projectRoot, 'example');
 const tempOutput = path.join(__dirname, 'temp_output.docx');
 const snapshotFile = path.join(__dirname, 'fixtures', 'generator', 'snapshot.xml');
 
@@ -22,7 +22,7 @@ function runSnapshotTest() {
 
     // 1. Build the document
     try {
-        console.log('Building modular_sample report...');
+        console.log('Building example report...');
         execSync(`npm run build "${sampleDir}" "${tempOutput}"`, { cwd: projectRoot, stdio: 'inherit' });
     } catch (e) {
         console.error('❌ Failed to build report.');
