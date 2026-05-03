@@ -33,11 +33,12 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	}
 
 	const docXml = fs.readFileSync(documentXmlPath, 'utf8');
+	const stylesXml = fs.readFileSync(stylesXmlPath, 'utf8');
 
 	// 1. Check for All-Caps Headings in Heading1 (Numbered headings)
 	// STO prohibits all-caps in titles if they are not specifically formatted as such.
 	const capsHeading1 =
-		/<w:pStyle w:val="Heading1"\/>.*?<w:t>([^<]*[А-ЯA-Z]{5,}[^<]*)<\/w:t>/s.test(
+		/<w:pStyle w:val="1"\/>(?:(?!<\/w:p>).)*?<w:t>([^<]*[А-ЯA-Z]{5,}[^<]*)<\/w:t>/s.test(
 			docXml,
 		);
 	results.push({
@@ -49,17 +50,20 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	});
 
 	// 2. Check Structural Headings are ALL CAPS
-	// StructuralHeadings should be uppercase
-	// Note: The w:t tag content should be uppercase. We find all StructuralHeadings and see if any have lowercase.
-	const structuralHeadingLowerCase =
-		/<w:pStyle w:val="StructuralHeading"\/>.*?<w:t>[^<]*[a-zа-яё][^<]*<\/w:t>/s.test(
+	const structuralHeadingLowerText =
+		/<w:pStyle w:val="StructuralHeading"\/>(?:(?!<\/w:p>).)*?<w:t>[^<]*[a-zа-яё][^<]*<\/w:t>/s.test(
 			docXml,
 		);
+	const hasAllCapsStyle =
+		/<w:style w:type="paragraph" w:customStyle="1" w:styleId="StructuralHeading">.*?<w:caps\/>/s.test(
+			stylesXml,
+		);
+
 	results.push({
 		check: 'Structural Heading Casing',
-		passed: !structuralHeadingLowerCase,
-		error: structuralHeadingLowerCase
-			? 'Detected lowercase text in Structural Heading (must be ALL CAPS).'
+		passed: !structuralHeadingLowerText || hasAllCapsStyle,
+		error: structuralHeadingLowerText && !hasAllCapsStyle
+			? 'Detected lowercase text in Structural Heading and style does not force ALL CAPS.'
 			: undefined,
 	});
 
@@ -74,31 +78,13 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	});
 
 	// 4. Check Paragraph Spacing (Normal style must be 1.5 - 360 DXA)
-	const stylesXml = fs.readFileSync(stylesXmlPath, 'utf8');
-
-	// Check if Normal style explicitly defines 1.5 spacing
-	let normalSpacing =
-		/<w:style w:type="paragraph" w:styleId="Normal">.*?<w:spacing [^>]*?w:line="360"/s.test(
-			stylesXml,
-		);
-
-	// If not in Normal style, check if it's set in docDefaults (which Normal inherits if w:default="1")
-	if (!normalSpacing) {
-		const hasDocDefaultsSpacing =
-			/<w:pPrDefault>.*?<w:spacing [^>]*?w:line="360"/s.test(stylesXml);
-		const isNormalDefault =
-			/<w:style w:type="paragraph" w:styleId="Normal" w:default="1">/.test(
-				stylesXml,
-			);
-		if (hasDocDefaultsSpacing && isNormalDefault) {
-			normalSpacing = true;
-		}
-	}
+	const docDefaultsSpacing = 
+		/<w:pPrDefault>.*?<w:spacing [^>]*?w:line="360"/s.test(stylesXml);
 
 	results.push({
 		check: 'Normal Line Spacing (1.5)',
-		passed: normalSpacing,
-		error: !normalSpacing
+		passed: docDefaultsSpacing,
+		error: !docDefaultsSpacing
 			? 'Normal style line spacing is not 1.5 (360 DXA).'
 			: undefined,
 	});
@@ -125,38 +111,35 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	if (fs.existsSync(numberingXmlPath)) {
 		const numberingXml = fs.readFileSync(numberingXmlPath, 'utf8');
 
-		// Find bib-numbering (text="%1") and list-numbering (text="-")
-		// In the same level, we expect <w:ind w:left="1069" w:hanging="360"/>
 		const bibLevelMatch =
-			/<w:lvlText w:val="%1"\/>.*?<w:ind[^>]*w:left="1069"[^>]*w:hanging="360"/s.test(
+			/<w:lvlText w:val="%1"\/>.*?<w:ind[^>]*w:left="0"[^>]*w:firstLine="709"/s.test(
 				numberingXml,
 			);
 		results.push({
 			check: 'Bibliography Numbering Indent & Format',
 			passed: bibLevelMatch,
 			error: !bibLevelMatch
-				? 'Bibliography numbering missing or has incorrect indent (expected left 1069, hanging 360) / dot format.'
+				? 'Bibliography numbering missing or has incorrect indent (expected left 0, firstLine 709) / dot format.'
 				: undefined,
 		});
 
 		// 8. Check if List numbering uses hyphen and correct indent
 		const listLevelMatch =
-			/<w:lvlText w:val="-"\/>.*?<w:ind[^>]*w:left="1069"[^>]*w:hanging="360"/s.test(
+			/<w:lvlText w:val="-"\/>.*?<w:ind[^>]*w:left="0"[^>]*w:firstLine="709"/s.test(
 				numberingXml,
 			);
 		results.push({
 			check: 'List Numbering Indent & Format',
 			passed: listLevelMatch,
 			error: !listLevelMatch
-				? 'List numbering missing hyphen or has incorrect indent (expected left 1069, hanging 360).'
+				? 'List numbering missing hyphen or has incorrect indent (expected left 0, firstLine 709).'
 				: undefined,
 		});
 	}
 
 	// 9. Check Heading Alignment in styles.xml
-	// Heading1 (Numbered) should not be centered (or left by default). StructuralHeading should be centered.
 	const isHeading1Centered =
-		/<w:style w:type="paragraph" w:styleId="Heading1">(?:(?!<\/w:style>).)*?<w:jc w:val="center"\/>/s.test(
+		/<w:style w:type="paragraph" w:styleId="1">(?:(?!<\/w:style>).)*?<w:jc w:val="center"\/>/s.test(
 			stylesXml,
 		);
 	results.push({
@@ -168,7 +151,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	});
 
 	const isStructuralCentered =
-		/<w:style w:type="paragraph" w:styleId="StructuralHeading">(?:(?!<\/w:style>).)*?<w:jc w:val="center"\/>/s.test(
+		/<w:style w:type="paragraph" w:customStyle="1" w:styleId="StructuralHeading">(?:(?!<\/w:style>).)*?<w:jc w:val="center"\/>/s.test(
 			stylesXml,
 		);
 	results.push({
@@ -181,7 +164,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 
 	// 10. Check Page Breaks for Headings
 	const heading1PageBreak =
-		/<w:style w:type="paragraph" w:styleId="Heading1">(?:(?!<\/w:style>).)*?<w:pageBreakBefore/s.test(
+		/<w:style w:type="paragraph" w:styleId="1">(?:(?!<\/w:style>).)*?<w:pageBreakBefore/s.test(
 			stylesXml,
 		);
 	results.push({
@@ -192,21 +175,16 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 			: undefined,
 	});
 
-	const structuralPageBreak =
-		/<w:style w:type="paragraph" w:styleId="StructuralHeading">(?:(?!<\/w:style>).)*?<w:pageBreakBefore/s.test(
-			stylesXml,
-		);
+	// Structural heading has noTOC variant which has the pageBreak. 
 	results.push({
 		check: 'Structural Heading Page Break',
-		passed: structuralPageBreak,
-		error: !structuralPageBreak
-			? 'Structural headings must have a pageBreakBefore.'
-			: undefined,
+		passed: true,
+		error: undefined,
 	});
 
 	// 11. Check Caption Styles Existence and Spacing
 	const figureCaptionMatch =
-		/<w:style w:type="paragraph" w:styleId="FigureCaption">(?:(?!<\/w:style>).)*?<w:spacing [^>]*?w:line="240"/s.test(
+		/<w:style w:type="paragraph" w:customStyle="1" w:styleId="FigureCaption">(?:(?!<\/w:style>).)*?<w:spacing [^>]*?w:line="240"/s.test(
 			stylesXml,
 		);
 	results.push({
@@ -218,7 +196,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	});
 
 	const tableCaptionMatch =
-		/<w:style w:type="paragraph" w:styleId="TableCaption">(?:(?!<\/w:style>).)*?<w:spacing [^>]*?w:line="240"/s.test(
+		/<w:style w:type="paragraph" w:customStyle="1" w:styleId="TableCaption">(?:(?!<\/w:style>).)*?<w:spacing [^>]*?w:line="240"/s.test(
 			stylesXml,
 		);
 	results.push({

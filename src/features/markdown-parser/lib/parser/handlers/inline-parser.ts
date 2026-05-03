@@ -48,6 +48,17 @@ export async function parseInline(
 			case 'image':
 				runs.push(...(await handleImage(token as Tokens.Image)));
 				break;
+			case 'math': {
+				const mathToken = token as any;
+				try {
+					const mathEl = await convertLatex2Math(mathToken.text);
+					runs.push(mathEl as MathConversionResult);
+				} catch (e) {
+					console.warn(`Math conversion failed for: ${mathToken.text}`, e);
+					runs.push(new TextRun({ text: mathToken.raw, italics: true }));
+				}
+				break;
+			}
 			case 'text': {
 				const textToken = token as Tokens.Text;
 				if (textToken.tokens && textToken.tokens.length > 0) {
@@ -75,7 +86,7 @@ export async function parseInline(
 				if ('text' in token) {
 					runs.push(
 						new TextRun({
-							text: replaceRefs((token as Tokens.Text).text),
+							text: replaceRefs((token as any).raw),
 						}),
 					);
 				}
@@ -112,36 +123,10 @@ async function handleText(
 	// Replace references @fig:key, etc.
 	text = replaceRefs(text);
 
-	// Process inline math $...$ using a more robust approach
-	// Regex: $ (any non-$ character or escaped \$) $
-	const mathRegex = /\$((?:\\\$|[^$])+)\$/g;
-	let lastIndex = 0;
-	let match;
-
-	while ((match = mathRegex.exec(text)) !== null) {
-		// Add text before math
-		const before = text.substring(lastIndex, match.index);
-		if (before.length > 0) {
-			runs.push(new TextRun({ text: before }));
-		}
-
-		const mathText = match[1];
-		try {
-			const mathEl = await convertLatex2Math(mathText);
-			runs.push(mathEl as MathConversionResult);
-		} catch (e) {
-			console.warn(`Math conversion failed for: ${mathText}`, e);
-			runs.push(new TextRun({ text: match[0], italics: true }));
-		}
-
-		lastIndex = mathRegex.lastIndex;
-	}
-
-	// Add remaining text
-	const remaining = text.substring(lastIndex);
-	if (remaining.length > 0) {
-		runs.push(new TextRun({ text: remaining }));
+	if (text.length > 0) {
+		runs.push(new TextRun({ text: text }));
 	}
 
 	return runs;
 }
+

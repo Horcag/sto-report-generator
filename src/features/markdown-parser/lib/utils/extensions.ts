@@ -35,3 +35,22 @@ export const stoExtension = {
 		}
 	},
 };
+
+export const mathExtension = {
+	name: 'math',
+	level: 'inline',
+	start(src: string) {
+		return src.match(/\$/)?.index;
+	},
+	tokenizer(src: string, _tokens: Token[]) {
+		const rule = /^\$((?:\\\$|[^$])+)\$/;
+		const match = rule.exec(src);
+		if (match) {
+			return {
+				type: 'math',
+				raw: match[0],
+				text: match[1].trim(),
+			};
+		}
+	},
+};

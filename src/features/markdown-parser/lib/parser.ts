@@ -20,9 +20,9 @@ import {
 	ProcessTokensContext,
 	StoFlagToken,
 } from './types';
-import { stoExtension } from './utils/extensions';
+import { mathExtension, stoExtension } from './utils/extensions';
 
-marked.use({ extensions: [stoExtension] });
+marked.use({ extensions: [stoExtension, mathExtension] });
 
 class MarkdownParser {
 	private context: ParserContext;
@@ -56,7 +56,7 @@ class MarkdownParser {
 						'text' in token ? (token.text as string) : token.raw;
 
 					const figMatch = text.match(
-						/^(?:Рисунок|Рис\.)\s+(@fig:[a-zA-Z0-9_-]+)/,
+						/(?:Рисунок|Рис\.)\s+.*?(@fig:[a-zA-Z0-9_-]+)/,
 					);
 					if (figMatch && !this.context.itemMap.has(figMatch[1])) {
 						figCounter++;
@@ -64,7 +64,7 @@ class MarkdownParser {
 					}
 
 					const tabMatch = text.match(
-						/^Таблица\s+(@tab:[a-zA-Z0-9_-]+)/,
+						/Таблица\s+.*?(@tab:[a-zA-Z0-9_-]+)/,
 					);
 					if (tabMatch && !this.context.itemMap.has(tabMatch[1])) {
 						tabCounter++;
@@ -135,11 +135,12 @@ class MarkdownParser {
 					elements.push(
 						new Paragraph({
 							style: `Heading${globalThis.Math.min(headingToken.depth, 6)}`,
-							children: [
-								new TextRun(
-									this.replaceRefs(headingToken.text.trim()),
-								),
-							],
+							children: await parseInline(
+								headingToken.tokens,
+								this.context,
+								this.getCitationNum,
+								this.replaceRefs,
+							),
 						}),
 					);
 					break;

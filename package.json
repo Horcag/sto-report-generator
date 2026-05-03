@@ -9,6 +9,8 @@
         "lint": "eslint \"src/**/*.ts\" && npx steiger src",
         "lint:fix": "eslint \"src/**/*.ts\" --fix && npx steiger src",
         "build": "npx tsx src/index.ts",
+        "validate:sto": "npx tsx src/shared/lib/sto-validator.ts",
+        "generate": "npx tsx src/index.ts reports/report_sem6 output/report_sem6.docx && uv run --with pywin32 --with lxml python scripts/post_build.py output/report_sem6.docx && npm run unpack -- output/report_sem6.docx .temp_docx && npm run validate:sto -- .temp_docx",
         "build:example": "npx tsx tests/regression_checks.ts example && npx tsx src/index.ts example example/output.docx && uv run --with pywin32 --with lxml python scripts/post_build.py example/output.docx",
         "test:regression": "npx tsx tests/regression_checks.ts",
         "test:validator": "npx tsx tests/run_validator_tests.ts",
