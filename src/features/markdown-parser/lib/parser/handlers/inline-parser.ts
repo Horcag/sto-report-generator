@@ -54,8 +54,13 @@ export async function parseInline(
 					const mathEl = await convertLatex2Math(mathToken.text);
 					runs.push(mathEl as MathConversionResult);
 				} catch (e) {
-					console.warn(`Math conversion failed for: ${mathToken.text}`, e);
-					runs.push(new TextRun({ text: mathToken.raw, italics: true }));
+					console.warn(
+						`Math conversion failed for: ${mathToken.text}`,
+						e,
+					);
+					runs.push(
+						new TextRun({ text: mathToken.raw, italics: true }),
+					);
 				}
 				break;
 			}
@@ -129,4 +134,3 @@ async function handleText(
 
 	return runs;
 }
-

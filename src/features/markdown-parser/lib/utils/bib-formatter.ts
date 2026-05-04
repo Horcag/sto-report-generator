@@ -13,7 +13,7 @@ export function formatBibItem(item: BibItem): string {
 	const lang = tags.langid || 'russian';
 	const isEng = lang === 'english' || lang === 'en';
 
-	let rawAuthors = tags.author || '';
+	const rawAuthors = tags.author || '';
 	let authors = '';
 	let isCollective = false;
 	let isManyAuthors = false;
@@ -26,7 +26,11 @@ export function formatBibItem(item: BibItem): string {
 			authors = rawAuthors.replace(/[{}]/g, '').trim();
 		} else {
 			const authorList = rawAuthors.split(' and ');
-			if (authorList.length > 3 || rawAuthors.includes('and others') || rawAuthors.includes('others')) {
+			if (
+				authorList.length > 3 ||
+				rawAuthors.includes('and others') ||
+				rawAuthors.includes('others')
+			) {
 				isManyAuthors = true;
 				const firstAuthor = authorList[0]
 					.split(',')
@@ -106,10 +110,10 @@ export function formatBibItem(item: BibItem): string {
 		const vol = tags.volume || '';
 		const num = tags.number || tags.issue || '';
 		let pages = tags.pages || '';
-		
+
 		// Clean pages (e.g. 252--258 -> 252-258)
 		pages = pages.replace(/--/g, '-');
-		
+
 		if (journal) {
 			res += ` // ${journal}.`;
 		}
@@ -125,7 +129,10 @@ export function formatBibItem(item: BibItem): string {
 			res += `.`;
 		}
 		if (pages) {
-			if (pages.toLowerCase().includes('article') || pages.toLowerCase().includes('e')) {
+			if (
+				pages.toLowerCase().includes('article') ||
+				pages.toLowerCase().includes('e')
+			) {
 				res += ` – ${isEng ? 'Article' : 'Статья'} ${pages.replace(/article/i, '').trim()}.`;
 			} else {
 				res += ` – ${isEng ? 'P.' : 'С.'} ${pages}.`;
@@ -165,7 +172,7 @@ export function formatBibItem(item: BibItem): string {
 			res += ` – Электрон. дан.`;
 			res += ` – ${address}, ${year || 'Б.г.'}.`;
 		}
-		
+
 		if (tags.url) {
 			res += ` – URL: ${tags.url}`;
 			if (tags.urldate) {
@@ -187,5 +194,10 @@ export function formatBibItem(item: BibItem): string {
 	}
 
 	// Clean up double dots and multiple spaces
-	return res.replace(/\.\./g, '.').replace(/--/g, '-').replace(/\s+/g, ' ').replace(/\s+\./g, '.').trim();
+	return res
+		.replace(/\.\./g, '.')
+		.replace(/--/g, '-')
+		.replace(/\s+/g, ' ')
+		.replace(/\s+\./g, '.')
+		.trim();
 }

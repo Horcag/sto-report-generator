@@ -5,7 +5,6 @@
     "main": "index.js",
     "scripts": {
         "unpack": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/unpack.py",
-        "validate": "uv run --with defusedxml --with lxml python .agents/skills/docx/scripts/office/validate.py",
         "lint": "eslint \"src/**/*.ts\" && npx steiger src",
         "lint:fix": "eslint \"src/**/*.ts\" --fix && npx steiger src",
         "build": "npx tsx src/index.ts",
@@ -15,7 +14,8 @@
         "test:regression": "npx tsx tests/regression_checks.ts",
         "test:validator": "npx tsx tests/run_validator_tests.ts",
         "test:generator": "npx tsx tests/run_generator_snapshot_test.ts",
-        "test:toc": "npx tsx tests/toc_regression.ts"
+        "test:toc": "npx tsx tests/toc_regression.ts",
+        "test:bib": "npx tsx tests/bib-gost.test.ts"
     },
     "keywords": [],
     "author": "",
@@ -27,9 +27,7 @@
         "docx": "^9.6.1",
         "gray-matter": "^4.0.3",
         "image-size": "^2.0.2",
-        "jsdom": "^29.1.0",
         "marked": "^18.0.2",
-        "mathjax": "^4.1.1",
         "tsconfig-paths": "^4.2.0"
     },
     "devDependencies": {

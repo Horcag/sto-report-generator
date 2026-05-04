@@ -123,29 +123,28 @@ def post_build(docx_path):
         errors = []
         for p in doc.Paragraphs:
             text = p.Range.Text
-            
-            # Check for build-time errors that might have slipped through
             if "Источник не найден" in text or "NOT FOUND" in text:
                 errors.append(f"CRITICAL: Broken reference or source found: {text.strip()}")
 
-            if "{{" in text or " ," in text:
-                new_text = text
-                for placeholder, value in replacements.items():
-                    new_text = new_text.replace(placeholder, value)
-                
-                # Clean up any leftover commas if some counts were 0 (e.g., ", ,")
-                for _ in range(2):
-                    new_text = new_text.replace(" ,", "")
-                    new_text = new_text.replace(", ,", ",")
-                    
-                if new_text != text:
-                    p.Range.Text = new_text
-
         if errors:
             print("\n".join(errors), file=sys.stderr)
-            # We don't exit(1) immediately to let it save, but we should fail the build
-            # Actually, let's fail it.
             sys.exit(1)
+            
+        for placeholder, value in replacements.items():
+            rng = doc.Content
+            rng.Find.ClearFormatting()
+            rng.Find.Replacement.ClearFormatting()
+            # Execute(FindText, MatchCase, MatchWholeWord, MatchWildcards, MatchSoundsLike, MatchAllWordForms, Forward, Wrap, Format, ReplaceWith, Replace)
+            rng.Find.Execute(placeholder, False, False, False, False, False, True, 1, False, value, 2) # wdReplaceAll
+            
+        # Clean up empty commas (if any count was 0)
+        rng = doc.Content
+        rng.Find.ClearFormatting()
+        rng.Find.Replacement.ClearFormatting()
+        rng.Find.Execute(" ,", False, False, False, False, False, True, 1, False, "", 2)
+        
+        rng = doc.Content
+        rng.Find.Execute(", ,", False, False, False, False, False, True, 1, False, ",", 2)
         
         doc.Save()
         print(f"Post-build complete: {pages} pages, {figures} figures, {tables} tables, {sources} sources.")

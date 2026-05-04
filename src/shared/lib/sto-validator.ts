@@ -62,9 +62,10 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	results.push({
 		check: 'Structural Heading Casing',
 		passed: !structuralHeadingLowerText || hasAllCapsStyle,
-		error: structuralHeadingLowerText && !hasAllCapsStyle
-			? 'Detected lowercase text in Structural Heading and style does not force ALL CAPS.'
-			: undefined,
+		error:
+			structuralHeadingLowerText && !hasAllCapsStyle
+				? 'Detected lowercase text in Structural Heading and style does not force ALL CAPS.'
+				: undefined,
 	});
 
 	// 3. Check for Long Dashes (Em-dash)
@@ -78,7 +79,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	});
 
 	// 4. Check Paragraph Spacing (Normal style must be 1.5 - 360 DXA)
-	const docDefaultsSpacing = 
+	const docDefaultsSpacing =
 		/<w:pPrDefault>.*?<w:spacing [^>]*?w:line="360"/s.test(stylesXml);
 
 	results.push({
@@ -102,9 +103,30 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	// 6. Check for unparsed math/formulas
 	const rawMath = /\$[^$]+\$/.test(docXml);
 	results.push({
-		check: 'Math Formatting',
+		check: 'Math Formatting (Unparsed)',
 		passed: !rawMath,
 		error: rawMath ? 'Detected unparsed LaTeX math ($...$).' : undefined,
+	});
+
+	// 6.1 Check for prohibited asterisk (*) in OMML math formulas
+	// OMML text nodes <m:t> should not contain * as a multiplication sign
+	const hasMathAsterisk = /<m:t>[^<]*\*[^<]*<\/m:t>/.test(docXml);
+	results.push({
+		check: 'Math Multiplication Sign',
+		passed: !hasMathAsterisk,
+		error: hasMathAsterisk
+			? 'Detected asterisk (*) as multiplication sign in formula. Use \\cdot or \\times instead.'
+			: undefined,
+	});
+
+	// 6.2 Check for dot decimal separator in OMML math formulas (should be comma)
+	const hasMathDotDecimal = /<m:t>[^<]*\d+\.\d+[^<]*<\/m:t>/.test(docXml);
+	results.push({
+		check: 'Math Decimal Separator',
+		passed: !hasMathDotDecimal,
+		error: hasMathDotDecimal
+			? 'Detected dot (.) as decimal separator in formula. Russian typography requires a comma (,).'
+			: undefined,
 	});
 
 	// 7. Check if Bibliography numbering has no trailing dot and correct indent
@@ -175,7 +197,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 			: undefined,
 	});
 
-	// Structural heading has noTOC variant which has the pageBreak. 
+	// Structural heading has noTOC variant which has the pageBreak.
 	results.push({
 		check: 'Structural Heading Page Break',
 		passed: true,

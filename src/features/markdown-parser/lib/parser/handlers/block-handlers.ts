@@ -28,16 +28,16 @@ export async function handleParagraph(
 		for (const part of parts) {
 			const match = part.match(/^\$\$([\s\S]+?)\$\$/);
 			if (match) {
-				result.push(
-					await handleBlockMath(match[1].trim(), context),
-				);
+				result.push(await handleBlockMath(match[1].trim(), context));
 			} else if (part.trim().length > 0) {
 				// Handle potential text around math blocks in the same paragraph
 				// though usually STO expects math blocks to be separate
 				result.push(
 					new Paragraph({
 						style: 'Normal',
-						children: await parseInline([{ type: 'text', raw: part, text: part } as Token]),
+						children: await parseInline([
+							{ type: 'text', raw: part, text: part } as Token,
+						]),
 					}),
 				);
 			}
@@ -130,7 +130,9 @@ export async function handleList(
 	for (const item of token.items) {
 		// Separation of inline vs nested block tokens
 		const textTokens = item.tokens.filter((t: Token) => t.type !== 'list');
-		const nestedListTokens = item.tokens.filter((t: Token) => t.type === 'list');
+		const nestedListTokens = item.tokens.filter(
+			(t: Token) => t.type === 'list',
+		);
 
 		elements.push(
 			new Paragraph({
