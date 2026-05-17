@@ -192,6 +192,27 @@ class MarkdownParser {
 					break;
 				case 'space':
 					break;
+				case 'code': {
+					const codeToken = token as Tokens.Code;
+					// Split code by newlines to insert breaks, and preserve spaces.
+					const lines = codeToken.text.split('\n');
+					const runs = lines.map((line, index) => {
+						return new TextRun({
+							text: line,
+							font: 'Courier New',
+							size: 20, // 10pt is typical for code, smaller than 14pt body
+							break: index > 0 ? 1 : 0,
+						});
+					});
+					elements.push(
+						new Paragraph({
+							style: 'Normal', // We can use Normal but override font
+							indent: { left: 0, firstLine: 0 },
+							children: runs,
+						})
+					);
+					break;
+				}
 				default:
 					console.warn(`Unhandled token type: ${token.type}`);
 					break;

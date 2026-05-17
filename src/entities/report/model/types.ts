@@ -10,8 +10,10 @@ export interface ReportMetadata {
 	studentName: string;
 	groupNumber: string;
 	topic: string;
+	topicPrefix?: string;
 	supervisorName: string;
 	supervisorTitle: string;
 	city: string;
 	year: number;
+	hideSignatures?: boolean;
 }
