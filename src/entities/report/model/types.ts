@@ -13,6 +13,7 @@ export interface ReportMetadata {
 	topicPrefix?: string;
 	supervisorName: string;
 	supervisorTitle: string;
+	supervisorRole?: string;
 	city: string;
 	year: number;
 	hideSignatures?: boolean;

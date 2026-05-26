@@ -183,7 +183,7 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 			tabStops: [{ type: TabStopType.RIGHT, position: 9638 }],
 			children: [
 				t({
-					text: `Научный руководитель ${metadata.supervisorName} ${metadata.supervisorTitle}`,
+					text: `${metadata.supervisorRole || 'Научный руководитель'} ${metadata.supervisorName} ${metadata.supervisorTitle}`,
 				}),
 				t({ text: '\t' }),
 			],
@@ -217,7 +217,7 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 			p({
 				indent: { left: 5670, firstLine: 0 },
 				spacing: { line: 240, lineRule: 'auto' },
-				children: [t({ text: 'Научный руководитель' })],
+				children: [t({ text: metadata.supervisorRole || 'Научный руководитель' })],
 			}),
 			p({
 				indent: { left: 5670, firstLine: 0 },

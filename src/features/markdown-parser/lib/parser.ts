@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import { mathJaxReady } from '@hungknguyen/docx-math-converter';
 import * as bibtexParse from '@orcid/bibtex-parse-js';
-import { Paragraph, TextRun } from 'docx';
+import { AlignmentType, Paragraph, TextRun } from 'docx';
 import { marked, Token, Tokens } from 'marked';
 
 import {
@@ -194,8 +194,22 @@ class MarkdownParser {
 					break;
 				case 'code': {
 					const codeToken = token as Tokens.Code;
+					// Unescape HTML entities that marked might have escaped
+					let codeText = codeToken.text
+						.replace(/&amp;/g, '&')
+						.replace(/&lt;/g, '<')
+						.replace(/&gt;/g, '>')
+						.replace(/&quot;/g, '"')
+						.replace(/&#39;/g, "'");
+
+					// To prevent Word from automatically coloring URLs blue,
+					// insert a zero-width space after "http" and "https"
+					codeText = codeText
+						.replace(/https:\/\//g, 'https\u200B://')
+						.replace(/http:\/\//g, 'http\u200B://');
+
 					// Split code by newlines to insert breaks, and preserve spaces.
-					const lines = codeToken.text.split('\n');
+					const lines = codeText.split('\n');
 					const runs = lines.map((line, index) => {
 						return new TextRun({
 							text: line,
@@ -207,6 +221,8 @@ class MarkdownParser {
 					elements.push(
 						new Paragraph({
 							style: 'Normal', // We can use Normal but override font
+							alignment: AlignmentType.LEFT, // Avoid justified stretching in code blocks
+							spacing: { before: 0, after: 0, line: 240, lineRule: 'auto' }, // Single line spacing for compact code
 							indent: { left: 0, firstLine: 0 },
 							children: runs,
 						})
