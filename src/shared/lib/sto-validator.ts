@@ -12,6 +12,61 @@ export interface ValidationResult {
 	error?: string;
 }
 
+function decodeXmlText(value: string): string {
+	return value
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&')
+		.replace(/&quot;/g, '"')
+		.replace(/&apos;/g, "'");
+}
+
+function hasFormulaPeriodBeforeWhere(docXml: string): boolean {
+	const formulaBeforeWhere =
+		/(<w:tbl[\s\S]*?<\/w:tbl>|<w:p[\s\S]*?<m:oMath[\s\S]*?<\/w:p>)\s*<w:p[\s\S]*?<w:t[^>]*>где(?:\s|<|&nbsp;)/g;
+
+	for (const match of docXml.matchAll(formulaBeforeWhere)) {
+		const formulaBlock = match[1];
+		const mathText = [...formulaBlock.matchAll(/<m:t[^>]*>([\s\S]*?)<\/m:t>/g)]
+			.map(item => decodeXmlText(item[1]).trim())
+			.join('')
+			.trim();
+
+		if (mathText.endsWith('.')) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function countTablesWithoutHeaderRepeat(docXml: string): number {
+	const tables = docXml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g) ?? [];
+
+	return tables.filter(tableXml => {
+		const firstRow = tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/);
+		return firstRow ? !/<w:tblHeader\b/.test(firstRow[0]) : false;
+	}).length;
+}
+
+function hasOversizedImages(docXml: string): boolean {
+	const maxWidthEmu = 5_040_000;
+
+	return [...docXml.matchAll(/<wp:extent\b[^>]*\bcx="(\d+)"/g)].some(
+		match => Number(match[1]) > maxWidthEmu,
+	);
+}
+
+function hasUncenteredImageParagraphs(docXml: string): boolean {
+	const imageParagraphs = docXml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? [];
+
+	return imageParagraphs.some(
+		paragraphXml =>
+			paragraphXml.includes('<w:drawing') &&
+			!/<w:jc\b[^>]*w:val="center"[^>]*\/>/.test(paragraphXml),
+	);
+}
+
 export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 	const results: ValidationResult[] = [];
 	const documentXmlPath = path.join(unpackedDirPath, 'word', 'document.xml');
@@ -129,6 +184,24 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 			: undefined,
 	});
 
+	const formulaPeriodBeforeWhere = hasFormulaPeriodBeforeWhere(docXml);
+	results.push({
+		check: 'Formula Punctuation Before Where',
+		passed: !formulaPeriodBeforeWhere,
+		error: formulaPeriodBeforeWhere
+			? 'Detected a block formula ending with a period before a lowercase "где" explanation. Use a comma or no final period.'
+			: undefined,
+	});
+
+	const dirtyFields = /<w:fldChar\b[^>]*w:dirty="(?:true|1)"/.test(docXml);
+	results.push({
+		check: 'Dirty Field Flags',
+		passed: !dirtyFields,
+		error: dirtyFields
+			? 'Detected dirty Word fields. Run post_build.py so Word does not ask to update fields on open.'
+			: undefined,
+	});
+
 	// 7. Check if Bibliography numbering has no trailing dot and correct indent
 	if (fs.existsSync(numberingXmlPath)) {
 		const numberingXml = fs.readFileSync(numberingXmlPath, 'utf8');
@@ -158,6 +231,34 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 				: undefined,
 		});
 	}
+
+	const tablesWithoutHeaderRepeat = countTablesWithoutHeaderRepeat(docXml);
+	results.push({
+		check: 'Table Header Repeat',
+		passed: tablesWithoutHeaderRepeat === 0,
+		error:
+			tablesWithoutHeaderRepeat > 0
+				? `Detected ${tablesWithoutHeaderRepeat} table(s) without repeated header rows.`
+				: undefined,
+	});
+
+	const oversizedImages = hasOversizedImages(docXml);
+	results.push({
+		check: 'Image Width Limit',
+		passed: !oversizedImages,
+		error: oversizedImages
+			? 'Detected image width above 14 cm. Run post_build.py to scale large figures.'
+			: undefined,
+	});
+
+	const uncenteredImageParagraphs = hasUncenteredImageParagraphs(docXml);
+	results.push({
+		check: 'Image Paragraph Alignment',
+		passed: !uncenteredImageParagraphs,
+		error: uncenteredImageParagraphs
+			? 'Detected an image paragraph without center alignment.'
+			: undefined,
+	});
 
 	// 9. Check Heading Alignment in styles.xml
 	const isHeading1Centered =

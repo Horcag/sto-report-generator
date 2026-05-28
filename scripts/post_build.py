@@ -1,10 +1,16 @@
 import sys
 import os
+import re
+import shutil
 import zipfile
 import tempfile
 from pathlib import Path
 from lxml import etree
 import win32com.client
+
+WD_ALIGN_PARAGRAPH_CENTER = 1
+MAX_IMAGE_WIDTH_POINTS = 14 / 2.54 * 72
+DIRTY_TRUE_RE = re.compile(r'w:dirty="(?:true|1)"')
 
 def get_counts_from_docx(docx_path):
     figures = 0
@@ -82,6 +88,66 @@ def pluralize_ru(n, form1, form2, form5):
     if n1 == 1: return form1
     return form5
 
+def normalize_tables(doc):
+    changed = 0
+    for index in range(1, doc.Tables.Count + 1):
+        try:
+            doc.Tables(index).Rows(1).HeadingFormat = True
+            changed += 1
+        except Exception:
+            continue
+    return changed
+
+def normalize_inline_images(doc):
+    centered = 0
+    scaled = 0
+
+    for index in range(1, doc.InlineShapes.Count + 1):
+        try:
+            shape = doc.InlineShapes(index)
+            shape.Range.ParagraphFormat.Alignment = WD_ALIGN_PARAGRAPH_CENTER
+            centered += 1
+
+            if shape.Width > MAX_IMAGE_WIDTH_POINTS:
+                shape.LockAspectRatio = True
+                shape.Width = MAX_IMAGE_WIDTH_POINTS
+                scaled += 1
+        except Exception:
+            continue
+
+    return centered, scaled
+
+def clear_dirty_fields(docx_path):
+    with zipfile.ZipFile(docx_path, "r") as zf:
+        names = zf.namelist()
+        files = {name: zf.read(name) for name in names}
+
+    document_name = "word/document.xml"
+    if document_name not in files:
+        return 0
+
+    doc_xml = files[document_name].decode("utf-8")
+    cleared = len(DIRTY_TRUE_RE.findall(doc_xml))
+    if cleared == 0:
+        return 0
+
+    files[document_name] = DIRTY_TRUE_RE.sub('w:dirty="false"', doc_xml).encode("utf-8")
+
+    fd, temp_name = tempfile.mkstemp(suffix=".docx", dir=str(Path(docx_path).parent))
+    os.close(fd)
+    Path(temp_name).unlink()
+    try:
+        with zipfile.ZipFile(temp_name, "w", zipfile.ZIP_DEFLATED) as zout:
+            for name in names:
+                zout.writestr(name, files[name])
+        shutil.move(temp_name, docx_path)
+    except Exception:
+        if Path(temp_name).exists():
+            Path(temp_name).unlink()
+        raise
+
+    return cleared
+
 def post_build(docx_path):
     abs_path = os.path.abspath(docx_path)
     if not os.path.exists(abs_path):
@@ -98,7 +164,7 @@ def post_build(docx_path):
     word = None
     doc = None
     try:
-        word = win32com.client.Dispatch("Word.Application")
+        word = win32com.client.DispatchEx("Word.Application")
         word.Visible = False
         word.DisplayAlerts = False
         
@@ -107,6 +173,9 @@ def post_build(docx_path):
         # 1. Update TOC
         if doc.TablesOfContents.Count > 0:
             doc.TablesOfContents(1).Update()
+
+        normalized_tables = normalize_tables(doc)
+        centered_images, scaled_images = normalize_inline_images(doc)
             
         # 2. Get Page Count
         doc.Repaginate()
@@ -147,7 +216,6 @@ def post_build(docx_path):
         rng.Find.Execute(", ,", False, False, False, False, False, True, 1, False, ",", 2)
         
         doc.Save()
-        print(f"Post-build complete: {pages} pages, {figures} figures, {tables} tables, {sources} sources.")
         
     except Exception as e:
         print(f"Error during post-build: {e}", file=sys.stderr)
@@ -157,6 +225,13 @@ def post_build(docx_path):
             doc.Close(False) # don't save if error
         if word is not None:
             word.Quit()
+
+    dirty_fields = clear_dirty_fields(abs_path)
+    print(
+        f"Post-build complete: {pages} pages, {figures} figures, {tables} tables, {sources} sources; "
+        f"table headers: {normalized_tables}, centered images: {centered_images}, "
+        f"scaled images: {scaled_images}, dirty fields cleared: {dirty_fields}."
+    )
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

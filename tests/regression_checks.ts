@@ -27,6 +27,30 @@ async function runTests() {
     if (content.includes('Источник не найден') || content.includes('Source not found') || content.includes('NOT FOUND')) {
       errors.push(`FAIL: [${file}] contains "Source not found" marker.`);
     }
+
+    if (content.includes('—')) {
+      errors.push(`FAIL: [${file}] contains em-dash (—). Use en-dash (–) in STO reports.`);
+    }
+
+    if (/\[0\]/.test(content)) {
+      errors.push(`FAIL: [${file}] contains citation [0]. Source numbering starts from [1].`);
+    }
+
+    if (file !== '01_referat.md' && /\*\*[^*]+\*\*/.test(content)) {
+      errors.push(`FAIL: [${file}] contains bold markdown. Bold is allowed only in the referat module.`);
+    }
+
+    const imageMatches = [...content.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)];
+    for (const match of imageMatches) {
+      const imagePath = match[1].trim();
+      if (/^(https?:|file:|#)/i.test(imagePath)) {
+        continue;
+      }
+      const resolvedImagePath = path.resolve(imagePath);
+      if (!fs.existsSync(resolvedImagePath)) {
+        errors.push(`FAIL: [${file}] image file does not exist: ${imagePath}`);
+      }
+    }
   }
 
   // 2. Check for dots in ROC-AUC or metrics (should be commas in Russian text)

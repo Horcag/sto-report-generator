@@ -1060,7 +1060,7 @@
 <w:pStyle w:val="TableCaption"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Таблица 1 – Сравнение форматов ([@tab:formats NOT FOUND])</w:t>
+<w:t xml:space="preserve">Таблица 1 – Сравнение форматов (1)</w:t>
 </w:r>
 </w:p>
 <w:tbl>
@@ -1325,7 +1325,7 @@
 <w:pStyle w:val="FigureCaption"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Рисунок 1 – Пример сгенерированного SVG-изображения ([@fig:diagram NOT FOUND])</w:t>
+<w:t xml:space="preserve">Рисунок 1 – Пример сгенерированного SVG-изображения (1)</w:t>
 </w:r>
 </w:p>
 <w:p>
