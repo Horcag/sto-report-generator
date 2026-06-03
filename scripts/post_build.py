@@ -12,6 +12,7 @@ import win32com.client
 
 WD_ALIGN_PARAGRAPH_CENTER = 1
 WD_ACTIVE_END_PAGE_NUMBER = 3
+WD_EXPORT_FORMAT_PDF = 17
 MAX_IMAGE_WIDTH_POINTS = 14 / 2.54 * 72
 DIRTY_TRUE_RE = re.compile(r'w:dirty="(?:true|1)"')
 MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
@@ -461,6 +462,24 @@ def keep_small_tables_on_one_page(doc):
 
     return moved
 
+def get_default_pdf_path(docx_path):
+    return str(Path(docx_path).with_suffix(".pdf"))
+
+def export_pdf(doc, docx_path, pdf_output_path=None):
+    pdf_path = os.path.abspath(pdf_output_path or get_default_pdf_path(docx_path))
+    Path(pdf_path).parent.mkdir(parents=True, exist_ok=True)
+
+    if os.path.exists(pdf_path):
+        try:
+            os.remove(pdf_path)
+        except PermissionError as error:
+            raise RuntimeError(
+                f"PDF export target is locked. Close the PDF and rerun post-build: {pdf_path}"
+            ) from error
+
+    doc.ExportAsFixedFormat(pdf_path, WD_EXPORT_FORMAT_PDF)
+    return pdf_path
+
 def clear_dirty_fields(docx_path):
     with zipfile.ZipFile(docx_path, "r") as zf:
         names = zf.namelist()
@@ -492,7 +511,7 @@ def clear_dirty_fields(docx_path):
 
     return cleared
 
-def post_build(docx_path, report_source_dir=None):
+def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
     abs_path = os.path.abspath(docx_path)
     if not os.path.exists(abs_path):
         print(f"Error: File not found - {abs_path}", file=sys.stderr)
@@ -517,6 +536,7 @@ def post_build(docx_path, report_source_dir=None):
 
     word = None
     doc = None
+    pdf_path = None
     try:
         word = win32com.client.DispatchEx("Word.Application")
         word.Visible = False
@@ -571,15 +591,22 @@ def post_build(docx_path, report_source_dir=None):
         rng.Find.Execute(", ,", False, False, False, False, False, True, 1, False, ",", 2)
         
         doc.Save()
+        pdf_path = export_pdf(doc, abs_path, pdf_output_path)
         
     except Exception as e:
         print(f"Error during post-build: {e}", file=sys.stderr)
         sys.exit(1)
     finally:
         if doc is not None:
-            doc.Close(False) # don't save if error
+            try:
+                doc.Close(False) # don't save if error
+            except Exception:
+                pass
         if word is not None:
-            word.Quit()
+            try:
+                word.Quit()
+            except Exception:
+                pass
 
     dirty_fields = clear_dirty_fields(abs_path)
     print(
@@ -587,12 +614,16 @@ def post_build(docx_path, report_source_dir=None):
         f"table headers: {normalized_tables}, centered images: {centered_images}, "
         f"scaled images: {scaled_images}, formulas replaced: {formula_replacements}, "
         f"table spacing adjusted: {table_spacing_changes}, moved small tables: {moved_small_tables}, "
-        f"dirty fields cleared: {dirty_fields}."
+        f"dirty fields cleared: {dirty_fields}, PDF exported: {pdf_path}."
     )
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python post_build.py <path_to_docx> [report_source_dir]", file=sys.stderr)
+        print("Usage: python post_build.py <path_to_docx> [report_source_dir] [pdf_output_path]", file=sys.stderr)
         sys.exit(1)
     
-    post_build(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
+    post_build(
+        sys.argv[1],
+        sys.argv[2] if len(sys.argv) > 2 else None,
+        sys.argv[3] if len(sys.argv) > 3 else None,
+    )
