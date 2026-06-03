@@ -44,6 +44,7 @@ class MarkdownParser {
 	private assignNumbers(tokens: Token[]) {
 		let figCounter = 0;
 		let tabCounter = 0;
+		let eqCounter = 0;
 
 		const walk = (tks: Token[]) => {
 			for (const token of tks) {
@@ -71,11 +72,14 @@ class MarkdownParser {
 						this.context.itemMap.set(tabMatch[1], tabCounter);
 					}
 
-					const blockMathMatch = text.match(/^\$\$[\s\S]+\$\$/);
-					if (blockMathMatch) {
-						const eqMatch = text.match(/\((@eq:[a-zA-Z0-9_-]+)\)/);
+					const blockMathMatches = text.matchAll(/\$\$[\s\S]+?\$\$/g);
+					for (const blockMathMatch of blockMathMatches) {
+						const eqMatch = blockMathMatch[0].match(
+							/\((@eq:[a-zA-Z0-9_-]+)\)\s*\$\$/,
+						);
 						if (eqMatch && !this.context.itemMap.has(eqMatch[1])) {
-							this.context.itemMap.set(eqMatch[1], 0);
+							eqCounter++;
+							this.context.itemMap.set(eqMatch[1], eqCounter);
 						}
 					}
 				}

@@ -883,7 +883,7 @@
 <w:pStyle w:val="Normal"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Формула нормального распределения:</w:t>
+<w:t xml:space="preserve">Функция плотности нормального распределения задается формулой 1:</w:t>
 </w:r>
 </w:p>
 <w:tbl>
@@ -1001,10 +1001,6 @@
 </m:f>
 </m:sup>
 </m:sSup>
-<m:r>
-<m:t>
-</m:t>
-</m:r>
 </m:oMath>
 </w:p>
 </w:tc>
@@ -1017,7 +1013,7 @@
 <w:jc w:val="right"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">(0)</w:t>
+<w:t xml:space="preserve">(1)</w:t>
 </w:r>
 </w:p>
 </w:tc>
