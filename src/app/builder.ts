@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
 import {
 	AlignmentType,
 	Document,
@@ -11,13 +10,14 @@ import {
 	TextRun,
 } from 'docx';
 
-import { createTitlePage } from '@/widgets/title-page';
+import { ReportMetadata } from '@/entities/report';
 import {
 	parseFrontmatter,
 	parseMarkdownToDocx,
 } from '@/features/markdown-parser';
-import { ReportMetadata } from '@/entities/report';
 import { MARGINS, STO_NUMBERING, STO_STYLES } from '@/shared/config';
+import { clearDirtyFieldFlags } from '@/shared/lib/docx-archive';
+import { createTitlePage } from '@/widgets/title-page';
 
 /**
  * Builds the final STO-compliant report from markdown files.
@@ -36,13 +36,17 @@ export async function buildReport(
 	let finalMetadata: Record<string, unknown> | null = null;
 
 	const stats = fs.statSync(inputPath);
+	const sourceDir = stats.isDirectory() ? inputPath : path.dirname(inputPath);
 
 	if (stats.isDirectory()) {
 		// Modular assembly: sort all .md files and merge
 		const files = fs
 			.readdirSync(inputPath)
-			.filter(f => f.endsWith('.md'))
-			.sort();
+			.filter(
+				file =>
+					file.endsWith('.md') && file.toLowerCase() !== 'readme.md',
+			)
+			.sort((left, right) => left.localeCompare(right));
 
 		for (const file of files) {
 			const filePath = path.join(inputPath, file);
@@ -55,7 +59,7 @@ export async function buildReport(
 				metadata &&
 				Object.keys(metadata).length > 0
 			) {
-				finalMetadata = metadata as Record<string, unknown>;
+				finalMetadata = metadata as unknown as Record<string, unknown>;
 			}
 
 			if (content) {
@@ -66,7 +70,7 @@ export async function buildReport(
 		// Single file mode
 		const fileContent = fs.readFileSync(inputPath, 'utf8');
 		const { metadata, content } = parseFrontmatter(fileContent);
-		finalMetadata = metadata as Record<string, unknown>;
+		finalMetadata = metadata as unknown as Record<string, unknown>;
 		finalContent = content;
 	}
 
@@ -79,14 +83,17 @@ export async function buildReport(
 	const titlePage = createTitlePage(
 		finalMetadata as unknown as ReportMetadata,
 	);
-	const documentBody = await parseMarkdownToDocx(finalContent, finalMetadata);
+	const documentBody = await parseMarkdownToDocx(
+		finalContent,
+		finalMetadata,
+		{
+			sourceDir,
+		},
+	);
 
 	const doc = new Document({
 		styles: STO_STYLES,
 		numbering: STO_NUMBERING,
-		features: {
-			updateFields: true,
-		},
 		sections: [
 			{
 				properties: {
@@ -126,7 +133,7 @@ export async function buildReport(
 		fs.mkdirSync(outputDir, { recursive: true });
 	}
 
-	const buffer = await Packer.toBuffer(doc);
+	const buffer = clearDirtyFieldFlags(await Packer.toBuffer(doc));
 	fs.writeFileSync(outputPath, buffer);
 	console.log(`Report successfully generated at ${outputPath}`);
 }

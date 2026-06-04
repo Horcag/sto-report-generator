@@ -1,5 +1,14 @@
-import { Paragraph, Table, TableCell, TableRow, WidthType } from 'docx';
+import {
+	AlignmentType,
+	Paragraph,
+	Table,
+	TableCell,
+	TableRow,
+	WidthType,
+} from 'docx';
 import { Tokens as MarkedTokens, Token } from 'marked';
+
+import { STO_RULES } from '@/shared/config';
 
 import {
 	DocxElement,
@@ -45,6 +54,17 @@ export async function handleParagraph(
 		if (result.length > 0) return result;
 	}
 
+	if (token.tokens?.every(item => item.type === 'image')) {
+		return [
+			new Paragraph({
+				style: 'Normal',
+				alignment: AlignmentType.CENTER,
+				indent: { firstLine: 0 },
+				children: await parseInline(token.tokens),
+			}),
+		];
+	}
+
 	if (currentContext.isStoList) {
 		const itemTokens = token.tokens || [];
 		if (itemTokens.length > 0 && itemTokens[0].type === 'text') {
@@ -60,7 +80,10 @@ export async function handleParagraph(
 		return [
 			new Paragraph({
 				style: 'Normal',
-				indent: { left: 0, firstLine: 709 },
+				indent: {
+					left: 0,
+					firstLine: STO_RULES.typography.firstLineIndentDxa,
+				},
 				numbering:
 					currentContext.listType === 'ordered'
 						? {
@@ -206,7 +229,10 @@ export async function handleTable(
 			}),
 		);
 	}
-	const headerRow = new TableRow({ children: headerCells });
+	const headerRow = new TableRow({
+		children: headerCells,
+		tableHeader: true,
+	});
 
 	return new Table({
 		width: { size: 100, type: WidthType.PERCENTAGE },

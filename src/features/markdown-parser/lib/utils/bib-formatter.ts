@@ -7,7 +7,7 @@ export function formatBibItem(item: BibItem): string {
 	const rawTags = item.entryTags;
 	const tags: Record<string, string> = {};
 	for (const k of Object.keys(rawTags)) {
-		tags[k.toLowerCase()] = rawTags[k];
+		tags[k.toLowerCase()] = rawTags[k] ?? '';
 	}
 	const entryType = (item.entryType || '').toLowerCase();
 	const lang = tags.langid || 'russian';

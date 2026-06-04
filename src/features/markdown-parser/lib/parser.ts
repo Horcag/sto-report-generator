@@ -1,10 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
-import { mathJaxReady } from '@hungknguyen/docx-math-converter';
 import * as bibtexParse from '@orcid/bibtex-parse-js';
 import { AlignmentType, Paragraph, TextRun } from 'docx';
 import { marked, Token, Tokens } from 'marked';
+
+import { getNumberedHeadingStyleId } from '@/shared/config';
+import { mathJaxReady } from '@/shared/lib/math-converter';
 
 import {
 	handleList,
@@ -24,15 +25,20 @@ import { mathExtension, stoExtension } from './utils/extensions';
 
 marked.use({ extensions: [stoExtension, mathExtension] });
 
+interface MarkdownParserOptions {
+	sourceDir?: string;
+}
+
 class MarkdownParser {
 	private context: ParserContext;
 
-	constructor(bibDb: BibItem[] = []) {
+	constructor(bibDb: BibItem[] = [], options: MarkdownParserOptions = {}) {
 		this.context = {
 			itemMap: new Map<string, number>(),
 			citations: [],
 			bibDb,
 			listInstanceCounter: 0,
+			sourceDir: options.sourceDir,
 		};
 	}
 
@@ -127,7 +133,7 @@ class MarkdownParser {
 				case 'stoFlag':
 					elements.push(
 						...(await handleStoFlag(
-							token as StoFlagToken,
+							token as unknown as StoFlagToken,
 							this.context,
 							this.processTokens.bind(this),
 							currentContext,
@@ -138,7 +144,9 @@ class MarkdownParser {
 					const headingToken = token as Tokens.Heading;
 					elements.push(
 						new Paragraph({
-							style: `Heading${globalThis.Math.min(headingToken.depth, 6)}`,
+							style: getNumberedHeadingStyleId(
+								headingToken.depth,
+							),
 							children: await parseInline(
 								headingToken.tokens,
 								this.context,
@@ -226,10 +234,15 @@ class MarkdownParser {
 						new Paragraph({
 							style: 'Normal', // We can use Normal but override font
 							alignment: AlignmentType.LEFT, // Avoid justified stretching in code blocks
-							spacing: { before: 0, after: 0, line: 240, lineRule: 'auto' }, // Single line spacing for compact code
+							spacing: {
+								before: 0,
+								after: 0,
+								line: 240,
+								lineRule: 'auto',
+							}, // Single line spacing for compact code
 							indent: { left: 0, firstLine: 0 },
 							children: runs,
-						})
+						}),
 					);
 					break;
 				}
@@ -245,6 +258,7 @@ class MarkdownParser {
 export async function parseMarkdownToDocx(
 	markdownText: string,
 	metadata: Record<string, unknown> = {},
+	options: MarkdownParserOptions = {},
 ): Promise<DocxElement[]> {
 	await mathJaxReady();
 
@@ -265,6 +279,6 @@ export async function parseMarkdownToDocx(
 	const normalizedText = markdownText.replace(/—/g, '–');
 	const tokens = marked.lexer(normalizedText);
 
-	const parser = new MarkdownParser(bibDb);
+	const parser = new MarkdownParser(bibDb, options);
 	return parser.parse(tokens);
 }

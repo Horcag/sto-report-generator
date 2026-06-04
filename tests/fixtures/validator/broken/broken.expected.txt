@@ -1,9 +1,10 @@
-"ЗАКЛЮЧЕНИЕ	20" в содержание написано капсом (только первая заглавная должна)
-Начинается счет первого источника не с [1] "а также распознавания личности [2]."
-"Рисунок 1 – Варианты структуры рекуррентных нейронных сетей [2]" неправильное выравнивание
-"где \mathbf{h}^{\left(\mathbf{t}\right)}  скрытое " табуляция перед "где" после формулы
-"2) Perplexity;" неправильный отступ у перечня
-"Таблица 2 – Пример оценки моделей с помощью Perplexity [6]" - неправильное выравнивание 
-"4 Прогнозирование погоды с использованием RNN" - неправильное выравнивание
-У списка источников неправильные отступы (в эталоне верный)
-"2 рисунка, 1 таблицы, 8 источников. " - неправильное количество
+Figure Caption Style: FigureCaption style missing or missing single line spacing (240 DXA).
+Image Width Limit: Detected image width above 14 cm. Run post_build.py to scale large figures.
+Math Multiplication Sign: Detected asterisk (*) as multiplication sign in formula. Use LaTeX multiplication commands instead.
+Normal Line Spacing (1.5): Normal style line spacing is not 1.5 (360 DXA).
+Page Margins: Page margins do not match STO defaults: left 30 mm, right 15 mm, top/bottom 20 mm.
+Structural Heading Alignment: Structural headings must be centered.
+Structural Heading Page Break: Structural headings must have a pageBreakBefore.
+Tab Characters: Detected tab characters. Use paragraph indentation and styles instead of manual tabs.
+Table Caption Style: TableCaption style missing or missing single line spacing (240 DXA).
+Table Header Repeat: Detected 2 table(s) without repeated header rows.

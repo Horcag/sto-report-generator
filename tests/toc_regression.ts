@@ -1,98 +1,85 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { execSync } from 'child_process';
-import AdmZip from 'adm-zip';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const projectRoot = path.join(__dirname, '..');
-const tempMd = path.join(__dirname, 'toc_test.md');
-const tempDocx = path.join(__dirname, 'toc_test.docx');
+import { buildReport } from '../src/app/builder';
+import { readDocxEntry } from '../src/shared/lib/docx-archive';
 
-const testMarkdown = `---
+const tempRoot = path.join(process.cwd(), '.agent-work', 'toc-test');
+const tempMd = path.join(tempRoot, 'toc_test.md');
+const tempDocx = path.join(tempRoot, 'toc_test.docx');
+
+const testMarkdown = String.raw`---
 title: Тест ТОС
 ---
 
-\\sto_structural_heading{РЕФЕРАТ}
+\sto_structural_heading{РЕФЕРАТ}
 
-\\sto_structural_heading{СОДЕРЖАНИЕ}
+\sto_structural_heading{СОДЕРЖАНИЕ}
 
-\\sto_structural_heading{ВВЕДЕНИЕ}
+\sto_structural_heading{ВВЕДЕНИЕ}
 
 # Глава 1
 
-\\sto_structural_heading{ЗАКЛЮЧЕНИЕ}
+\sto_structural_heading{ЗАКЛЮЧЕНИЕ}
 
-\\sto_structural_heading{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
+\sto_structural_heading{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
 `;
 
-async function runTocRegressionTest() {
-    console.log('Running TOC Regression Test...\n');
-
-    fs.writeFileSync(tempMd, testMarkdown, 'utf-8');
-
-    try {
-        console.log('Building TOC test report...');
-        execSync(`npx tsx src/index.ts "${tempMd}" "${tempDocx}"`, { cwd: projectRoot, stdio: 'inherit' });
-    } catch (e) {
-        console.error('❌ Failed to build report.');
-        cleanup();
-        process.exit(1);
-    }
-
-    let currentXml = '';
-    try {
-        const zip = new AdmZip(tempDocx);
-        const documentXmlEntry = zip.getEntry('word/document.xml');
-        if (!documentXmlEntry) throw new Error('word/document.xml not found');
-        currentXml = documentXmlEntry.getData().toString('utf8');
-    } catch (e: any) {
-        console.error(`❌ Error: ${e.message}`);
-        cleanup();
-        process.exit(1);
-    }
-
-    const errors: string[] = [];
-
-    // 1. Check if РЕФЕРАТ or СОДЕРЖАНИЕ use the TOC-tracked style
-    // StructuralHeading is tracked by TOC (\t "StructuralHeading,1")
-    if (currentXml.includes('w:val="StructuralHeading"') && currentXml.includes('>РЕФЕРАТ<')) {
-        const abstractBlock = currentXml.match(/<w:p(?:(?!<w:p).)*?>РЕФЕРАТ[\s\S]*?<\/w:p>/);
-        if (abstractBlock && abstractBlock[0].includes('w:val="StructuralHeading"')) {
-            errors.push('РЕФЕРАТ is using "StructuralHeading" style, will incorrectly appear in TOC');
-        }
-    }
-    
-    if (currentXml.includes('w:val="StructuralHeading"') && currentXml.includes('>СОДЕРЖАНИЕ<')) {
-        const tocHeadingBlock = currentXml.match(/<w:p(?:(?!<w:p).)*?>СОДЕРЖАНИЕ[\s\S]*?<\/w:p>/);
-        if (tocHeadingBlock && tocHeadingBlock[0].includes('w:val="StructuralHeading"')) {
-            errors.push('СОДЕРЖАНИЕ is using "StructuralHeading" style, will incorrectly appear in TOC');
-        }
-    }
-
-    // 2. Check casing of structural headings
-    // They should be converted to Sentence Case in the document text 
-    // (the style StructuralHeading should handle the CAPS display)
-    const headings = ['ВВЕДЕНИЕ', 'ЗАКЛЮЧЕНИЕ', 'СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ'];
-    for (const h of headings) {
-        if (currentXml.includes(`>${h}<`)) {
-            errors.push(`Heading "${h}" found in ALL CAPS in XML. Should be Sentence case (e.g. "${h.charAt(0) + h.slice(1).toLowerCase()}")`);
-        }
-    }
-
-    if (errors.length > 0) {
-        console.error('\n❌ TOC Regression Test FAILED:');
-        errors.forEach(err => console.error(`  - ${err}`));
-        cleanup();
-        process.exit(1);
-    } else {
-        console.log('\n✅ TOC Regression Test PASSED!');
-        cleanup();
-        process.exit(0);
-    }
+function paragraphContaining(xml: string, text: string): string | undefined {
+	return xml
+		.match(/<w:p\b[\s\S]*?<\/w:p>/g)
+		?.find(paragraphXml => paragraphXml.includes(`>${text}<`));
 }
 
-function cleanup() {
-    if (fs.existsSync(tempMd)) fs.unlinkSync(tempMd);
-    if (fs.existsSync(tempDocx)) fs.unlinkSync(tempDocx);
+async function main(): Promise<void> {
+	console.log('Running TOC Regression Test...\n');
+	fs.rmSync(tempRoot, { recursive: true, force: true });
+	fs.mkdirSync(tempRoot, { recursive: true });
+	fs.writeFileSync(tempMd, testMarkdown, 'utf-8');
+
+	await buildReport(tempMd, tempDocx);
+	const currentXml = readDocxEntry(tempDocx, 'word/document.xml');
+	const errors: string[] = [];
+
+	const abstractBlock = paragraphContaining(currentXml, 'РЕФЕРАТ');
+	if (abstractBlock?.includes('w:val="StructuralHeading"')) {
+		errors.push(
+			'РЕФЕРАТ is using StructuralHeading and will incorrectly appear in TOC.',
+		);
+	}
+
+	const tocHeadingBlock = paragraphContaining(currentXml, 'СОДЕРЖАНИЕ');
+	if (tocHeadingBlock?.includes('w:val="StructuralHeading"')) {
+		errors.push(
+			'СОДЕРЖАНИЕ is using StructuralHeading and will incorrectly appear in TOC.',
+		);
+	}
+
+	for (const heading of [
+		'ВВЕДЕНИЕ',
+		'ЗАКЛЮЧЕНИЕ',
+		'СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ',
+	]) {
+		if (currentXml.includes(`>${heading}<`)) {
+			errors.push(
+				`Heading "${heading}" found in ALL CAPS in XML; StructuralHeading style should handle visual caps.`,
+			);
+		}
+	}
+
+	fs.rmSync(tempRoot, { recursive: true, force: true });
+	if (errors.length > 0) {
+		console.error('\nTOC Regression Test failed:');
+		for (const error of errors) {
+			console.error(`  - ${error}`);
+		}
+		process.exit(1);
+	}
+
+	console.log('TOC regression test passed.');
 }
 
-runTocRegressionTest();
+main().catch(error => {
+	console.error(error instanceof Error ? error.message : error);
+	process.exit(1);
+});

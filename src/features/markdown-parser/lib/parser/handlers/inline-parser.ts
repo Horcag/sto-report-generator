@@ -1,6 +1,7 @@
-import { convertLatex2Math } from '@hungknguyen/docx-math-converter';
 import { TextRun } from 'docx';
 import { Token, Tokens } from 'marked';
+
+import { convertLatex2Math } from '@/shared/lib/math-converter';
 
 import {
 	InlineDocxElement,
@@ -46,13 +47,18 @@ export async function parseInline(
 				runs.push(new TextRun({ text: (token as Tokens.Escape).text }));
 				break;
 			case 'image':
-				runs.push(...(await handleImage(token as Tokens.Image)));
+				runs.push(
+					...(await handleImage(token as Tokens.Image, context)),
+				);
 				break;
 			case 'math': {
-				const mathToken = token as any;
+				const mathToken = token as Token & {
+					raw: string;
+					text: string;
+				};
 				try {
 					const mathEl = await convertLatex2Math(mathToken.text);
-					runs.push(mathEl as MathConversionResult);
+					runs.push(mathEl as unknown as MathConversionResult);
 				} catch (e) {
 					console.warn(
 						`Math conversion failed for: ${mathToken.text}`,
@@ -88,10 +94,10 @@ export async function parseInline(
 				break;
 			}
 			default:
-				if ('text' in token) {
+				if ('text' in token && token.raw) {
 					runs.push(
 						new TextRun({
-							text: replaceRefs((token as any).raw),
+							text: replaceRefs(token.raw),
 						}),
 					);
 				}

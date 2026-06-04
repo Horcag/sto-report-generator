@@ -1,94 +1,75 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { execSync } from 'child_process';
-import AdmZip from 'adm-zip';
+import fs from 'node:fs';
+import path from 'node:path';
+
+import { buildReport } from '../src/app/builder';
+import { readDocxEntry } from '../src/shared/lib/docx-archive';
 
 const projectRoot = path.join(__dirname, '..');
 const sampleDir = path.join(projectRoot, 'example');
-const tempOutput = path.join(__dirname, 'temp_output.docx');
-const snapshotFile = path.join(__dirname, 'fixtures', 'generator', 'snapshot.xml');
+const tempRoot = path.join(projectRoot, '.agent-work', 'snapshot-test');
+const tempOutput = path.join(tempRoot, 'temp_output.docx');
+const snapshotFile = path.join(
+	__dirname,
+	'fixtures',
+	'generator',
+	'snapshot.xml',
+);
 
-// A simple formatter to make XML diffs readable
 function formatXml(xml: string): string {
-    return xml
-        .replace(/>\s*</g, '>\n<') // Add newline between tags
-        .trim();
+	return xml.replaceAll(/>\s*</g, '>\n<').trim();
 }
 
-function runSnapshotTest() {
-    console.log('Running Generator Snapshot Test...\n');
-    
-    const updateSnapshot = process.argv.includes('--update');
+function firstDifference(expectedXml: string, actualXml: string): string {
+	const expectedLines = expectedXml.split('\n');
+	const actualLines = actualXml.split('\n');
+	const maxLines = Math.max(expectedLines.length, actualLines.length);
 
-    // 1. Build the document
-    try {
-        console.log('Building example report...');
-        execSync(`npm run build "${sampleDir}" "${tempOutput}"`, { cwd: projectRoot, stdio: 'inherit' });
-    } catch (e) {
-        console.error('❌ Failed to build report.');
-        process.exit(1);
-    }
-
-    if (!fs.existsSync(tempOutput)) {
-        console.error('❌ Output docx was not generated.');
-        process.exit(1);
-    }
-
-    // 2. Unzip and extract document.xml
-    let currentXml = '';
-    try {
-        const zip = new AdmZip(tempOutput);
-        const documentXmlEntry = zip.getEntry('word/document.xml');
-        if (!documentXmlEntry) {
-            throw new Error('word/document.xml not found in archive');
-        }
-        currentXml = documentXmlEntry.getData().toString('utf8');
-    } catch (e: any) {
-        console.error(`❌ Failed to extract document.xml: ${e.message}`);
-        fs.unlinkSync(tempOutput);
-        process.exit(1);
-    }
-
-    // Clean up temp docx
-    fs.unlinkSync(tempOutput);
-
-    // Format XML for readable diffs
-    const formattedXml = formatXml(currentXml);
-
-    // 3. Handle update or initial snapshot
-    if (updateSnapshot || !fs.existsSync(snapshotFile)) {
-        fs.writeFileSync(snapshotFile, formattedXml, 'utf-8');
-        console.log(`✅ Snapshot saved to ${snapshotFile}`);
-        console.log('\nTest Summary: 1 passed, 0 failed. (Snapshot updated)');
-        process.exit(0);
-    }
-
-    // 4. Compare with existing snapshot
-    const expectedXml = fs.readFileSync(snapshotFile, 'utf-8');
-
-    if (formattedXml === expectedXml) {
-        console.log('✅ PASSED: Generated document matches snapshot.');
-        console.log('\nTest Summary: 1 passed, 0 failed.');
-        process.exit(0);
-    } else {
-        console.log('❌ FAILED: Generated document DOES NOT match snapshot.');
-        console.log('If this change was intentional, run: npm run test:generator -- --update');
-        
-        // Print a simple diff (just a few lines of difference)
-        const expectedLines = expectedXml.split('\n');
-        const actualLines = formattedXml.split('\n');
-        
-        console.log('\n--- First difference found at: ---');
-        for (let i = 0; i < Math.max(expectedLines.length, actualLines.length); i++) {
-            if (expectedLines[i] !== actualLines[i]) {
-                console.log(`Expected (Line ${i+1}): ${expectedLines[i] || '<EOF>'}`);
-                console.log(`Actual   (Line ${i+1}): ${actualLines[i] || '<EOF>'}`);
-                break;
-            }
-        }
-        
-        process.exit(1);
-    }
+	for (let index = 0; index < maxLines; index++) {
+		if (expectedLines[index] !== actualLines[index]) {
+			return [
+				`Expected (Line ${index + 1}): ${expectedLines[index] || '<EOF>'}`,
+				`Actual   (Line ${index + 1}): ${actualLines[index] || '<EOF>'}`,
+			].join('\n');
+		}
+	}
+	return 'No line difference found.';
 }
 
-runSnapshotTest();
+async function main(): Promise<void> {
+	console.log('Running Generator Snapshot Test...\n');
+	const updateSnapshot = process.argv.includes('--update');
+
+	fs.rmSync(tempRoot, { recursive: true, force: true });
+	fs.mkdirSync(tempRoot, { recursive: true });
+	await buildReport(sampleDir, tempOutput);
+
+	const formattedXml = formatXml(
+		readDocxEntry(tempOutput, 'word/document.xml'),
+	);
+	fs.rmSync(tempRoot, { recursive: true, force: true });
+
+	if (updateSnapshot || !fs.existsSync(snapshotFile)) {
+		fs.writeFileSync(snapshotFile, formattedXml, 'utf-8');
+		console.log(`Snapshot saved to ${snapshotFile}`);
+		return;
+	}
+
+	const expectedXml = fs.readFileSync(snapshotFile, 'utf-8');
+	if (formattedXml === expectedXml) {
+		console.log('Generator snapshot test passed.');
+		return;
+	}
+
+	console.error('Generated document does not match snapshot.');
+	console.error(
+		'If this change was intentional, run: npm run test:generator -- --update',
+	);
+	console.error('\nFirst difference:');
+	console.error(firstDifference(expectedXml, formattedXml));
+	process.exit(1);
+}
+
+main().catch(error => {
+	console.error(error instanceof Error ? error.message : error);
+	process.exit(1);
+});

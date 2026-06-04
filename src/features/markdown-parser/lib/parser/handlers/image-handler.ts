@@ -1,23 +1,42 @@
-import * as fs from 'fs';
-import * as path from 'path';
-
+import fs from 'node:fs';
+import path from 'node:path';
 import { ImageRun, TextRun } from 'docx';
 import imageSize from 'image-size';
 import { Tokens } from 'marked';
 
-import { InlineDocxElement } from '../../types';
+import { InlineDocxElement, ParserContext } from '../../types';
+
+function resolveImagePath(href: string, context: ParserContext): string | null {
+	if (/^(https?:|file:|#)/i.test(href)) {
+		return null;
+	}
+
+	const candidates = path.isAbsolute(href)
+		? [href]
+		: [
+				...(context.sourceDir
+					? [path.resolve(context.sourceDir, href)]
+					: []),
+				path.resolve(process.cwd(), href),
+			];
+	return (
+		candidates.find(candidate => fs.existsSync(candidate)) ??
+		candidates[0] ??
+		null
+	);
+}
 
 /**
  * Handles image tokens and converts them to Docx ImageRun.
  */
 export async function handleImage(
 	token: Tokens.Image,
+	context: ParserContext,
 ): Promise<InlineDocxElement[]> {
-	const workspaceRoot = process.cwd();
-	const imgPath = path.resolve(workspaceRoot, token.href);
+	const imgPath = resolveImagePath(token.href, context);
 
-	if (!fs.existsSync(imgPath)) {
-		console.warn(`Image not found: ${imgPath}`);
+	if (!imgPath || !fs.existsSync(imgPath)) {
+		console.warn(`Image not found: ${token.href}`);
 		return [
 			new TextRun({
 				text: `[Image not found: ${token.href}]`,

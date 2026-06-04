@@ -1,4 +1,3 @@
-import { convertLatex2Math } from '@hungknguyen/docx-math-converter';
 import {
 	AlignmentType,
 	BorderStyle,
@@ -9,6 +8,8 @@ import {
 	TextRun,
 	WidthType,
 } from 'docx';
+
+import { convertLatex2Math } from '@/shared/lib/math-converter';
 
 import { MathConversionResult, ParserContext } from '../../types';
 
@@ -37,9 +38,7 @@ export async function handleBlockMath(
 
 	let formulaMath: MathConversionResult;
 	try {
-		formulaMath = (await convertLatex2Math(
-			formula,
-		)) as MathConversionResult;
+		formulaMath = convertLatex2Math(formula);
 	} catch {
 		formulaMath = new TextRun({ text: formula, italics: true });
 	}

@@ -1,7 +1,7 @@
 import {
 	AlignmentType,
 	IParagraphOptions,
-	ITextRunOptions,
+	IRunOptions,
 	Paragraph,
 	TabStopType,
 	TextRun,
@@ -11,9 +11,9 @@ import { ReportMetadata } from '@/entities/report';
 
 export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 	// Helper to ensure 12pt (24 half-points) and Times New Roman
-	const t = (options: ITextRunOptions) =>
+	const t = (options: IRunOptions) =>
 		new TextRun({ size: 24, font: 'Times New Roman', ...options });
-	const br = (options: ITextRunOptions = {}) =>
+	const br = (options: IRunOptions = {}) =>
 		new TextRun({ size: 24, break: 1, ...options });
 
 	// Helper for paragraphs to reset default indents from "Normal" style and disable justification stretch
@@ -167,7 +167,6 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 				t({
 					text: `${metadata.topicPrefix || 'Тема научно-исследовательской работы'}: «${metadata.topic}»`,
 				}),
-				t({ text: '\t' }),
 			],
 		}),
 
@@ -185,15 +184,12 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 				t({
 					text: `${metadata.supervisorRole || 'Научный руководитель'} ${metadata.supervisorName} ${metadata.supervisorTitle}`,
 				}),
-				t({ text: '\t' }),
 			],
 		}),
 
-		// P18: Empty with tab
-		p({
+		// P18: Empty spacer
+		empty({
 			spacing: { line: 360, lineRule: 'auto' },
-			tabStops: [{ type: TabStopType.RIGHT, position: 9638 }],
-			children: [t({ text: '\t' })],
 		}),
 
 		// P19: Empty centered (Back to single spacing 240)
@@ -202,69 +198,110 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 			spacing: { line: 240, lineRule: 'auto' },
 		}),
 
-		...(metadata.hideSignatures ? [
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-			empty({ alignment: AlignmentType.CENTER, spacing: { line: 240, lineRule: 'auto' } }),
-		] : [
-			// P20-24: Supervisor Signature Block (Indented left by 5670)
-			p({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-				children: [t({ text: metadata.supervisorRole || 'Научный руководитель' })],
-			}),
-			p({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-				children: [t({ text: '________________________' })],
-			}),
-			p({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-				children: [
-					t({ text: '                    (подпись)', italics: true }),
-				],
-			}),
-			p({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-				children: [t({ text: '“___”_____________ 20___ г.' })],
-			}),
-			empty({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-			}),
+		...(metadata.hideSignatures
+			? [
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+					empty({
+						alignment: AlignmentType.CENTER,
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
+				]
+			: [
+					// P20-24: Supervisor Signature Block (Indented left by 5670)
+					p({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+						children: [
+							t({
+								text:
+									metadata.supervisorRole ||
+									'Научный руководитель',
+							}),
+						],
+					}),
+					p({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+						children: [t({ text: '________________________' })],
+					}),
+					p({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+						children: [
+							t({
+								text: '                    (подпись)',
+								italics: true,
+							}),
+						],
+					}),
+					p({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+						children: [t({ text: '“___”_____________ 20___ г.' })],
+					}),
+					empty({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+					}),
 
-			// P25-28: Student Signature Block (Indented left by 5670)
-			p({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-				children: [t({ text: 'Студент' })],
-			}),
-			p({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-				children: [t({ text: '________________________' })],
-			}),
-			p({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-				children: [
-					t({ text: '                    (подпись)', italics: true }),
-				],
-			}),
-			p({
-				indent: { left: 5670, firstLine: 0 },
-				spacing: { line: 240, lineRule: 'auto' },
-				children: [t({ text: '“___”_____________ 20___ г.' })],
-			}),
-		]),
+					// P25-28: Student Signature Block (Indented left by 5670)
+					p({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+						children: [t({ text: 'Студент' })],
+					}),
+					p({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+						children: [t({ text: '________________________' })],
+					}),
+					p({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+						children: [
+							t({
+								text: '                    (подпись)',
+								italics: true,
+							}),
+						],
+					}),
+					p({
+						indent: { left: 5670, firstLine: 0 },
+						spacing: { line: 240, lineRule: 'auto' },
+						children: [t({ text: '“___”_____________ 20___ г.' })],
+					}),
+				]),
 
 		// Empty paragraphs to push to bottom
 		empty({

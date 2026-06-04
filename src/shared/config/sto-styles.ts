@@ -6,26 +6,70 @@ import {
 	TabStopType,
 } from 'docx';
 
-import { MM_TO_DXA } from '@/shared/lib';
+import { STO_RULES } from './sto-rules';
 
-export const MARGINS = {
-	top: Math.round(20 * MM_TO_DXA), // 20 mm
-	bottom: Math.round(20 * MM_TO_DXA), // 20 mm
-	left: Math.round(30 * MM_TO_DXA), // 30 mm
-	right: Math.round(15 * MM_TO_DXA), // 15 mm
-};
+const TYPOGRAPHY = STO_RULES.typography;
+const NESTED_LIST_INDENT = TYPOGRAPHY.nestedListIndentStepDxa;
+
+export const NUMBERED_HEADING_STYLE_IDS = [
+	'StoHeading1',
+	'StoHeading2',
+	'StoHeading3',
+	'StoHeading4',
+	'StoHeading5',
+	'StoHeading6',
+] as const;
+export const STRUCTURAL_HEADING_STYLE_ID = 'StructuralHeading';
+export const STRUCTURAL_HEADING_NO_TOC_STYLE_ID = 'StructuralHeadingNoTOC';
+
+export function getNumberedHeadingStyleId(depth: number): string {
+	const normalizedDepth = globalThis.Math.min(
+		globalThis.Math.max(globalThis.Math.trunc(depth), 1),
+		NUMBERED_HEADING_STYLE_IDS.length,
+	);
+	return (
+		NUMBERED_HEADING_STYLE_IDS[normalizedDepth - 1] ??
+		NUMBERED_HEADING_STYLE_IDS[0]
+	);
+}
+
+function createNumberedHeadingStyle(level: number) {
+	return {
+		id: getNumberedHeadingStyleId(level),
+		name: `STO Heading ${level}`,
+		basedOn: 'Normal',
+		next: 'Normal',
+		quickFormat: true,
+		run: { bold: true, size: TYPOGRAPHY.fontSizeHalfPoints },
+		paragraph: {
+			spacing:
+				level === 1
+					? { before: 120, after: 120 }
+					: { before: 200, after: 0 },
+			alignment: AlignmentType.LEFT,
+			indent: { firstLine: TYPOGRAPHY.firstLineIndentDxa },
+			outlineLevel: level - 1,
+			...(level === 1 ? { pageBreakBefore: true } : {}),
+		},
+	};
+}
+
+export const MARGINS = { ...STO_RULES.page.marginsDxa };
 
 export const STO_STYLES: IStylesOptions = {
 	default: {
 		document: {
 			run: {
-				font: 'Times New Roman',
-				size: 28, // 14pt (28 half-points)
-				color: '000000',
-				language: 'ru-RU', // Set language for native 'lowerLetter' numbering
+				font: TYPOGRAPHY.fontFamily,
+				size: TYPOGRAPHY.fontSizeHalfPoints,
+				color: TYPOGRAPHY.fontColor,
+				language: { value: 'ru-RU' }, // Set language for native 'lowerLetter' numbering
 			},
 			paragraph: {
-				spacing: { line: 360, lineRule: 'auto' }, // 1.5 spacing
+				spacing: {
+					line: TYPOGRAPHY.normalLineSpacingDxa,
+					lineRule: 'auto',
+				},
 				alignment: AlignmentType.JUSTIFIED,
 			},
 		},
@@ -35,39 +79,33 @@ export const STO_STYLES: IStylesOptions = {
 			id: 'Normal',
 			name: 'Normal',
 			run: {
-				font: 'Times New Roman',
-				size: 28,
-				color: '000000',
+				font: TYPOGRAPHY.fontFamily,
+				size: TYPOGRAPHY.fontSizeHalfPoints,
+				color: TYPOGRAPHY.fontColor,
 			},
 			paragraph: {
-				spacing: { line: 360, lineRule: 'auto', before: 0, after: 0 },
+				spacing: {
+					line: TYPOGRAPHY.normalLineSpacingDxa,
+					lineRule: 'auto',
+					before: 0,
+					after: 0,
+				},
 				alignment: AlignmentType.JUSTIFIED,
-				indent: { firstLine: 709 }, // 1.25 cm
+				indent: { firstLine: TYPOGRAPHY.firstLineIndentDxa },
 			},
 		},
+		createNumberedHeadingStyle(1),
 		{
-			id: 'Heading1',
-			name: 'Heading 1',
-			basedOn: 'Normal',
-			next: 'Normal',
-			quickFormat: true,
-			run: { bold: true, size: 28 },
-			paragraph: {
-				spacing: { before: 120, after: 120 }, // 6pt before and after
-				alignment: AlignmentType.LEFT, // STO: numbered headings left-aligned (with indent)
-				indent: { firstLine: 709 }, // STO: paragraph indent
-				outlineLevel: 0,
-				// @ts-expect-error missing type in docx library for some properties
-				pageBreakBefore: true,
-			},
-		},
-		{
-			id: 'StructuralHeading',
+			id: STRUCTURAL_HEADING_STYLE_ID,
 			name: 'Structural Heading',
-			basedOn: 'Heading1',
+			basedOn: getNumberedHeadingStyleId(1),
 			next: 'Normal',
 			quickFormat: true,
-			run: { bold: true, size: 28, allCaps: true },
+			run: {
+				bold: true,
+				size: TYPOGRAPHY.fontSizeHalfPoints,
+				allCaps: true,
+			},
 			paragraph: {
 				spacing: { before: 120, after: 240 }, // 12pt after
 				alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
@@ -78,12 +116,16 @@ export const STO_STYLES: IStylesOptions = {
 			},
 		},
 		{
-			id: 'StructuralHeadingNoTOC',
+			id: STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
 			name: 'Structural Heading No TOC',
 			basedOn: 'Normal',
 			next: 'Normal',
 			quickFormat: true,
-			run: { bold: true, size: 28, allCaps: true },
+			run: {
+				bold: true,
+				size: TYPOGRAPHY.fontSizeHalfPoints,
+				allCaps: true,
+			},
 			paragraph: {
 				spacing: { before: 120, after: 240 }, // 12pt after
 				alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
@@ -92,35 +134,22 @@ export const STO_STYLES: IStylesOptions = {
 				pageBreakBefore: true,
 			},
 		},
-		{
-			id: 'Heading2',
-			name: 'Heading 2',
-			basedOn: 'Normal',
-			next: 'Normal',
-			quickFormat: true,
-			run: { bold: true, size: 28 },
-			paragraph: {
-				spacing: { before: 200, after: 0 }, // 0pt after
-				alignment: AlignmentType.LEFT,
-				indent: { firstLine: 709 },
-				outlineLevel: 1,
-				// @ts-expect-error missing type in docx library for some properties
-				pageBreakBefore: false,
-			},
-		},
+		...NUMBERED_HEADING_STYLE_IDS.slice(1).map((_, index) =>
+			createNumberedHeadingStyle(index + 2),
+		),
 		{
 			id: 'FigureCaption',
 			name: 'Figure Caption',
 			basedOn: 'Normal',
 			next: 'Normal',
-			run: { size: 28 },
+			run: { size: TYPOGRAPHY.fontSizeHalfPoints },
 			paragraph: {
 				alignment: AlignmentType.CENTER,
-				indent: { firstLine: 0 },
+				indent: { firstLine: TYPOGRAPHY.captionFirstLineIndentDxa },
 				spacing: {
 					before: 120,
 					after: 240,
-					line: 240,
+					line: TYPOGRAPHY.captionLineSpacingDxa,
 					lineRule: 'auto',
 				}, // Single spacing, 6pt before, 12pt after
 			},
@@ -130,14 +159,14 @@ export const STO_STYLES: IStylesOptions = {
 			name: 'Table Caption',
 			basedOn: 'Normal',
 			next: 'Normal',
-			run: { size: 28 },
+			run: { size: TYPOGRAPHY.fontSizeHalfPoints },
 			paragraph: {
 				alignment: AlignmentType.LEFT,
-				indent: { firstLine: 0 },
+				indent: { firstLine: TYPOGRAPHY.captionFirstLineIndentDxa },
 				spacing: {
 					before: 120,
 					after: 120,
-					line: 240,
+					line: TYPOGRAPHY.captionLineSpacingDxa,
 					lineRule: 'auto',
 				}, // Single spacing, 6pt before, 6pt after
 			},
@@ -147,11 +176,16 @@ export const STO_STYLES: IStylesOptions = {
 			name: 'Table Text',
 			basedOn: 'Normal',
 			next: 'Normal',
-			run: { size: 28 },
+			run: { size: TYPOGRAPHY.fontSizeHalfPoints },
 			paragraph: {
 				alignment: AlignmentType.LEFT,
 				indent: { firstLine: 0 },
-				spacing: { before: 0, after: 0, line: 240, lineRule: 'auto' }, // Single spacing
+				spacing: {
+					before: 0,
+					after: 0,
+					line: TYPOGRAPHY.captionLineSpacingDxa,
+					lineRule: 'auto',
+				}, // Single spacing
 			},
 		},
 		{
@@ -172,6 +206,7 @@ export const STO_STYLES: IStylesOptions = {
 			next: 'Normal',
 			paragraph: {
 				indent: { left: 0, firstLine: 0 },
+				// @ts-expect-error missing type in docx library for style tab stops
 				tabStops: [
 					{
 						type: TabStopType.RIGHT,
@@ -188,6 +223,7 @@ export const STO_STYLES: IStylesOptions = {
 			next: 'Normal',
 			paragraph: {
 				indent: { left: 200, firstLine: 0 },
+				// @ts-expect-error missing type in docx library for style tab stops
 				tabStops: [
 					{
 						type: TabStopType.RIGHT,
@@ -212,7 +248,10 @@ export const STO_NUMBERING: INumberingOptions = {
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 0, firstLine: 709 },
+							indent: {
+								left: 0,
+								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+							},
 						},
 					},
 					suffix: 'space',
@@ -229,7 +268,10 @@ export const STO_NUMBERING: INumberingOptions = {
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 0, firstLine: 709 },
+							indent: {
+								left: 0,
+								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+							},
 						},
 					},
 					suffix: 'space',
@@ -242,23 +284,29 @@ export const STO_NUMBERING: INumberingOptions = {
 				{
 					level: 0,
 					format: 'bullet',
-					text: '-', // STO: hyphen (дефис) for lists
+					text: TYPOGRAPHY.listMarker, // STO: hyphen (дефис) for lists
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 0, firstLine: 709 },
+							indent: {
+								left: 0,
+								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+							},
 						},
 					},
 					suffix: 'space',
 				},
 				{
 					level: 1,
-					format: 'russianLower', // STO: lowercase letters a) b) c)
+					format: 'russianLower', // STO: lowercase letters a, b, c
 					text: '%2)',
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 709, firstLine: 709 },
+							indent: {
+								left: NESTED_LIST_INDENT,
+								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+							},
 						},
 					},
 					suffix: 'space',
@@ -270,7 +318,10 @@ export const STO_NUMBERING: INumberingOptions = {
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 1418, firstLine: 709 },
+							indent: {
+								left: NESTED_LIST_INDENT * 2,
+								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+							},
 						},
 					},
 					suffix: 'space',
@@ -287,7 +338,10 @@ export const STO_NUMBERING: INumberingOptions = {
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 0, firstLine: 709 },
+							indent: {
+								left: 0,
+								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+							},
 						},
 					},
 					suffix: 'space',
@@ -299,7 +353,10 @@ export const STO_NUMBERING: INumberingOptions = {
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 709, firstLine: 709 },
+							indent: {
+								left: NESTED_LIST_INDENT,
+								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+							},
 						},
 					},
 					suffix: 'space',
@@ -311,7 +368,10 @@ export const STO_NUMBERING: INumberingOptions = {
 					alignment: AlignmentType.LEFT,
 					style: {
 						paragraph: {
-							indent: { left: 1418, firstLine: 709 },
+							indent: {
+								left: NESTED_LIST_INDENT * 2,
+								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+							},
 						},
 					},
 					suffix: 'space',

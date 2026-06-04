@@ -1,4 +1,11 @@
-import { ImageRun, Paragraph, Table, TableOfContents, TextRun } from 'docx';
+import {
+	ImageRun,
+	Paragraph,
+	ParagraphChild,
+	Table,
+	TableOfContents,
+	TextRun,
+} from 'docx';
 import { Token } from 'marked';
 
 export type DocxElement = Paragraph | Table | TableOfContents;
@@ -7,7 +14,7 @@ export type DocxElement = Paragraph | Table | TableOfContents;
  * Result of math conversion from @hungknguyen/docx-math-converter.
  * The library returns an object that docx Paragraph can accept as a child.
  */
-export type MathConversionResult = Record<string, unknown>;
+export type MathConversionResult = ParagraphChild;
 
 export type InlineDocxElement = TextRun | ImageRun | MathConversionResult;
 
@@ -22,12 +29,14 @@ export interface ParserContext {
 	citations: string[];
 	bibDb: BibItem[];
 	listInstanceCounter: number;
+	sourceDir?: string;
 }
 
-export interface StoFlagToken extends Token {
+export interface StoFlagToken {
 	type: 'stoFlag';
+	raw: string;
 	flagType: 'structural_heading' | 'environment';
-	text: string;
+	text?: string;
 	envName?: string;
 	tokens: Token[];
 }

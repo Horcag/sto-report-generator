@@ -1,16 +1,18 @@
 {
-  "compilerOptions": {
-    "target": "es2022",
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "baseUrl": ".",
-    "types": ["node"],
-    "paths": {
-      "@/*": ["src/*"]
-    }
-  },
-  "include": ["src/**/*"]
+	"compilerOptions": {
+		"target": "es2022",
+		"module": "commonjs",
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"ignoreDeprecations": "6.0",
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"baseUrl": ".",
+		"types": ["node"],
+		"paths": {
+			"@/*": ["src/*"]
+		}
+	},
+	"include": ["src/**/*", "tests/**/*"]
 }

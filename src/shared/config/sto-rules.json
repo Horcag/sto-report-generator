@@ -1,0 +1,58 @@
+{
+	"metadata": {
+		"standard": "STO 02068410-004-2019 and extracted local STO/GOST notes",
+		"references": [
+			"STO 02068410-004-2019",
+			"Rules for Russian academic lists, bibliography and formulas"
+		],
+		"purpose": "Shared STO constants for generator formatting, parser guards and validators"
+	},
+	"markdown": {
+		"structuralHeadingCommand": "sto_structural_heading",
+		"supportedEnvironments": ["sto_bibliography", "sto_list", "sto_enum"],
+		"listEnvironments": ["sto_list", "sto_enum"],
+		"bibliographyEnvironment": "sto_bibliography"
+	},
+	"typography": {
+		"fontFamily": "Times New Roman",
+		"fontSizePoints": 14,
+		"fontSizeHalfPoints": 28,
+		"fontColor": "000000",
+		"normalLineSpacingDxa": 360,
+		"captionLineSpacingDxa": 240,
+		"firstLineIndentDxa": 709,
+		"nestedListIndentStepDxa": 709,
+		"captionFirstLineIndentDxa": 0,
+		"forbiddenDash": "—",
+		"recommendedDash": "–",
+		"listMarker": "-"
+	},
+	"page": {
+		"marginsDxa": {
+			"top": 1134,
+			"bottom": 1134,
+			"left": 1701,
+			"right": 850
+		},
+		"imageMaxWidthEmu": 5040000
+	},
+	"headings": {
+		"structuralNoTocUppercase": ["РЕФЕРАТ", "СОДЕРЖАНИЕ"],
+		"requiredStructuralUppercase": [
+			"РЕФЕРАТ",
+			"СОДЕРЖАНИЕ",
+			"ЗАКЛЮЧЕНИЕ",
+			"СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"
+		]
+	},
+	"validation": {
+		"allowedBoldMarkdownFiles": ["01_referat.md"],
+		"forbiddenLiteralMarkers": [
+			"Источник не найден",
+			"Source not found",
+			"NOT FOUND"
+		],
+		"figureCaptionPrefix": "Рисунок",
+		"tableCaptionPrefix": "Таблица"
+	}
+}

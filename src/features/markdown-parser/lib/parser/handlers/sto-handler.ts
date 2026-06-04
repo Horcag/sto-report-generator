@@ -2,6 +2,14 @@ import { Paragraph, StyleLevel, TableOfContents, TextRun } from 'docx';
 import { Token } from 'marked';
 
 import {
+	NUMBERED_HEADING_STYLE_IDS,
+	STO_LIST_ENVIRONMENTS,
+	STO_RULES,
+	STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
+	STRUCTURAL_HEADING_STYLE_ID,
+} from '@/shared/config';
+
+import {
 	DocxElement,
 	ParserContext,
 	ProcessTokensContext,
@@ -19,9 +27,12 @@ export async function handleStoFlag(
 		tokens: Token[],
 		ctx: ProcessTokensContext,
 	) => Promise<DocxElement[]>,
-	currentContext: ProcessTokensContext,
+	_currentContext: ProcessTokensContext,
 ): Promise<DocxElement[]> {
 	if (token.flagType === 'structural_heading') {
+		if (!token.text) {
+			throw new Error('STO structural heading token is missing text.');
+		}
 		const text = token.text.trim();
 		const upperText = text.toUpperCase();
 
@@ -30,14 +41,20 @@ export async function handleStoFlag(
 		const sentenceCaseText =
 			text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 
-		const noTocHeadings = ['РЕФЕРАТ', 'СОДЕРЖАНИЕ'];
-		const useNoTocStyle = noTocHeadings.includes(upperText);
+		const useNoTocStyle =
+			STO_RULES.headings.structuralNoTocUppercase.includes(upperText);
+		const tocStyles = [
+			new StyleLevel(STRUCTURAL_HEADING_STYLE_ID, 1),
+			...NUMBERED_HEADING_STYLE_IDS.slice(0, 4).map(
+				(styleId, index) => new StyleLevel(styleId, index + 1),
+			),
+		];
 
 		const result: DocxElement[] = [
 			new Paragraph({
 				style: useNoTocStyle
-					? 'StructuralHeadingNoTOC'
-					: 'StructuralHeading',
+					? STRUCTURAL_HEADING_NO_TOC_STYLE_ID
+					: STRUCTURAL_HEADING_STYLE_ID,
 				children: [new TextRun(sentenceCaseText)],
 			}),
 		];
@@ -47,7 +64,7 @@ export async function handleStoFlag(
 				new TableOfContents('', {
 					hyperlink: true,
 					headingStyleRange: '1-4',
-					stylesWithLevels: [new StyleLevel('StructuralHeading', 1)],
+					stylesWithLevels: tocStyles,
 				}),
 			);
 		}
@@ -55,7 +72,12 @@ export async function handleStoFlag(
 	}
 
 	if (token.flagType === 'environment') {
-		if (token.envName === 'sto_bibliography') {
+		const envName = token.envName;
+		if (!envName) {
+			throw new Error('STO environment token is missing envName.');
+		}
+
+		if (envName === STO_RULES.markdown.bibliographyEnvironment) {
 			const bibElements: Paragraph[] = [];
 			for (const citKey of context.citations) {
 				const item = context.bibDb.find(b => b.citationKey === citKey);
@@ -64,7 +86,11 @@ export async function handleStoFlag(
 					bibElements.push(
 						new Paragraph({
 							style: 'Normal',
-							indent: { left: 0, firstLine: 709 },
+							indent: {
+								left: 0,
+								firstLine:
+									STO_RULES.typography.firstLineIndentDxa,
+							},
 							numbering: {
 								reference: 'bib-numbering',
 								level: 0,
@@ -81,15 +107,18 @@ export async function handleStoFlag(
 			return bibElements;
 		}
 
-		if (token.envName === 'sto_list' || token.envName === 'sto_enum') {
+		if (STO_LIST_ENVIRONMENTS.has(envName)) {
 			context.listInstanceCounter++;
 			return processTokens(token.tokens, {
 				isStoList: true,
-				listType: token.envName === 'sto_enum' ? 'ordered' : 'bullet',
+				listType: envName === 'sto_enum' ? 'ordered' : 'bullet',
 				instance: context.listInstanceCounter,
 			});
 		}
-		return processTokens(token.tokens, currentContext);
+
+		throw new Error(
+			`Unsupported STO environment: ${envName}. Supported environments: ${STO_RULES.markdown.supportedEnvironments.join(', ')}.`,
+		);
 	}
 	return [];
 }
