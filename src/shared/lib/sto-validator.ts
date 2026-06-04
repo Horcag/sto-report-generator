@@ -197,14 +197,79 @@ function findStyleXml(stylesXml: string, styleId: string): string | null {
 	);
 }
 
+function getStyleName(stylesXml: string, styleId: string): string | null {
+	const styleXml = findStyleXml(stylesXml, styleId);
+	if (!styleXml) {
+		return null;
+	}
+	const nameTag = /<w:name\b[^>]*\/>/.exec(styleXml)?.[0];
+	return nameTag ? getXmlAttribute(nameTag, 'w:val') : null;
+}
+
+function getBasedOnStyleId(styleXml: string): string | null {
+	const basedOnTag = /<w:basedOn\b[^>]*\/>/.exec(styleXml)?.[0];
+	return basedOnTag ? getXmlAttribute(basedOnTag, 'w:val') : null;
+}
+
+function getWordNormalizedStyleId(styleId: string): string | null {
+	if (styleId.startsWith('StoHeading')) {
+		return styleId.replace('StoHeading', 'STOHeading');
+	}
+	return null;
+}
+
+function expandStyleIds(styleIds: readonly string[]): string[] {
+	return [
+		...new Set(
+			styleIds.flatMap(styleId =>
+				[styleId, getWordNormalizedStyleId(styleId)].filter(
+					(value): value is string => value !== null,
+				),
+			),
+		),
+	];
+}
+
 function hasStyleProperty(
 	stylesXml: string,
 	styleIds: readonly string[],
 	propertyPattern: RegExp,
 ): boolean {
-	return styleIds.some(styleId => {
+	return expandStyleIds(styleIds).some(styleId => {
 		const styleXml = findStyleXml(stylesXml, styleId);
 		return styleXml ? regexMatches(propertyPattern, styleXml) : false;
+	});
+}
+
+function hasStylePropertyOrInherited(
+	stylesXml: string,
+	styleIds: readonly string[],
+	propertyPattern: RegExp,
+	visitedStyleIds = new Set<string>(),
+): boolean {
+	return expandStyleIds(styleIds).some(styleId => {
+		if (visitedStyleIds.has(styleId)) {
+			return false;
+		}
+		visitedStyleIds.add(styleId);
+
+		const styleXml = findStyleXml(stylesXml, styleId);
+		if (!styleXml) {
+			return false;
+		}
+		if (regexMatches(propertyPattern, styleXml)) {
+			return true;
+		}
+
+		const basedOnStyleId = getBasedOnStyleId(styleXml);
+		return basedOnStyleId
+			? hasStylePropertyOrInherited(
+					stylesXml,
+					[basedOnStyleId],
+					propertyPattern,
+					visitedStyleIds,
+				)
+			: false;
 	});
 }
 
@@ -231,13 +296,40 @@ function countEmptyTableCells(docXml: string): number {
 	return emptyCells;
 }
 
-function hasRunLevelTab(docXml: string): boolean {
-	const runs = docXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? [];
+function getParagraphStyleId(paragraphXml: string): string | null {
+	const styleTag = /<w:pStyle\b[^>]*\/>/.exec(paragraphXml)?.[0];
+	return styleTag ? getXmlAttribute(styleTag, 'w:val') : null;
+}
+
+function hasRunLevelTab(paragraphXml: string): boolean {
+	const runs = paragraphXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? [];
 	return runs.some(runXml => regexMatches(/<w:tab\b/, runXml));
 }
 
-function hasTabCharacters(docXml: string): boolean {
-	return hasRunLevelTab(docXml) || extractWordText(docXml).includes('\t');
+function isAllowedLayoutTabParagraph(
+	paragraphXml: string,
+	stylesXml: string,
+): boolean {
+	const styleId = getParagraphStyleId(paragraphXml);
+	if (!styleId) {
+		return false;
+	}
+	if (styleId === 'TitlePageText') {
+		return true;
+	}
+
+	const styleName = getStyleName(stylesXml, styleId);
+	return styleName ? /^toc\s+\d+$/i.test(styleName) : false;
+}
+
+function hasForbiddenTabCharacters(docXml: string, stylesXml: string): boolean {
+	const paragraphs = docXml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? [];
+	return paragraphs.some(
+		paragraphXml =>
+			(hasRunLevelTab(paragraphXml) ||
+				extractWordText(paragraphXml).includes('\t')) &&
+			!isAllowedLayoutTabParagraph(paragraphXml, stylesXml),
+	);
 }
 
 function validateHeadingText(input: ValidationInput): ValidationResult[] {
@@ -348,20 +440,24 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 	];
 }
 
-function validateFieldsTablesAndImages(docXml: string): ValidationResult[] {
-	const emptyTableCells = countEmptyTableCells(docXml);
-	const tablesWithoutHeaderRepeat = countTablesWithoutHeaderRepeat(docXml);
+function validateFieldsTablesAndImages(
+	input: ValidationInput,
+): ValidationResult[] {
+	const emptyTableCells = countEmptyTableCells(input.docXml);
+	const tablesWithoutHeaderRepeat = countTablesWithoutHeaderRepeat(
+		input.docXml,
+	);
 
 	return [
 		resultFromFailure(
 			'Dirty Field Flags',
-			regexMatches(/<w:fldChar\b[^>]*w:dirty="(?:true|1)"/, docXml),
+			regexMatches(/<w:fldChar\b[^>]*w:dirty="(?:true|1)"/, input.docXml),
 			'Detected dirty Word fields. Run post_build.py so Word does not ask to update fields on open.',
 		),
 		resultFromFailure(
 			'Tab Characters',
-			hasTabCharacters(docXml),
-			'Detected tab characters. Use paragraph indentation and styles instead of manual tabs.',
+			hasForbiddenTabCharacters(input.docXml, input.stylesXml),
+			'Detected body tab characters. Use paragraph indentation and styles instead of manual tabs.',
 		),
 		resultFromPass(
 			'Empty Table Cells',
@@ -375,12 +471,12 @@ function validateFieldsTablesAndImages(docXml: string): ValidationResult[] {
 		),
 		resultFromFailure(
 			'Image Width Limit',
-			hasOversizedImages(docXml),
+			hasOversizedImages(input.docXml),
 			'Detected image width above 14 cm. Run post_build.py to scale large figures.',
 		),
 		resultFromFailure(
 			'Image Paragraph Alignment',
-			hasUncenteredImageParagraphs(docXml),
+			hasUncenteredImageParagraphs(input.docXml),
 			'Detected an image paragraph without center alignment.',
 		),
 	];
@@ -422,7 +518,7 @@ function validateNumbering(numberingXml: string | null): ValidationResult[] {
 }
 
 function validateHeadingStyles(input: ValidationInput): ValidationResult[] {
-	const heading1PageBreak = hasStyleProperty(
+	const heading1PageBreak = hasStylePropertyOrInherited(
 		input.stylesXml,
 		input.heading1StyleIds,
 		/<w:pageBreakBefore\b/,
@@ -431,7 +527,11 @@ function validateHeadingStyles(input: ValidationInput): ValidationResult[] {
 		STRUCTURAL_HEADING_STYLE_ID,
 		STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
 	].every(styleId =>
-		hasStyleProperty(input.stylesXml, [styleId], /<w:pageBreakBefore\b/),
+		hasStylePropertyOrInherited(
+			input.stylesXml,
+			[styleId],
+			/<w:pageBreakBefore\b/,
+		),
 	);
 
 	return [
@@ -553,7 +653,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 		...validateTypography(input),
 		...validateMathAndCitations(input.docXml),
 		...validateNumbering(input.numberingXml),
-		...validateFieldsTablesAndImages(input.docXml),
+		...validateFieldsTablesAndImages(input),
 		...validateHeadingStyles(input),
 		...validateCaptionStyles(input.stylesXml),
 	];

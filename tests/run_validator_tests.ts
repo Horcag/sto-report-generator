@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -60,8 +61,78 @@ function compareWithExpected(file: string, actualOutput: string): boolean {
 	return isMatch;
 }
 
+function writeXmlFixture(
+	name: string,
+	documentXml: string,
+	stylesXml: string,
+): string {
+	const fixtureDir = path.join(tempRoot, name, 'word');
+	fs.rmSync(path.dirname(fixtureDir), { recursive: true, force: true });
+	fs.mkdirSync(fixtureDir, { recursive: true });
+	fs.writeFileSync(
+		path.join(fixtureDir, 'document.xml'),
+		documentXml,
+		'utf-8',
+	);
+	fs.writeFileSync(path.join(fixtureDir, 'styles.xml'), stylesXml, 'utf-8');
+	return path.dirname(fixtureDir);
+}
+
+function getCheck(unpackedDir: string, check: string) {
+	const result = validateSTO(unpackedDir).find(item => item.check === check);
+	assert.ok(result, `Validation check not found: ${check}`);
+	return result;
+}
+
+function runSyntheticValidatorTests(): void {
+	const namespaces =
+		'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+	const layoutTabFixture = writeXmlFixture(
+		'layout-tabs',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:pPr><w:pStyle w:val="TitlePageText"/></w:pPr><w:r><w:tab/></w:r><w:r><w:t>Титульный лист</w:t></w:r></w:p>
+			<w:p><w:pPr><w:pStyle w:val="11"/></w:pPr><w:r><w:t>Введение</w:t></w:r><w:r><w:tab/></w:r><w:r><w:t>7</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}>
+			<w:style w:type="paragraph" w:styleId="TitlePageText"><w:name w:val="Title Page Text"/></w:style>
+			<w:style w:type="paragraph" w:styleId="11"><w:name w:val="toc 1"/></w:style>
+		</w:styles>`,
+	);
+	assert.equal(getCheck(layoutTabFixture, 'Tab Characters').passed, true);
+
+	const bodyTabFixture = writeXmlFixture(
+		'body-tabs',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>Текст</w:t></w:r><w:r><w:tab/></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>`,
+	);
+	assert.equal(getCheck(bodyTabFixture, 'Tab Characters').passed, false);
+
+	const inheritedPageBreakFixture = writeXmlFixture(
+		'inherited-page-breaks',
+		`<w:document ${namespaces}><w:body/></w:document>`,
+		`<w:styles ${namespaces}>
+			<w:style w:type="paragraph" w:styleId="STOHeading1"><w:name w:val="STO Heading 1"/><w:pPr><w:pageBreakBefore/></w:pPr></w:style>
+			<w:style w:type="paragraph" w:styleId="StructuralHeading"><w:name w:val="Structural Heading"/><w:basedOn w:val="STOHeading1"/></w:style>
+			<w:style w:type="paragraph" w:styleId="StructuralHeadingNoTOC"><w:name w:val="Structural Heading No TOC"/><w:pPr><w:pageBreakBefore/></w:pPr></w:style>
+		</w:styles>`,
+	);
+	assert.equal(
+		getCheck(inheritedPageBreakFixture, 'Heading 1 Page Break').passed,
+		true,
+	);
+	assert.equal(
+		getCheck(inheritedPageBreakFixture, 'Structural Heading Page Break')
+			.passed,
+		true,
+	);
+	console.log('Synthetic validator regression tests passed.\n');
+}
+
 function runTests(): void {
 	console.log('Running STO Validator E2E Tests...\n');
+	runSyntheticValidatorTests();
 	let passed = 0;
 	let failed = 0;
 

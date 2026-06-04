@@ -5,6 +5,6 @@ Normal Line Spacing (1.5): Normal style line spacing is not 1.5 (360 DXA).
 Page Margins: Page margins do not match STO defaults: left 30 mm, right 15 mm, top/bottom 20 mm.
 Structural Heading Alignment: Structural headings must be centered.
 Structural Heading Page Break: Structural headings must have a pageBreakBefore.
-Tab Characters: Detected tab characters. Use paragraph indentation and styles instead of manual tabs.
+Tab Characters: Detected body tab characters. Use paragraph indentation and styles instead of manual tabs.
 Table Caption Style: TableCaption style missing or missing single line spacing (240 DXA).
 Table Header Repeat: Detected 2 table(s) without repeated header rows.

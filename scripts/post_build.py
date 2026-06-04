@@ -21,12 +21,14 @@ MATH_XSL_PATH = Path(r"C:\Program Files\Microsoft Office\root\Office16\MML2OMML.
 MATH_PATTERN = re.compile(r"\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$")
 SPACING_AFTER_TABLE_TWIPS = "120"
 
+
 def strip_frontmatter(markdown_text):
     if markdown_text.startswith("---"):
         match = re.match(r"^---\s*\n[\s\S]*?\n---\s*\n?", markdown_text)
         if match:
             return markdown_text[match.end():]
     return markdown_text
+
 
 def normalize_block_formula(formula):
     formula = formula.strip()
@@ -44,6 +46,7 @@ def normalize_block_formula(formula):
 
     return formula
 
+
 def extract_markdown_formulas(report_dir):
     report_path = Path(report_dir)
     if not report_path.exists() or not report_path.is_dir():
@@ -60,6 +63,7 @@ def extract_markdown_formulas(report_dir):
 
     return formulas
 
+
 def latex_to_mathml_batch(formulas, repo_root):
     if not formulas:
         return []
@@ -68,7 +72,7 @@ def latex_to_mathml_batch(formulas, repo_root):
 const fs = require('fs');
 
 (async () => {
-  const mathjax = require('@hungknguyen/docx-math-converter/node_modules/mathjax');
+  const mathjax = require('mathjax');
   const formulas = JSON.parse(fs.readFileSync(0, 'utf8'));
   const MathJax = await mathjax.init({ loader: { load: ['input/tex'] } });
   const result = formulas.map((formula) => {
@@ -110,6 +114,7 @@ const fs = require('fs');
 
     return [item["mathml"] for item in results]
 
+
 def convert_mathml_to_omath(mathml_values):
     if not mathml_values:
         return []
@@ -135,6 +140,7 @@ def convert_mathml_to_omath(mathml_values):
         omath_values.append(omath_copy)
 
     return omath_values
+
 
 def fix_tilde_accents(root):
     namespace = {"m": MATH_NS}
@@ -165,6 +171,7 @@ def fix_tilde_accents(root):
 
     return fixed
 
+
 def get_or_create_child(parent, tag, insert_index=None):
     child = parent.find(tag)
     if child is not None:
@@ -177,16 +184,19 @@ def get_or_create_child(parent, tag, insert_index=None):
         parent.insert(insert_index, child)
     return child
 
+
 def paragraph_style(paragraph):
     namespace = {"w": WORD_NS}
     values = paragraph.xpath("./w:pPr/w:pStyle/@w:val", namespaces=namespace)
     return values[0] if values else ""
+
 
 def paragraph_has_visible_content(paragraph):
     namespace = {"w": WORD_NS}
     text = "".join(paragraph.xpath(".//w:t/text()", namespaces=namespace)).strip()
     has_drawing = bool(paragraph.xpath(".//w:drawing", namespaces=namespace))
     return bool(text or has_drawing)
+
 
 def set_paragraph_space_before(paragraph, value):
     p_pr = paragraph.find(f"{{{WORD_NS}}}pPr")
@@ -203,6 +213,7 @@ def set_paragraph_space_before(paragraph, value):
     current = spacing.get(before_key)
     if current is None or int(current) < int(value):
         spacing.set(before_key, value)
+
 
 def add_spacing_after_data_tables(document_root):
     namespace = {"m": MATH_NS, "w": WORD_NS}
@@ -230,6 +241,7 @@ def add_spacing_after_data_tables(document_root):
 
     return changed
 
+
 def rewrite_docx_part(docx_path, part_name, part_bytes):
     with zipfile.ZipFile(docx_path, "r") as zf:
         names = zf.namelist()
@@ -248,6 +260,7 @@ def rewrite_docx_part(docx_path, part_name, part_bytes):
         if Path(temp_name).exists():
             Path(temp_name).unlink()
         raise
+
 
 def replace_formulas_from_markdown(docx_path, report_dir):
     formulas = extract_markdown_formulas(report_dir)
@@ -286,6 +299,7 @@ def replace_formulas_from_markdown(docx_path, report_dir):
     rewrite_docx_part(docx_path, "word/document.xml", updated_xml)
     return len(new_formulas)
 
+
 def normalize_docx_xml_layout(docx_path):
     with zipfile.ZipFile(docx_path, "r") as zf:
         document_xml = zf.read("word/document.xml")
@@ -306,6 +320,7 @@ def normalize_docx_xml_layout(docx_path):
     rewrite_docx_part(docx_path, "word/document.xml", updated_xml)
     return table_spacing_changes
 
+
 def get_counts_from_docx(docx_path):
     figures = 0
     tables = 0
@@ -314,15 +329,15 @@ def get_counts_from_docx(docx_path):
     with tempfile.TemporaryDirectory() as temp_dir:
         with zipfile.ZipFile(docx_path, "r") as zf:
             zf.extractall(temp_dir)
-            
+
         doc_path = Path(temp_dir) / "word" / "document.xml"
         if not doc_path.exists():
             return 0, 0, 0
-            
+
         tree = etree.parse(str(doc_path))
         root = tree.getroot()
         ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
-        
+
         for p in root.xpath('.//w:p', namespaces=ns):
             pStyle = p.xpath('.//w:pStyle/@w:val', namespaces=ns)
             if pStyle:
@@ -337,7 +352,7 @@ def get_counts_from_docx(docx_path):
             # Alternatively, we can just look for text that starts with numbers in the bibliography section, 
             # but since docx-js uses abstractNumId for bib-numbering, we might not easily map it without reading numbering.xml.
             # Let's check numbering.xml to find the numId for bib-numbering.
-        
+
         num_path = Path(temp_dir) / "word" / "numbering.xml"
         bib_num_id = None
         if num_path.exists():
@@ -358,7 +373,7 @@ def get_counts_from_docx(docx_path):
         # In numbering.xml, docx-js creates an abstractNum and a num instance. 
         # A simpler way to count sources: regex over all text for `\[(\d+)\]` and find the max, OR
         # parse the bibliography text.
-        
+
         # Let's count citations in text: [1], [2], [1, 2], etc.
         max_source = 0
         import re
@@ -369,10 +384,11 @@ def get_counts_from_docx(docx_path):
                 nums = [int(n.strip()) for n in m.split(',') if n.strip().isdigit()]
                 if nums:
                     max_source = max(max_source, max(nums))
-        
+
         sources = max_source
 
     return figures, tables, sources
+
 
 def pluralize_ru(n, form1, form2, form5):
     n = abs(n) % 100
@@ -381,6 +397,7 @@ def pluralize_ru(n, form1, form2, form5):
     if n1 > 1 and n1 < 5: return form2
     if n1 == 1: return form1
     return form5
+
 
 def normalize_tables(doc):
     changed = 0
@@ -391,6 +408,7 @@ def normalize_tables(doc):
         except Exception:
             continue
     return changed
+
 
 def normalize_inline_images(doc):
     centered = 0
@@ -411,6 +429,7 @@ def normalize_inline_images(doc):
 
     return centered, scaled
 
+
 def previous_paragraph_before(doc, position):
     previous = None
     for paragraph in doc.Paragraphs:
@@ -422,6 +441,7 @@ def previous_paragraph_before(doc, position):
             continue
         break
     return previous
+
 
 def keep_small_tables_on_one_page(doc):
     moved = 0
@@ -462,8 +482,10 @@ def keep_small_tables_on_one_page(doc):
 
     return moved
 
+
 def get_default_pdf_path(docx_path):
     return str(Path(docx_path).with_suffix(".pdf"))
+
 
 def export_pdf(doc, docx_path, pdf_output_path=None):
     pdf_path = os.path.abspath(pdf_output_path or get_default_pdf_path(docx_path))
@@ -479,6 +501,7 @@ def export_pdf(doc, docx_path, pdf_output_path=None):
 
     doc.ExportAsFixedFormat(pdf_path, WD_EXPORT_FORMAT_PDF)
     return pdf_path
+
 
 def clear_dirty_fields(docx_path):
     with zipfile.ZipFile(docx_path, "r") as zf:
@@ -511,6 +534,7 @@ def clear_dirty_fields(docx_path):
 
     return cleared
 
+
 def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
     abs_path = os.path.abspath(docx_path)
     if not os.path.exists(abs_path):
@@ -528,7 +552,7 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
     table_spacing_changes = normalize_docx_xml_layout(abs_path)
 
     figures, tables, sources = get_counts_from_docx(abs_path)
-    
+
     # Text representations
     fig_text = f"{figures} {pluralize_ru(figures, 'рисунок', 'рисунка', 'рисунков')}" if figures > 0 else ""
     tab_text = f"{tables} {pluralize_ru(tables, 'таблица', 'таблицы', 'таблиц')}" if tables > 0 else ""
@@ -541,9 +565,9 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
         word = win32com.client.DispatchEx("Word.Application")
         word.Visible = False
         word.DisplayAlerts = False
-        
+
         doc = word.Documents.Open(abs_path, ReadOnly=False)
-        
+
         # 1. Update TOC
         if doc.TablesOfContents.Count > 0:
             doc.TablesOfContents(1).Update()
@@ -551,11 +575,11 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
         normalized_tables = normalize_tables(doc)
         centered_images, scaled_images = normalize_inline_images(doc)
         moved_small_tables = keep_small_tables_on_one_page(doc)
-            
+
         # 2. Get Page Count
         doc.Repaginate()
-        pages = doc.ComputeStatistics(2) # wdStatisticPages
-        
+        pages = doc.ComputeStatistics(2)  # wdStatisticPages
+
         # 3. Replace placeholders and VALIDATE
         replacements = {
             "{{PAGES}}": str(pages),
@@ -563,7 +587,7 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
             "{{TABLES}}": tab_text,
             "{{SOURCES}}": src_text
         }
-        
+
         errors = []
         for p in doc.Paragraphs:
             text = p.Range.Text
@@ -573,33 +597,33 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
         if errors:
             print("\n".join(errors), file=sys.stderr)
             sys.exit(1)
-            
+
         for placeholder, value in replacements.items():
             rng = doc.Content
             rng.Find.ClearFormatting()
             rng.Find.Replacement.ClearFormatting()
             # Execute(FindText, MatchCase, MatchWholeWord, MatchWildcards, MatchSoundsLike, MatchAllWordForms, Forward, Wrap, Format, ReplaceWith, Replace)
-            rng.Find.Execute(placeholder, False, False, False, False, False, True, 1, False, value, 2) # wdReplaceAll
-            
+            rng.Find.Execute(placeholder, False, False, False, False, False, True, 1, False, value, 2)  # wdReplaceAll
+
         # Clean up empty commas (if any count was 0)
         rng = doc.Content
         rng.Find.ClearFormatting()
         rng.Find.Replacement.ClearFormatting()
         rng.Find.Execute(" ,", False, False, False, False, False, True, 1, False, "", 2)
-        
+
         rng = doc.Content
         rng.Find.Execute(", ,", False, False, False, False, False, True, 1, False, ",", 2)
-        
+
         doc.Save()
         pdf_path = export_pdf(doc, abs_path, pdf_output_path)
-        
+
     except Exception as e:
         print(f"Error during post-build: {e}", file=sys.stderr)
         sys.exit(1)
     finally:
         if doc is not None:
             try:
-                doc.Close(False) # don't save if error
+                doc.Close(False)  # don't save if error
             except Exception:
                 pass
         if word is not None:
@@ -617,11 +641,12 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
         f"dirty fields cleared: {dirty_fields}, PDF exported: {pdf_path}."
     )
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python post_build.py <path_to_docx> [report_source_dir] [pdf_output_path]", file=sys.stderr)
         sys.exit(1)
-    
+
     post_build(
         sys.argv[1],
         sys.argv[2] if len(sys.argv) > 2 else None,
