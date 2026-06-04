@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+.temp*/
+*_unpacked/
+reports/
+output/
+research/
+.venv/
+.agent-work/
+.idea/
+__pycache__/
+.agents/skills/docx/
+package-lock.json
+*.docx
+*.pdf
+*.log

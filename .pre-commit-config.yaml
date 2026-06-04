@@ -1,0 +1,70 @@
+default_install_hook_types: [pre-commit, pre-push]
+
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.6.0
+      hooks:
+          - id: trailing-whitespace
+          - id: end-of-file-fixer
+          - id: check-added-large-files
+          - id: check-json
+          - id: check-yaml
+          - id: check-toml
+
+    - repo: local
+      hooks:
+          - id: prettier
+            name: Prettier staged files
+            entry: npx prettier --write
+            language: system
+            files: ^((src|tests)/.*\.(ts|json)|docs/.*\.md|README\.md|package\.json|tsconfig\.json|eslint\.config\.mjs|steiger\.config\.ts|\.prettierrc|\.pre-commit-config\.yaml|\.github/.*\.yml|sonar-project\.properties)$
+            exclude: ^(node_modules/|reports/|output/|research/|\.agents/skills/docx/)
+
+          - id: eslint
+            name: ESLint staged TypeScript
+            entry: npx eslint --fix --max-warnings=0
+            language: system
+            files: ^(src|tests)/.*\.ts$
+
+          - id: steiger
+            name: Steiger FSD architecture
+            entry: npm run fsd:fix
+            language: system
+            pass_filenames: false
+            files: ^src/
+
+          - id: ruff
+            name: Ruff staged Python
+            entry: uv run ruff check --fix --exit-non-zero-on-fix
+            language: system
+            files: ^scripts/.*\.py$
+
+          - id: ruff-format
+            name: Ruff format staged Python
+            entry: uv run ruff format
+            language: system
+            files: ^scripts/.*\.py$
+
+          - id: ci-check
+            name: TypeScript, FSD and STO tests
+            entry: npm run ci:check
+            language: system
+            pass_filenames: false
+            files: ^(src|tests|example|package\.json|package-lock\.json|tsconfig\.json|steiger\.config\.ts|eslint\.config\.mjs)
+            stages: [pre-push]
+
+          - id: ruff-check
+            name: Ruff Python check
+            entry: uv run ruff check scripts
+            language: system
+            pass_filenames: false
+            files: ^scripts/.*\.py$
+            stages: [pre-push]
+
+          - id: mypy
+            name: MyPy Python scripts
+            entry: uv run mypy scripts
+            language: system
+            pass_filenames: false
+            files: ^scripts/.*\.py$
+            stages: [pre-push]

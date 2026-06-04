@@ -1,0 +1,70 @@
+[project]
+name = "sto-report-generator-tools"
+version = "0.1.0"
+description = "Python helpers for STO Report Generator post-build and DOCX inspection"
+requires-python = ">=3.12"
+dependencies = [
+    "defusedxml>=0.7.1",
+    "lxml>=6.0.2",
+    "pywin32>=311; platform_system == 'Windows'",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.1.0",
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.14",
+]
+figures = [
+    "matplotlib>=3.10",
+    "numpy>=2.3",
+    "pandas>=2.3",
+    "scipy>=1.16",
+    "seaborn>=0.13",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+src = ["scripts"]
+line-length = 100
+target-version = "py312"
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "node_modules",
+    "reports",
+    "research",
+    "output",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "B",
+    "I",
+    "SIM",
+    "UP",
+    "RUF",
+]
+ignore = [
+    "B904",
+    "E501",
+]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["scripts"]
+check_untyped_defs = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+exclude = [
+    "^\\.venv/",
+    "^reports/",
+    "^research/",
+    "^output/",
+]
