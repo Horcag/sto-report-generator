@@ -30,8 +30,8 @@ Core paths:
 - `src/shared/config/sto-rules.json` - portable STO constants used by formatting, parser guards, preflight checks, and
   DOCX validation.
 - `src/shared/config/sto-styles.ts` - DOCX styles and numbering derived from shared STO constants where practical.
-- `scripts/post_build.py` - Word COM post-processing: TOC, page/figure/table/source placeholders, table headers, image
-  normalization, formula repair, dirty field cleanup, and PDF export.
+- `scripts/post_build.py` - compatibility entrypoint for Word post-build.
+- `scripts/sto_post_build/` - Python post-build package: formula repair, DOCX XML normalization, Word COM automation, dirty field cleanup, and PDF export.
 - `src/shared/lib/sto-validator.ts` - XML-level STO checks after unpacking the `.docx`.
 - `tests/source-preflight/regression_checks.ts` - source Markdown preflight checks before final build.
 - `steiger.config.ts` - Feature-Sliced Design architecture checks.
@@ -118,8 +118,7 @@ local absolute paths there.
 
 ## Code Change Rules
 
-- Keep generator changes in the existing architecture: TypeScript builds the DOCX, Python `post_build.py` only fixes
-  Word-specific post-processing issues and exports PDF.
+- Keep generator changes in the existing architecture: TypeScript builds the DOCX, Python `scripts/sto_post_build/` only fixes Word-specific post-processing issues and exports PDF. Keep `scripts/post_build.py` as a thin compatibility entrypoint.
 - Respect the FSD-like layers: `app` orchestrates, `features` implement report-building capabilities, `entities` hold
   domain types, `widgets` hold large DOCX blocks, `shared` holds infrastructure/config/validators.
 - Run `npm run fsd:check` after moving files across layers or changing imports.

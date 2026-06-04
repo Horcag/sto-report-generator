@@ -8,7 +8,7 @@ The repository was useful as a checklist for academic DOCX production, but it sh
 
 ### DOCX post-processing
 
-Implemented in `scripts/post_build.py`:
+Implemented in `scripts/sto_post_build/` via the `scripts/post_build.py` compatibility entrypoint:
 
 - repeat first table row as a Word header row;
 - center inline images;

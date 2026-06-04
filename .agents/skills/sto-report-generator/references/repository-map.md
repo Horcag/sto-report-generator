@@ -9,7 +9,7 @@
 
 `src/app/builder.ts` reads Markdown modules, takes the first non-empty YAML frontmatter as metadata, creates the title page, parses Markdown into DOCX elements, and writes the final file with `docx`.
 
-`scripts/post_build.py` must be run after DOCX generation when the result is intended for review or submission. It opens Word through COM, updates the table of contents, computes page count, replaces `{{PAGES}}`, `{{FIGURES}}`, `{{TABLES}}`, `{{SOURCES}}`, repeats first rows in tables, centers/scales inline images, and clears dirty field flags.
+`scripts/post_build.py` must be run after DOCX generation when the result is intended for review or submission. It is a compatibility entrypoint for `scripts/sto_post_build/`, which owns formula repair, DOCX XML normalization, Word COM automation, dirty field cleanup, and PDF export. Keep new post-build behavior in the smallest matching module under that package.
 
 `npm run unpack -- <docx> <dir>` unpacks the generated DOCX for XML validation.
 
@@ -49,8 +49,8 @@ Full coursework check:
 
 ```powershell
 npx tsx tests/source-preflight/regression_checks.ts reports/coursework_sad
-npx tsx src/index.ts reports/coursework_sad reports/coursework_sad/coursework_sad.docx
-uv run --with pywin32 --with lxml python scripts/post_build.py reports/coursework_sad/coursework_sad.docx
+npm run build -- reports/coursework_sad reports/coursework_sad/coursework_sad.docx
+uv run --with pywin32 --with lxml python scripts/post_build.py reports/coursework_sad/coursework_sad.docx reports/coursework_sad
 npm run unpack -- reports/coursework_sad/coursework_sad.docx .temp_coursework_docx
 npm run validate:sto -- .temp_coursework_docx
 uv run python reports/coursework_sad/scripts/verify_docx_figures.py reports/coursework_sad/coursework_sad.docx

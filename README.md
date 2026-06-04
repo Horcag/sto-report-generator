@@ -27,7 +27,7 @@ LaTeX. Это собственные STO-макросы генератора. О
 
 ## Установка
 
-Нужны Node.js, npm, Python-раннер `uv` и установленный Microsoft Word для `scripts/post_build.py`.
+Нужны Node.js, npm, Python-раннер `uv` и установленный Microsoft Word для `scripts/post_build.py`. Внутренняя архитектура Python post-build описана в `docs/architecture/python-post-build.md`.
 
 ```powershell
 npm install
@@ -142,9 +142,7 @@ uv run python scripts/post_build.py example/output.docx example
 npm run validate:docx -- example/output.docx .agent-work/example_unpacked
 ```
 
-Важно: `post_build.py` лучше запускать с двумя аргументами: путь к DOCX и путь к исходной папке Markdown. Второй
-аргумент нужен для восстановления корректных Word-формул из исходного LaTeX. После этого рядом с DOCX будет создан PDF с
-тем же именем файла. Если нужен другой путь PDF, передайте его третьим аргументом:
+Важно: `post_build.py` остается совместимой точкой входа, но реализация живет в `scripts/sto_post_build/`. Лучше запускать его с двумя аргументами: путь к DOCX и путь к исходной папке Markdown. Второй аргумент нужен для восстановления корректных Word-формул из исходного LaTeX. После этого рядом с DOCX будет создан PDF с тем же именем файла. Если нужен другой путь PDF, передайте его третьим аргументом:
 
 ```powershell
 uv run python scripts/post_build.py reports/my_report/build/my_report.docx reports/my_report reports/my_report/build/my_report_preview.pdf
