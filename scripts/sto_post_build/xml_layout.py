@@ -41,6 +41,30 @@ def set_paragraph_space_before(paragraph: Any, value: str) -> None:
         spacing.set(before_key, value)
 
 
+def is_data_table(element: Any, namespace: dict[str, str]) -> bool:
+    return element.tag == f"{{{WORD_NS}}}tbl" and not element.xpath(
+        ".//m:oMath",
+        namespaces=namespace,
+    )
+
+
+def find_next_visible_paragraph(elements: list[Any], table_index: int) -> Any | None:
+    for following in elements[table_index + 1 :]:
+        if following.tag == f"{{{WORD_NS}}}tbl":
+            return None
+        if following.tag == f"{{{WORD_NS}}}p" and paragraph_has_visible_content(following):
+            return following
+    return None
+
+
+def should_space_after_table(paragraph: Any) -> bool:
+    style = paragraph_style(paragraph)
+    return not style.startswith("Heading") and style not in {
+        "TableCaption",
+        "FigureCaption",
+    }
+
+
 def add_spacing_after_data_tables(document_root: Any) -> int:
     namespace = {"m": MATH_NS, "w": WORD_NS}
     body = document_root.find(f"{{{WORD_NS}}}body")
@@ -50,23 +74,13 @@ def add_spacing_after_data_tables(document_root: Any) -> int:
     elements = list(body)
     changed = 0
     for index, element in enumerate(elements):
-        if element.tag != f"{{{WORD_NS}}}tbl":
-            continue
-        if element.xpath(".//m:oMath", namespaces=namespace):
+        if not is_data_table(element, namespace):
             continue
 
-        for following in elements[index + 1 :]:
-            if following.tag == f"{{{WORD_NS}}}p" and paragraph_has_visible_content(following):
-                style = paragraph_style(following)
-                if not style.startswith("Heading") and style not in {
-                    "TableCaption",
-                    "FigureCaption",
-                }:
-                    set_paragraph_space_before(following, SPACING_AFTER_TABLE_TWIPS)
-                    changed += 1
-                break
-            if following.tag == f"{{{WORD_NS}}}tbl":
-                break
+        following = find_next_visible_paragraph(elements, index)
+        if following is not None and should_space_after_table(following):
+            set_paragraph_space_before(following, SPACING_AFTER_TABLE_TWIPS)
+            changed += 1
 
     return changed
 
@@ -91,6 +105,7 @@ def normalize_docx_xml_layout(docx_path: str | Path) -> int:
 
 
 def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
+    """Count captions and used-source references from a generated DOCX."""
     figures = 0
     tables = 0
     sources = 0
@@ -117,6 +132,8 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
             elif style == "TableCaption":
                 tables += 1
 
+        # The bibliography builder emits only cited sources and numbers them densely
+        # by first use, so the used-source count is the highest citation number.
         max_source = 0
         for text in root.xpath(".//w:t/text()", namespaces=namespace):
             matches = re.findall(r"\[([\d,\s]+)\]", text)

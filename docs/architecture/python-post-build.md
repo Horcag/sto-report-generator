@@ -9,9 +9,9 @@
 - `models.py` contains immutable result DTOs used between modules.
 - `constants.py` contains Word constants, XML namespaces, and stable post-build constants.
 - `markdown_formulas.py` extracts and normalizes LaTeX formulas from modular Markdown sources.
-- `math_conversion.py` converts LaTeX to MathML and MathML to Office Math.
+- `math_conversion.py` converts LaTeX to MathML through MathJax and MathML to Office Math through the repository npm dependency `@hungknguyen/mathml2omml`; do not depend on a local Microsoft Office XSL path.
 - `docx_package.py` reads and rewrites DOCX ZIP parts and clears dirty Word field flags.
-- `xml_layout.py` performs pure DOCX XML normalization and counts figures, tables, and sources.
+- `xml_layout.py` performs pure DOCX XML normalization and counts figures, tables, and used sources. Source count is derived from the highest generated citation number, because TypeScript emits only cited bibliography records and numbers them densely by first use.
 - `word_automation.py` contains all `win32com`/Word COM operations: TOC update, table header repeat, image normalization, PDF export.
 
 ## Change Rules

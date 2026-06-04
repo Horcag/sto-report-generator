@@ -91,6 +91,37 @@ function resultFromPass(
 	return { check, passed: false, error };
 }
 
+function extractCitationNumbers(text: string): number[] {
+	const numbers = new Set<number>();
+
+	for (const match of text.matchAll(/\[([\d,\s]+)]/g)) {
+		for (const value of match[1].split(',')) {
+			const number = Number(value.trim());
+			if (Number.isInteger(number) && number > 0) {
+				numbers.add(number);
+			}
+		}
+	}
+
+	return [...numbers].sort((left, right) => left - right);
+}
+
+function getMissingCitationNumbers(
+	citationNumbers: readonly number[],
+): number[] {
+	const highestCitationNumber = citationNumbers.at(-1) ?? 0;
+	const usedNumbers = new Set(citationNumbers);
+	const missingNumbers: number[] = [];
+
+	for (let number = 1; number <= highestCitationNumber; number++) {
+		if (!usedNumbers.has(number)) {
+			missingNumbers.push(number);
+		}
+	}
+
+	return missingNumbers;
+}
+
 function hasFormulaPeriodBeforeWhere(docXml: string): boolean {
 	const formulaBeforeWhere = new RegExp(
 		String.raw`(<w:tbl[\s\S]*?<\/w:tbl>|<w:p[\s\S]*?${escapeRegExp(OMATH_TAG)}[\s\S]*?<\/w:p>)\s*<w:p[\s\S]*?<w:t[^>]*>где(?:\s|<|&nbsp;)`,
@@ -411,11 +442,21 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 }
 
 function validateMathAndCitations(docXml: string): ValidationResult[] {
+	const documentText = extractWordText(docXml);
+	const citationNumbers = extractCitationNumbers(documentText);
+	const missingCitationNumbers = getMissingCitationNumbers(citationNumbers);
+	const highestCitationNumber = citationNumbers.at(-1) ?? 0;
+
 	return [
 		resultFromFailure(
 			'Citation Formatting',
-			regexMatches(/\[@[^\]]+]/, docXml),
+			regexMatches(/\[@[^\]]+]/, documentText),
 			'Detected unparsed citations (e.g. [@key]).',
+		),
+		resultFromPass(
+			'Citation Number Sequence',
+			missingCitationNumbers.length === 0,
+			`Citation numbers must be dense from [1] to [${highestCitationNumber}]; missing: ${missingCitationNumbers.join(', ')}.`,
 		),
 		resultFromFailure(
 			'Math Formatting (Unparsed)',

@@ -420,6 +420,21 @@ export function runSourcePreflight(
 			);
 		}
 
+		const manualCitationPattern = new RegExp(
+			STO_RULES.validation.manualCitationNumberPattern,
+			'g',
+		);
+		for (const match of content.matchAll(manualCitationPattern)) {
+			issues.push(
+				issue(
+					'manual-source-citation',
+					`contains manual source citation ${match[0]}. Use BibTeX cite keys like [@key] so numbering stays automatic.`,
+					file,
+					lineNumberAt(content, match.index ?? 0),
+				),
+			);
+		}
+
 		if (
 			!STO_RULES.validation.allowedBoldMarkdownFiles.includes(file) &&
 			/\*\*[^*]+\*\*/.test(content)

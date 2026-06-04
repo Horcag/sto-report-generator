@@ -120,6 +120,15 @@ expectIssue(
 );
 
 expectIssue(
+	'manual-source-citation',
+	validFiles({
+		'03_intro.md': `Текст с ручной ссылкой [1, 2].
+`,
+	}),
+	'manual-source-citation',
+);
+
+expectIssue(
 	'caption-period',
 	validFiles({
 		'03_intro.md': `Показатели приведены в таблице 1.

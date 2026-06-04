@@ -24,11 +24,11 @@ Core paths:
 - `src/app/builder.ts` - report assembly: sorted `.md` files, metadata, title page, DOCX packer.
 - `src/app/report-scaffold.ts` - portable report folder scaffolding with templates, `report.config.json`, local
   `.gitignore`, and optional nested `git init`.
-- `src/app/report-workflow.ts` - high-level `generate` orchestration: source preflight, DOCX build, optional Word
-  post-build, and DOCX validation.
+- `src/app/report-workflow.ts` - high-level `generate` orchestration from source preflight through DOCX validation.
 - `src/features/markdown-parser/` - Markdown, citations, formulas, tables, images, STO flags.
-- `src/shared/config/sto-rules.json` - portable STO constants used by formatting, parser guards, preflight checks, and
+- `src/shared/config/sto-rules.json` - portable STO constants used by formatting, parser guards, preflight checks and
   DOCX validation.
+- `docs/sto-rules-coverage.md` - audit of STO rules already transferred from extracted standards and rules still worth automating.
 - `src/shared/config/sto-styles.ts` - DOCX styles and numbering derived from shared STO constants where practical.
 - `scripts/post_build.py` - compatibility entrypoint for Word post-build.
 - `scripts/sto_post_build/` - Python post-build package: formula repair, DOCX XML normalization, Word COM automation, dirty field cleanup, and PDF export.
@@ -96,7 +96,7 @@ uv run python reports/coursework_sad/scripts/verify_docx_figures.py reports/cour
 These are generator-specific Markdown macros, not general Markdown or full LaTeX. Unknown environments must fail fast.
 
 - `\sto_structural_heading{СОДЕРЖАНИЕ}` - structural unnumbered heading, with TOC generation for `СОДЕРЖАНИЕ`.
-- `\begin{sto_bibliography}...\end{sto_bibliography}` - generated bibliography from cited BibTeX keys.
+- `\begin{sto_bibliography}...\end{sto_bibliography}` - generated bibliography from cited BibTeX keys. Keep the block empty in `91_sources.md`; the parser fills it with used sources only.
 - `\begin{sto_list}...\end{sto_list}` - STO bullet list; use raw Markdown bullets only inside this block.
 - `\begin{sto_enum}...\end{sto_enum}` - STO ordered list; use raw Markdown numbering only inside this block.
 
@@ -108,7 +108,9 @@ local absolute paths there.
 - Keep the report modular: metadata, referat, intro, data, methodology, results, discussion, conclusion, sources.
 - Every table and figure must be mentioned in the text before it appears.
 - Use en-dash `–`, not em-dash `—`.
+- Use BibTeX cite keys in text: `[@key]` or `[@key1; @key2]`. Do not write source numbers like `[1]` manually in source Markdown.
 - Do not use `[0]` citations.
+- Keep `91_sources.md` as an empty `sto_bibliography` container; unused entries may remain in `references.bib`.
 - Avoid bold Markdown outside `01_referat.md`; the parser treats bold in regular text as an STO violation.
 - Put code and technical file-size audit details outside the final report unless they are substantively needed.
 - After a formula followed by a lowercase `где`, do not end the formula with a period and do not write `где:`.

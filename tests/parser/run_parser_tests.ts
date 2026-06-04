@@ -53,6 +53,35 @@ async function main(): Promise<void> {
 	);
 
 	const bibPath = path.join(tempRoot, 'references.bib');
+	fs.writeFileSync(
+		bibPath,
+		`@book{used,
+  author={Иванов, И. И.},
+  title={Использованный источник},
+  publisher={Самара},
+  year={2020}
+}
+@book{unused,
+  author={Петров, П. П.},
+  title={Неиспользованный источник},
+  publisher={Самара},
+  year={2021}
+}`,
+		'utf8',
+	);
+	const bibliographyElements = await parseMarkdownToDocx(
+		String.raw`Текст с использованным источником [@used].
+
+\begin{sto_bibliography}
+\end{sto_bibliography}
+`,
+		{ bibliography: bibPath },
+		{ sourceDir: tempRoot },
+	);
+	const bibliographyJson = JSON.stringify(bibliographyElements);
+	assert.match(bibliographyJson, /Использованный источник/);
+	assert.doesNotMatch(bibliographyJson, /Неиспользованный источник/);
+
 	fs.writeFileSync(bibPath, '', 'utf8');
 	await assert.rejects(
 		() =>

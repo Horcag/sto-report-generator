@@ -1,3 +1,4 @@
+Citation Number Sequence: Citation numbers must be dense from [1] to [10]; missing: 5.
 Figure Caption Style: FigureCaption style missing or missing single line spacing (240 DXA).
 Image Width Limit: Detected image width above 14 cm. Run post_build.py to scale large figures.
 Math Multiplication Sign: Detected asterisk (*) as multiplication sign in formula. Use LaTeX multiplication commands instead.

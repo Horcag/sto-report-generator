@@ -127,6 +127,45 @@ function runSyntheticValidatorTests(): void {
 			.passed,
 		true,
 	);
+
+	const unresolvedCitationFixture = writeXmlFixture(
+		'unresolved-citation',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:r><w:t>Текст с [@smith2020]</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	assert.equal(
+		getCheck(unresolvedCitationFixture, 'Citation Formatting').passed,
+		false,
+	);
+
+	const denseCitationFixture = writeXmlFixture(
+		'dense-citations',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:r><w:t>Источник [1], затем [1, 2] и [3]</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	assert.equal(
+		getCheck(denseCitationFixture, 'Citation Number Sequence').passed,
+		true,
+	);
+
+	const sparseCitationFixture = writeXmlFixture(
+		'sparse-citations',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:r><w:t>Источник [1], затем [3]</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	const sparseCitationCheck = getCheck(
+		sparseCitationFixture,
+		'Citation Number Sequence',
+	);
+	assert.equal(sparseCitationCheck.passed, false);
+	assert.match(sparseCitationCheck.error ?? '', /2/);
+
 	console.log('Synthetic validator regression tests passed.\n');
 }
 

@@ -28,7 +28,7 @@ def replace_formulas_from_markdown(docx_path: str | Path, report_dir: str | Path
 
     repo_root = Path(__file__).resolve().parents[2]
     mathml_values = latex_to_mathml_batch(formulas, repo_root)
-    new_formulas = convert_mathml_to_omath(mathml_values)
+    new_formulas = convert_mathml_to_omath(mathml_values, repo_root)
 
     for old_formula, new_formula in zip(existing_formulas, new_formulas, strict=True):
         parent = old_formula.getparent()

@@ -44,6 +44,7 @@ export interface StoRules {
 		forbiddenLiteralMarkers: string[];
 		figureCaptionPrefix: string;
 		tableCaptionPrefix: string;
+		manualCitationNumberPattern: string;
 	};
 }
 

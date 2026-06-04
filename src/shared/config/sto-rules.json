@@ -53,6 +53,7 @@
 			"NOT FOUND"
 		],
 		"figureCaptionPrefix": "Рисунок",
-		"tableCaptionPrefix": "Таблица"
+		"tableCaptionPrefix": "Таблица",
+		"manualCitationNumberPattern": "\\[(?:[1-9]\\d*)(?:\\s*,\\s*[1-9]\\d*)*\\]"
 	}
 }
