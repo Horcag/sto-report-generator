@@ -1,15 +1,18 @@
 ---
 name: sto-report-generator
-description: 'Use this skill when working with the local STO Report Generator repository at local sto-report-generator workspace: building or updating Russian academic .docx reports from modular Markdown, fixing СТО/ГОСТ formatting issues, synchronizing report figures from notebooks, validating generated DOCX files, adapting the generator code, or applying lessons from vkr-author without switching to its Pandoc pipeline.'
+description: 'Use this skill when working with the STO Report Generator repository: building or updating Russian academic .docx/.pdf reports from modular Markdown, scaffolding report folders, fixing СТО/ГОСТ formatting issues, synchronizing report figures from notebooks, validating generated DOCX files, adapting the generator code, or applying lessons from vkr-author without switching to its Pandoc pipeline.'
 ---
 
 # STO Report Generator
 
 ## Purpose
 
-Use this repository-specific workflow for reports, courseworks, NIR texts, and DOCX output that are assembled by `local sto-report-generator workspace`.
+Use this repository-specific workflow for reports, course papers, NIR texts, DOCX output, and PDF previews assembled by
+this generator repository.
 
-This is not the `vkr-author` workflow. `vkr-author` was used as a source of useful checks, but this repository has its own TypeScript generator, Python post-build step, and STO validator.
+This is not the `vkr-author` workflow. `vkr-author` was used as a source of useful checks, but this repository has its
+own TypeScript generator, Python post-build step, Word COM PDF export, FSD-like architecture, Steiger architecture
+checks, and STO validator.
 
 ## Repository Map
 
@@ -17,48 +20,88 @@ Read `references/repository-map.md` when changing code, adding a new report, or 
 
 Core paths:
 
-- `src/index.ts` - CLI entrypoint: input markdown file/directory plus output `.docx`.
+- `src/index.ts` - CLI entrypoint: `new`, `check`, `build`, `generate`, and `validate-docx` commands.
 - `src/app/builder.ts` - report assembly: sorted `.md` files, metadata, title page, DOCX packer.
+- `src/app/report-scaffold.ts` - portable report folder scaffolding with templates, `report.config.json`, local
+  `.gitignore`, and optional nested `git init`.
+- `src/app/report-workflow.ts` - high-level `generate` orchestration: source preflight, DOCX build, optional Word
+  post-build, and DOCX validation.
 - `src/features/markdown-parser/` - Markdown, citations, formulas, tables, images, STO flags.
-- `scripts/post_build.py` - Word COM post-processing: TOC, page/figure/table/source placeholders, table headers, image normalization, dirty field cleanup.
+- `src/shared/config/sto-rules.json` - portable STO constants used by formatting, parser guards, preflight checks, and
+  DOCX validation.
+- `src/shared/config/sto-styles.ts` - DOCX styles and numbering derived from shared STO constants where practical.
+- `scripts/post_build.py` - Word COM post-processing: TOC, page/figure/table/source placeholders, table headers, image
+  normalization, formula repair, dirty field cleanup, and PDF export.
 - `src/shared/lib/sto-validator.ts` - XML-level STO checks after unpacking the `.docx`.
 - `tests/regression_checks.ts` - source Markdown preflight checks before final build.
+- `steiger.config.ts` - Feature-Sliced Design architecture checks.
+- `.pre-commit-config.yaml` - pre-commit/pre-push quality gates.
 - `reports/<report_name>/` - local report modules and images. Treat these as user/private working material.
 
 ## Standard Workflow
 
-1. Inspect the target report directory and edit the smallest relevant `.md` modules. Do not rewrite a whole report in one file.
-2. If figures come from a notebook, refresh or sync figures before building the DOCX.
-3. Run source preflight:
+- Install dependencies when preparing a fresh checkout:
 
 ```powershell
-npx tsx tests/regression_checks.ts reports/<report_name>
+npm install
+uv sync
+npm run hooks:install
 ```
 
-4. Build the DOCX:
+- For a new report, scaffold the folder instead of copying an old report by hand:
 
 ```powershell
-npx tsx src/index.ts reports/<report_name> reports/<report_name>/<output>.docx
+npm run new:report -- <report_name> --dir reports/<report_name> --title "<topic>"
 ```
 
-5. Run post-build:
+- Inspect the target report directory and edit the smallest relevant `.md` modules. Do not rewrite a whole report in one
+  file.
+- If figures come from a notebook, refresh or sync figures before building the DOCX. For report-specific figure scripts,
+  install optional dependencies with `uv sync --group figures` if needed.
+- Run source preflight:
 
 ```powershell
-uv run --with pywin32 --with lxml python scripts/post_build.py reports/<report_name>/<output>.docx
+npm run check:source -- reports/<report_name>
 ```
 
-6. Unpack and validate:
+- Prefer the high-level generator for normal builds. It reads `report.config.json`; keep that file portable and
+  relative, with no personal absolute paths:
 
 ```powershell
-npm run unpack -- reports/<report_name>/<output>.docx .temp_<report_name>_docx
-npm run validate:sto -- .temp_<report_name>_docx
+npm run generate:report -- reports/<report_name> --post-build --validate
 ```
 
-7. For `reports/coursework_sad`, verify notebook figures if they were touched:
+- Use lower-level commands only when debugging a specific step:
+
+```powershell
+npx tsx src/index.ts build reports/<report_name> reports/<report_name>/build/<output>.docx
+uv run python scripts/post_build.py reports/<report_name>/build/<output>.docx reports/<report_name>
+npm run validate:docx -- reports/<report_name>/build/<output>.docx .agent-work/<report_name>_unpacked
+```
+
+- For code changes, run the non-Word quality gate:
+
+```powershell
+npm run quality
+```
+
+- For `reports/coursework_sad`, verify notebook figures if they were touched:
 
 ```powershell
 uv run python reports/coursework_sad/scripts/verify_docx_figures.py reports/coursework_sad/coursework_sad.docx
 ```
+
+## Supported STO Markdown Elements
+
+These are generator-specific Markdown macros, not general Markdown or full LaTeX. Unknown environments must fail fast.
+
+- `\sto_structural_heading{СОДЕРЖАНИЕ}` - structural unnumbered heading, with TOC generation for `СОДЕРЖАНИЕ`.
+- `\begin{sto_bibliography}...\end{sto_bibliography}` - generated bibliography from cited BibTeX keys.
+- `\begin{sto_list}...\end{sto_list}` - STO bullet list; use raw Markdown bullets only inside this block.
+- `\begin{sto_enum}...\end{sto_enum}` - STO ordered list; use raw Markdown numbering only inside this block.
+
+The allowed environments are configured in `src/shared/config/sto-rules.json`. Keep that config portable; do not put
+local absolute paths there.
 
 ## Report Editing Rules
 
@@ -68,18 +111,32 @@ uv run python reports/coursework_sad/scripts/verify_docx_figures.py reports/cour
 - Do not use `[0]` citations.
 - Avoid bold Markdown outside `01_referat.md`; the parser treats bold in regular text as an STO violation.
 - Put code and technical file-size audit details outside the final report unless they are substantively needed.
-- After a formula followed by a lowercase `где`, do not end the formula with a period.
+- After a formula followed by a lowercase `где`, do not end the formula with a period and do not write `где:`.
 - Prefer Russian terms in the report when a standard Russian equivalent exists.
+- Do not use unknown `\begin{...}` environments; add them to `sto-rules.json`, parser handling, tests, and README
+  together if support is needed.
 
 ## Code Change Rules
 
-- Keep generator changes in the existing architecture: TypeScript builds the DOCX, Python `post_build.py` only fixes Word-specific post-processing issues.
-- Add or update checks in `tests/regression_checks.ts` for source Markdown problems and `src/shared/lib/sto-validator.ts` for generated DOCX XML problems.
-- Do not import the `vkr-author` Pandoc/Lua pipeline into this repository unless the user explicitly asks for a second build system.
+- Keep generator changes in the existing architecture: TypeScript builds the DOCX, Python `post_build.py` only fixes
+  Word-specific post-processing issues and exports PDF.
+- Respect the FSD-like layers: `app` orchestrates, `features` implement report-building capabilities, `entities` hold
+  domain types, `widgets` hold large DOCX blocks, `shared` holds infrastructure/config/validators.
+- Run `npm run fsd:check` after moving files across layers or changing imports.
+- Add or update checks in `tests/regression_checks.ts` for source Markdown problems and
+  `src/shared/lib/sto-validator.ts` for generated DOCX XML problems.
+- Put reusable STO constants into `src/shared/config/sto-rules.json` when they are stable and portable. Keep
+  report-specific values in report files, not in shared config.
+- Do not import the `vkr-author` Pandoc/Lua pipeline into this repository unless the user explicitly asks for a second
+  build system.
 
 ## vkr-author Lessons
 
-Read `references/vkr-author-adapted-features.md` when deciding whether a `vkr-author` feature belongs here. The short version:
+Read `references/vkr-author-adapted-features.md` when deciding whether a `vkr-author` feature belongs here. The short
+version:
 
-- Adopted: repeated table headers, image centering/width checks, dirty field checks, source Markdown checks for hanging references, em-dash, `[0]`, bold, and missing images.
-- Not adopted: Pandoc/Lua build pipeline, empty-alt-image rule, Beads task workflow, and Claude-specific project scaffolding.
+- Adopted: repeated table headers, image centering/width checks, dirty field checks, source Markdown checks for hanging
+  references, em-dash, `[0]`, bold, missing images, unsupported STO environments, formula punctuation, tabs, and empty
+  DOCX table cells.
+- Not adopted: Pandoc/Lua build pipeline, empty-alt-image rule, Beads task workflow, and Claude-specific project
+  scaffolding.
