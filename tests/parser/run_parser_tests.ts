@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { parseMarkdownToDocx } from '../src/features/markdown-parser';
+import { parseMarkdownToDocx } from '@/features/markdown-parser';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'parser-tests');
 

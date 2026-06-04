@@ -1,5 +1,5 @@
-import { BibItem } from '../src/features/markdown-parser/lib/types';
-import { formatBibItem } from '../src/features/markdown-parser/lib/utils/bib-formatter';
+import { BibItem } from '@/features/markdown-parser/lib/types';
+import { formatBibItem } from '@/features/markdown-parser/lib/utils/bib-formatter';
 
 const tests: { input: BibItem; expected: string }[] = [
 	{

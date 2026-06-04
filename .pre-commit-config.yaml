@@ -17,7 +17,7 @@ repos:
             name: Prettier staged files
             entry: npx prettier --write
             language: system
-            files: ^((src|tests)/.*\.(ts|json)|docs/.*\.md|README\.md|package\.json|tsconfig\.json|eslint\.config\.mjs|steiger\.config\.ts|\.prettierrc|\.pre-commit-config\.yaml|\.github/.*\.yml|sonar-project\.properties)$
+            files: ^((src|tests)/.*\.(ts|json)|docs/.*\.md|tests/.*\.md|README\.md|package\.json|tsconfig\.json|eslint\.config\.mjs|steiger\.config\.ts|\.prettierrc|\.pre-commit-config\.yaml|\.github/.*\.yml|sonar-project\.properties)$
             exclude: ^(node_modules/|reports/|output/|research/|\.agents/skills/docx/)
 
           - id: eslint
@@ -56,6 +56,14 @@ repos:
           - id: ruff-check
             name: Ruff Python check
             entry: uv run ruff check scripts
+            language: system
+            pass_filenames: false
+            files: ^scripts/.*\.py$
+            stages: [pre-push]
+
+          - id: ruff-format-check
+            name: Ruff Python format check
+            entry: uv run ruff format --check scripts
             language: system
             pass_filenames: false
             files: ^scripts/.*\.py$

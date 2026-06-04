@@ -1,17 +1,17 @@
 import {
 	formatSourcePreflightIssue,
 	runSourcePreflight,
-} from '../src/shared/lib/source-preflight';
+} from '@/shared/lib/source-preflight';
 
 /**
  * Regression tests for STO report source quality.
- * Usage: npx tsx tests/regression_checks.ts <reports_dir>
+ * Usage: npx tsx tests/source-preflight/regression_checks.ts <reports_dir>
  */
 function main(): void {
 	const reportsDir = process.argv[2];
 	if (!reportsDir) {
 		console.error(
-			'Usage: npx tsx tests/regression_checks.ts <reports_dir>',
+			'Usage: npx tsx tests/source-preflight/regression_checks.ts <reports_dir>',
 		);
 		process.exit(1);
 	}

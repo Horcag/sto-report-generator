@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { unpackDocx } from '../src/shared/lib/docx-archive';
-import { validateSTO } from '../src/shared/lib/sto-validator';
+import { unpackDocx } from '@/shared/lib/docx-archive';
+import { validateSTO } from '@/shared/lib/sto-validator';
 
-const brokenDir = path.join(__dirname, 'fixtures', 'validator', 'broken');
+const brokenDir = path.join(__dirname, '..', 'fixtures', 'validator', 'broken');
 const tempRoot = path.join(process.cwd(), '.agent-work', 'validator-tests');
 
 function normalizeOutput(output: string): string[] {

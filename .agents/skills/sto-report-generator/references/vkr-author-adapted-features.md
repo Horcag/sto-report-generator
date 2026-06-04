@@ -27,7 +27,7 @@ Implemented in `src/shared/lib/sto-validator.ts`:
 
 ### Source Markdown preflight
 
-Implemented in `tests/regression_checks.ts`:
+Implemented in `tests/source-preflight/regression_checks.ts`:
 
 - no unresolved source markers;
 - no em-dash `—`;

@@ -48,7 +48,7 @@ Use `sync_notebook_figures.py` when the notebook is the source of truth for all 
 Full coursework check:
 
 ```powershell
-npx tsx tests/regression_checks.ts reports/coursework_sad
+npx tsx tests/source-preflight/regression_checks.ts reports/coursework_sad
 npx tsx src/index.ts reports/coursework_sad reports/coursework_sad/coursework_sad.docx
 uv run --with pywin32 --with lxml python scripts/post_build.py reports/coursework_sad/coursework_sad.docx
 npm run unpack -- reports/coursework_sad/coursework_sad.docx .temp_coursework_docx

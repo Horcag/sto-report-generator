@@ -1,15 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { buildReport } from '../src/app/builder';
-import { readDocxEntry } from '../src/shared/lib/docx-archive';
+import { buildReport } from '@/app/builder';
+import { readDocxEntry } from '@/shared/lib/docx-archive';
 
-const projectRoot = path.join(__dirname, '..');
+const projectRoot = path.join(__dirname, '..', '..');
 const sampleDir = path.join(projectRoot, 'example');
 const tempRoot = path.join(projectRoot, '.agent-work', 'snapshot-test');
 const tempOutput = path.join(tempRoot, 'temp_output.docx');
 const snapshotFile = path.join(
 	__dirname,
+	'..',
 	'fixtures',
 	'generator',
 	'snapshot.xml',

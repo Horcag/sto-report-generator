@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { runSourcePreflight } from '../src/shared/lib/source-preflight';
+import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
 const tempRoot = path.join(
 	process.cwd(),

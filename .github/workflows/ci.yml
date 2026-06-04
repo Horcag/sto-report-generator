@@ -39,11 +39,8 @@ jobs:
             - name: Run TypeScript quality gate
               run: npm run ci:check
 
-            - name: Run Python lint
-              run: uv run ruff check scripts
-
-            - name: Run Python type check
-              run: uv run mypy scripts
+            - name: Run Python quality gate
+              run: npm run python:quality
 
     sonar:
         name: SonarQube scan

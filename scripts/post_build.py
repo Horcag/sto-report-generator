@@ -1,14 +1,16 @@
-import sys
-import os
+import contextlib
 import json
+import os
 import re
 import shutil
 import subprocess
-import zipfile
+import sys
 import tempfile
+import zipfile
 from pathlib import Path
-from lxml import etree
+
 import win32com.client
+from lxml import etree
 
 WD_ALIGN_PARAGRAPH_CENTER = 1
 WD_ACTIVE_END_PAGE_NUMBER = 3
@@ -20,13 +22,14 @@ WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 MATH_XSL_PATH = Path(r"C:\Program Files\Microsoft Office\root\Office16\MML2OMML.XSL")
 MATH_PATTERN = re.compile(r"\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$")
 SPACING_AFTER_TABLE_TWIPS = "120"
+SMALL_TILDE = "\u02dc"
 
 
 def strip_frontmatter(markdown_text):
     if markdown_text.startswith("---"):
         match = re.match(r"^---\s*\n[\s\S]*?\n---\s*\n?", markdown_text)
         if match:
-            return markdown_text[match.end():]
+            return markdown_text[match.end() :]
     return markdown_text
 
 
@@ -98,18 +101,14 @@ const fs = require('fs');
         check=False,
     )
     if completed.returncode != 0:
-        raise RuntimeError(
-            "MathJax conversion failed:\n"
-            + completed.stderr.strip()
-        )
+        raise RuntimeError("MathJax conversion failed:\n" + completed.stderr.strip())
 
     results = json.loads(completed.stdout)
     failed = [item for item in results if not item.get("ok")]
     if failed:
         first = failed[0]
         raise RuntimeError(
-            f"MathJax failed for formula: {first.get('formula')}\n"
-            f"{first.get('error')}"
+            f"MathJax failed for formula: {first.get('formula')}\n{first.get('error')}"
         )
 
     return [item["mathml"] for item in results]
@@ -147,10 +146,8 @@ def fix_tilde_accents(root):
     fixed = 0
 
     for lim_upp in list(root.xpath(".//m:limUpp", namespaces=namespace)):
-        accent_text = "".join(
-            lim_upp.xpath("./m:lim//m:t/text()", namespaces=namespace)
-        ).strip()
-        if accent_text not in {"~", "˜"}:
+        accent_text = "".join(lim_upp.xpath("./m:lim//m:t/text()", namespaces=namespace)).strip()
+        if accent_text not in {"~", SMALL_TILDE}:
             continue
 
         base = lim_upp.find(f"{{{MATH_NS}}}e")
@@ -160,7 +157,7 @@ def fix_tilde_accents(root):
         accent = etree.Element(f"{{{MATH_NS}}}acc")
         accent_pr = etree.SubElement(accent, f"{{{MATH_NS}}}accPr")
         accent_chr = etree.SubElement(accent_pr, f"{{{MATH_NS}}}chr")
-        accent_chr.set(f"{{{MATH_NS}}}val", "˜")
+        accent_chr.set(f"{{{MATH_NS}}}val", SMALL_TILDE)
         accent.append(etree.fromstring(etree.tostring(base)))
 
         parent = lim_upp.getparent()
@@ -229,10 +226,13 @@ def add_spacing_after_data_tables(document_root):
         if element.xpath(".//m:oMath", namespaces=namespace):
             continue
 
-        for following in elements[index + 1:]:
+        for following in elements[index + 1 :]:
             if following.tag == f"{{{WORD_NS}}}p" and paragraph_has_visible_content(following):
                 style = paragraph_style(following)
-                if not style.startswith("Heading") and style not in {"TableCaption", "FigureCaption"}:
+                if not style.startswith("Heading") and style not in {
+                    "TableCaption",
+                    "FigureCaption",
+                }:
                     set_paragraph_space_before(following, SPACING_AFTER_TABLE_TWIPS)
                     changed += 1
                 break
@@ -286,7 +286,7 @@ def replace_formulas_from_markdown(docx_path, report_dir):
     mathml_values = latex_to_mathml_batch(formulas, repo_root)
     new_formulas = convert_mathml_to_omath(mathml_values)
 
-    for old_formula, new_formula in zip(existing_formulas, new_formulas):
+    for old_formula, new_formula in zip(existing_formulas, new_formulas, strict=True):
         parent = old_formula.getparent()
         parent.replace(old_formula, new_formula)
 
@@ -336,52 +336,24 @@ def get_counts_from_docx(docx_path):
 
         tree = etree.parse(str(doc_path))
         root = tree.getroot()
-        ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+        ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 
-        for p in root.xpath('.//w:p', namespaces=ns):
-            pStyle = p.xpath('.//w:pStyle/@w:val', namespaces=ns)
+        for p in root.xpath(".//w:p", namespaces=ns):
+            pStyle = p.xpath(".//w:pStyle/@w:val", namespaces=ns)
             if pStyle:
                 style = pStyle[0]
-                if style == 'FigureCaption':
+                if style == "FigureCaption":
                     figures += 1
-                elif style == 'TableCaption':
+                elif style == "TableCaption":
                     tables += 1
 
-            # Count sources by checking numbering reference 'bib-numbering'
-            # docx-js generates a specific numId for bib-numbering. 
-            # Alternatively, we can just look for text that starts with numbers in the bibliography section, 
-            # but since docx-js uses abstractNumId for bib-numbering, we might not easily map it without reading numbering.xml.
-            # Let's check numbering.xml to find the numId for bib-numbering.
-
-        num_path = Path(temp_dir) / "word" / "numbering.xml"
-        bib_num_id = None
-        if num_path.exists():
-            num_tree = etree.parse(str(num_path))
-            num_root = num_tree.getroot()
-            # Find abstractNum where w:abstractNumId is used for bib-numbering.
-            # docx-js stores the reference string in a custom way or we can just count all items that use the specific numbering level 
-            # with the hanging indent 1069/360.
-            # Actually, the simplest way to count sources is to count the <w:numId> references that match the bibliography.
-            # Since we know docx-js uses a specific numId or we can just count paragraphs inside the bibliography environment.
-            # Wait! In parser.ts we handled the bibliography by matching `context.isBib`. 
-            pass
-
-        # Since counting sources via XML might be tricky if we don't know the exact numId,
-        # let's just count paragraphs that have `w:numPr` and belong to the bibliography part, OR
-        # just count references to [X] in the text to find the max citation number?
-        # Actually, in parser.ts: `numbering: { reference: 'bib-numbering', level: 0 }`
-        # In numbering.xml, docx-js creates an abstractNum and a num instance. 
-        # A simpler way to count sources: regex over all text for `\[(\d+)\]` and find the max, OR
-        # parse the bibliography text.
-
-        # Let's count citations in text: [1], [2], [1, 2], etc.
+        # Count sources by the highest citation marker found in text: [1], [1, 2], etc.
         max_source = 0
-        import re
-        for t in root.xpath('.//w:t/text()', namespaces=ns):
-            matches = re.findall(r'\[([\d,\s]+)\]', t)
+        for t in root.xpath(".//w:t/text()", namespaces=ns):
+            matches = re.findall(r"\[([\d,\s]+)\]", t)
             for m in matches:
                 # Split by comma in case of [1, 2]
-                nums = [int(n.strip()) for n in m.split(',') if n.strip().isdigit()]
+                nums = [int(n.strip()) for n in m.split(",") if n.strip().isdigit()]
                 if nums:
                     max_source = max(max_source, max(nums))
 
@@ -393,9 +365,12 @@ def get_counts_from_docx(docx_path):
 def pluralize_ru(n, form1, form2, form5):
     n = abs(n) % 100
     n1 = n % 10
-    if n > 10 and n < 20: return form5
-    if n1 > 1 and n1 < 5: return form2
-    if n1 == 1: return form1
+    if n > 10 and n < 20:
+        return form5
+    if n1 > 1 and n1 < 5:
+        return form2
+    if n1 == 1:
+        return form1
     return form5
 
 
@@ -541,9 +516,10 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
         print(f"Error: File not found - {abs_path}", file=sys.stderr)
         sys.exit(1)
 
-    source_dir = Path(report_source_dir) if report_source_dir else Path(abs_path).parent
-    if not any(source_dir.glob("*.md")):
-        source_dir = None
+    candidate_source_dir = Path(report_source_dir) if report_source_dir else Path(abs_path).parent
+    source_dir: Path | None = (
+        candidate_source_dir if any(candidate_source_dir.glob("*.md")) else None
+    )
 
     formula_replacements = 0
     if source_dir is not None:
@@ -554,9 +530,19 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
     figures, tables, sources = get_counts_from_docx(abs_path)
 
     # Text representations
-    fig_text = f"{figures} {pluralize_ru(figures, 'рисунок', 'рисунка', 'рисунков')}" if figures > 0 else ""
-    tab_text = f"{tables} {pluralize_ru(tables, 'таблица', 'таблицы', 'таблиц')}" if tables > 0 else ""
-    src_text = f"{sources} {pluralize_ru(sources, 'источник', 'источника', 'источников')}" if sources > 0 else ""
+    fig_text = (
+        f"{figures} {pluralize_ru(figures, 'рисунок', 'рисунка', 'рисунков')}"
+        if figures > 0
+        else ""
+    )
+    tab_text = (
+        f"{tables} {pluralize_ru(tables, 'таблица', 'таблицы', 'таблиц')}" if tables > 0 else ""
+    )
+    src_text = (
+        f"{sources} {pluralize_ru(sources, 'источник', 'источника', 'источников')}"
+        if sources > 0
+        else ""
+    )
 
     word = None
     doc = None
@@ -585,7 +571,7 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
             "{{PAGES}}": str(pages),
             "{{FIGURES}}": fig_text,
             "{{TABLES}}": tab_text,
-            "{{SOURCES}}": src_text
+            "{{SOURCES}}": src_text,
         }
 
         errors = []
@@ -603,7 +589,9 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
             rng.Find.ClearFormatting()
             rng.Find.Replacement.ClearFormatting()
             # Execute(FindText, MatchCase, MatchWholeWord, MatchWildcards, MatchSoundsLike, MatchAllWordForms, Forward, Wrap, Format, ReplaceWith, Replace)
-            rng.Find.Execute(placeholder, False, False, False, False, False, True, 1, False, value, 2)  # wdReplaceAll
+            rng.Find.Execute(
+                placeholder, False, False, False, False, False, True, 1, False, value, 2
+            )  # wdReplaceAll
 
         # Clean up empty commas (if any count was 0)
         rng = doc.Content
@@ -622,15 +610,11 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
         sys.exit(1)
     finally:
         if doc is not None:
-            try:
+            with contextlib.suppress(Exception):
                 doc.Close(False)  # don't save if error
-            except Exception:
-                pass
         if word is not None:
-            try:
+            with contextlib.suppress(Exception):
                 word.Quit()
-            except Exception:
-                pass
 
     dirty_fields = clear_dirty_fields(abs_path)
     print(
@@ -644,7 +628,10 @@ def post_build(docx_path, report_source_dir=None, pdf_output_path=None):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python post_build.py <path_to_docx> [report_source_dir] [pdf_output_path]", file=sys.stderr)
+        print(
+            "Usage: python post_build.py <path_to_docx> [report_source_dir] [pdf_output_path]",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     post_build(

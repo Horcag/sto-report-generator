@@ -33,7 +33,7 @@ Core paths:
 - `scripts/post_build.py` - Word COM post-processing: TOC, page/figure/table/source placeholders, table headers, image
   normalization, formula repair, dirty field cleanup, and PDF export.
 - `src/shared/lib/sto-validator.ts` - XML-level STO checks after unpacking the `.docx`.
-- `tests/regression_checks.ts` - source Markdown preflight checks before final build.
+- `tests/source-preflight/regression_checks.ts` - source Markdown preflight checks before final build.
 - `steiger.config.ts` - Feature-Sliced Design architecture checks.
 - `.pre-commit-config.yaml` - pre-commit/pre-push quality gates.
 - `reports/<report_name>/` - local report modules and images. Treat these as user/private working material.
@@ -123,8 +123,8 @@ local absolute paths there.
 - Respect the FSD-like layers: `app` orchestrates, `features` implement report-building capabilities, `entities` hold
   domain types, `widgets` hold large DOCX blocks, `shared` holds infrastructure/config/validators.
 - Run `npm run fsd:check` after moving files across layers or changing imports.
-- Add or update checks in `tests/regression_checks.ts` for source Markdown problems and
-  `src/shared/lib/sto-validator.ts` for generated DOCX XML problems.
+- Add or update checks in `tests/source-preflight/` for source Markdown problems and
+  `tests/validator/` plus `src/shared/lib/sto-validator.ts` for generated DOCX XML problems.
 - Put reusable STO constants into `src/shared/config/sto-rules.json` when they are stable and portable. Keep
   report-specific values in report files, not in shared config.
 - Do not import the `vkr-author` Pandoc/Lua pipeline into this repository unless the user explicitly asks for a second

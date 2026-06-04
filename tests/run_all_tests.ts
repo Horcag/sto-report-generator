@@ -3,15 +3,15 @@ import { spawnSync } from 'node:child_process';
 const tsxCliPath = require.resolve('tsx/cli');
 
 const tests = [
-	['tests/run_source_preflight_tests.ts'],
-	['tests/regression_checks.ts', 'example'],
-	['tests/run_parser_tests.ts'],
-	['tests/run_validator_tests.ts'],
-	['tests/run_generated_docx_validation.ts'],
-	['tests/run_scaffold_tests.ts'],
-	['tests/bib-gost.test.ts'],
-	['tests/toc_regression.ts'],
-	['tests/run_generator_snapshot_test.ts'],
+	['tests/source-preflight/run_source_preflight_tests.ts'],
+	['tests/source-preflight/regression_checks.ts', 'example'],
+	['tests/parser/run_parser_tests.ts'],
+	['tests/validator/run_validator_tests.ts'],
+	['tests/generator/run_generated_docx_validation.ts'],
+	['tests/scaffold/run_scaffold_tests.ts'],
+	['tests/bibliography/bib-gost.test.ts'],
+	['tests/generator/toc_regression.ts'],
+	['tests/generator/run_generator_snapshot_test.ts'],
 ];
 
 for (const args of tests) {

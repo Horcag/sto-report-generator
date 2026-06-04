@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { scaffoldReport } from '../src/app/report-scaffold';
-import { runSourcePreflight } from '../src/shared/lib/source-preflight';
+import { scaffoldReport } from '@/app/report-scaffold';
+import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'scaffold-tests');
 fs.rmSync(tempRoot, { recursive: true, force: true });

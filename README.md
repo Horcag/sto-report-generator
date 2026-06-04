@@ -292,7 +292,7 @@ Markdown-таблица.
 
 ## Что проверяют валидаторы
 
-`tests/regression_checks.ts` проверяет исходный Markdown:
+`tests/source-preflight/regression_checks.ts` проверяет исходный Markdown:
 
 \begin{sto_list}
 

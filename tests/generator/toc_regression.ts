@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { buildReport } from '../src/app/builder';
-import { readDocxEntry } from '../src/shared/lib/docx-archive';
+import { buildReport } from '@/app/builder';
+import { readDocxEntry } from '@/shared/lib/docx-archive';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'toc-test');
 const tempMd = path.join(tempRoot, 'toc_test.md');
