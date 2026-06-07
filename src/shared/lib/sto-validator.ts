@@ -23,6 +23,7 @@ interface ValidationInput {
 	docXml: string;
 	stylesXml: string;
 	numberingXml: string | null;
+	footerXmlByType: Partial<Record<string, string>>;
 	heading1StyleIds: readonly string[];
 	heading1StyleRef: string;
 	structuralHeadingStyleRef: string;
@@ -51,6 +52,45 @@ function regexMatches(pattern: RegExp, value: string): boolean {
 
 function readXmlIfExists(filePath: string): string | null {
 	return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : null;
+}
+
+function readFooterXmlByType(
+	unpackedDirPath: string,
+	docXml: string,
+): Partial<Record<string, string>> {
+	const relsXml = readXmlIfExists(
+		path.join(unpackedDirPath, 'word', '_rels', 'document.xml.rels'),
+	);
+	if (relsXml === null) {
+		return {};
+	}
+
+	const relationshipTargets = new Map(
+		[
+			...relsXml.matchAll(
+				/<Relationship\b[^>]*\bId="([^"]+)"[^>]*\bTarget="([^"]+)"[^>]*>/g,
+			),
+		].map(match => [match[1], match[2]]),
+	);
+	const footers: Partial<Record<string, string>> = {};
+
+	for (const match of docXml.matchAll(
+		/<w:footerReference\b[^>]*\bw:type="([^"]+)"[^>]*\br:id="([^"]+)"[^>]*\/>/g,
+	)) {
+		const type = match[1];
+		const target = relationshipTargets.get(match[2]);
+		if (!target) {
+			continue;
+		}
+		const normalizedTarget = target.replace(/^\/?word\//, '');
+		const footerPath = path.join(unpackedDirPath, 'word', normalizedTarget);
+		const footerXml = readXmlIfExists(footerPath);
+		if (footerXml !== null) {
+			footers[type] = footerXml;
+		}
+	}
+
+	return footers;
 }
 
 function extractWordText(xml: string): string {
@@ -464,6 +504,42 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 	];
 }
 
+function hasCenteredPageNumber(footerXml: string | undefined): boolean {
+	if (!footerXml || !regexMatches(/\bPAGE\b/, footerXml)) {
+		return false;
+	}
+	return (footerXml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? []).some(
+		paragraphXml =>
+			regexMatches(/\bPAGE\b/, paragraphXml) &&
+			regexMatches(/<w:jc\b[^>]*w:val="center"[^>]*\/>/, paragraphXml),
+	);
+}
+
+function hasVisiblePageNumber(footerXml: string | undefined): boolean {
+	return footerXml ? regexMatches(/\bPAGE\b/, footerXml) : false;
+}
+
+function validatePageNumbering(input: ValidationInput): ValidationResult[] {
+	const hasTitlePage = regexMatches(/<w:titlePg\b/, input.docXml);
+	const firstFooter = input.footerXmlByType.first;
+
+	return [
+		resultFromPass(
+			'Page Number Footer',
+			hasCenteredPageNumber(input.footerXmlByType.default),
+			'Page number must be in the centered default footer.',
+		),
+		resultFromPass(
+			'Title Page Number Hidden',
+			hasTitlePage &&
+				firstFooter !== undefined &&
+				!hasVisiblePageNumber(firstFooter) &&
+				extractWordText(firstFooter).trim().length === 0,
+			'Title page must be included in numbering but must not display a page number.',
+		),
+	];
+}
+
 function validateMathAndCitations(docXml: string): ValidationResult[] {
 	const documentText = extractWordText(docXml);
 	const citationNumbers = extractCitationNumbers(documentText);
@@ -667,6 +743,7 @@ function createValidationInput(
 	docXml: string,
 	stylesXml: string,
 	numberingXml: string | null,
+	footerXmlByType: Partial<Record<string, string>>,
 ): ValidationInput {
 	const heading1StyleIds = [getNumberedHeadingStyleId(1), 'Heading1', '1'];
 	const heading1StyleRef = `<w:pStyle w:val="(?:${heading1StyleIds.map(escapeRegExp).join('|')})"/>`;
@@ -676,6 +753,7 @@ function createValidationInput(
 		docXml,
 		stylesXml,
 		numberingXml,
+		footerXmlByType,
 		heading1StyleIds,
 		heading1StyleRef,
 		structuralHeadingStyleRef,
@@ -716,11 +794,16 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 		fs.readFileSync(documentXmlPath, 'utf8'),
 		stylesXml,
 		readXmlIfExists(numberingXmlPath),
+		readFooterXmlByType(
+			unpackedDirPath,
+			fs.readFileSync(documentXmlPath, 'utf8'),
+		),
 	);
 
 	return [
 		...validateHeadingText(input),
 		...validateTypography(input),
+		...validatePageNumbering(input),
 		...validateMathAndCitations(input.docXml),
 		...validateNumbering(input.numberingXml),
 		...validateFieldsTablesAndImages(input),

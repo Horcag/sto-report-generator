@@ -1,3 +1,5 @@
+import { ReportConfig } from '../report-config';
+
 export type SourcePreflightSeverity = 'error' | 'warning';
 
 export interface SourcePreflightIssue {
@@ -10,13 +12,16 @@ export interface SourcePreflightIssue {
 
 export interface SourcePreflightResult {
 	reportDir: string;
+	sourceDir: string;
 	issues: SourcePreflightIssue[];
 	passed: boolean;
+	config: ReportConfig;
 }
 
 export interface SourcePreflightOptions {
 	cwd?: string;
 	strict?: boolean;
+	config?: ReportConfig;
 }
 
 export interface SourceFile {

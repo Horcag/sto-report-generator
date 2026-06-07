@@ -1,4 +1,5 @@
 import { STO_RULES } from '@/shared/config';
+import { ReportConfig } from '@/shared/lib/report-config';
 
 import { SourceFile, SourcePreflightIssue } from './types';
 import { issue, lineNumberAt } from './utils';
@@ -23,11 +24,15 @@ function findKeywordsLine(
 export function validateReferat(
 	files: SourceFile[],
 	issues: SourcePreflightIssue[],
+	config: ReportConfig,
 ): void {
 	const referat = files.find(
 		({ file }) => file === STO_RULES.referat.fileName,
 	);
 	if (!referat) {
+		if (!config.document.requireReferat) {
+			return;
+		}
 		issues.push(
 			issue(
 				'referat-file-missing',

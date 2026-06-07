@@ -62,6 +62,62 @@ title: Test
 	return { ...defaults, ...normalizedOverrides };
 }
 
+function labFiles(
+	overrides: Record<string, string> = {},
+): Record<string, string> {
+	return {
+		'report.config.json': JSON.stringify(
+			{
+				profile: 'lab',
+				sourceDir: '.',
+				outputDocx: 'build/lab.docx',
+				document: {
+					requiredStructuralHeadings: ['ВВЕДЕНИЕ', 'ЗАКЛЮЧЕНИЕ'],
+					optionalStructuralHeadings: [
+						'СОДЕРЖАНИЕ',
+						'СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ',
+					],
+					requireReferat: false,
+					requireSources: 'when-cited',
+				},
+				preflight: {
+					strict: false,
+					softTextRules: 'warning',
+				},
+			},
+			null,
+			2,
+		),
+		'00_metadata.md': `---
+department: "Институт информатики и кибернетики"
+subdepartment: "Кафедра технической кибернетики"
+reportType: "Лабораторная работа"
+degree: "по дисциплине «Название дисциплины»"
+semester: 6
+specialtyCode: "01.03.02"
+specialtyName: "Прикладная математика и информатика"
+profileName: "Искусственный интеллект и компьютерные науки"
+studentName: "Иванов Иван Иванович"
+groupNumber: "6300 – 010302D"
+topic: "Лабораторная работа"
+supervisorName: "Петров Петр Петрович"
+supervisorTitle: "доцент"
+city: "Самара"
+year: 2026
+---
+`,
+		'03_intro.md': `\\sto_structural_heading{ВВЕДЕНИЕ}
+
+Цель лабораторной работы – проверить профиль.
+`,
+		'90_conclusion.md': `\\sto_structural_heading{ЗАКЛЮЧЕНИЕ}
+
+Выводы представлены корректно.
+`,
+		...overrides,
+	};
+}
+
 function expectPass(name: string, files: Record<string, string>): void {
 	const result = runSourcePreflight(writeReport(name, files));
 	assert.equal(
@@ -137,6 +193,113 @@ fs.rmSync(tempRoot, { recursive: true, force: true });
 fs.mkdirSync(tempRoot, { recursive: true });
 
 expectPass('valid-minimal', validFiles());
+expectPass('lab-without-referat-or-sources', labFiles());
+
+expectIssue(
+	'unknown-profile',
+	validFiles({
+		'report.config.json': JSON.stringify({ profile: 'seminar' }),
+	}),
+	'report-config-unknown-profile',
+);
+
+expectIssue(
+	'absolute-config-path',
+	validFiles({
+		'report.config.json': JSON.stringify({
+			profile: 'nir',
+			sourceDir: 'C:\\Users\\student\\report',
+		}),
+	}),
+	'report-config-absolute-path',
+);
+
+expectIssue(
+	'lab-citation-requires-sources',
+	labFiles({
+		'03_intro.md': `\\sto_structural_heading{ВВЕДЕНИЕ}
+
+Источник используется в тексте [@smith2020].
+`,
+		'references.bib': `@article{smith2020,
+  author = {Smith, J.},
+  title = {Source},
+  journal = {Journal},
+  year = {2020}
+}
+`,
+	}),
+	'structural-heading-missing',
+);
+
+expectIssue(
+	'unknown-bibtex-key',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с неизвестным источником [@missing2020].
+`,
+		'references.bib': `@article{known2020,
+  author = {Smith, J.},
+  title = {Source},
+  journal = {Journal},
+  year = {2020}
+}
+`,
+	}),
+	'unknown-bibtex-key',
+);
+
+expectIssue(
+	'manual-bibliography-content',
+	validFiles({
+		'91_sources.md': `\\sto_structural_heading{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
+
+\\begin{sto_bibliography}
+1 Ручной источник.
+\\end{sto_bibliography}
+`,
+	}),
+	'manual-bibliography-content',
+);
+
+expectWarning(
+	'heading-final-period',
+	validFiles({
+		'03_intro.md': `# Заголовок с точкой.
+
+Текст без нарушений.
+`,
+	}),
+	'markdown-heading-final-period',
+);
+
+expectWarning(
+	'heading-level-jump',
+	validFiles({
+		'03_intro.md': `# Раздел
+
+### Подраздел с перескоком
+
+Текст без нарушений.
+`,
+	}),
+	'markdown-heading-level-jump',
+);
+
+expectIssue(
+	'metadata-invalid-type',
+	validFiles({
+		'00_metadata.md': `---
+semester: "six"
+year: "2026"
+---
+`,
+	}),
+	'metadata-field-invalid-type',
+);
 
 expectIssue(
 	'unsupported-env',

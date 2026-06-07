@@ -22,10 +22,11 @@ Core paths:
 
 - `src/index.ts` - CLI entrypoint: `new`, `check`, `build`, `generate`, and `validate-docx` commands.
 - `src/app/builder.ts` - report assembly: sorted `.md` files, metadata, title page, DOCX packer.
-- `src/app/report-scaffold.ts` - portable report folder scaffolding with templates, `report.config.json`, local
-  `.gitignore`, and optional nested `git init`.
+- `src/app/report-scaffold.ts` - portable report folder scaffolding with `nir`, `coursework`, and `lab` profiles,
+  templates, `report.config.json`, local `.gitignore`, and optional nested `git init`.
 - `src/app/report-workflow.ts` - high-level `generate` orchestration from source preflight through DOCX validation.
 - `src/features/markdown-parser/` - Markdown, citations, formulas, tables, images, STO flags.
+- `src/shared/lib/report-config.ts` - resolved report profiles/config; keep report-specific overrides portable and relative.
 - `src/shared/config/sto-rules.json` - portable STO constants used by formatting, parser guards, preflight checks and
   DOCX validation.
 - `docs/sto-rules-coverage.md` - audit of STO rules already transferred from extracted standards and rules still worth automating.
@@ -51,8 +52,11 @@ npm run hooks:install
 - For a new report, scaffold the folder instead of copying an old report by hand:
 
 ```powershell
-npm run new:report -- <report_name> --dir reports/<report_name> --title "<topic>"
+npm run new:report -- <report_name> --profile coursework --dir reports/<report_name> --title "<topic>"
 ```
+
+Use `--profile nir`, `--profile coursework`, or `--profile lab`. `lab` intentionally omits referat/sources until
+citations require them. `--type` changes title-page text only; it is not a profile selector.
 
 - Inspect the target report directory and edit the smallest relevant `.md` modules. Do not rewrite a whole report in one
   file.
@@ -65,7 +69,7 @@ npm run check:source -- reports/<report_name>
 ```
 
 - Prefer the high-level generator for normal builds. It reads `report.config.json`; keep that file portable and
-  relative, with no personal absolute paths:
+  relative, with no personal absolute paths. `check` and `generate` both use the same resolved profile/config:
 
 ```powershell
 npm run generate:report -- reports/<report_name> --post-build --validate
@@ -111,6 +115,8 @@ local absolute paths there.
 - Use BibTeX cite keys in text: `[@key]` or `[@key1; @key2]`. Do not write source numbers like `[1]` manually in source Markdown.
 - Do not use `[0]` citations.
 - Keep `91_sources.md` as an empty `sto_bibliography` container; unused entries may remain in `references.bib`.
+- For `lab`, sources are optional until the first `[@key]` citation. After adding a citation, add `references.bib` and a
+  `СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ` structural section unless config explicitly says otherwise.
 - Avoid bold Markdown outside `01_referat.md`; the parser treats bold in regular text as an STO violation.
 - Put code and technical file-size audit details outside the final report unless they are substantively needed.
 - After a formula followed by a lowercase `где`, do not end the formula with a period and do not write `где:`.
@@ -128,6 +134,8 @@ local absolute paths there.
   `tests/validator/` plus `src/shared/lib/sto-validator.ts` for generated DOCX XML problems.
 - Put reusable STO constants into `src/shared/config/sto-rules.json` when they are stable and portable. Keep
   report-specific values in report files, not in shared config.
+- Put report-type behavior into `src/shared/lib/report-config.ts` profiles or `report.config.json`, not into ad hoc
+  checker branches.
 - Do not import the `vkr-author` Pandoc/Lua pipeline into this repository unless the user explicitly asks for a second
   build system.
 

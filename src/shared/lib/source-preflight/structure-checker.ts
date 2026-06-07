@@ -1,4 +1,8 @@
 import { STO_RULES } from '@/shared/config';
+import {
+	getStructuralHeadingOrder,
+	ReportConfig,
+} from '@/shared/lib/report-config';
 
 import { SourceFile, SourcePreflightIssue } from './types';
 import { issue, lineNumberAt } from './utils';
@@ -26,14 +30,42 @@ function collectStructuralHeadings(files: SourceFile[]): StructuralHeading[] {
 	);
 }
 
+function hasCitations(files: SourceFile[]): boolean {
+	return files.some(({ content }) => /\[@[^\]]+]/.test(content));
+}
+
+function getRequiredStructuralHeadings(
+	config: ReportConfig,
+	sourceHasCitations: boolean,
+): string[] {
+	const required = new Set(
+		config.document.requiredStructuralHeadings.map(heading =>
+			heading.toUpperCase(),
+		),
+	);
+	const shouldRequireSources =
+		config.document.requireSources === true ||
+		(config.document.requireSources === 'when-cited' && sourceHasCitations);
+	if (shouldRequireSources) {
+		required.add(STO_RULES.markdown.sourcesStructuralHeading);
+	}
+	return [...required];
+}
+
 export function validateDocumentStructure(
 	files: SourceFile[],
 	issues: SourcePreflightIssue[],
+	config: ReportConfig,
 ): void {
 	const headings = collectStructuralHeadings(files);
 	const headingNames = headings.map(heading => heading.upperText);
+	const sourceHasCitations = hasCitations(files);
+	const requiredStructuralHeadings = getRequiredStructuralHeadings(
+		config,
+		sourceHasCitations,
+	);
 
-	for (const requiredHeading of STO_RULES.documentStructure.requiredOrder) {
+	for (const requiredHeading of requiredStructuralHeadings) {
 		if (!headingNames.includes(requiredHeading)) {
 			issues.push(
 				issue(
@@ -45,7 +77,7 @@ export function validateDocumentStructure(
 	}
 
 	let previousIndex = -1;
-	for (const expected of STO_RULES.documentStructure.requiredOrder) {
+	for (const expected of getStructuralHeadingOrder(config.document)) {
 		const actualIndex = headingNames.indexOf(expected);
 		if (actualIndex === -1) {
 			continue;

@@ -1,6 +1,7 @@
 import { buildReport } from '@/app/builder';
 import { scaffoldReport } from '@/app/report-scaffold';
 import { generateReport, validateDocxFile } from '@/app/report-workflow';
+import { isReportProfile, ReportProfile } from '@/shared/lib/report-config';
 import {
 	formatSourcePreflightIssue,
 	runSourcePreflight,
@@ -61,12 +62,35 @@ function optionBoolean(args: ParsedArgs, name: string): boolean | undefined {
 	return args.options.get(name) !== false;
 }
 
+function optionNumber(args: ParsedArgs, name: string): number | undefined {
+	const value = optionString(args, name);
+	if (value === undefined) {
+		return undefined;
+	}
+	const numberValue = Number(value);
+	if (!Number.isFinite(numberValue)) {
+		throw new Error(`--${name} must be a number.`);
+	}
+	return numberValue;
+}
+
+function optionProfile(args: ParsedArgs): ReportProfile | undefined {
+	const value = optionString(args, 'profile');
+	if (value === undefined) {
+		return undefined;
+	}
+	if (!isReportProfile(value)) {
+		throw new Error('Supported profiles: nir, coursework, lab.');
+	}
+	return value;
+}
+
 function printHelp(): void {
 	console.log(`STO Report Generator
 
 Usage:
   npx tsx src/index.ts build <input.md|report_dir> <output.docx>
-  npx tsx src/index.ts new <slug> [--title "..."] [--dir reports/<slug>] [--no-git]
+  npx tsx src/index.ts new <slug> [--profile nir|coursework|lab] [--title "..."] [--dir reports/<slug>] [--no-git]
   npx tsx src/index.ts check <report_dir> [--strict]
   npx tsx src/index.ts generate <report_dir> [--output build/report.docx] [--post-build] [--validate]
   npx tsx src/index.ts validate-docx <report.docx> [unpack_dir]
@@ -93,11 +117,20 @@ function runNew(args: ParsedArgs): void {
 	const result = scaffoldReport({
 		slug,
 		dir: optionString(args, 'dir'),
+		profile: optionProfile(args),
 		title: optionString(args, 'title'),
 		reportType: optionString(args, 'type'),
+		department: optionString(args, 'department'),
+		subdepartment: optionString(args, 'subdepartment'),
+		specialtyCode: optionString(args, 'specialty-code'),
+		specialtyName: optionString(args, 'specialty-name'),
+		profileName: optionString(args, 'profile-name'),
+		semester: optionNumber(args, 'semester'),
+		year: optionNumber(args, 'year'),
 		studentName: optionString(args, 'student'),
 		groupNumber: optionString(args, 'group'),
 		supervisorName: optionString(args, 'supervisor'),
+		hideSignatures: optionBoolean(args, 'hide-signatures'),
 		initGit: !args.options.has('no-git'),
 	});
 

@@ -1,10 +1,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import {
+	ReportConfigDiagnostic,
+	resolveReportConfig,
+	resolveReportPath,
+} from './report-config';
 import { validateImageExists } from './source-preflight/asset-checker';
+import { validateBibliography } from './source-preflight/bibliography-checker';
 import { validateStoEnvironments } from './source-preflight/environment-checker';
 import { validateSourceFormulas } from './source-preflight/formula-checker';
+import { validateMarkdownHeadings } from './source-preflight/heading-checker';
 import { validateLists } from './source-preflight/list-checker';
+import { validateMetadata } from './source-preflight/metadata-checker';
 import { validateMicrotypography } from './source-preflight/microtypography-checker';
 import { validateSourcePunctuation } from './source-preflight/punctuation-checker';
 import { validateReferat } from './source-preflight/referat-checker';
@@ -12,6 +20,7 @@ import {
 	collectLabelDefinitions,
 	validateUnknownReferences,
 } from './source-preflight/reference-checker';
+import { validateSoftTextRules } from './source-preflight/soft-text-checker';
 import { validateDocumentStructure } from './source-preflight/structure-checker';
 import {
 	validateMarkdownTables,
@@ -67,14 +76,37 @@ function hasBlockingIssues(
 	);
 }
 
+function issueFromConfigDiagnostic(
+	diagnostic: ReportConfigDiagnostic,
+): SourcePreflightIssue {
+	return {
+		code: diagnostic.code,
+		file: diagnostic.file ? path.basename(diagnostic.file) : undefined,
+		message: diagnostic.message,
+		severity: diagnostic.severity,
+	};
+}
+
 export function runSourcePreflight(
 	reportDir: string,
 	options: SourcePreflightOptions = {},
 ): SourcePreflightResult {
 	const cwd = options.cwd ?? process.cwd();
-	const strict = options.strict ?? false;
 	const absoluteReportDir = path.resolve(cwd, reportDir);
+	const resolved = options.config
+		? { config: options.config, diagnostics: [] }
+		: resolveReportConfig(absoluteReportDir, {
+				cwd,
+				strict: options.strict,
+			});
+	const config = resolved.config;
+	const strict = options.strict ?? config.preflight.strict;
+	const absoluteSourceDir = resolveReportPath(
+		absoluteReportDir,
+		config.sourceDir,
+	);
 	const issues: SourcePreflightIssue[] = [];
+	issues.push(...resolved.diagnostics.map(issueFromConfigDiagnostic));
 
 	if (!fs.existsSync(absoluteReportDir)) {
 		issues.push({
@@ -82,17 +114,44 @@ export function runSourcePreflight(
 			message: `Directory not found: ${reportDir}`,
 			severity: 'error',
 		});
-		return { reportDir: absoluteReportDir, issues, passed: false };
+		return {
+			config,
+			issues,
+			passed: false,
+			reportDir: absoluteReportDir,
+			sourceDir: absoluteSourceDir,
+		};
 	}
 
-	const files = readSourceFiles(absoluteReportDir);
+	if (!fs.existsSync(absoluteSourceDir)) {
+		issues.push({
+			code: 'source-dir-not-found',
+			message: `Source directory not found: ${config.sourceDir}`,
+			severity: 'error',
+		});
+		return {
+			config,
+			issues,
+			passed: false,
+			reportDir: absoluteReportDir,
+			sourceDir: absoluteSourceDir,
+		};
+	}
+
+	const files = readSourceFiles(absoluteSourceDir);
 	if (files.length === 0) {
 		issues.push({
 			code: 'no-markdown-files',
 			message: 'No Markdown files found.',
 			severity: 'error',
 		});
-		return { reportDir: absoluteReportDir, issues, passed: false };
+		return {
+			config,
+			issues,
+			passed: false,
+			reportDir: absoluteReportDir,
+			sourceDir: absoluteSourceDir,
+		};
 	}
 
 	const definitions: LabelDefinitions = new Map();
@@ -100,24 +159,30 @@ export function runSourcePreflight(
 	for (const { file, content } of files) {
 		validateStoEnvironments(file, content, issues);
 		validateSourcePunctuation(file, content, issues);
+		validateMarkdownHeadings(file, content, issues);
 		collectLabelDefinitions(file, content, definitions, issues);
 	}
 
 	for (const { file, content } of files) {
 		validateMicrotypography(file, content, issues);
+		validateSoftTextRules(file, content, config, issues);
 		validateLists(file, content, issues);
 		validateSourceFormulas(file, content, issues);
 		validateMarkdownTables(file, content, issues);
-		validateImageExists(file, content, absoluteReportDir, cwd, issues);
+		validateImageExists(file, content, absoluteSourceDir, cwd, issues);
 		validateUnknownReferences(file, content, definitions, issues);
 	}
 
-	validateReferat(files, issues);
-	validateDocumentStructure(files, issues);
+	validateMetadata(files, issues);
+	validateBibliography(files, absoluteSourceDir, cwd, config, issues);
+	validateReferat(files, issues, config);
+	validateDocumentStructure(files, issues, config);
 	validateTableAndFigureOrder(files, issues);
 
 	return {
+		config,
 		reportDir: absoluteReportDir,
+		sourceDir: absoluteSourceDir,
 		issues,
 		passed: !hasBlockingIssues(issues, strict),
 	};

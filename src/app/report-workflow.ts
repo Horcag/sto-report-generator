@@ -1,8 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
 
 import { unpackDocx } from '@/shared/lib/docx-archive';
+import {
+	resolveReportConfig,
+	resolveReportPath,
+} from '@/shared/lib/report-config';
 import {
 	formatSourcePreflightIssue,
 	runSourcePreflight,
@@ -11,19 +14,6 @@ import {
 import { validateSTO, ValidationResult } from '@/shared/lib/sto-validator';
 
 import { buildReport } from './builder';
-
-interface ReportConfig {
-	sourceDir?: string;
-	outputDocx?: string;
-	postBuild?: {
-		enabled?: boolean;
-		exportPdf?: boolean;
-	};
-	validate?: {
-		enabled?: boolean;
-		unpackDir?: string;
-	};
-}
 
 export interface GenerateReportOptions {
 	reportDir: string;
@@ -39,18 +29,6 @@ export interface GenerateReportResult {
 	preflight: SourcePreflightResult;
 	validation?: ValidationResult[];
 	postBuildRan: boolean;
-}
-
-function readReportConfig(reportDir: string): ReportConfig {
-	const configPath = path.join(reportDir, 'report.config.json');
-	if (!fs.existsSync(configPath)) {
-		return {};
-	}
-	return JSON.parse(fs.readFileSync(configPath, 'utf8')) as ReportConfig;
-}
-
-function resolveInside(baseDir: string, value: string): string {
-	return path.isAbsolute(value) ? value : path.resolve(baseDir, value);
 }
 
 function formatValidationFailures(results: ValidationResult[]): string {
@@ -103,16 +81,21 @@ export async function generateReport(
 	options: GenerateReportOptions,
 ): Promise<GenerateReportResult> {
 	const reportDir = path.resolve(options.reportDir);
-	const config = readReportConfig(reportDir);
-	const sourceDir = resolveInside(reportDir, config.sourceDir ?? '.');
-	const outputDocx = path.resolve(
-		reportDir,
-		options.outputPath ??
-			config.outputDocx ??
-			`build/${path.basename(reportDir)}.docx`,
-	);
+	const { config, diagnostics } = resolveReportConfig(reportDir, {
+		outputPath: options.outputPath,
+		postBuild: options.postBuild,
+		validate: options.validate,
+	});
+	if (diagnostics.some(diagnostic => diagnostic.severity === 'error')) {
+		throw new Error(
+			diagnostics.map(diagnostic => diagnostic.message).join('\n'),
+		);
+	}
 
-	const preflight = runSourcePreflight(sourceDir);
+	const sourceDir = resolveReportPath(reportDir, config.sourceDir);
+	const outputDocx = path.resolve(reportDir, config.outputDocx);
+
+	const preflight = runSourcePreflight(reportDir, { config });
 	if (!preflight.passed) {
 		throw new Error(
 			preflight.issues.map(formatSourcePreflightIssue).join('\n'),
@@ -121,23 +104,15 @@ export async function generateReport(
 
 	await buildReport(sourceDir, outputDocx);
 
-	const shouldRunPostBuild =
-		options.postBuild ?? config.postBuild?.enabled ?? false;
-	if (shouldRunPostBuild) {
-		runPostBuild(
-			outputDocx,
-			sourceDir,
-			config.postBuild?.exportPdf ?? true,
-		);
+	if (config.postBuild.enabled) {
+		runPostBuild(outputDocx, sourceDir, config.postBuild.exportPdf);
 	}
 
 	let validation: ValidationResult[] | undefined;
-	const shouldValidate =
-		options.validate ?? config.validate?.enabled ?? false;
-	if (shouldValidate) {
-		const unpackDir = resolveInside(
+	if (config.validate.enabled) {
+		const unpackDir = resolveReportPath(
 			reportDir,
-			config.validate?.unpackDir ?? '.temp_docx',
+			config.validate.unpackDir,
 		);
 		validation = validateDocxFile(outputDocx, unpackDir);
 		if (!validation.every(result => result.passed)) {
@@ -151,6 +126,6 @@ export async function generateReport(
 		outputDocx,
 		preflight,
 		validation,
-		postBuildRan: shouldRunPostBuild,
+		postBuildRan: config.postBuild.enabled,
 	};
 }

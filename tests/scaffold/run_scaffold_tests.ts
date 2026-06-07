@@ -49,6 +49,54 @@ assert.equal(
 		.join(', '),
 );
 
+const courseworkResult = scaffoldReport({
+	slug: 'coursework_demo',
+	dir: path.join(tempRoot, 'coursework_demo'),
+	profile: 'coursework',
+	title: 'Демонстрационная курсовая работа',
+	initGit: false,
+});
+assert.ok(
+	fs.existsSync(path.join(courseworkResult.targetDir, '01_referat.md')),
+	'coursework profile must include referat',
+);
+assert.ok(
+	fs.existsSync(path.join(courseworkResult.targetDir, '91_sources.md')),
+	'coursework profile must include sources template',
+);
+const courseworkPreflight = runSourcePreflight(courseworkResult.targetDir);
+assert.equal(
+	courseworkPreflight.passed,
+	true,
+	courseworkPreflight.issues
+		.map(item => `${item.code}:${item.file ?? ''}`)
+		.join(', '),
+);
+
+const labResult = scaffoldReport({
+	slug: 'lab_demo',
+	dir: path.join(tempRoot, 'lab_demo'),
+	profile: 'lab',
+	title: 'Демонстрационная лабораторная работа',
+	initGit: false,
+});
+assert.ok(
+	!fs.existsSync(path.join(labResult.targetDir, '01_referat.md')),
+	'lab profile must not create referat by default',
+);
+assert.ok(
+	!fs.existsSync(path.join(labResult.targetDir, '91_sources.md')),
+	'lab profile must not create sources by default when there are no citations',
+);
+const labPreflight = runSourcePreflight(labResult.targetDir);
+assert.equal(
+	labPreflight.passed,
+	true,
+	labPreflight.issues
+		.map(item => `${item.code}:${item.file ?? ''}`)
+		.join(', '),
+);
+
 fs.writeFileSync(path.join(tempRoot, 'occupied.txt'), 'x', 'utf8');
 assert.throws(
 	() =>

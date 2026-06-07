@@ -65,6 +65,7 @@ function writeXmlFixture(
 	name: string,
 	documentXml: string,
 	stylesXml: string,
+	extraFiles: Record<string, string> = {},
 ): string {
 	const fixtureDir = path.join(tempRoot, name, 'word');
 	fs.rmSync(path.dirname(fixtureDir), { recursive: true, force: true });
@@ -75,6 +76,11 @@ function writeXmlFixture(
 		'utf-8',
 	);
 	fs.writeFileSync(path.join(fixtureDir, 'styles.xml'), stylesXml, 'utf-8');
+	for (const [relativePath, content] of Object.entries(extraFiles)) {
+		const filePath = path.join(path.dirname(fixtureDir), relativePath);
+		fs.mkdirSync(path.dirname(filePath), { recursive: true });
+		fs.writeFileSync(filePath, content, 'utf-8');
+	}
 	return path.dirname(fixtureDir);
 }
 
@@ -178,6 +184,55 @@ function runSyntheticValidatorTests(): void {
 	);
 	assert.equal(
 		getCheck(tableHeaderPeriodFixture, 'Table Header Final Period').passed,
+		false,
+	);
+
+	const pageNumberingFixture = writeXmlFixture(
+		'page-numbering',
+		`<w:document ${namespaces} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>
+			<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:footerReference w:type="first" r:id="rId2"/><w:titlePg/></w:sectPr>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+		{
+			'word/_rels/document.xml.rels': `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+				<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>
+				<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer2.xml"/>
+			</Relationships>`,
+			'word/footer1.xml': `<w:ftr ${namespaces}><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:instrText>PAGE</w:instrText></w:r></w:p></w:ftr>`,
+			'word/footer2.xml': `<w:ftr ${namespaces}><w:p><w:r><w:t></w:t></w:r></w:p></w:ftr>`,
+		},
+	);
+	assert.equal(
+		getCheck(pageNumberingFixture, 'Page Number Footer').passed,
+		true,
+	);
+	assert.equal(
+		getCheck(pageNumberingFixture, 'Title Page Number Hidden').passed,
+		true,
+	);
+
+	const visibleTitlePageNumberFixture = writeXmlFixture(
+		'visible-title-page-number',
+		`<w:document ${namespaces} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>
+			<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:footerReference w:type="first" r:id="rId2"/><w:titlePg/></w:sectPr>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+		{
+			'word/_rels/document.xml.rels': `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+				<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>
+				<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer2.xml"/>
+			</Relationships>`,
+			'word/footer1.xml': `<w:ftr ${namespaces}><w:p><w:pPr><w:jc w:val="left"/></w:pPr><w:r><w:instrText>PAGE</w:instrText></w:r></w:p></w:ftr>`,
+			'word/footer2.xml': `<w:ftr ${namespaces}><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:instrText>PAGE</w:instrText></w:r></w:p></w:ftr>`,
+		},
+	);
+	assert.equal(
+		getCheck(visibleTitlePageNumberFixture, 'Page Number Footer').passed,
+		false,
+	);
+	assert.equal(
+		getCheck(visibleTitlePageNumberFixture, 'Title Page Number Hidden')
+			.passed,
 		false,
 	);
 
