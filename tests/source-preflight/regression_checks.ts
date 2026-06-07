@@ -25,7 +25,16 @@ function main(): void {
 		process.exit(1);
 	}
 
-	console.log('All regression tests passed. No source STO violations found.');
+	const warnings = result.issues.filter(item => item.severity === 'warning');
+	for (const warning of warnings) {
+		console.warn(formatSourcePreflightIssue(warning));
+	}
+
+	console.log(
+		warnings.length > 0
+			? `All regression tests passed with ${warnings.length} warning(s).`
+			: 'All regression tests passed. No source STO violations found.',
+	);
 }
 
 main();

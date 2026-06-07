@@ -691,7 +691,7 @@
 <w:pStyle w:val="Normal"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">ГЕНЕРАТОР ОТЧЕТОВ, ГОСТ, МАРКДАУН, АВТОМАТИЗАЦИЯ, TYPESCRIPT, DOCX.</w:t>
+<w:t xml:space="preserve">ГЕНЕРАТОР ОТЧЕТОВ, ГОСТ, МАРКДАУН, АВТОМАТИЗАЦИЯ, TYPESCRIPT, DOCX</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -786,7 +786,7 @@
 </w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Генерация титульного листа по заданным метаданным;</w:t>
+<w:t xml:space="preserve">Генерация титульного листа по заданным метаданным.</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -798,7 +798,7 @@
 </w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Автоматическое составление оглавления;</w:t>
+<w:t xml:space="preserve">Автоматическое составление оглавления.</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -818,7 +818,7 @@
 </m:r>
 </m:oMath>
 <w:r>
-<w:t xml:space="preserve">);</w:t>
+<w:t xml:space="preserve">).</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -1204,7 +1204,7 @@
 </w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Первый элемент;</w:t>
+<w:t xml:space="preserve">первый элемент;</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -1216,7 +1216,7 @@
 </w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Второй элемент, который может быть длинным и переноситься на вторую строку с правильным выравниванием;</w:t>
+<w:t xml:space="preserve">второй элемент, который может быть длинным и переноситься на вторую строку с правильным выравниванием;</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -1228,7 +1228,7 @@
 </w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Третий элемент.</w:t>
+<w:t xml:space="preserve">третий элемент.</w:t>
 </w:r>
 </w:p>
 <w:p>

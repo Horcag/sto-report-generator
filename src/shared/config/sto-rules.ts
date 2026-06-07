@@ -11,6 +11,7 @@ export interface StoRules {
 		supportedEnvironments: string[];
 		listEnvironments: string[];
 		bibliographyEnvironment: string;
+		sourcesStructuralHeading: string;
 	};
 	typography: {
 		fontFamily: string;
@@ -38,6 +39,28 @@ export interface StoRules {
 	headings: {
 		structuralNoTocUppercase: string[];
 		requiredStructuralUppercase: string[];
+	};
+	referat: {
+		fileName: string;
+		statisticPlaceholders: string[];
+		keywordCount: {
+			min: number;
+			max: number;
+		};
+		semanticMarkers: string[];
+		maxTextLengthChars: number;
+	};
+	lists: {
+		forbiddenRussianLetterMarkers: string[];
+	};
+	tables: {
+		discouragedOrdinalHeaders: string[];
+	};
+	formulas: {
+		forbiddenSourceMultiplicationSigns: string[];
+	};
+	documentStructure: {
+		requiredOrder: string[];
 	};
 	validation: {
 		allowedBoldMarkdownFiles: string[];

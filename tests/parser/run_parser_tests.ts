@@ -66,6 +66,18 @@ async function main(): Promise<void> {
   title={Неиспользованный источник},
   publisher={Самара},
   year={2021}
+}
+@book{first,
+  author={Первый, П. П.},
+  title={Первый источник},
+  publisher={Самара},
+  year={2022}
+}
+@book{second,
+  author={Второй, В. В.},
+  title={Второй источник},
+  publisher={Самара},
+  year={2023}
 }`,
 		'utf8',
 	);
@@ -81,6 +93,22 @@ async function main(): Promise<void> {
 	const bibliographyJson = JSON.stringify(bibliographyElements);
 	assert.match(bibliographyJson, /Использованный источник/);
 	assert.doesNotMatch(bibliographyJson, /Неиспользованный источник/);
+
+	const orderedBibliographyElements = await parseMarkdownToDocx(
+		String.raw`Сначала второй источник [@second; @first], потом повтор [@second].
+
+\begin{sto_bibliography}
+\end{sto_bibliography}
+`,
+		{ bibliography: bibPath },
+		{ sourceDir: tempRoot },
+	);
+	const orderedBibliographyJson = JSON.stringify(orderedBibliographyElements);
+	assert.ok(
+		orderedBibliographyJson.indexOf('Второй источник') <
+			orderedBibliographyJson.indexOf('Первый источник'),
+		'Bibliography must follow first citation order, not BibTeX order.',
+	);
 
 	fs.writeFileSync(bibPath, '', 'utf8');
 	await assert.rejects(

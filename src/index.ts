@@ -67,7 +67,7 @@ function printHelp(): void {
 Usage:
   npx tsx src/index.ts build <input.md|report_dir> <output.docx>
   npx tsx src/index.ts new <slug> [--title "..."] [--dir reports/<slug>] [--no-git]
-  npx tsx src/index.ts check <report_dir>
+  npx tsx src/index.ts check <report_dir> [--strict]
   npx tsx src/index.ts generate <report_dir> [--output build/report.docx] [--post-build] [--validate]
   npx tsx src/index.ts validate-docx <report.docx> [unpack_dir]
 
@@ -114,13 +114,23 @@ function runCheck(args: ParsedArgs): void {
 		throw new Error('check command requires a report directory.');
 	}
 
-	const result = runSourcePreflight(reportDir);
+	const result = runSourcePreflight(reportDir, {
+		strict: optionBoolean(args, 'strict') ?? false,
+	});
 	if (!result.passed) {
 		throw new Error(
 			result.issues.map(formatSourcePreflightIssue).join('\n'),
 		);
 	}
-	console.log('Source preflight passed.');
+	const warnings = result.issues.filter(item => item.severity === 'warning');
+	for (const warning of warnings) {
+		console.warn(formatSourcePreflightIssue(warning));
+	}
+	console.log(
+		warnings.length > 0
+			? `Source preflight passed with ${warnings.length} warning(s).`
+			: 'Source preflight passed.',
+	);
 }
 
 async function runGenerate(args: ParsedArgs): Promise<void> {

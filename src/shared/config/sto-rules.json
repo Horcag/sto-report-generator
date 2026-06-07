@@ -11,7 +11,8 @@
 		"structuralHeadingCommand": "sto_structural_heading",
 		"supportedEnvironments": ["sto_bibliography", "sto_list", "sto_enum"],
 		"listEnvironments": ["sto_list", "sto_enum"],
-		"bibliographyEnvironment": "sto_bibliography"
+		"bibliographyEnvironment": "sto_bibliography",
+		"sourcesStructuralHeading": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"
 	},
 	"typography": {
 		"fontFamily": "Times New Roman",
@@ -41,6 +42,49 @@
 		"requiredStructuralUppercase": [
 			"РЕФЕРАТ",
 			"СОДЕРЖАНИЕ",
+			"ВВЕДЕНИЕ",
+			"ЗАКЛЮЧЕНИЕ",
+			"СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"
+		]
+	},
+	"referat": {
+		"fileName": "01_referat.md",
+		"statisticPlaceholders": [
+			"{{PAGES}}",
+			"{{FIGURES}}",
+			"{{TABLES}}",
+			"{{SOURCES}}"
+		],
+		"keywordCount": {
+			"min": 5,
+			"max": 15
+		},
+		"semanticMarkers": ["Объект", "Цель", "результат"],
+		"maxTextLengthChars": 850
+	},
+	"lists": {
+		"forbiddenRussianLetterMarkers": [
+			"ё",
+			"з",
+			"й",
+			"о",
+			"ч",
+			"ъ",
+			"ы",
+			"ь"
+		]
+	},
+	"tables": {
+		"discouragedOrdinalHeaders": ["№ п/п", "Номер по порядку"]
+	},
+	"formulas": {
+		"forbiddenSourceMultiplicationSigns": ["*", "·"]
+	},
+	"documentStructure": {
+		"requiredOrder": [
+			"РЕФЕРАТ",
+			"СОДЕРЖАНИЕ",
+			"ВВЕДЕНИЕ",
 			"ЗАКЛЮЧЕНИЕ",
 			"СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"
 		]

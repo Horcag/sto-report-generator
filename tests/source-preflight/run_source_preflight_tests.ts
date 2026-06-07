@@ -25,7 +25,7 @@ function writeReport(name: string, files: Record<string, string>): string {
 function validFiles(
 	overrides: Record<string, string> = {},
 ): Record<string, string> {
-	return {
+	const defaults = {
 		'00_metadata.md': `---
 title: Test
 ---
@@ -33,6 +33,8 @@ title: Test
 		'01_referat.md': `\\sto_structural_heading{РЕФЕРАТ}
 
 Отчет содержит {{PAGES}} страниц, {{FIGURES}} рисунков, {{TABLES}} таблиц и {{SOURCES}} источников.
+`,
+		'02_toc.md': `\\sto_structural_heading{СОДЕРЖАНИЕ}
 `,
 		'03_intro.md': `\\sto_structural_heading{ВВЕДЕНИЕ}
 
@@ -47,8 +49,17 @@ title: Test
 \\begin{sto_bibliography}
 \\end{sto_bibliography}
 `,
-		...overrides,
 	};
+	const normalizedOverrides = Object.fromEntries(
+		Object.entries(overrides).map(([file, content]) => [
+			file,
+			file === '03_intro.md' &&
+			!content.includes('\\sto_structural_heading')
+				? `\\sto_structural_heading{ВВЕДЕНИЕ}\n\n${content}`
+				: content,
+		]),
+	);
+	return { ...defaults, ...normalizedOverrides };
 }
 
 function expectPass(name: string, files: Record<string, string>): void {
@@ -70,6 +81,43 @@ function expectIssue(
 	assert.ok(
 		result.issues.some(item => item.code === expectedCode),
 		`Expected issue ${expectedCode}, got ${result.issues.map(item => item.code).join(', ')}`,
+	);
+}
+
+function expectWarning(
+	name: string,
+	files: Record<string, string>,
+	expectedCode: string,
+): void {
+	const result = runSourcePreflight(writeReport(name, files));
+	assert.equal(
+		result.passed,
+		true,
+		'Warnings must not fail regular preflight',
+	);
+	assert.ok(
+		result.issues.some(
+			item => item.code === expectedCode && item.severity === 'warning',
+		),
+		`Expected warning ${expectedCode}, got ${result.issues.map(item => `${item.severity}:${item.code}`).join(', ')}`,
+	);
+}
+
+function expectStrictIssue(
+	name: string,
+	files: Record<string, string>,
+	expectedCode: string,
+): void {
+	const reportDir = writeReport(name, files);
+	const result = runSourcePreflight(reportDir, { strict: true });
+	assert.equal(
+		result.passed,
+		false,
+		'Strict preflight must fail on warnings',
+	);
+	assert.ok(
+		result.issues.some(item => item.code === expectedCode),
+		`Expected strict issue ${expectedCode}, got ${result.issues.map(item => item.code).join(', ')}`,
 	);
 }
 
@@ -120,12 +168,82 @@ expectIssue(
 );
 
 expectIssue(
+	'forbidden-list-letter',
+	validFiles({
+		'03_intro.md': `\\begin{sto_list}
+ё) недопустимый буквенный маркер;
+\\end{sto_list}
+`,
+	}),
+	'forbidden-list-letter-marker',
+);
+
+expectIssue(
+	'list-marker-extra-dot',
+	validFiles({
+		'03_intro.md': `\\begin{sto_list}
+1). недопустимый маркер;
+\\end{sto_list}
+`,
+	}),
+	'list-marker-extra-dot',
+);
+
+expectWarning(
+	'list-punctuation-warning',
+	validFiles({
+		'03_intro.md': `\\begin{sto_list}
+- элемент без знака
+- второй элемент.
+\\end{sto_list}
+`,
+	}),
+	'list-item-lowercase-punctuation',
+);
+
+expectIssue(
 	'manual-source-citation',
 	validFiles({
 		'03_intro.md': `Текст с ручной ссылкой [1, 2].
 `,
 	}),
 	'manual-source-citation',
+);
+
+expectIssue(
+	'bare-number-sign',
+	validFiles({
+		'03_intro.md': `Текст содержит знак № без числового значения.
+`,
+	}),
+	'bare-number-sign',
+);
+
+expectIssue(
+	'bare-comparison',
+	validFiles({
+		'03_intro.md': `Знак > используется без числового значения.
+`,
+	}),
+	'bare-math-comparison-sign',
+);
+
+expectWarning(
+	'decimal-dot-warning',
+	validFiles({
+		'03_intro.md': `Метрика равна 3.14 в обычном тексте.
+`,
+	}),
+	'decimal-dot',
+);
+
+expectStrictIssue(
+	'strict-warning',
+	validFiles({
+		'03_intro.md': `Метрика равна 3.14 в обычном тексте.
+`,
+	}),
+	'decimal-dot',
 );
 
 expectIssue(
@@ -143,6 +261,34 @@ expectIssue(
 );
 
 expectIssue(
+	'table-header-period',
+	validFiles({
+		'03_intro.md': `Показатели приведены в таблице 1.
+
+Таблица 1 – Показатели (@tab:period_header)
+| Показатель. | Значение |
+|---|---|
+| A | B |
+`,
+	}),
+	'table-header-final-period',
+);
+
+expectIssue(
+	'table-empty-cell',
+	validFiles({
+		'03_intro.md': `Показатели приведены в таблице 1.
+
+Таблица 1 – Показатели (@tab:empty_cell)
+| Показатель | Значение |
+|---|---|
+| A | |
+`,
+	}),
+	'table-empty-source-cell',
+);
+
+expectIssue(
 	'duplicate-equation-label',
 	validFiles({
 		'03_intro.md': `Формула @eq:x.
@@ -156,12 +302,40 @@ $$x = 2 (@eq:x)$$
 );
 
 expectIssue(
+	'formula-star',
+	validFiles({
+		'03_intro.md': `Формула @eq:mul.
+
+$$
+a * b (@eq:mul)
+$$
+`,
+	}),
+	'formula-forbidden-multiplication-sign',
+);
+
+expectIssue(
 	'unknown-reference',
 	validFiles({
 		'03_intro.md': `Ссылка на неизвестный рисунок @fig:missing.
 `,
 	}),
 	'unknown-reference-label',
+);
+
+expectIssue(
+	'structure-missing',
+	{
+		'00_metadata.md': `---
+title: Test
+---
+`,
+		'01_referat.md': `\\sto_structural_heading{РЕФЕРАТ}
+
+Отчет содержит {{PAGES}} страниц, {{FIGURES}} рисунков, {{TABLES}} таблиц и {{SOURCES}} источников.
+`,
+	},
+	'structural-heading-missing',
 );
 
 expectIssue(

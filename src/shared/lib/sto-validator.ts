@@ -327,6 +327,29 @@ function countEmptyTableCells(docXml: string): number {
 	return emptyCells;
 }
 
+function countTableHeaderFinalPeriods(docXml: string): number {
+	const tables = docXml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g) ?? [];
+	let cellsWithFinalPeriod = 0;
+
+	for (const tableXml of tables) {
+		if (isMathLayoutTable(tableXml)) {
+			continue;
+		}
+
+		const firstRow = tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/)?.[0];
+		if (!firstRow) {
+			continue;
+		}
+
+		const cells = firstRow.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
+		cellsWithFinalPeriod += cells.filter(cellXml =>
+			/[.]$/.test(extractWordText(cellXml).trim()),
+		).length;
+	}
+
+	return cellsWithFinalPeriod;
+}
+
 function getParagraphStyleId(paragraphXml: string): string | null {
 	const styleTag = /<w:pStyle\b[^>]*\/>/.exec(paragraphXml)?.[0];
 	return styleTag ? getXmlAttribute(styleTag, 'w:val') : null;
@@ -485,6 +508,7 @@ function validateFieldsTablesAndImages(
 	input: ValidationInput,
 ): ValidationResult[] {
 	const emptyTableCells = countEmptyTableCells(input.docXml);
+	const tableHeaderFinalPeriods = countTableHeaderFinalPeriods(input.docXml);
 	const tablesWithoutHeaderRepeat = countTablesWithoutHeaderRepeat(
 		input.docXml,
 	);
@@ -504,6 +528,11 @@ function validateFieldsTablesAndImages(
 			'Empty Table Cells',
 			emptyTableCells === 0,
 			`Detected ${emptyTableCells} empty table cell(s). STO tables should not contain blank cells.`,
+		),
+		resultFromPass(
+			'Table Header Final Period',
+			tableHeaderFinalPeriods === 0,
+			`Detected ${tableHeaderFinalPeriods} table header cell(s) ending with a final dot.`,
 		),
 		resultFromPass(
 			'Table Header Repeat',

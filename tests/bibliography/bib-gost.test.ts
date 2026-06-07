@@ -103,6 +103,21 @@ const tests: { input: BibItem; expected: string }[] = [
 		expected:
 			'Петергоф [Электронный ресурс] // Википедия: свободная энцикл. – Электрон. дан. – [Б. м.], 2012. – URL: http://ru.wikipedia.org/wiki/Петродворец (дата обращения: 08.11.2012).',
 	},
+	{
+		input: {
+			citationKey: 'constitution',
+			entryType: 'norm',
+			entryTags: {
+				title: 'Конституция Российской Федерации',
+				year: '2014',
+				journal: 'Собрание законодательства РФ',
+				number: '31',
+				note: 'Ст. 4398',
+			},
+		},
+		expected:
+			'Конституция Российской Федерации // Собрание законодательства РФ. – 2014. – № 31. – Ст. 4398.',
+	},
 ];
 
 let failed = 0;

@@ -166,6 +166,21 @@ function runSyntheticValidatorTests(): void {
 	assert.equal(sparseCitationCheck.passed, false);
 	assert.match(sparseCitationCheck.error ?? '', /2/);
 
+	const tableHeaderPeriodFixture = writeXmlFixture(
+		'table-header-period',
+		`<w:document ${namespaces}><w:body>
+			<w:tbl>
+				<w:tr><w:tc><w:p><w:r><w:t>Показатель.</w:t></w:r></w:p></w:tc></w:tr>
+				<w:tr><w:tc><w:p><w:r><w:t>Значение</w:t></w:r></w:p></w:tc></w:tr>
+			</w:tbl>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	assert.equal(
+		getCheck(tableHeaderPeriodFixture, 'Table Header Final Period').passed,
+		false,
+	);
+
 	console.log('Synthetic validator regression tests passed.\n');
 }
 

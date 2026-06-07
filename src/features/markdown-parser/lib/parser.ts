@@ -1,12 +1,11 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as bibtexParse from '@orcid/bibtex-parse-js';
 import { AlignmentType, Paragraph, TextRun } from 'docx';
 import { marked, Token, Tokens } from 'marked';
 
 import { getNumberedHeadingStyleId } from '@/shared/config';
 import { mathJaxReady } from '@/shared/lib/math-converter';
 
+import { loadBibliography } from './parser/bibliography-loader';
+import { getCitationNumber } from './parser/citation-registry';
 import {
 	handleList,
 	handleParagraph,
@@ -14,6 +13,7 @@ import {
 } from './parser/handlers/block-handlers';
 import { parseInline } from './parser/handlers/inline-parser';
 import { handleStoFlag } from './parser/handlers/sto-handler';
+import { ReferenceRegistry } from './parser/reference-registry';
 import {
 	BibItem,
 	DocxElement,
@@ -31,6 +31,7 @@ interface MarkdownParserOptions {
 
 class MarkdownParser {
 	private context: ParserContext;
+	private references: ReferenceRegistry;
 
 	constructor(bibDb: BibItem[] = [], options: MarkdownParserOptions = {}) {
 		this.context = {
@@ -40,88 +41,19 @@ class MarkdownParser {
 			listInstanceCounter: 0,
 			sourceDir: options.sourceDir,
 		};
+		this.references = new ReferenceRegistry(this.context.itemMap);
 	}
 
 	public async parse(tokens: Token[]): Promise<DocxElement[]> {
-		this.assignNumbers(tokens);
+		this.references.assignNumbers(tokens);
 		return this.processTokens(tokens);
 	}
 
-	private assignNumbers(tokens: Token[]) {
-		let figCounter = 0;
-		let tabCounter = 0;
-		let eqCounter = 0;
+	private getCitationNum = (key: string): number =>
+		getCitationNumber(this.context, key);
 
-		const walk = (tks: Token[]) => {
-			for (const token of tks) {
-				if (
-					token.type === 'paragraph' ||
-					token.type === 'text' ||
-					token.type === 'heading'
-				) {
-					const text =
-						'text' in token ? (token.text as string) : token.raw;
-
-					const figMatch = text.match(
-						/(?:Рисунок|Рис\.)\s+.*?(@fig:[a-zA-Z0-9_-]+)/,
-					);
-					if (figMatch && !this.context.itemMap.has(figMatch[1])) {
-						figCounter++;
-						this.context.itemMap.set(figMatch[1], figCounter);
-					}
-
-					const tabMatch = text.match(
-						/Таблица\s+.*?(@tab:[a-zA-Z0-9_-]+)/,
-					);
-					if (tabMatch && !this.context.itemMap.has(tabMatch[1])) {
-						tabCounter++;
-						this.context.itemMap.set(tabMatch[1], tabCounter);
-					}
-
-					const blockMathMatches = text.matchAll(/\$\$[\s\S]+?\$\$/g);
-					for (const blockMathMatch of blockMathMatches) {
-						const eqMatch = blockMathMatch[0].match(
-							/\((@eq:[a-zA-Z0-9_-]+)\)\s*\$\$/,
-						);
-						if (eqMatch && !this.context.itemMap.has(eqMatch[1])) {
-							eqCounter++;
-							this.context.itemMap.set(eqMatch[1], eqCounter);
-						}
-					}
-				}
-
-				if ('tokens' in token && token.tokens) {
-					walk(token.tokens as Token[]);
-				} else if (token.type === 'list') {
-					(token as Tokens.List).items.forEach(i =>
-						walk(i.tokens || []),
-					);
-				} else if (token.type === 'table') {
-					(token as Tokens.Table).rows.forEach(r =>
-						r.forEach(c => walk(c.tokens || [])),
-					);
-				}
-			}
-		};
-		walk(tokens);
-	}
-
-	private getCitationNum = (key: string): number => {
-		let idx = this.context.citations.indexOf(key);
-		if (idx === -1) {
-			this.context.citations.push(key);
-			idx = this.context.citations.length - 1;
-		}
-		return idx + 1;
-	};
-
-	private replaceRefs = (text: string): string => {
-		return text.replace(/@(fig|tab|eq):([a-zA-Z0-9_-]+)/g, match => {
-			if (this.context.itemMap.has(match))
-				return String(this.context.itemMap.get(match));
-			return `[${match} NOT FOUND]`;
-		});
-	};
+	private replaceRefs = (text: string): string =>
+		this.references.replaceRefs(text);
 
 	private async processTokens(
 		tokensToProcess: Token[],
@@ -166,8 +98,8 @@ class MarkdownParser {
 								parseInline(
 									tks,
 									this.context,
-									this.getCitationNum,
-									this.replaceRefs,
+									key => getCitationNumber(this.context, key),
+									text => this.references.replaceRefs(text),
 								),
 							currentContext,
 						)),
@@ -182,8 +114,8 @@ class MarkdownParser {
 								parseInline(
 									tks,
 									this.context,
-									this.getCitationNum,
-									this.replaceRefs,
+									key => getCitationNumber(this.context, key),
+									text => this.references.replaceRefs(text),
 								),
 							this.processTokens.bind(this),
 							currentContext,
@@ -196,8 +128,8 @@ class MarkdownParser {
 							parseInline(
 								tks,
 								this.context,
-								this.getCitationNum,
-								this.replaceRefs,
+								key => getCitationNumber(this.context, key),
+								text => this.references.replaceRefs(text),
 							),
 						),
 					);
@@ -262,20 +194,7 @@ export async function parseMarkdownToDocx(
 ): Promise<DocxElement[]> {
 	await mathJaxReady();
 
-	let bibDb: BibItem[] = [];
-	if (metadata.bibliography) {
-		const bibPath = path.resolve(
-			process.cwd(),
-			String(metadata.bibliography),
-		);
-		if (fs.existsSync(bibPath)) {
-			const bibContent = fs.readFileSync(bibPath, 'utf-8');
-			bibDb = bibtexParse.toJSON(bibContent) as BibItem[];
-		} else {
-			console.warn(`Bibliography file not found: ${bibPath}`);
-		}
-	}
-
+	const bibDb = loadBibliography(metadata);
 	const normalizedText = markdownText.replace(/—/g, '–');
 	const tokens = marked.lexer(normalizedText);
 
