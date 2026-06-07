@@ -282,6 +282,119 @@ expectNoIssue(
 	'decimal-dot',
 );
 
+expectNoIssue(
+	'heading-number-with-dot',
+	validFiles({
+		'03_intro.md': `## 3.5 Модельные расчеты
+
+Описание раздела приведено без десятичных дробей.
+`,
+	}),
+	'decimal-dot',
+);
+
+expectNoIssue(
+	'gost-number-with-dot',
+	validFiles({
+		'03_intro.md': `Общие требования приведены в ГОСТ 7.32.
+`,
+	}),
+	'decimal-dot',
+);
+
+expectNoIssue(
+	'url-with-dotted-version',
+	validFiles({
+		'03_intro.md': `Документация доступна по адресу https://example.com/v1.2/page.
+`,
+	}),
+	'decimal-dot',
+);
+
+expectNoIssue(
+	'frontmatter-quoted-decimal',
+	validFiles({
+		'00_metadata.md': `---
+title: "3.14"
+---
+`,
+	}),
+	'straight-quotes',
+);
+
+expectNoIssue(
+	'frontmatter-decimal',
+	validFiles({
+		'00_metadata.md': `---
+title: "3.14"
+---
+`,
+	}),
+	'decimal-dot',
+);
+
+expectNoIssue(
+	'code-block-quoted-decimal',
+	validFiles({
+		'03_intro.md': `\`\`\`json
+{"value": 3.14}
+\`\`\`
+
+Текст приведен без нарушений.
+`,
+	}),
+	'decimal-dot',
+);
+
+expectNoIssue(
+	'code-block-straight-quotes',
+	validFiles({
+		'03_intro.md': `\`\`\`json
+{"value": 3.14}
+\`\`\`
+
+Текст приведен без нарушений.
+`,
+	}),
+	'straight-quotes',
+);
+
+expectNoIssue(
+	'inline-code-quoted-decimal',
+	validFiles({
+		'03_intro.md': `Фрагмент \`"3.14"\` приведен как технический пример.
+`,
+	}),
+	'straight-quotes',
+);
+
+expectNoIssue(
+	'inline-code-decimal',
+	validFiles({
+		'03_intro.md': `Фрагмент \`"3.14"\` приведен как технический пример.
+`,
+	}),
+	'decimal-dot',
+);
+
+expectNoIssue(
+	'inline-math-negative-decimal',
+	validFiles({
+		'03_intro.md': `Расчет задан выражением $x=-3.14$.
+`,
+	}),
+	'hyphen-negative-number',
+);
+
+expectNoIssue(
+	'inline-math-decimal',
+	validFiles({
+		'03_intro.md': `Расчет задан выражением $x=-3.14$.
+`,
+	}),
+	'decimal-dot',
+);
+
 expectStrictIssue(
 	'strict-warning',
 	validFiles({

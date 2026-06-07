@@ -35,23 +35,6 @@ export function stripEnvironmentBlocks(
 	return result;
 }
 
-export function stripMarkdownNoise(content: string): string {
-	return content
-		.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, match =>
-			'\n'.repeat(match.split('\n').length - 1),
-		)
-		.replace(/```[\s\S]*?```/g, match =>
-			'\n'.repeat(match.split('\n').length - 1),
-		)
-		.replace(/\$\$[\s\S]*?\$\$/g, match =>
-			'\n'.repeat(match.split('\n').length - 1),
-		)
-		.replace(/\$[^$\n]+\$/g, '')
-		.replace(/`[^`\n]+`/g, '')
-		.replace(/!\[[^\]]*]\([^)]+\)/g, '')
-		.replace(/^\|.*$/gm, '');
-}
-
 export function splitMarkdownTableRow(line: string): string[] {
 	const trimmed = line.trim();
 	const withoutOuter = trimmed.replace(/^\|/, '').replace(/\|$/, '');
