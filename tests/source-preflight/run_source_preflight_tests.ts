@@ -103,6 +103,18 @@ function expectWarning(
 	);
 }
 
+function expectNoIssue(
+	name: string,
+	files: Record<string, string>,
+	unexpectedCode: string,
+): void {
+	const result = runSourcePreflight(writeReport(name, files));
+	assert.ok(
+		!result.issues.some(item => item.code === unexpectedCode),
+		`Did not expect ${unexpectedCode}, got ${result.issues.map(item => `${item.severity}:${item.code}`).join(', ')}`,
+	);
+}
+
 function expectStrictIssue(
 	name: string,
 	files: Record<string, string>,
@@ -201,6 +213,30 @@ expectWarning(
 	'list-item-lowercase-punctuation',
 );
 
+expectNoIssue(
+	'list-definition-dot',
+	validFiles({
+		'03_intro.md': `\\begin{sto_list}
+- $O_i$ – просроченная задолженность МСП по кредитам в территории i.
+- $D_i$ – совокупная задолженность МСП по кредитам в территории i.
+\\end{sto_list}
+`,
+	}),
+	'list-item-lowercase-punctuation',
+);
+
+expectNoIssue(
+	'list-uppercase-semicolon',
+	validFiles({
+		'03_intro.md': `\\begin{sto_list}
+- Ridge-регрессия – линейная модель с L2-регуляризацией;
+- робастная Huber-регрессия – линейная модель.
+\\end{sto_list}
+`,
+	}),
+	'list-item-uppercase-punctuation',
+);
+
 expectIssue(
 	'manual-source-citation',
 	validFiles({
@@ -237,6 +273,15 @@ expectWarning(
 	'decimal-dot',
 );
 
+expectNoIssue(
+	'section-reference-with-dot',
+	validFiles({
+		'03_intro.md': `Формулы моделей и метрик приведены в разделе 3.5.
+`,
+	}),
+	'decimal-dot',
+);
+
 expectStrictIssue(
 	'strict-warning',
 	validFiles({
@@ -244,6 +289,24 @@ expectStrictIssue(
 `,
 	}),
 	'decimal-dot',
+);
+
+expectNoIssue(
+	'signed-statistic-expression',
+	validFiles({
+		'03_intro.md': `Коэффициент равен ρ = -0,361, p < 0,001.
+`,
+	}),
+	'hyphen-negative-number',
+);
+
+expectWarning(
+	'negative-number-in-text',
+	validFiles({
+		'03_intro.md': `Температура составила -10 °C в начале наблюдения.
+`,
+	}),
+	'hyphen-negative-number',
 );
 
 expectIssue(

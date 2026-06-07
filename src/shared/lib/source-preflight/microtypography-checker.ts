@@ -3,17 +3,35 @@ import { STO_RULES } from '@/shared/config';
 import { SourcePreflightIssue } from './types';
 import { escapeRegExp, issue, lineNumberAt, stripMarkdownNoise } from './utils';
 
-function isProbablyUrlVersionOrIp(content: string, index: number): boolean {
+function isProbablyNonDecimalDotNumber(
+	content: string,
+	index: number,
+): boolean {
 	const lineStart = content.lastIndexOf('\n', index) + 1;
 	const lineEnd = content.indexOf('\n', index);
 	const line = content.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
 	const beforeMatch = content.slice(lineStart, index);
+	const previousContext = content.slice(
+		Math.max(lineStart, index - 48),
+		index,
+	);
 	return (
 		/^\s*#+\s+\d+(?:\.\d+)+\b/.test(line) ||
 		/^\s*\d+(?:\.\d+)+\s+/.test(line) ||
 		/^\s*#+\s*$/.test(beforeMatch) ||
+		/(?:раздел[а-я]*|подраздел[а-я]*|пункт[а-я]*|глав[а-я]*|рисунк[а-я]*|таблиц[а-я]*|формул[а-я]*|приложени[а-я]*|ГОСТ|СТО)\s+$/i.test(
+			previousContext,
+		) ||
 		/https?:\/\/|www\.|\b\d+\.\d+\.\d+\b|\bv?\d+\.\d+\.\d+\b/i.test(line)
 	);
+}
+
+function isSignedNumberInSymbolicExpression(
+	content: string,
+	dashIndex: number,
+): boolean {
+	const beforeDash = content.slice(Math.max(0, dashIndex - 24), dashIndex);
+	return /(?:=|≈|≠|≤|≥|<|>)\s*$/.test(beforeDash);
 }
 
 function validateBareSymbol(
@@ -144,7 +162,7 @@ export function validateMicrotypography(
 
 	for (const match of text.matchAll(/\d+\.\d+/g)) {
 		const index = match.index ?? 0;
-		if (!isProbablyUrlVersionOrIp(text, index)) {
+		if (!isProbablyNonDecimalDotNumber(text, index)) {
 			issues.push(
 				issue(
 					'decimal-dot',
@@ -170,6 +188,12 @@ export function validateMicrotypography(
 	}
 
 	for (const match of text.matchAll(/(^|[^\wа-яё])-+\d/gim)) {
+		const dashOffset = match[0].lastIndexOf('-');
+		const dashIndex = (match.index ?? 0) + dashOffset;
+		if (isSignedNumberInSymbolicExpression(text, dashIndex)) {
+			continue;
+		}
+
 		issues.push(
 			issue(
 				'hyphen-negative-number',

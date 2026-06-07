@@ -66,19 +66,25 @@ function validateStoListBlock(
 			'',
 		);
 		const startsUppercase = /^[A-ZА-ЯЁ]/.test(itemText);
+		const startsWithSymbolicDefinition = /^\$[^$]+\$\s+–/.test(itemText);
 		const isLast = itemIndex === itemLines.length - 1;
-		if (!isLast && startsUppercase && !/[.!?]$/.test(itemText)) {
+		if (!isLast && !/[;,.!?]$/.test(itemText)) {
 			issues.push(
 				issue(
-					'list-item-uppercase-punctuation',
-					'list item starts with an uppercase letter but does not end with a sentence punctuation mark.',
+					'list-item-missing-punctuation',
+					'list item should end with a punctuation mark.',
 					file,
 					lineNumber,
 					'warning',
 				),
 			);
 		}
-		if (!isLast && !startsUppercase && !/[;,]$/.test(itemText)) {
+		if (
+			!isLast &&
+			!startsUppercase &&
+			!startsWithSymbolicDefinition &&
+			!/[;,]$/.test(itemText)
+		) {
 			issues.push(
 				issue(
 					'list-item-lowercase-punctuation',
