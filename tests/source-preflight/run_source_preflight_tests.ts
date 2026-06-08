@@ -365,6 +365,82 @@ expectIssue(
 );
 
 expectWarning(
+	'list-intro-punctuation',
+	validFiles({
+		'03_intro.md': `Перед перечнем
+\\begin{sto_list}
+- первый элемент;
+- второй элемент.
+\\end{sto_list}
+`,
+	}),
+	'list-intro-punctuation',
+);
+
+expectWarning(
+	'list-intro-trailing-preposition',
+	validFiles({
+		'03_intro.md': `Перечень относится к:
+\\begin{sto_list}
+- первому элементу;
+- второму элементу.
+\\end{sto_list}
+`,
+	}),
+	'list-intro-trailing-preposition',
+);
+
+expectWarning(
+	'list-parenthesized-lowercase-punctuation',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_list}
+1) первый элемент.
+2) второй элемент.
+\\end{sto_list}
+`,
+	}),
+	'list-item-lowercase-punctuation',
+);
+
+expectWarning(
+	'list-dotted-item-case',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_list}
+1. первый элемент.
+\\end{sto_list}
+`,
+	}),
+	'list-dotted-item-case',
+);
+
+expectWarning(
+	'list-dotted-item-punctuation',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_list}
+А. Первый элемент
+\\end{sto_list}
+`,
+	}),
+	'list-dotted-item-punctuation',
+);
+
+expectWarning(
+	'list-final-item-punctuation',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_list}
+- первый элемент;
+- второй элемент
+\\end{sto_list}
+`,
+	}),
+	'list-final-item-punctuation',
+);
+
+expectWarning(
 	'list-punctuation-warning',
 	validFiles({
 		'03_intro.md': `\\begin{sto_list}
@@ -667,6 +743,61 @@ $$
 );
 
 expectWarning(
+	'formula-bare-upright-function',
+	validFiles({
+		'03_intro.md': `Формула содержит функцию.
+
+$$
+y = sin x + max(a, b)
+$$
+`,
+	}),
+	'formula-bare-upright-function',
+);
+
+expectWarning(
+	'formula-forbidden-raw-token',
+	validFiles({
+		'03_intro.md': `Формула содержит многоточие.
+
+$$
+x_1 + x_2 + ... + x_n
+$$
+`,
+	}),
+	'formula-forbidden-raw-token',
+);
+
+expectWarning(
+	'formula-period-before-where',
+	validFiles({
+		'03_intro.md': `Формула @eq:period_where.
+
+$$
+x = y. (@eq:period_where)
+$$
+
+где $x$ – первая величина.
+`,
+	}),
+	'formula-period-before-where',
+);
+
+expectWarning(
+	'formula-line-break-after-division',
+	validFiles({
+		'03_intro.md': `Формула содержит перенос.
+
+$$
+x = a / \\\\
+b
+$$
+`,
+	}),
+	'formula-line-break-after-division',
+);
+
+expectWarning(
 	'consecutive-formula-punctuation',
 	validFiles({
 		'03_intro.md': `Две формулы приведены подряд.
@@ -722,6 +853,132 @@ bibliography: "references.bib"
 `,
 	}),
 	'bibliography-url-missing-urldate',
+);
+
+expectWarning(
+	'bibliography-urldate-invalid-format',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с электронным источником [@web2027].
+`,
+		'references.bib': `@misc{web2027,
+  title = {Electronic source},
+  year = {2027},
+  url = {https://example.com},
+  urldate = {08.06.2026}
+}
+`,
+	}),
+	'bibliography-urldate-invalid-format',
+);
+
+expectWarning(
+	'bibliography-url-missing-protocol',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с электронным источником [@web2028].
+`,
+		'references.bib': `@misc{web2028,
+  title = {Electronic source},
+  year = {2028},
+  url = {example.com},
+  urldate = {2026-06-08}
+}
+`,
+	}),
+	'bibliography-url-missing-protocol',
+);
+
+expectWarning(
+	'bibliography-book-required-field',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с книгой [@book2026].
+`,
+		'references.bib': `@book{book2026,
+  author = {Иванов, И. И.},
+  title = {Книга},
+  year = {2026},
+  address = {Самара},
+  pages = {120}
+}
+`,
+	}),
+	'bibliography-required-field-missing',
+);
+
+expectWarning(
+	'bibliography-article-required-field',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст со статьей [@article2026].
+`,
+		'references.bib': `@article{article2026,
+  author = {Иванов, И. И.},
+  title = {Статья},
+  journal = {Журнал},
+  year = {2026}
+}
+`,
+	}),
+	'bibliography-required-field-missing',
+);
+
+expectWarning(
+	'bibliography-inproceedings-required-field',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с материалами конференции [@conf2026].
+`,
+		'references.bib': `@inproceedings{conf2026,
+  author = {Иванов, И. И.},
+  title = {Доклад},
+  year = {2026},
+  pages = {10--12}
+}
+`,
+	}),
+	'bibliography-required-field-missing',
+);
+
+expectNoIssue(
+	'unused-broken-bibliography-entry',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с использованной статьей [@used2026].
+`,
+		'references.bib': `@article{used2026,
+  author = {Иванов, И. И.},
+  title = {Статья},
+  journal = {Журнал},
+  year = {2026},
+  pages = {10--12}
+}
+
+@book{unusedBroken2026,
+  title = {Сломанная книга}
+}
+`,
+	}),
+	'bibliography-required-field-missing',
 );
 
 expectWarning(

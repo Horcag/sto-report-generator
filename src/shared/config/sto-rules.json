@@ -72,13 +72,109 @@
 			"ъ",
 			"ы",
 			"ь"
-		]
+		],
+		"introTrailingPrepositions": [
+			"в",
+			"во",
+			"на",
+			"к",
+			"по",
+			"для",
+			"о",
+			"об",
+			"с",
+			"со"
+		],
+		"markerPolicies": {
+			"parenthesized": {
+				"nonFinalLowercaseEndings": [";", ","],
+				"finalEndings": ["."]
+			},
+			"dotted": {
+				"requireUppercaseStart": true,
+				"itemEndings": ["."]
+			}
+		}
 	},
 	"tables": {
 		"discouragedOrdinalHeaders": ["№ п/п", "Номер по порядку"]
 	},
 	"formulas": {
-		"forbiddenSourceMultiplicationSigns": ["*", "·"]
+		"forbiddenSourceMultiplicationSigns": ["*", "·"],
+		"uprightFunctions": [
+			"sin",
+			"cos",
+			"tan",
+			"arcsin",
+			"arccos",
+			"arctan",
+			"sh",
+			"ch",
+			"ln",
+			"lg",
+			"log",
+			"max",
+			"min",
+			"lim",
+			"exp",
+			"const"
+		],
+		"forbiddenRawTokens": ["..."],
+		"lineBreakOperators": {
+			"repeatRequired": [
+				"=",
+				"≈",
+				"<",
+				">",
+				"≤",
+				"≥",
+				"+",
+				"-",
+				"−",
+				"\\times"
+			],
+			"forbiddenBeforeBreak": ["/", ":", "\\div"]
+		}
+	},
+	"bibliography": {
+		"urlProtocols": ["http", "https", "ftp"],
+		"urldatePattern": "^\\d{4}-\\d{2}-\\d{2}$",
+		"requiredFieldsByType": {
+			"book": [
+				["title"],
+				["author", "editor"],
+				["year"],
+				["address", "location"],
+				["publisher"],
+				["pages", "numpages"]
+			],
+			"article": [
+				["title"],
+				["author"],
+				["journal"],
+				["year"],
+				["pages"]
+			],
+			"inproceedings": [
+				["title"],
+				["author", "editor"],
+				["booktitle"],
+				["address", "location"],
+				["year"],
+				["pages"]
+			],
+			"incollection": [
+				["title"],
+				["author", "editor"],
+				["booktitle"],
+				["address", "location"],
+				["year"],
+				["pages"]
+			],
+			"misc": [["title"], ["year"], ["url"]],
+			"online": [["title"], ["year"], ["url"]],
+			"techreport": [["title"], ["author", "institution"], ["year"]]
+		}
 	},
 	"documentStructure": {
 		"requiredOrder": [

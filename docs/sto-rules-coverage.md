@@ -14,15 +14,15 @@
 | Разделы и подразделы                                                   | Implemented           | numbered heading styles, heading casing/page-break validator, Markdown heading preflight                           |
 | Реферат                                                                | Partially implemented | плейсхолдеры и keywords проверяются; смысловая полнота остается warning                                            |
 | Оглавление                                                             | Implemented           | scaffold/profile structure + Word post-build TOC update                                                            |
-| Источники и цитирование                                                | Implemented           | BibTeX keys, used-only bibliography, dense citation numbers, no manual `[1]`                                       |
-| Электронные источники                                                  | Partially implemented | cited URL entries without `urldate` warn before build                                                              |
+| Источники и цитирование                                                | Implemented           | BibTeX keys, used-only bibliography, dense citation numbers, no manual `[1]`, required fields for cited entries    |
+| Электронные источники                                                  | Implemented           | cited URL entries require supported protocol and `urldate` in `YYYY-MM-DD` as warnings                             |
 | Формулы                                                                | Implemented           | labels, unparsed math, decimal comma, forbidden `*`/`·`, forbidden `:` division, punctuation before `где`          |
-| Формулы подряд                                                         | Partially implemented | warning when two block formulas follow without text and no comma/semicolon                                         |
+| Формулы подряд и переносы                                              | Partially implemented | warnings for consecutive formulas, raw `...`, bare function names and unsafe source line breaks                    |
 | Таблицы                                                                | Implemented           | caption format, empty cells, header periods, repeated headers, caption adjacency                                   |
 | Границы таблиц                                                         | Partially implemented | diagonal borders are blocked; full visual border sufficiency is still manual/review                                |
 | Рисунки                                                                | Implemented           | reference-before-caption preflight, image existence, width/centering, caption adjacency                            |
 | Приложения                                                             | Partially implemented | order after sources, reference-before-appendix, labels/order/duplicates, object-numbering warnings                 |
-| Перечни                                                                | Implemented           | only `sto_list`/`sto_enum`, marker rules, forbidden letters, punctuation warnings                                  |
+| Перечни                                                                | Implemented           | only `sto_list`/`sto_enum`, marker rules, forbidden letters, intro sentence and punctuation warnings               |
 | Примечания                                                             | Partially implemented | basic dash/numbering warnings; semantic placement remains manual                                                   |
 | Микротипографика текста                                                | Implemented           | em dash, tabs, bare `№`/`%`, comparison signs, decimal dot, straight quotes, negative hyphen, repeated range units |
 | Мягкие правила изложения                                               | Partially implemented | suspicious abbreviations, numbers 1-9, `D` as diameter are warnings                                                |
@@ -32,7 +32,7 @@
 ## Что добавлять дальше
 
 1. Расширить приложения до полноценной нумерации `А.1` в parser/reference registry, а не только warning в preflight.
-2. Добавить formatter/tests для `@patent`, `@thesis`, `@inproceedings`, стандартов и электронных частей сайтов.
+2. Добавить formatter/tests для `@patent`, `@thesis`, стандартов и электронных частей сайтов.
 3. Добавить profile-specific title page validator для лабораторной, курсовой, НИР и ВКР.
 4. Добавить проверку неразрывного пробела между числом и единицей после нормализации DOCX.
 5. Проверять большие/landscape таблицы через отдельный opt-in профиль, потому что автоматическая пагинация Word нестабильна без COM.
@@ -42,4 +42,6 @@
 - Числа от 1 до 9 словами: правило полезно как warning, но дает ложные срабатывания в метриках, моделях и обозначениях.
 - Смысловые требования к введению, заключению и результатам: лучше отдельный review/AI checklist, не regex.
 - Полное начертание математических символов в OMML: можно проверять выборочно, но не как обязательный quality gate.
+- Семантическое применение `\times`: методичка разрешает его для размеров, векторного произведения и переносов, но
+  автоматическая проверка без понимания смысла даст ложные срабатывания.
 - Разговорные обороты и терминологическую чистоту: оставить для редакторского контроля или отдельного словаря проекта.

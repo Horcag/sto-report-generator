@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 
+import { STO_RULES } from '@/shared/config';
 import { ReportConfig } from '@/shared/lib/report-config';
 
 import { SourceFile, SourcePreflightIssue } from './types';
@@ -65,6 +66,7 @@ function readBibKeys(bibPath: string): Set<string> {
 }
 
 interface BibEntrySource {
+	entryType: string;
 	key: string;
 	raw: string;
 	line: number;
@@ -74,10 +76,11 @@ function readBibEntrySources(bibPath: string): BibEntrySource[] {
 	const content = fs.readFileSync(bibPath, 'utf8');
 	return [
 		...content.matchAll(
-			/@\w+\s*\{\s*([^,\s]+)\s*,[\s\S]*?(?=\n@\w+\s*\{|\s*$)/g,
+			/@(\w+)\s*\{\s*([^,\s]+)\s*,[\s\S]*?(?=\n@\w+\s*\{|\s*$)/g,
 		),
 	].map(match => ({
-		key: match[1].trim(),
+		entryType: match[1].trim().toLowerCase(),
+		key: match[2].trim(),
 		line: lineNumberAt(content, match.index ?? 0),
 		raw: match[0],
 	}));
@@ -87,7 +90,87 @@ function hasBibTag(rawEntry: string, tagName: string): boolean {
 	return new RegExp(String.raw`^\s*${tagName}\s*=`, 'im').test(rawEntry);
 }
 
+function readBibTagValue(
+	rawEntry: string,
+	tagName: string,
+): string | undefined {
+	const match = new RegExp(
+		String.raw`^\s*${tagName}\s*=\s*(?:\{([^}\r\n]+)\}|"([^"\r\n]+)")`,
+		'im',
+	).exec(rawEntry);
+	return match?.[1]?.trim() ?? match?.[2]?.trim();
+}
+
+function hasAnyBibTag(rawEntry: string, tagNames: readonly string[]): boolean {
+	return tagNames.some(tagName => hasBibTag(rawEntry, tagName));
+}
+
+function formatRequiredFieldGroup(tagNames: readonly string[]): string {
+	return tagNames.join(' or ');
+}
+
 function validateUrlAccessDates(
+	bibPath: string,
+	citationKeys: readonly string[],
+	issues: SourcePreflightIssue[],
+): void {
+	const citedKeys = new Set(citationKeys);
+	const urldatePattern = new RegExp(STO_RULES.bibliography.urldatePattern);
+	for (const entry of readBibEntrySources(bibPath)) {
+		if (!citedKeys.has(entry.key)) {
+			continue;
+		}
+
+		const url = readBibTagValue(entry.raw, 'url');
+		if (!url) {
+			continue;
+		}
+
+		const protocol = /^([a-z][a-z0-9+.-]*):/i.exec(url)?.[1]?.toLowerCase();
+		if (
+			!protocol ||
+			!STO_RULES.bibliography.urlProtocols.includes(protocol)
+		) {
+			issues.push(
+				issue(
+					'bibliography-url-missing-protocol',
+					`cited electronic resource @${entry.key} has URL without supported protocol (${STO_RULES.bibliography.urlProtocols.join(', ')}).`,
+					path.basename(bibPath),
+					entry.line,
+					'warning',
+				),
+			);
+		}
+
+		const urldate = readBibTagValue(entry.raw, 'urldate');
+		if (!urldate) {
+			issues.push(
+				issue(
+					'bibliography-url-missing-urldate',
+					`cited electronic resource @${entry.key} has url, but no urldate/date access field.`,
+					path.basename(bibPath),
+					entry.line,
+					'warning',
+				),
+			);
+			continue;
+		}
+
+		if (!urldatePattern.test(urldate)) {
+			issues.push(
+				issue(
+					'bibliography-urldate-invalid-format',
+					`cited electronic resource @${entry.key} has urldate "${urldate}". Use YYYY-MM-DD.`,
+					path.basename(bibPath),
+					entry.line,
+					'warning',
+				),
+			);
+		}
+	}
+}
+
+function validateRequiredBibFields(
 	bibPath: string,
 	citationKeys: readonly string[],
 	issues: SourcePreflightIssue[],
@@ -98,11 +181,20 @@ function validateUrlAccessDates(
 			continue;
 		}
 
-		if (hasBibTag(entry.raw, 'url') && !hasBibTag(entry.raw, 'urldate')) {
+		const requiredGroups =
+			STO_RULES.bibliography.requiredFieldsByType[entry.entryType];
+		if (!requiredGroups) {
+			continue;
+		}
+
+		for (const tagNames of requiredGroups) {
+			if (hasAnyBibTag(entry.raw, tagNames)) {
+				continue;
+			}
 			issues.push(
 				issue(
-					'bibliography-url-missing-urldate',
-					`cited electronic resource @${entry.key} has url, but no urldate/date access field.`,
+					'bibliography-required-field-missing',
+					`cited @${entry.key} (${entry.entryType}) should define ${formatRequiredFieldGroup(tagNames)} for STO bibliography formatting.`,
 					path.basename(bibPath),
 					entry.line,
 					'warning',
@@ -187,6 +279,7 @@ export function validateBibliography(
 		}
 	}
 	validateUrlAccessDates(bibliographyPath, citationKeys, issues);
+	validateRequiredBibFields(bibliographyPath, citationKeys, issues);
 
 	if (config.document.requireSources === false && citationKeys.length > 0) {
 		issues.push(

@@ -3,6 +3,109 @@ import { STO_RULES } from '@/shared/config';
 import { SourcePreflightIssue } from './types';
 import { issue, lineNumberAt, stripEnvironmentBlocks } from './utils';
 
+type ListMarkerKind = 'bullet' | 'dotted' | 'parenthesized';
+
+interface ListItemLine {
+	index: number;
+	itemText: string;
+	line: string;
+	marker: string;
+	markerKind: ListMarkerKind;
+}
+
+function parseListItemLine(
+	line: string,
+	index: number,
+): ListItemLine | undefined {
+	const markerMatch =
+		/^\s*(?<marker>[-*+]|\d+\)\.?|\d+\.|[А-Яа-яЁё]\)\.?|[А-Яа-яЁё]\.|[IVXLCDM]+\.)\s+/u.exec(
+			line,
+		);
+	const marker = markerMatch?.groups?.marker;
+	if (!marker) {
+		return undefined;
+	}
+
+	let markerKind: ListMarkerKind = 'bullet';
+	if (marker.includes(')')) {
+		markerKind = 'parenthesized';
+	} else if (marker.endsWith('.')) {
+		markerKind = 'dotted';
+	}
+
+	return {
+		index,
+		itemText: line.trim().slice(marker.length).trim(),
+		line,
+		marker,
+		markerKind,
+	};
+}
+
+function endsWithAny(value: string, endings: readonly string[]): boolean {
+	return endings.some(ending => value.endsWith(ending));
+}
+
+function shouldSkipListIntroLine(trimmed: string): boolean {
+	return (
+		trimmed.length === 0 ||
+		trimmed.startsWith('#') ||
+		/^\\sto_structural_heading\{/.test(trimmed)
+	);
+}
+
+function validateListIntro(
+	file: string,
+	content: string,
+	blockStartIndex: number,
+	issues: SourcePreflightIssue[],
+): void {
+	const prefixLines = content.slice(0, blockStartIndex).split('\n');
+	for (let index = prefixLines.length - 1; index >= 0; index--) {
+		const trimmed = prefixLines[index].trim();
+		if (trimmed.length === 0) {
+			continue;
+		}
+		if (shouldSkipListIntroLine(trimmed)) {
+			return;
+		}
+
+		const lineNumber = index + 1;
+		if (!/[.:]$/.test(trimmed)) {
+			issues.push(
+				issue(
+					'list-intro-punctuation',
+					'list introduction should usually end with a colon or a period.',
+					file,
+					lineNumber,
+					'warning',
+				),
+			);
+		}
+
+		const lastWord = trimmed
+			.replace(/[.:;!?]+$/u, '')
+			.split(/\s+/u)
+			.at(-1)
+			?.toLowerCase();
+		if (
+			lastWord &&
+			STO_RULES.lists.introTrailingPrepositions.includes(lastWord)
+		) {
+			issues.push(
+				issue(
+					'list-intro-trailing-preposition',
+					'list introduction should not leave a trailing preposition before the list.',
+					file,
+					lineNumber,
+					'warning',
+				),
+			);
+		}
+		return;
+	}
+}
+
 function validateStoListBlock(
 	file: string,
 	content: string,
@@ -18,15 +121,12 @@ function validateStoListBlock(
 	);
 	const lines = blockContent.split('\n');
 	const itemLines = lines
-		.map((line, index) => ({ line, index }))
-		.filter(({ line }) =>
-			/^\s*(?:[-*+]|\d+\)\.?|\d+\.|[А-Яа-яЁё]\)\.?|[А-Яа-яЁё]\.)\s+/.test(
-				line,
-			),
-		);
+		.map((line, index) => parseListItemLine(line, index))
+		.filter((item): item is ListItemLine => item !== undefined);
 
 	for (let itemIndex = 0; itemIndex < itemLines.length; itemIndex++) {
-		const { line, index } = itemLines[itemIndex];
+		const { line, index, itemText, marker, markerKind } =
+			itemLines[itemIndex];
 		const absoluteIndex =
 			blockStartIndex +
 			lines.slice(0, index).join('\n').length +
@@ -61,13 +161,43 @@ function validateStoListBlock(
 			);
 		}
 
-		const itemText = trimmed.replace(
-			/^(?:[-*+]|\d+[.)]|[А-Яа-яЁё][.)])\s+/,
-			'',
-		);
 		const startsUppercase = /^[A-ZА-ЯЁ]/.test(itemText);
 		const startsWithSymbolicDefinition = /^\$[^$]+\$\s+–/.test(itemText);
 		const isLast = itemIndex === itemLines.length - 1;
+		const parenthesizedPolicy =
+			STO_RULES.lists.markerPolicies.parenthesized;
+		const dottedPolicy = STO_RULES.lists.markerPolicies.dotted;
+
+		if (markerKind === 'dotted') {
+			if (
+				dottedPolicy.requireUppercaseStart &&
+				itemText.length > 0 &&
+				!startsUppercase
+			) {
+				issues.push(
+					issue(
+						'list-dotted-item-case',
+						`list item with marker "${marker}" should start with an uppercase letter.`,
+						file,
+						lineNumber,
+						'warning',
+					),
+				);
+			}
+			if (!endsWithAny(itemText, dottedPolicy.itemEndings)) {
+				issues.push(
+					issue(
+						'list-dotted-item-punctuation',
+						`list item with marker "${marker}" should end with a period.`,
+						file,
+						lineNumber,
+						'warning',
+					),
+				);
+			}
+			continue;
+		}
+
 		if (!isLast && !/[;,.!?]$/.test(itemText)) {
 			issues.push(
 				issue(
@@ -83,12 +213,27 @@ function validateStoListBlock(
 			!isLast &&
 			!startsUppercase &&
 			!startsWithSymbolicDefinition &&
-			!/[;,]$/.test(itemText)
+			!endsWithAny(itemText, parenthesizedPolicy.nonFinalLowercaseEndings)
 		) {
 			issues.push(
 				issue(
 					'list-item-lowercase-punctuation',
 					'list item starts with a lowercase letter and should usually end with comma or semicolon.',
+					file,
+					lineNumber,
+					'warning',
+				),
+			);
+		}
+		if (
+			isLast &&
+			!startsWithSymbolicDefinition &&
+			!endsWithAny(itemText, parenthesizedPolicy.finalEndings)
+		) {
+			issues.push(
+				issue(
+					'list-final-item-punctuation',
+					'last list item should usually end with a period.',
 					file,
 					lineNumber,
 					'warning',
@@ -139,6 +284,9 @@ export function validateLists(
 			STO_RULES.markdown.listEnvironments.includes(match[1]) ||
 			match[1] === STO_RULES.markdown.bibliographyEnvironment
 		) {
+			if (STO_RULES.markdown.listEnvironments.includes(match[1])) {
+				validateListIntro(file, content, match.index ?? 0, issues);
+			}
 			validateStoListBlock(
 				file,
 				content,

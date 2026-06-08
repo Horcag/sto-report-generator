@@ -105,6 +105,58 @@ const tests: { input: BibItem; expected: string }[] = [
 	},
 	{
 		input: {
+			citationKey: 'biryukova',
+			entryType: 'inproceedings',
+			entryTags: {
+				author: 'Бирюкова, Е. В. and Парингер, Р. А. and Куприянов, А. В.',
+				title: 'Разработка технологии построения эффективного набора признаков для различения классов текстурных изображений',
+				booktitle:
+					'Материалы Международной конференции и молодежной школы «Информационные технологии и нанотехнологии» (ИТНТ-2016). Самара, 17-19 мая 2016 г.',
+				address: 'Самара',
+				publisher: 'Самарский Научный Центр РАН',
+				year: '2016',
+				pages: '357--360',
+			},
+		},
+		expected:
+			'Бирюкова, Е. В. Разработка технологии построения эффективного набора признаков для различения классов текстурных изображений [Текст] / Е. В. Бирюкова, Р. А. Парингер, А. В. Куприянов // Материалы Международной конференции и молодежной школы «Информационные технологии и нанотехнологии» (ИТНТ-2016). Самара, 17-19 мая 2016 г. – Самара : Самарский Научный Центр РАН, 2016. – С. 357-360.',
+	},
+	{
+		input: {
+			citationKey: 'bobrova',
+			entryType: 'incollection',
+			entryTags: {
+				author: 'Боброва, А. И. and Мец, Ф. И.',
+				title: 'К вопросу о многокомпонентности культуры средневекового населения Томско-Нарымского Приобья',
+				booktitle:
+					'Палеодемография и миграционные процессы в Западной Сибири в древности и средневековье',
+				address: 'Барнаул',
+				year: '1994',
+				pages: '163--164',
+			},
+		},
+		expected:
+			'Боброва, А. И. К вопросу о многокомпонентности культуры средневекового населения Томско-Нарымского Приобья [Текст] / А. И. Боброва, Ф. И. Мец // Палеодемография и миграционные процессы в Западной Сибири в древности и средневековье. – Барнаул, 1994. – С. 163-164.',
+	},
+	{
+		input: {
+			citationKey: 'albanesi',
+			entryType: 'techreport',
+			entryTags: {
+				author: 'Albanesi, S. and Vamossy, D. F.',
+				title: 'Credit Scores: Performance and Equity',
+				type: 'Working Paper',
+				institution: 'National Bureau of Economic Research',
+				number: '32917',
+				year: '2024',
+				langid: 'english',
+			},
+		},
+		expected:
+			'Albanesi, S. Credit Scores: Performance and Equity [Текст] : Working Paper / S. Albanesi, D. F. Vamossy / National Bureau of Economic Research. – No. 32917. – 2024.',
+	},
+	{
+		input: {
 			citationKey: 'constitution',
 			entryType: 'norm',
 			entryTags: {

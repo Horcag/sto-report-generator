@@ -52,12 +52,34 @@ export interface StoRules {
 	};
 	lists: {
 		forbiddenRussianLetterMarkers: string[];
+		introTrailingPrepositions: string[];
+		markerPolicies: {
+			parenthesized: {
+				nonFinalLowercaseEndings: string[];
+				finalEndings: string[];
+			};
+			dotted: {
+				requireUppercaseStart: boolean;
+				itemEndings: string[];
+			};
+		};
 	};
 	tables: {
 		discouragedOrdinalHeaders: string[];
 	};
 	formulas: {
 		forbiddenSourceMultiplicationSigns: string[];
+		uprightFunctions: string[];
+		forbiddenRawTokens: string[];
+		lineBreakOperators: {
+			repeatRequired: string[];
+			forbiddenBeforeBreak: string[];
+		};
+	};
+	bibliography: {
+		urlProtocols: string[];
+		urldatePattern: string;
+		requiredFieldsByType: Record<string, string[][]>;
 	};
 	documentStructure: {
 		requiredOrder: string[];

@@ -139,6 +139,31 @@ export function formatBibItem(item: BibItem): string {
 			}
 		}
 		if (tags.doi) res += ` – DOI: ${tags.doi}`;
+	} else if (entryType === 'inproceedings' || entryType === 'incollection') {
+		const booktitle = tags.booktitle || '';
+		const address = tags.address || tags.location || '';
+		const publisher = tags.publisher || tags.organization || '';
+		let pages = tags.pages || '';
+		pages = pages.replace(/--/g, '-');
+
+		if (booktitle) {
+			res += ` // ${booktitle}.`;
+		}
+		if (address && publisher) {
+			res += ` – ${address} : ${publisher}`;
+		} else if (address) {
+			res += ` – ${address}`;
+		} else if (publisher) {
+			res += ` – ${publisher}`;
+		}
+		if (year) {
+			res += `${address || publisher ? ', ' : ' – '}${year}.`;
+		} else if (address || publisher) {
+			res += `.`;
+		}
+		if (pages) {
+			res += ` – ${isEng ? 'P.' : 'С.'} ${pages}.`;
+		}
 	} else if (entryType === 'book') {
 		res += `.`; // Add dot before the location block for books
 		const address = tags.address || tags.location || 'Б.м.';
@@ -165,8 +190,14 @@ export function formatBibItem(item: BibItem): string {
 
 		const address = tags.address || tags.location || '[Б. м.]';
 		if (entryType === 'techreport') {
-			res += `.`;
-			if (tags.institution) res += ` / ${tags.institution}`;
+			if (tags.institution) {
+				res += ` / ${tags.institution}.`;
+			} else {
+				res += `.`;
+			}
+			if (tags.number) {
+				res += ` – ${isEng ? 'No.' : '№'} ${tags.number}.`;
+			}
 			if (year) res += ` – ${year}.`;
 		} else {
 			res += ` – Электрон. дан.`;
