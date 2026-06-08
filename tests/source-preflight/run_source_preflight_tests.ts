@@ -441,6 +441,45 @@ expectWarning(
 );
 
 expectWarning(
+	'list-marker-sequence-gap',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_list}
+1) первый элемент;
+3) третий элемент.
+\\end{sto_list}
+`,
+	}),
+	'list-marker-sequence-gap',
+);
+
+expectWarning(
+	'list-russian-marker-sequence-gap',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_list}
+а) первый элемент;
+в) третий элемент.
+\\end{sto_list}
+`,
+	}),
+	'list-marker-sequence-gap',
+);
+
+expectWarning(
+	'list-mixed-marker-style',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_list}
+- первый элемент;
+1) второй элемент.
+\\end{sto_list}
+`,
+	}),
+	'list-mixed-marker-style',
+);
+
+expectWarning(
 	'list-punctuation-warning',
 	validFiles({
 		'03_intro.md': `\\begin{sto_list}
@@ -769,6 +808,32 @@ $$
 );
 
 expectWarning(
+	'formula-forbidden-raw-multiplication-token',
+	validFiles({
+		'03_intro.md': `Формула содержит сырой знак умножения.
+
+$$
+x × y
+$$
+`,
+	}),
+	'formula-forbidden-raw-token',
+);
+
+expectWarning(
+	'formula-number-letter-cdot',
+	validFiles({
+		'03_intro.md': `Формула содержит лишнюю точку умножения.
+
+$$
+5 \\cdot x
+$$
+`,
+	}),
+	'formula-number-letter-cdot',
+);
+
+expectWarning(
 	'formula-period-before-where',
 	validFiles({
 		'03_intro.md': `Формула @eq:period_where.
@@ -781,6 +846,37 @@ $$
 `,
 	}),
 	'formula-period-before-where',
+);
+
+expectWarning(
+	'formula-where-definition-separator',
+	validFiles({
+		'03_intro.md': `Формула @eq:where_separator.
+
+$$
+x = y (@eq:where_separator)
+$$
+
+где $x$ – первая величина
+$y$ – вторая величина.
+`,
+	}),
+	'formula-where-definition-separator',
+);
+
+expectWarning(
+	'formula-where-final-period',
+	validFiles({
+		'03_intro.md': `Формула @eq:where_period.
+
+$$
+x = y (@eq:where_period)
+$$
+
+где $x$ – первая величина
+`,
+	}),
+	'formula-where-final-period',
 );
 
 expectWarning(
@@ -893,6 +989,137 @@ bibliography: "references.bib"
 `,
 	}),
 	'bibliography-url-missing-protocol',
+);
+
+expectWarning(
+	'bibliography-urldate-in-future',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с электронным источником [@futureWeb].
+`,
+		'references.bib': `@misc{futureWeb,
+  title = {Electronic source},
+  year = {2028},
+  url = {https://example.com},
+  urldate = {2999-01-01}
+}
+`,
+	}),
+	'bibliography-urldate-in-future',
+);
+
+expectWarning(
+	'bibliography-doi-url',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст со статьей [@doiUrl].
+`,
+		'references.bib': `@article{doiUrl,
+  author = {Smith, J.},
+  title = {Article},
+  journal = {Journal},
+  year = {2026},
+  pages = {1--10},
+  doi = {https://doi.org/10.1000/example},
+  langid = {english}
+}
+`,
+	}),
+	'bibliography-doi-url',
+);
+
+expectWarning(
+	'bibliography-doi-invalid-prefix',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст со статьей [@badDoi].
+`,
+		'references.bib': `@article{badDoi,
+  author = {Smith, J.},
+  title = {Article},
+  journal = {Journal},
+  year = {2026},
+  pages = {1--10},
+  doi = {abc/example},
+  langid = {english}
+}
+`,
+	}),
+	'bibliography-doi-invalid-prefix',
+);
+
+expectWarning(
+	'bibliography-article-preprint-type',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с working paper [@nberArticle].
+`,
+		'references.bib': `@article{nberArticle,
+  author = {Smith, J.},
+  title = {Working paper},
+  journal = {NBER Working Paper Series},
+  year = {2026},
+  pages = {1--10},
+  langid = {english}
+}
+`,
+	}),
+	'bibliography-article-preprint-type',
+);
+
+expectWarning(
+	'bibliography-latin-entry-missing-langid',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с английской статьей [@englishNoLang].
+`,
+		'references.bib': `@article{englishNoLang,
+  author = {Smith, J.},
+  title = {Credit scoring model},
+  journal = {Journal of Finance},
+  year = {2026},
+  pages = {1--10}
+}
+`,
+	}),
+	'bibliography-latin-entry-missing-langid',
+);
+
+expectWarning(
+	'bibliography-book-pages-range',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с книгой [@bookRange].
+`,
+		'references.bib': `@book{bookRange,
+  author = {Иванов, И. И.},
+  title = {Книга},
+  address = {Самара},
+  publisher = {Издательство},
+  year = {2026},
+  pages = {10--20}
+}
+`,
+	}),
+	'bibliography-book-pages-range',
 );
 
 expectWarning(

@@ -73,6 +73,33 @@
 			"ы",
 			"ь"
 		],
+		"russianLetterSequence": [
+			"а",
+			"б",
+			"в",
+			"г",
+			"д",
+			"е",
+			"ж",
+			"и",
+			"к",
+			"л",
+			"м",
+			"н",
+			"п",
+			"р",
+			"с",
+			"т",
+			"у",
+			"ф",
+			"х",
+			"ц",
+			"ш",
+			"щ",
+			"э",
+			"ю",
+			"я"
+		],
 		"introTrailingPrepositions": [
 			"в",
 			"во",
@@ -102,6 +129,8 @@
 	"formulas": {
 		"forbiddenSourceMultiplicationSigns": ["*", "·"],
 		"uprightFunctions": [
+			"arctg",
+			"arcctg",
 			"sin",
 			"cos",
 			"tan",
@@ -110,6 +139,8 @@
 			"arctan",
 			"sh",
 			"ch",
+			"tg",
+			"ctg",
 			"ln",
 			"lg",
 			"log",
@@ -119,7 +150,7 @@
 			"exp",
 			"const"
 		],
-		"forbiddenRawTokens": ["..."],
+		"forbiddenRawTokens": ["...", "…", "×", "∙"],
 		"lineBreakOperators": {
 			"repeatRequired": [
 				"=",
@@ -139,6 +170,21 @@
 	"bibliography": {
 		"urlProtocols": ["http", "https", "ftp"],
 		"urldatePattern": "^\\d{4}-\\d{2}-\\d{2}$",
+		"latinLangidValues": ["english", "en"],
+		"articlePreprintJournalPatterns": [
+			"working paper",
+			"preprint",
+			"nber",
+			"ssrn",
+			"arxiv"
+		],
+		"doiUrlPrefixes": [
+			"https://doi.org/",
+			"http://doi.org/",
+			"https://dx.doi.org/",
+			"http://dx.doi.org/",
+			"doi:"
+		],
 		"requiredFieldsByType": {
 			"book": [
 				["title"],

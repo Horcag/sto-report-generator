@@ -109,6 +109,60 @@ function formatRequiredFieldGroup(tagNames: readonly string[]): string {
 	return tagNames.join(' or ');
 }
 
+function parseIsoDate(value: string): Date | undefined {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+	if (!match) {
+		return undefined;
+	}
+	const year = Number(match[1]);
+	const month = Number(match[2]);
+	const day = Number(match[3]);
+	const parsed = new Date(Date.UTC(year, month - 1, day));
+	if (
+		parsed.getUTCFullYear() !== year ||
+		parsed.getUTCMonth() !== month - 1 ||
+		parsed.getUTCDate() !== day
+	) {
+		return undefined;
+	}
+	return parsed;
+}
+
+function isFutureDate(value: string): boolean {
+	const parsed = parseIsoDate(value);
+	if (!parsed) {
+		return false;
+	}
+	const now = new Date();
+	const today = new Date(
+		Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
+	);
+	return parsed.getTime() > today.getTime();
+}
+
+function isMostlyLatinText(value: string): boolean {
+	const latinCount = [...value.matchAll(/[A-Za-z]/g)].length;
+	const cyrillicCount = [...value.matchAll(/[А-Яа-яЁё]/g)].length;
+	return latinCount >= 5 && latinCount > cyrillicCount * 2;
+}
+
+function getNormalizedTagValue(
+	rawEntry: string,
+	tagName: string,
+): string | undefined {
+	return readBibTagValue(rawEntry, tagName)?.replace(/[{}]/g, '').trim();
+}
+
+function hasLatinLanguageMetadata(rawEntry: string): boolean {
+	const langid = getNormalizedTagValue(rawEntry, 'langid')?.toLowerCase();
+	const language = getNormalizedTagValue(rawEntry, 'language')?.toLowerCase();
+	return [langid, language].some(
+		value =>
+			value !== undefined &&
+			STO_RULES.bibliography.latinLangidValues.includes(value),
+	);
+}
+
 function validateUrlAccessDates(
 	bibPath: string,
 	citationKeys: readonly string[],
@@ -166,6 +220,19 @@ function validateUrlAccessDates(
 					'warning',
 				),
 			);
+			continue;
+		}
+
+		if (isFutureDate(urldate)) {
+			issues.push(
+				issue(
+					'bibliography-urldate-in-future',
+					`cited electronic resource @${entry.key} has future urldate "${urldate}".`,
+					path.basename(bibPath),
+					entry.line,
+					'warning',
+				),
+			);
 		}
 	}
 }
@@ -195,6 +262,104 @@ function validateRequiredBibFields(
 				issue(
 					'bibliography-required-field-missing',
 					`cited @${entry.key} (${entry.entryType}) should define ${formatRequiredFieldGroup(tagNames)} for STO bibliography formatting.`,
+					path.basename(bibPath),
+					entry.line,
+					'warning',
+				),
+			);
+		}
+	}
+}
+
+function validateBibEntryQuality(
+	bibPath: string,
+	citationKeys: readonly string[],
+	issues: SourcePreflightIssue[],
+): void {
+	const citedKeys = new Set(citationKeys);
+	for (const entry of readBibEntrySources(bibPath)) {
+		if (!citedKeys.has(entry.key)) {
+			continue;
+		}
+
+		const doi = getNormalizedTagValue(entry.raw, 'doi');
+		if (doi) {
+			const lowerDoi = doi.toLowerCase();
+			if (
+				STO_RULES.bibliography.doiUrlPrefixes.some(prefix =>
+					lowerDoi.startsWith(prefix),
+				)
+			) {
+				issues.push(
+					issue(
+						'bibliography-doi-url',
+						`cited @${entry.key} stores a DOI URL in doi. Keep only the DOI value, for example "10.xxxx/xxxxx".`,
+						path.basename(bibPath),
+						entry.line,
+						'warning',
+					),
+				);
+			} else if (!doi.startsWith('10.')) {
+				issues.push(
+					issue(
+						'bibliography-doi-invalid-prefix',
+						`cited @${entry.key} has DOI "${doi}". DOI values should start with "10.".`,
+						path.basename(bibPath),
+						entry.line,
+						'warning',
+					),
+				);
+			}
+		}
+
+		const title = getNormalizedTagValue(entry.raw, 'title') ?? '';
+		const author = getNormalizedTagValue(entry.raw, 'author') ?? '';
+		const journal = getNormalizedTagValue(entry.raw, 'journal') ?? '';
+		const searchableJournal = journal.toLowerCase();
+		if (
+			entry.entryType === 'article' &&
+			STO_RULES.bibliography.articlePreprintJournalPatterns.some(
+				pattern => searchableJournal.includes(pattern),
+			)
+		) {
+			issues.push(
+				issue(
+					'bibliography-article-preprint-type',
+					`cited @${entry.key} is an article, but journal looks like a working paper/preprint series. Use techreport or misc/online if it is not a journal article.`,
+					path.basename(bibPath),
+					entry.line,
+					'warning',
+				),
+			);
+		}
+
+		if (
+			!hasLatinLanguageMetadata(entry.raw) &&
+			isMostlyLatinText(`${author} ${title} ${journal}`)
+		) {
+			issues.push(
+				issue(
+					'bibliography-latin-entry-missing-langid',
+					`cited @${entry.key} looks like a Latin-script source. Add langid = {english} when the source is in English.`,
+					path.basename(bibPath),
+					entry.line,
+					'warning',
+				),
+			);
+		}
+
+		const pages =
+			getNormalizedTagValue(entry.raw, 'pages') ??
+			getNormalizedTagValue(entry.raw, 'numpages');
+		if (
+			entry.entryType === 'book' &&
+			pages &&
+			/^\d+\s*(?:--|-|–)\s*\d+$/.test(pages)
+		) {
+			issues.push(
+				issue(
+					'bibliography-book-pages-range',
+					`cited @${entry.key} is a book, but pages looks like a range. Use total page count for books.`,
 					path.basename(bibPath),
 					entry.line,
 					'warning',
@@ -280,6 +445,7 @@ export function validateBibliography(
 	}
 	validateUrlAccessDates(bibliographyPath, citationKeys, issues);
 	validateRequiredBibFields(bibliographyPath, citationKeys, issues);
+	validateBibEntryQuality(bibliographyPath, citationKeys, issues);
 
 	if (config.document.requireSources === false && citationKeys.length > 0) {
 		issues.push(

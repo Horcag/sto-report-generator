@@ -119,15 +119,18 @@ local absolute paths there.
   title, place, publisher, year and pages; articles need journal/year/pages; conference or collection parts need
   `booktitle`, place, year and pages. Electronic sources need `url` with `http`, `https` or `ftp` and `urldate` as
   `YYYY-MM-DD`.
+- Store DOI values without `https://doi.org/`; English sources should normally have `langid = {english}`. If a source is
+  a working paper, preprint, SSRN, arXiv or NBER item, prefer `techreport`, `misc` or `online` over `article`.
 - For `lab`, sources are optional until the first `[@key]` citation. After adding a citation, add `references.bib` and a
   `СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ` structural section unless config explicitly says otherwise.
 - Use `\begin{sto_list}` / `\begin{sto_enum}` for lists. Add an introductory sentence ending in `:` or `.`, do not leave
-  a trailing preposition before the list, do not write `1).`, and make the last list item end with a period.
+  a trailing preposition before the list, do not write `1).`, keep markers sequential, do not mix marker styles at one
+  indentation level, and make the last list item end with a period.
 - Avoid bold Markdown outside `01_referat.md`; the parser treats bold in regular text as an STO violation.
 - Put code and technical file-size audit details outside the final report unless they are substantively needed.
 - After a formula followed by a lowercase `где`, do not end the formula with a period and do not write `где:`. In LaTeX
   formulas, write upright functions as commands (`\sin`, `\ln`, `\max`) and use `\ldots`, `\dots` or `\cdots` instead
-  of raw `...`.
+  of raw `...`. Do not use raw `×`, `∙` or `…`; do not put `\cdot` between a number and a letter symbol.
 - Prefer Russian terms in the report when a standard Russian equivalent exists.
 - Do not use unknown `\begin{...}` environments; add them to `sto-rules.json`, parser handling, tests, and README
   together if support is needed.

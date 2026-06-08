@@ -52,6 +52,7 @@ export interface StoRules {
 	};
 	lists: {
 		forbiddenRussianLetterMarkers: string[];
+		russianLetterSequence: string[];
 		introTrailingPrepositions: string[];
 		markerPolicies: {
 			parenthesized: {
@@ -79,6 +80,9 @@ export interface StoRules {
 	bibliography: {
 		urlProtocols: string[];
 		urldatePattern: string;
+		latinLangidValues: string[];
+		articlePreprintJournalPatterns: string[];
+		doiUrlPrefixes: string[];
 		requiredFieldsByType: Record<string, string[][]>;
 	};
 	documentStructure: {

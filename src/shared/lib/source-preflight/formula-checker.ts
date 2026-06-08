@@ -119,6 +119,35 @@ function validateFormulaLineBreaks(
 	}
 }
 
+function forbiddenRawTokenMessage(rawToken: string): string {
+	if (rawToken === '...' || rawToken === '…') {
+		return `formula contains raw "${rawToken}". Use LaTeX ellipsis commands such as \\ldots, \\dots or \\cdots.`;
+	}
+	return `formula contains raw "${rawToken}". Use LaTeX multiplication commands such as \\times or \\cdot.`;
+}
+
+function validateNumberLetterMultiplicationDot(
+	file: string,
+	content: string,
+	formula: string,
+	index: number,
+	issues: SourcePreflightIssue[],
+): void {
+	if (
+		/\d\s*\\cdot\s*(?:[A-Za-zА-Яа-яЁё]|\\[A-Za-zА-Яа-яЁё]+)/u.test(formula)
+	) {
+		issues.push(
+			issue(
+				'formula-number-letter-cdot',
+				'formula uses \\cdot between a number and a letter/function. STO notes do not put a multiplication dot between numeric and letter symbols.',
+				file,
+				lineNumberAt(content, index),
+				'warning',
+			),
+		);
+	}
+}
+
 function validateConsecutiveFormulaPunctuation(
 	file: string,
 	content: string,
@@ -149,6 +178,61 @@ function validateConsecutiveFormulaPunctuation(
 	}
 }
 
+function validateWhereDefinitionPunctuation(
+	file: string,
+	content: string,
+	formulaIndex: number,
+	afterFormula: string,
+	issues: SourcePreflightIssue[],
+): void {
+	const firstLineMatch = /^[\s\r\n]*(где[^\r\n]*)/i.exec(afterFormula);
+	const firstLine = firstLineMatch?.[1]?.trimEnd();
+	if (!firstLine) {
+		return;
+	}
+
+	const continuationLines: string[] = [];
+	const afterFirstLine = afterFormula
+		.slice(firstLineMatch?.[0].length ?? 0)
+		.replace(/^\r?\n/, '');
+	for (const line of afterFirstLine.split(/\r?\n/)) {
+		const trimmed = line.trim();
+		if (!/^\$[^$]+\$\s+–/.test(trimmed)) {
+			break;
+		}
+		continuationLines.push(trimmed);
+	}
+
+	const whereLines = [firstLine, ...continuationLines];
+	if (
+		continuationLines.length > 0 &&
+		!whereLines.slice(0, -1).every(line => line.endsWith(';'))
+	) {
+		issues.push(
+			issue(
+				'formula-where-definition-separator',
+				'multiline formula explanation after "где" should separate definitions with semicolons.',
+				file,
+				lineNumberAt(content, formulaIndex),
+				'warning',
+			),
+		);
+	}
+
+	const whereBlock = whereLines.join('\n');
+	if (!whereBlock.includes('.') && !whereBlock.endsWith('.')) {
+		issues.push(
+			issue(
+				'formula-where-final-period',
+				'formula explanation after "где" should end with a period.',
+				file,
+				lineNumberAt(content, formulaIndex),
+				'warning',
+			),
+		);
+	}
+}
+
 function validateFormulaBeforeWhere(
 	file: string,
 	content: string,
@@ -173,6 +257,13 @@ function validateFormulaBeforeWhere(
 				),
 			);
 		}
+		validateWhereDefinitionPunctuation(
+			file,
+			content,
+			match.index ?? 0,
+			afterFormula,
+			issues,
+		);
 	}
 }
 
@@ -232,7 +323,7 @@ export function validateSourceFormulas(
 				issues.push(
 					issue(
 						'formula-forbidden-raw-token',
-						`formula contains raw "${rawToken}". Use LaTeX ellipsis commands such as \\ldots, \\dots or \\cdots.`,
+						forbiddenRawTokenMessage(rawToken),
 						file,
 						lineNumberAt(content, span.index),
 						'warning',
@@ -241,6 +332,13 @@ export function validateSourceFormulas(
 			}
 		}
 		validateFormulaLineBreaks(
+			file,
+			content,
+			span.formula,
+			span.index,
+			issues,
+		);
+		validateNumberLetterMultiplicationDot(
 			file,
 			content,
 			span.formula,

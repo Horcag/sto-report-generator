@@ -4,13 +4,85 @@ import { SourcePreflightIssue } from './types';
 import { issue, lineNumberAt, stripEnvironmentBlocks } from './utils';
 
 type ListMarkerKind = 'bullet' | 'dotted' | 'parenthesized';
+type ListMarkerStyle =
+	| 'bullet'
+	| 'decimal-dotted'
+	| 'decimal-parenthesized'
+	| 'roman-dotted'
+	| 'russian-dotted'
+	| 'russian-parenthesized';
 
 interface ListItemLine {
+	indentSpaces: number;
 	index: number;
 	itemText: string;
 	line: string;
 	marker: string;
 	markerKind: ListMarkerKind;
+	markerOrdinal?: number;
+	markerStyle: ListMarkerStyle;
+}
+
+const ROMAN_VALUES: Record<string, number> = {
+	C: 100,
+	D: 500,
+	I: 1,
+	L: 50,
+	M: 1000,
+	V: 5,
+	X: 10,
+};
+
+function parseRomanNumeral(value: string): number | undefined {
+	const upper = value.toUpperCase();
+	if (!/^[IVXLCDM]+$/.test(upper)) {
+		return undefined;
+	}
+
+	let total = 0;
+	for (let index = 0; index < upper.length; index++) {
+		const current = ROMAN_VALUES[upper[index]];
+		const next = ROMAN_VALUES[upper[index + 1]] ?? 0;
+		total += current < next ? -current : current;
+	}
+	return total > 0 ? total : undefined;
+}
+
+function markerStyle(marker: string): ListMarkerStyle {
+	if (/^[-*+]$/.test(marker)) {
+		return 'bullet';
+	}
+	if (/^\d+\)$/.test(marker) || /^\d+\)\.$/.test(marker)) {
+		return 'decimal-parenthesized';
+	}
+	if (/^\d+\.$/.test(marker)) {
+		return 'decimal-dotted';
+	}
+	if (/^[IVXLCDM]+\.$/.test(marker)) {
+		return 'roman-dotted';
+	}
+	if (/^[А-Яа-яЁё]\)$/.test(marker) || /^[А-Яа-яЁё]\)\.$/.test(marker)) {
+		return 'russian-parenthesized';
+	}
+	return 'russian-dotted';
+}
+
+function markerOrdinal(
+	marker: string,
+	style: ListMarkerStyle,
+): number | undefined {
+	if (style === 'decimal-dotted' || style === 'decimal-parenthesized') {
+		return Number.parseInt(marker, 10);
+	}
+	if (style === 'roman-dotted') {
+		return parseRomanNumeral(marker.replace('.', ''));
+	}
+	if (style === 'russian-dotted' || style === 'russian-parenthesized') {
+		const letter = marker[0].toLowerCase();
+		const index = STO_RULES.lists.russianLetterSequence.indexOf(letter);
+		return index === -1 ? undefined : index + 1;
+	}
+	return undefined;
 }
 
 function parseListItemLine(
@@ -26,6 +98,7 @@ function parseListItemLine(
 		return undefined;
 	}
 
+	const style = markerStyle(marker);
 	let markerKind: ListMarkerKind = 'bullet';
 	if (marker.includes(')')) {
 		markerKind = 'parenthesized';
@@ -34,11 +107,14 @@ function parseListItemLine(
 	}
 
 	return {
+		indentSpaces: /^\s*/.exec(line)?.[0].length ?? 0,
 		index,
 		itemText: line.trim().slice(marker.length).trim(),
 		line,
 		marker,
 		markerKind,
+		markerOrdinal: markerOrdinal(marker, style),
+		markerStyle: style,
 	};
 }
 
@@ -123,6 +199,14 @@ function validateStoListBlock(
 	const itemLines = lines
 		.map((line, index) => parseListItemLine(line, index))
 		.filter((item): item is ListItemLine => item !== undefined);
+	validateListMarkerConsistency(
+		file,
+		content,
+		lines,
+		blockStartIndex,
+		itemLines,
+		issues,
+	);
 
 	for (let itemIndex = 0; itemIndex < itemLines.length; itemIndex++) {
 		const { line, index, itemText, marker, markerKind } =
@@ -251,6 +335,84 @@ function validateStoListBlock(
 				),
 			);
 		}
+	}
+}
+
+function lineNumberForListItem(
+	content: string,
+	lines: readonly string[],
+	blockStartIndex: number,
+	item: ListItemLine,
+): number {
+	const absoluteIndex =
+		blockStartIndex +
+		lines.slice(0, item.index).join('\n').length +
+		(item.index > 0 ? 1 : 0);
+	return lineNumberAt(content, absoluteIndex);
+}
+
+function validateListMarkerConsistency(
+	file: string,
+	content: string,
+	lines: readonly string[],
+	blockStartIndex: number,
+	itemLines: readonly ListItemLine[],
+	issues: SourcePreflightIssue[],
+): void {
+	const previousStyleByIndent = new Map<number, ListMarkerStyle>();
+	const previousOrdinalByLevel = new Map<string, number>();
+	const reportedMixedIndents = new Set<number>();
+
+	for (const item of itemLines) {
+		const previousStyle = previousStyleByIndent.get(item.indentSpaces);
+		if (
+			previousStyle &&
+			previousStyle !== item.markerStyle &&
+			!reportedMixedIndents.has(item.indentSpaces)
+		) {
+			issues.push(
+				issue(
+					'list-mixed-marker-style',
+					'list items at the same indentation level should use one marker style.',
+					file,
+					lineNumberForListItem(
+						content,
+						lines,
+						blockStartIndex,
+						item,
+					),
+					'warning',
+				),
+			);
+			reportedMixedIndents.add(item.indentSpaces);
+		}
+		previousStyleByIndent.set(item.indentSpaces, item.markerStyle);
+
+		if (item.markerOrdinal === undefined || item.markerStyle === 'bullet') {
+			continue;
+		}
+
+		const sequenceKey = `${item.indentSpaces}:${item.markerStyle}`;
+		const previousOrdinal = previousOrdinalByLevel.get(sequenceKey);
+		const expectedOrdinal =
+			previousOrdinal === undefined ? 1 : previousOrdinal + 1;
+		if (item.markerOrdinal !== expectedOrdinal) {
+			issues.push(
+				issue(
+					'list-marker-sequence-gap',
+					`list marker "${item.marker}" should continue the sequence without gaps.`,
+					file,
+					lineNumberForListItem(
+						content,
+						lines,
+						blockStartIndex,
+						item,
+					),
+					'warning',
+				),
+			);
+		}
+		previousOrdinalByLevel.set(sequenceKey, item.markerOrdinal);
 	}
 }
 
