@@ -1,6 +1,6 @@
-﻿# STO Rules Coverage
+# STO Rules Coverage
 
-Документ фиксирует перенос правил из `extracted STO/methodical materials` в генератор. Он заменяет старый checklist из `reports/docs`: шаблонные требования `.dotm` теперь учитываются здесь вместе с source-preflight, DOCX XML validator и Python post-build.
+Документ фиксирует перенос правил из извлеченных СТО/методических материалов в генератор. Он заменяет старый checklist из `reports/docs`: шаблонные требования `.dotm` теперь учитываются здесь вместе с source-preflight, DOCX XML validator и Python post-build.
 
 ## Статусы
 
