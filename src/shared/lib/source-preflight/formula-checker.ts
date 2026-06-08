@@ -3,6 +3,45 @@ import { STO_RULES } from '@/shared/config';
 import { SourcePreflightIssue } from './types';
 import { issue, lineNumberAt } from './utils';
 
+function stripEquationLabel(formula: string): string {
+	return formula.replace(/\(@eq:[a-zA-Z0-9_-]+\)/g, '').trim();
+}
+
+function hasForbiddenDivisionColon(formula: string): boolean {
+	const withoutLabels = stripEquationLabel(formula);
+	return /\d\s*:\s*\d|[a-zа-яё]\s+:\s+[a-zа-яё]/i.test(withoutLabels);
+}
+
+function validateConsecutiveFormulaPunctuation(
+	file: string,
+	content: string,
+	issues: SourcePreflightIssue[],
+): void {
+	const matches = [...content.matchAll(/\$\$([\s\S]*?)\$\$/g)];
+	for (let index = 0; index < matches.length - 1; index++) {
+		const current = matches[index];
+		const next = matches[index + 1];
+		const currentEnd = (current.index ?? 0) + current[0].length;
+		const between = content.slice(currentEnd, next.index ?? currentEnd);
+		if (between.trim().length > 0) {
+			continue;
+		}
+
+		const formula = stripEquationLabel(current[1]);
+		if (!/[,;]\s*$/.test(formula)) {
+			issues.push(
+				issue(
+					'consecutive-formula-punctuation',
+					'consecutive block formulas should be separated by a comma or semicolon when no text appears between them.',
+					file,
+					lineNumberAt(content, current.index ?? 0),
+					'warning',
+				),
+			);
+		}
+	}
+}
+
 export function validateSourceFormulas(
 	file: string,
 	content: string,
@@ -65,7 +104,18 @@ export function validateSourceFormulas(
 				),
 			);
 		}
+		if (hasForbiddenDivisionColon(formula)) {
+			issues.push(
+				issue(
+					'formula-forbidden-division-colon',
+					'formula contains ":" as division sign. STO requires fraction notation or a proper division operator, not a colon.',
+					file,
+					lineNumberAt(content, match.index ?? 0),
+				),
+			);
+		}
 	}
+	validateConsecutiveFormulaPunctuation(file, content, issues);
 
 	const lines = content.split('\n');
 	for (let index = 0; index < lines.length; index++) {

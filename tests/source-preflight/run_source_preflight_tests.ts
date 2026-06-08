@@ -654,12 +654,115 @@ $$
 );
 
 expectIssue(
+	'formula-division-colon',
+	validFiles({
+		'03_intro.md': `Формула @eq:ratio.
+
+$$
+a : b (@eq:ratio)
+$$
+`,
+	}),
+	'formula-forbidden-division-colon',
+);
+
+expectWarning(
+	'consecutive-formula-punctuation',
+	validFiles({
+		'03_intro.md': `Две формулы приведены подряд.
+
+$$
+a = b
+$$
+
+$$
+c = d
+$$
+`,
+	}),
+	'consecutive-formula-punctuation',
+);
+
+expectWarning(
+	'unused-equation-label',
+	validFiles({
+		'03_intro.md': `Нумерованная формула приведена без ссылки в тексте.
+
+$$
+x = 1 (@eq:unused)
+$$
+`,
+	}),
+	'unused-equation-label',
+);
+
+expectIssue(
 	'unknown-reference',
 	validFiles({
 		'03_intro.md': `Ссылка на неизвестный рисунок @fig:missing.
 `,
 	}),
 	'unknown-reference-label',
+);
+
+expectWarning(
+	'bibliography-url-missing-urldate',
+	validFiles({
+		'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+		'03_intro.md': `Текст с электронным источником [@web2026].
+`,
+		'references.bib': `@misc{web2026,
+  title = {Electronic source},
+  year = {2026},
+  url = {https://example.com}
+}
+`,
+	}),
+	'bibliography-url-missing-urldate',
+);
+
+expectWarning(
+	'application-without-reference',
+	validFiles({
+		'92_appendix.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+Материалы приложения.
+`,
+	}),
+	'application-without-reference',
+);
+
+expectWarning(
+	'application-object-numbering',
+	validFiles({
+		'03_intro.md': `Дополнительные данные приведены в приложении А. Неверный рисунок приложения показан на рисунке 1.
+`,
+		'92_appendix.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+Рисунок 1 – Неверная нумерация приложения
+`,
+	}),
+	'application-object-numbering',
+);
+
+expectIssue(
+	'application-label-duplicate',
+	validFiles({
+		'03_intro.md': `Дополнительные данные приведены в приложении А.
+`,
+		'92_appendix_a.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+Материалы приложения.
+`,
+		'93_appendix_a2.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+Материалы второго приложения.
+`,
+	}),
+	'application-label-duplicate',
 );
 
 expectIssue(

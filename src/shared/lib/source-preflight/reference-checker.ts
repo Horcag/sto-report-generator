@@ -1,6 +1,7 @@
 import {
 	LabelDefinition,
 	LabelDefinitions,
+	SourceFile,
 	SourcePreflightIssue,
 } from './types';
 import { issue, lineNumberAt } from './utils';
@@ -68,5 +69,50 @@ export function validateUnknownReferences(
 				),
 			);
 		}
+	}
+}
+
+function isDefinitionReference(
+	content: string,
+	index: number,
+	rawReference: string,
+): boolean {
+	return (
+		content[index - 1] === '(' &&
+		content[index + rawReference.length] === ')'
+	);
+}
+
+export function validateUnusedEquationLabels(
+	files: SourceFile[],
+	definitions: LabelDefinitions,
+	issues: SourcePreflightIssue[],
+): void {
+	const usedEquationLabels = new Set<string>();
+
+	for (const { content } of files) {
+		for (const match of content.matchAll(/@eq:([a-zA-Z0-9_-]+)/g)) {
+			const index = match.index ?? 0;
+			if (isDefinitionReference(content, index, match[0])) {
+				continue;
+			}
+			usedEquationLabels.add(`eq:${match[1]}`);
+		}
+	}
+
+	for (const [key, definition] of definitions.entries()) {
+		if (!key.startsWith('eq:') || usedEquationLabels.has(key)) {
+			continue;
+		}
+
+		issues.push(
+			issue(
+				'unused-equation-label',
+				`numbered formula @${key} is not referenced in text. STO numbering is intended for formulas that are cited.`,
+				definition.file,
+				definition.line,
+				'warning',
+			),
+		);
 	}
 }

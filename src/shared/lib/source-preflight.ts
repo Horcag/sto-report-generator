@@ -19,6 +19,7 @@ import { validateReferat } from './source-preflight/referat-checker';
 import {
 	collectLabelDefinitions,
 	validateUnknownReferences,
+	validateUnusedEquationLabels,
 } from './source-preflight/reference-checker';
 import { validateSoftTextRules } from './source-preflight/soft-text-checker';
 import { validateDocumentStructure } from './source-preflight/structure-checker';
@@ -172,6 +173,7 @@ export function runSourcePreflight(
 		validateImageExists(file, content, absoluteSourceDir, cwd, issues);
 		validateUnknownReferences(file, content, definitions, issues);
 	}
+	validateUnusedEquationLabels(files, definitions, issues);
 
 	validateMetadata(files, issues);
 	validateBibliography(files, absoluteSourceDir, cwd, config, issues);

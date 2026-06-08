@@ -16,6 +16,7 @@
 		"new:report": "npx tsx src/index.ts new",
 		"check:source": "npx tsx src/index.ts check",
 		"generate:report": "npx tsx src/index.ts generate",
+		"audit:report": "npx tsx src/index.ts audit",
 		"validate:sto": "npx tsx src/shared/lib/sto-validator.ts",
 		"validate:docx": "npx tsx src/index.ts validate-docx",
 		"generate": "npx tsx src/index.ts generate reports/report_sem6 --output output/report_sem6.docx --post-build --validate",

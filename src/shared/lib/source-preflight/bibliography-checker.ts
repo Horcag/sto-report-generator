@@ -64,6 +64,54 @@ function readBibKeys(bibPath: string): Set<string> {
 	);
 }
 
+interface BibEntrySource {
+	key: string;
+	raw: string;
+	line: number;
+}
+
+function readBibEntrySources(bibPath: string): BibEntrySource[] {
+	const content = fs.readFileSync(bibPath, 'utf8');
+	return [
+		...content.matchAll(
+			/@\w+\s*\{\s*([^,\s]+)\s*,[\s\S]*?(?=\n@\w+\s*\{|\s*$)/g,
+		),
+	].map(match => ({
+		key: match[1].trim(),
+		line: lineNumberAt(content, match.index ?? 0),
+		raw: match[0],
+	}));
+}
+
+function hasBibTag(rawEntry: string, tagName: string): boolean {
+	return new RegExp(String.raw`^\s*${tagName}\s*=`, 'im').test(rawEntry);
+}
+
+function validateUrlAccessDates(
+	bibPath: string,
+	citationKeys: readonly string[],
+	issues: SourcePreflightIssue[],
+): void {
+	const citedKeys = new Set(citationKeys);
+	for (const entry of readBibEntrySources(bibPath)) {
+		if (!citedKeys.has(entry.key)) {
+			continue;
+		}
+
+		if (hasBibTag(entry.raw, 'url') && !hasBibTag(entry.raw, 'urldate')) {
+			issues.push(
+				issue(
+					'bibliography-url-missing-urldate',
+					`cited electronic resource @${entry.key} has url, but no urldate/date access field.`,
+					path.basename(bibPath),
+					entry.line,
+					'warning',
+				),
+			);
+		}
+	}
+}
+
 function validateManualBibliographyContent(
 	file: string,
 	content: string,
@@ -138,6 +186,7 @@ export function validateBibliography(
 			);
 		}
 	}
+	validateUrlAccessDates(bibliographyPath, citationKeys, issues);
 
 	if (config.document.requireSources === false && citationKeys.length > 0) {
 		issues.push(

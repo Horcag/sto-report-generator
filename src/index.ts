@@ -17,6 +17,7 @@ const COMMANDS = new Set([
 	'new',
 	'check',
 	'generate',
+	'audit',
 	'validate-docx',
 	'help',
 ]);
@@ -93,6 +94,7 @@ Usage:
   npx tsx src/index.ts new <slug> [--profile nir|coursework|lab] [--title "..."] [--dir reports/<slug>] [--no-git]
   npx tsx src/index.ts check <report_dir> [--strict]
   npx tsx src/index.ts generate <report_dir> [--output build/report.docx] [--post-build] [--validate]
+  npx tsx src/index.ts audit <report_dir> [--output build/report.docx]
   npx tsx src/index.ts validate-docx <report.docx> [unpack_dir]
 
 Backward-compatible form still works:
@@ -186,6 +188,34 @@ async function runGenerate(args: ParsedArgs): Promise<void> {
 	}
 }
 
+async function runAudit(args: ParsedArgs): Promise<void> {
+	const reportDir = args.positionals[1];
+	if (!reportDir) {
+		throw new Error('audit command requires a report directory.');
+	}
+
+	const result = await generateReport({
+		reportDir,
+		outputPath: optionString(args, 'output'),
+		postBuild: true,
+		validate: true,
+	});
+	const warnings = result.preflight.issues.filter(
+		item => item.severity === 'warning',
+	);
+	for (const warning of warnings) {
+		console.warn(formatSourcePreflightIssue(warning));
+	}
+	console.log(`Audit generated ${result.outputDocx}`);
+	console.log(
+		warnings.length > 0
+			? `Source preflight passed with ${warnings.length} warning(s).`
+			: 'Source preflight passed.',
+	);
+	console.log('Post-build ran.');
+	console.log('DOCX validation passed.');
+}
+
 function runValidateDocx(args: ParsedArgs): void {
 	const docxPath = args.positionals[1];
 	const unpackDir =
@@ -233,6 +263,9 @@ async function main(): Promise<void> {
 			break;
 		case 'generate':
 			await runGenerate(args);
+			break;
+		case 'audit':
+			await runAudit(args);
 			break;
 		case 'validate-docx':
 			runValidateDocx(args);

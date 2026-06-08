@@ -1,11 +1,15 @@
 Citation Number Sequence: Citation numbers must be dense from [1] to [10]; missing: 5.
-Figure Caption Style: FigureCaption style missing or missing single line spacing (240 DXA).
+Figure Caption Adjacency: Detected 4 image paragraph(s) without an immediate FigureCaption paragraph after the image.
+Figure Caption Style: FigureCaption style must be centered, have no first-line indent, and use single line spacing (240 DXA).
 Image Width Limit: Detected image width above 14 cm. Run post_build.py to scale large figures.
 Math Multiplication Sign: Detected asterisk (*) as multiplication sign in formula. Use LaTeX multiplication commands instead.
 Normal Line Spacing (1.5): Normal style line spacing is not 1.5 (360 DXA).
-Page Margins: Page margins do not match STO defaults: left 30 mm, right 15 mm, top/bottom 20 mm.
+Normal Paragraph Indent & Alignment: Normal style must be justified and use first-line indent 709 DXA.
+Page Margins: Every section must use STO margins: left 30 mm, right 15 mm, top/bottom 20 mm.
 Structural Heading Alignment: Structural headings must be centered.
 Structural Heading Page Break: Structural headings must have a pageBreakBefore.
 Tab Characters: Detected body tab characters. Use paragraph indentation and styles instead of manual tabs.
-Table Caption Style: TableCaption style missing or missing single line spacing (240 DXA).
+Table Caption Adjacency: Detected 3 table(s) without an immediate TableCaption paragraph before the table.
+Table Caption Style: TableCaption style must be left-aligned, have no first-line indent, and use single line spacing (240 DXA).
 Table Header Repeat: Detected 2 table(s) without repeated header rows.
+Table Text Style: TableText style must have no first-line indent and use single line spacing (240 DXA).

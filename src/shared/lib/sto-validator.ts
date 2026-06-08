@@ -227,17 +227,138 @@ function hasUncenteredImageParagraphs(docXml: string): boolean {
 
 function hasExpectedPageMargins(docXml: string): boolean {
 	const margins = STO_RULES.page.marginsDxa;
-	const marginTag = /<w:pgMar\b[^>]*\/>/.exec(docXml)?.[0];
-	if (marginTag) {
-		return (
-			getXmlAttribute(marginTag, 'w:top') === String(margins.top) &&
-			getXmlAttribute(marginTag, 'w:bottom') === String(margins.bottom) &&
-			getXmlAttribute(marginTag, 'w:left') === String(margins.left) &&
-			getXmlAttribute(marginTag, 'w:right') === String(margins.right)
-		);
+	const marginTags = docXml.match(/<w:pgMar\b[^>]*\/>/g) ?? [];
+	return (
+		marginTags.length > 0 &&
+		marginTags.every(
+			marginTag =>
+				getXmlAttribute(marginTag, 'w:top') === String(margins.top) &&
+				getXmlAttribute(marginTag, 'w:bottom') ===
+					String(margins.bottom) &&
+				getXmlAttribute(marginTag, 'w:left') === String(margins.left) &&
+				getXmlAttribute(marginTag, 'w:right') === String(margins.right),
+		)
+	);
+}
+
+function getBodyElements(docXml: string): string[] {
+	const bodyXml = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/.exec(docXml)?.[1];
+	return (
+		bodyXml?.match(/<w:p\b[\s\S]*?<\/w:p>|<w:tbl\b[\s\S]*?<\/w:tbl>/g) ?? []
+	);
+}
+
+function isParagraphXml(elementXml: string): boolean {
+	return elementXml.startsWith('<w:p');
+}
+
+function isTableXml(elementXml: string): boolean {
+	return elementXml.startsWith('<w:tbl');
+}
+
+function paragraphHasDrawing(paragraphXml: string): boolean {
+	return paragraphXml.includes('<w:drawing');
+}
+
+function isVisibleParagraph(paragraphXml: string): boolean {
+	return (
+		extractWordText(paragraphXml).trim().length > 0 ||
+		paragraphHasDrawing(paragraphXml)
+	);
+}
+
+function paragraphHasStyle(paragraphXml: string, styleId: string): boolean {
+	return getParagraphStyleId(paragraphXml) === styleId;
+}
+
+function findPreviousVisibleParagraph(
+	elements: readonly string[],
+	index: number,
+): string | null {
+	for (let current = index - 1; current >= 0; current--) {
+		const elementXml = elements[current];
+		if (!isParagraphXml(elementXml)) {
+			return null;
+		}
+		if (isVisibleParagraph(elementXml)) {
+			return elementXml;
+		}
+	}
+	return null;
+}
+
+function findNextVisibleParagraph(
+	elements: readonly string[],
+	index: number,
+): string | null {
+	for (let current = index + 1; current < elements.length; current++) {
+		const elementXml = elements[current];
+		if (!isParagraphXml(elementXml)) {
+			return null;
+		}
+		if (isVisibleParagraph(elementXml)) {
+			return elementXml;
+		}
+	}
+	return null;
+}
+
+function countTablesWithoutAdjacentCaption(docXml: string): number {
+	const elements = getBodyElements(docXml);
+	let count = 0;
+
+	for (let index = 0; index < elements.length; index++) {
+		const elementXml = elements[index];
+		if (!isTableXml(elementXml) || isMathLayoutTable(elementXml)) {
+			continue;
+		}
+
+		const previous = findPreviousVisibleParagraph(elements, index);
+		const previousText = previous ? extractWordText(previous).trim() : '';
+		if (
+			!previous ||
+			!paragraphHasStyle(previous, 'TableCaption') ||
+			!/^Таблица\s+/i.test(previousText)
+		) {
+			count++;
+		}
 	}
 
-	return false;
+	return count;
+}
+
+function countImagesWithoutFollowingCaption(docXml: string): number {
+	const elements = getBodyElements(docXml);
+	let count = 0;
+
+	for (let index = 0; index < elements.length; index++) {
+		const elementXml = elements[index];
+		if (!isParagraphXml(elementXml) || !paragraphHasDrawing(elementXml)) {
+			continue;
+		}
+
+		const next = findNextVisibleParagraph(elements, index);
+		const nextText = next ? extractWordText(next).trim() : '';
+		if (
+			!next ||
+			!paragraphHasStyle(next, 'FigureCaption') ||
+			!/^Рисунок\s+/i.test(nextText)
+		) {
+			count++;
+		}
+	}
+
+	return count;
+}
+
+function countTablesWithDiagonalBorders(docXml: string): number {
+	const tables = docXml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g) ?? [];
+	return tables.filter(
+		tableXml =>
+			!isMathLayoutTable(tableXml) &&
+			(regexMatches(/<w:tl2br\b/, tableXml) ||
+				regexMatches(/<w:tr2bl\b/, tableXml)),
+	).length;
 }
 
 function hasExpectedDefaultFont(stylesXml: string): boolean {
@@ -275,6 +396,28 @@ function getStyleName(stylesXml: string, styleId: string): string | null {
 	}
 	const nameTag = /<w:name\b[^>]*\/>/.exec(styleXml)?.[0];
 	return nameTag ? getXmlAttribute(nameTag, 'w:val') : null;
+}
+
+function findStyleIdsByName(stylesXml: string, styleName: string): string[] {
+	const escapedStyleName = escapeRegExp(styleName);
+	const ids: string[] = [];
+
+	for (const match of stylesXml.matchAll(
+		/<w:style\b(?=[^>]*\bw:styleId="([^"]+)")[\s\S]*?<\/w:style>/g,
+	)) {
+		if (
+			regexMatches(
+				new RegExp(
+					String.raw`<w:name\b[^>]*w:val="${escapedStyleName}"`,
+				),
+				match[0],
+			)
+		) {
+			ids.push(match[1]);
+		}
+	}
+
+	return ids;
 }
 
 function getBasedOnStyleId(styleXml: string): string | null {
@@ -342,6 +485,32 @@ function hasStylePropertyOrInherited(
 				)
 			: false;
 	});
+}
+
+function expandStyleIdsByName(
+	stylesXml: string,
+	styleIdsOrNames: readonly string[],
+): string[] {
+	return [
+		...new Set(
+			styleIdsOrNames.flatMap(styleIdOrName => [
+				styleIdOrName,
+				...findStyleIdsByName(stylesXml, styleIdOrName),
+			]),
+		),
+	];
+}
+
+function hasStylePropertyOrInheritedByIdOrName(
+	stylesXml: string,
+	styleIdsOrNames: readonly string[],
+	propertyPattern: RegExp,
+): boolean {
+	return hasStylePropertyOrInherited(
+		stylesXml,
+		expandStyleIdsByName(stylesXml, styleIdsOrNames),
+		propertyPattern,
+	);
 }
 
 function countEmptyTableCells(docXml: string): number {
@@ -465,6 +634,7 @@ function validateHeadingText(input: ValidationInput): ValidationResult[] {
 }
 
 function validateTypography(input: ValidationInput): ValidationResult[] {
+	const firstLineIndent = STO_RULES.typography.firstLineIndentDxa;
 	const docDefaultsSpacing = regexMatches(
 		new RegExp(
 			String.raw`\x3Cw:pPrDefault>.*?\x3Cw:spacing [^>]*?w:line="${STO_RULES.typography.normalLineSpacingDxa}"`,
@@ -472,6 +642,23 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 		),
 		input.stylesXml,
 	);
+	const docDefaultsAlignment = regexMatches(
+		/\x3Cw:pPrDefault>.*?\x3Cw:jc\b[^>]*w:val="both"/s,
+		input.stylesXml,
+	);
+	const normalStyleIndent = hasStylePropertyOrInheritedByIdOrName(
+		input.stylesXml,
+		['Normal'],
+		new RegExp(String.raw`<w:ind\b[^>]*w:firstLine="${firstLineIndent}"`),
+	);
+	const normalStyleAlignment =
+		hasStylePropertyOrInheritedByIdOrName(
+			input.stylesXml,
+			['Normal'],
+			/<w:jc\b[^>]*w:val="both"[^>]*\/>/,
+		) || docDefaultsAlignment;
+	const normalStyleIndentAndAlignment =
+		normalStyleIndent && normalStyleAlignment;
 
 	return [
 		resultFromFailure(
@@ -497,9 +684,14 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 			`Default font size must be ${STO_RULES.typography.fontSizePoints} pt.`,
 		),
 		resultFromPass(
+			'Normal Paragraph Indent & Alignment',
+			normalStyleIndentAndAlignment,
+			`Normal style must be justified and use first-line indent ${firstLineIndent} DXA.`,
+		),
+		resultFromPass(
 			'Page Margins',
 			hasExpectedPageMargins(input.docXml),
-			'Page margins do not match STO defaults: left 30 mm, right 15 mm, top/bottom 20 mm.',
+			'Every section must use STO margins: left 30 mm, right 15 mm, top/bottom 20 mm.',
 		),
 	];
 }
@@ -522,6 +714,11 @@ function hasVisiblePageNumber(footerXml: string | undefined): boolean {
 function validatePageNumbering(input: ValidationInput): ValidationResult[] {
 	const hasTitlePage = regexMatches(/<w:titlePg\b/, input.docXml);
 	const firstFooter = input.footerXmlByType.first;
+	const titlePageNumberHidden =
+		hasTitlePage &&
+		(firstFooter === undefined ||
+			(!hasVisiblePageNumber(firstFooter) &&
+				extractWordText(firstFooter).trim().length === 0));
 
 	return [
 		resultFromPass(
@@ -531,10 +728,7 @@ function validatePageNumbering(input: ValidationInput): ValidationResult[] {
 		),
 		resultFromPass(
 			'Title Page Number Hidden',
-			hasTitlePage &&
-				firstFooter !== undefined &&
-				!hasVisiblePageNumber(firstFooter) &&
-				extractWordText(firstFooter).trim().length === 0,
+			titlePageNumberHidden,
 			'Title page must be included in numbering but must not display a page number.',
 		),
 	];
@@ -588,6 +782,15 @@ function validateFieldsTablesAndImages(
 	const tablesWithoutHeaderRepeat = countTablesWithoutHeaderRepeat(
 		input.docXml,
 	);
+	const tablesWithoutAdjacentCaption = countTablesWithoutAdjacentCaption(
+		input.docXml,
+	);
+	const imagesWithoutFollowingCaption = countImagesWithoutFollowingCaption(
+		input.docXml,
+	);
+	const tablesWithDiagonalBorders = countTablesWithDiagonalBorders(
+		input.docXml,
+	);
 
 	return [
 		resultFromFailure(
@@ -615,6 +818,16 @@ function validateFieldsTablesAndImages(
 			tablesWithoutHeaderRepeat === 0,
 			`Detected ${tablesWithoutHeaderRepeat} table(s) without repeated header rows.`,
 		),
+		resultFromPass(
+			'Table Caption Adjacency',
+			tablesWithoutAdjacentCaption === 0,
+			`Detected ${tablesWithoutAdjacentCaption} table(s) without an immediate TableCaption paragraph before the table.`,
+		),
+		resultFromPass(
+			'Table Diagonal Borders',
+			tablesWithDiagonalBorders === 0,
+			`Detected ${tablesWithDiagonalBorders} table(s) with diagonal cell borders.`,
+		),
 		resultFromFailure(
 			'Image Width Limit',
 			hasOversizedImages(input.docXml),
@@ -624,6 +837,11 @@ function validateFieldsTablesAndImages(
 			'Image Paragraph Alignment',
 			hasUncenteredImageParagraphs(input.docXml),
 			'Detected an image paragraph without center alignment.',
+		),
+		resultFromPass(
+			'Figure Caption Adjacency',
+			imagesWithoutFollowingCaption === 0,
+			`Detected ${imagesWithoutFollowingCaption} image paragraph(s) without an immediate FigureCaption paragraph after the image.`,
 		),
 	];
 }
@@ -716,6 +934,7 @@ function validateCaptionStyles(stylesXml: string): ValidationResult[] {
 	const captionLineSpacingPattern = new RegExp(
 		String.raw`<w:spacing\b[^>]*w:line="${STO_RULES.typography.captionLineSpacingDxa}"`,
 	);
+	const zeroFirstLinePattern = /<w:ind\b[^>]*w:firstLine="0"/;
 
 	return [
 		resultFromPass(
@@ -724,8 +943,18 @@ function validateCaptionStyles(stylesXml: string): ValidationResult[] {
 				stylesXml,
 				['FigureCaption'],
 				captionLineSpacingPattern,
-			),
-			`FigureCaption style missing or missing single line spacing (${STO_RULES.typography.captionLineSpacingDxa} DXA).`,
+			) &&
+				hasStyleProperty(
+					stylesXml,
+					['FigureCaption'],
+					/<w:jc\b[^>]*w:val="center"[^>]*\/>/,
+				) &&
+				hasStyleProperty(
+					stylesXml,
+					['FigureCaption'],
+					zeroFirstLinePattern,
+				),
+			`FigureCaption style must be centered, have no first-line indent, and use single line spacing (${STO_RULES.typography.captionLineSpacingDxa} DXA).`,
 		),
 		resultFromPass(
 			'Table Caption Style',
@@ -733,8 +962,32 @@ function validateCaptionStyles(stylesXml: string): ValidationResult[] {
 				stylesXml,
 				['TableCaption'],
 				captionLineSpacingPattern,
-			),
-			`TableCaption style missing or missing single line spacing (${STO_RULES.typography.captionLineSpacingDxa} DXA).`,
+			) &&
+				hasStyleProperty(
+					stylesXml,
+					['TableCaption'],
+					/<w:jc\b[^>]*w:val="left"[^>]*\/>/,
+				) &&
+				hasStyleProperty(
+					stylesXml,
+					['TableCaption'],
+					zeroFirstLinePattern,
+				),
+			`TableCaption style must be left-aligned, have no first-line indent, and use single line spacing (${STO_RULES.typography.captionLineSpacingDxa} DXA).`,
+		),
+		resultFromPass(
+			'Table Text Style',
+			hasStyleProperty(
+				stylesXml,
+				['TableText'],
+				captionLineSpacingPattern,
+			) &&
+				hasStyleProperty(
+					stylesXml,
+					['TableText'],
+					zeroFirstLinePattern,
+				),
+			`TableText style must have no first-line indent and use single line spacing (${STO_RULES.typography.captionLineSpacingDxa} DXA).`,
 		),
 	];
 }
