@@ -1,4 +1,4 @@
-﻿# Repository Map
+# Repository Map
 
 ## Build Pipeline
 
@@ -37,8 +37,8 @@ Edit the narrowest file that owns the content. Do not make large generated noteb
 
 For `reports/coursework_sad`, figures can be refreshed in two ways:
 
-- `reports/coursework_sad/scripts/sync_notebook_figures.py` extracts PNG outputs from `local coursework notebook` into `reports/coursework_sad/images` and writes `manifest.json`.
-- `reports/coursework_sad/scripts/refresh_report_figures.py` regenerates selected figures from staged CSV outputs in `local staged CSV outputs`.
+- `reports/coursework_sad/scripts/sync_notebook_figures.py` extracts PNG outputs from a local coursework notebook into `reports/coursework_sad/images` and writes `manifest.json`.
+- `reports/coursework_sad/scripts/refresh_report_figures.py` regenerates selected figures from local staged CSV outputs.
 - `reports/coursework_sad/scripts/verify_docx_figures.py` compares PNG hashes embedded in the DOCX with `images/manifest.json`.
 
 Use `sync_notebook_figures.py` when the notebook is the source of truth for all current figures. Use `refresh_report_figures.py` only when the staged outputs are known to be current and the report needs regenerated plots without notebook execution.
