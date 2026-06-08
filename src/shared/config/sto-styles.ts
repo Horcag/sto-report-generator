@@ -10,6 +10,8 @@ import { STO_RULES } from './sto-rules';
 
 const TYPOGRAPHY = STO_RULES.typography;
 const NESTED_LIST_INDENT = TYPOGRAPHY.nestedListIndentStepDxa;
+const TOC_RIGHT_TAB_STOP = TYPOGRAPHY.tocRightTabStopDxa;
+const TOC_LEVEL_INDENTS = TYPOGRAPHY.tocLevelIndentsDxa;
 
 export const NUMBERED_HEADING_STYLE_IDS = [
 	'StoHeading1',
@@ -49,7 +51,31 @@ function createNumberedHeadingStyle(level: number) {
 			alignment: AlignmentType.LEFT,
 			indent: { firstLine: TYPOGRAPHY.firstLineIndentDxa },
 			outlineLevel: level - 1,
+			keepNext: true,
 			...(level === 1 ? { pageBreakBefore: true } : {}),
+		},
+	};
+}
+
+function getTocIndent(level: number): number {
+	return TOC_LEVEL_INDENTS[level - 1] ?? 0;
+}
+
+function createTocStyle(level: number) {
+	return {
+		id: `TOC${level}`,
+		name: `toc ${level}`,
+		basedOn: level === 1 ? 'Normal' : 'TOC1',
+		next: 'Normal',
+		paragraph: {
+			indent: { left: getTocIndent(level), firstLine: 0 },
+			tabStops: [
+				{
+					type: TabStopType.RIGHT,
+					position: TOC_RIGHT_TAB_STOP,
+					leader: LeaderType.DOT,
+				},
+			],
 		},
 	};
 }
@@ -111,6 +137,7 @@ export const STO_STYLES: IStylesOptions = {
 				alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
 				indent: { firstLine: 0 },
 				outlineLevel: 0,
+				keepNext: true,
 				// @ts-expect-error missing type in docx library for some properties
 				pageBreakBefore: true,
 			},
@@ -130,6 +157,7 @@ export const STO_STYLES: IStylesOptions = {
 				spacing: { before: 120, after: 240 }, // 12pt after
 				alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
 				indent: { firstLine: 0 },
+				keepNext: true,
 				// @ts-expect-error missing type in docx library for some properties
 				pageBreakBefore: true,
 			},
@@ -169,6 +197,7 @@ export const STO_STYLES: IStylesOptions = {
 					line: TYPOGRAPHY.captionLineSpacingDxa,
 					lineRule: 'auto',
 				}, // Single spacing, 6pt before, 6pt after
+				keepNext: true,
 			},
 		},
 		{
@@ -199,40 +228,7 @@ export const STO_STYLES: IStylesOptions = {
 				spacing: { before: 0, after: 0 },
 			},
 		},
-		{
-			id: 'TOC1',
-			name: 'toc 1',
-			basedOn: 'Normal',
-			next: 'Normal',
-			paragraph: {
-				indent: { left: 0, firstLine: 0 },
-				// @ts-expect-error missing type in docx library for style tab stops
-				tabStops: [
-					{
-						type: TabStopType.RIGHT,
-						position: 9026,
-						leader: LeaderType.DOT, // "dot" usually maps correctly, or cast as any if enum is needed
-					},
-				],
-			},
-		},
-		{
-			id: 'TOC2',
-			name: 'toc 2',
-			basedOn: 'Normal',
-			next: 'Normal',
-			paragraph: {
-				indent: { left: 200, firstLine: 0 },
-				// @ts-expect-error missing type in docx library for style tab stops
-				tabStops: [
-					{
-						type: TabStopType.RIGHT,
-						position: 9026,
-						leader: LeaderType.DOT,
-					},
-				],
-			},
-		},
+		...TOC_LEVEL_INDENTS.map((_, index) => createTocStyle(index + 1)),
 	],
 };
 

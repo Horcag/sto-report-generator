@@ -1,5 +1,6 @@
 import matter from 'gray-matter';
 
+import { ReportConfig, ReportProfile } from '../report-config';
 import { SourceFile, SourcePreflightIssue } from './types';
 import { issue } from './utils';
 
@@ -28,6 +29,33 @@ const PLACEHOLDER_PATTERNS = [
 	/\.\.\./,
 ];
 
+const PROFILE_TITLE_PAGE_EXPECTATIONS: Record<
+	ReportProfile,
+	{
+		reportType: RegExp;
+		topicPrefix?: RegExp;
+		degree?: RegExp;
+	}
+> = {
+	nir: {
+		reportType: /(?:научно-исследовательск|НИР)/i,
+		topicPrefix: /научно-исследовательск/i,
+		degree: /(?:бакалавр|магистр|специалист|аспирант)/i,
+	},
+	coursework: {
+		reportType: /курсов/i,
+		topicPrefix: /курсов/i,
+		degree: /дисциплин/i,
+	},
+	lab: {
+		reportType: /лабораторн/i,
+		topicPrefix: /лабораторн/i,
+		degree: /дисциплин/i,
+	},
+};
+
+const SPECIALTY_CODE_PATTERN = /^\d{2}\.\d{2}\.\d{2}$/;
+
 function readFirstFrontmatter(files: SourceFile[]): {
 	file: string;
 	data: Record<string, unknown>;
@@ -44,9 +72,72 @@ function readFirstFrontmatter(files: SourceFile[]): {
 	return null;
 }
 
+function getStringField(
+	data: Record<string, unknown>,
+	field: string,
+): string | undefined {
+	const value = data[field];
+	return typeof value === 'string' ? value.trim() : undefined;
+}
+
+function pushMetadataWarning(
+	issues: SourcePreflightIssue[],
+	code: string,
+	message: string,
+	file: string,
+): void {
+	issues.push(issue(code, message, file, undefined, 'warning'));
+}
+
+function validateProfileTitlePageMetadata(
+	metadata: { file: string; data: Record<string, unknown> },
+	config: ReportConfig,
+	issues: SourcePreflightIssue[],
+): void {
+	if (!config.profileExplicit) {
+		return;
+	}
+
+	const expectations = PROFILE_TITLE_PAGE_EXPECTATIONS[config.profile];
+	const reportType = getStringField(metadata.data, 'reportType');
+	if (reportType && !expectations.reportType.test(reportType)) {
+		pushMetadataWarning(
+			issues,
+			'metadata-profile-report-type-mismatch',
+			`metadata reportType "${reportType}" does not look compatible with profile "${config.profile}".`,
+			metadata.file,
+		);
+	}
+
+	const topicPrefix = getStringField(metadata.data, 'topicPrefix');
+	if (
+		topicPrefix &&
+		expectations.topicPrefix &&
+		!expectations.topicPrefix.test(topicPrefix)
+	) {
+		pushMetadataWarning(
+			issues,
+			'metadata-profile-topic-prefix-mismatch',
+			`metadata topicPrefix "${topicPrefix}" does not look compatible with profile "${config.profile}".`,
+			metadata.file,
+		);
+	}
+
+	const degree = getStringField(metadata.data, 'degree');
+	if (degree && expectations.degree && !expectations.degree.test(degree)) {
+		pushMetadataWarning(
+			issues,
+			'metadata-profile-degree-mismatch',
+			`metadata degree "${degree}" does not look compatible with profile "${config.profile}".`,
+			metadata.file,
+		);
+	}
+}
+
 export function validateMetadata(
 	files: SourceFile[],
 	issues: SourcePreflightIssue[],
+	config: ReportConfig,
 ): void {
 	const metadata = readFirstFrontmatter(files);
 	if (!metadata) {
@@ -89,6 +180,53 @@ export function validateMetadata(
 		}
 	}
 
+	const semester = metadata.data.semester;
+	if (
+		typeof semester === 'number' &&
+		(!Number.isInteger(semester) || semester < 1 || semester > 12)
+	) {
+		pushMetadataWarning(
+			issues,
+			'metadata-semester-out-of-range',
+			'metadata field "semester" should be an integer from 1 to 12.',
+			metadata.file,
+		);
+	}
+
+	const year = metadata.data.year;
+	if (
+		typeof year === 'number' &&
+		(!Number.isInteger(year) || year < 2000 || year > 2100)
+	) {
+		pushMetadataWarning(
+			issues,
+			'metadata-year-out-of-range',
+			'metadata field "year" should be a realistic four-digit year.',
+			metadata.file,
+		);
+	}
+
+	const specialtyCode = getStringField(metadata.data, 'specialtyCode');
+	if (specialtyCode && !SPECIALTY_CODE_PATTERN.test(specialtyCode)) {
+		pushMetadataWarning(
+			issues,
+			'metadata-specialty-code-format',
+			'metadata field "specialtyCode" should look like "01.03.02".',
+			metadata.file,
+		);
+	}
+
+	const hideSignatures = metadata.data.hideSignatures;
+	if (hideSignatures !== undefined && typeof hideSignatures !== 'boolean') {
+		issues.push(
+			issue(
+				'metadata-field-invalid-type',
+				'metadata field "hideSignatures" must be a boolean.',
+				metadata.file,
+			),
+		);
+	}
+
 	for (const field of [
 		'studentName',
 		'groupNumber',
@@ -111,4 +249,6 @@ export function validateMetadata(
 			);
 		}
 	}
+
+	validateProfileTitlePageMetadata(metadata, config, issues);
 }

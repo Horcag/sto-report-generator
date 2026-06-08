@@ -33,6 +33,7 @@ export interface ReportValidateConfig {
 
 export interface ReportConfig {
 	profile: ReportProfile;
+	profileExplicit: boolean;
 	sourceDir: string;
 	outputDocx: string;
 	document: ReportDocumentConfig;
@@ -506,11 +507,14 @@ export function resolveReportConfig(
 	const absoluteReportDir = path.resolve(cwd, reportDir);
 	const rawResult = readRawReportConfig(absoluteReportDir);
 	const raw = rawResult.config;
-	const profile = isReportProfile(raw.profile) ? raw.profile : 'nir';
+	const rawProfile = raw.profile;
+	const profileExplicit = isReportProfile(rawProfile);
+	const profile = profileExplicit ? rawProfile : 'nir';
 	const reportSlug = path.basename(absoluteReportDir);
 
 	const config: ReportConfig = {
 		profile,
+		profileExplicit,
 		sourceDir: asString(raw.sourceDir) ?? '.',
 		outputDocx:
 			options.outputPath ??

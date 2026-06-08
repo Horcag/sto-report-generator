@@ -301,6 +301,56 @@ year: "2026"
 	'metadata-field-invalid-type',
 );
 
+expectWarning(
+	'metadata-profile-report-type-mismatch',
+	validFiles({
+		'report.config.json': JSON.stringify({ profile: 'coursework' }),
+		'00_metadata.md': `---
+department: "Институт информатики и кибернетики"
+subdepartment: "Кафедра технической кибернетики"
+reportType: "Лабораторная работа"
+degree: "по дисциплине «Название дисциплины»"
+semester: 6
+specialtyCode: "01.03.02"
+specialtyName: "Прикладная математика и информатика"
+profileName: "Искусственный интеллект и компьютерные науки"
+studentName: "Иванов Иван Иванович"
+groupNumber: "6300 – 010302D"
+topicPrefix: "Тема лабораторной работы"
+topic: "Тема"
+supervisorName: "Петров Петр Петрович"
+supervisorTitle: "доцент"
+city: "Самара"
+year: 2026
+---
+`,
+	}),
+	'metadata-profile-report-type-mismatch',
+);
+
+expectWarning(
+	'metadata-semester-out-of-range',
+	validFiles({
+		'00_metadata.md': `---
+semester: 13
+year: 2026
+---
+`,
+	}),
+	'metadata-semester-out-of-range',
+);
+
+expectWarning(
+	'metadata-specialty-code-format',
+	validFiles({
+		'00_metadata.md': `---
+specialtyCode: "010302"
+---
+`,
+	}),
+	'metadata-specialty-code-format',
+);
+
 expectIssue(
 	'unsupported-env',
 	validFiles({

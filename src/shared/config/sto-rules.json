@@ -24,6 +24,8 @@
 		"firstLineIndentDxa": 709,
 		"nestedListIndentStepDxa": 709,
 		"captionFirstLineIndentDxa": 0,
+		"tocRightTabStopDxa": 9356,
+		"tocLevelIndentsDxa": [0, 284, 567, 851],
 		"forbiddenDash": "—",
 		"recommendedDash": "–",
 		"listMarker": "-"

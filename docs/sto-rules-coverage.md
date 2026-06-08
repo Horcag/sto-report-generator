@@ -9,7 +9,9 @@
 | Базовая типографика: Times New Roman, 14 pt, черный цвет, интервал 1,5 | Implemented           | `sto-rules.json`, `sto-styles.ts`, `sto-validator.ts`                                                              |
 | Поля страницы 30/15/20/20 мм                                           | Implemented           | DOCX validator проверяет все `w:pgMar`, а не только первую секцию                                                  |
 | Абзацный отступ 1,25 см и выравнивание основного текста по ширине      | Implemented           | `Normal Paragraph Indent & Alignment` в DOCX validator                                                             |
+| DOTM-шаблонные стили                                                   | Implemented           | аудит `SHablon_oformlenija_VKR_2022_5_6.dotm`, TOC tab stops, `keepNext`, подписи и отступы                        |
 | Отступы подписей и текста таблиц                                       | Implemented           | `FigureCaption`, `TableCaption`, `TableText` style checks                                                          |
+| Титульный лист                                                         | Implemented           | YAML metadata, profile-aware source warnings for `nir`, `coursework`, `lab`                                        |
 | Структурные заголовки                                                  | Implemented           | `\sto_structural_heading{...}`, profile-aware source preflight, DOCX heading style checks                          |
 | Разделы и подразделы                                                   | Implemented           | numbered heading styles, heading casing/page-break validator, Markdown heading preflight                           |
 | Реферат                                                                | Partially implemented | плейсхолдеры и keywords проверяются; смысловая полнота остается warning                                            |
@@ -35,9 +37,9 @@
 
 1. Расширить приложения до полноценной нумерации `А.1` в parser/reference registry, а не только warning в preflight.
 2. Добавить formatter/tests для `@patent`, `@thesis`, стандартов и электронных частей сайтов.
-3. Добавить profile-specific title page validator для лабораторной, курсовой, НИР и ВКР.
-4. Добавить проверку неразрывного пробела между числом и единицей после нормализации DOCX.
-5. Проверять большие/landscape таблицы через отдельный opt-in профиль, потому что автоматическая пагинация Word нестабильна без COM.
+3. Добавить проверку неразрывного пробела между числом и единицей после нормализации DOCX.
+4. Проверять большие/landscape таблицы через отдельный opt-in профиль, потому что автоматическая пагинация Word нестабильна без COM.
+5. Отдельно проверить, можно ли заменить table layout формул на DOTM-like `MTDisplayEquation` tab stops без регрессий.
 
 ## Не блокировать жестко
 

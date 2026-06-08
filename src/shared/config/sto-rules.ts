@@ -23,6 +23,8 @@ export interface StoRules {
 		firstLineIndentDxa: number;
 		nestedListIndentStepDxa: number;
 		captionFirstLineIndentDxa: number;
+		tocRightTabStopDxa: number;
+		tocLevelIndentsDxa: number[];
 		forbiddenDash: string;
 		recommendedDash: string;
 		listMarker: string;

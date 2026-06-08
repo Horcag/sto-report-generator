@@ -30,6 +30,7 @@ Core paths:
 - `src/shared/config/sto-rules.json` - portable STO constants used by formatting, parser guards, preflight checks and
   DOCX validation.
 - `docs/sto-rules-coverage.md` - audit of STO rules already transferred from extracted standards and rules still worth automating.
+- `docs/architecture/dotm-template-style-audit.md` - extracted DOTM style parameters that are safe to mirror in generated DOCX.
 - `src/shared/config/sto-styles.ts` - DOCX styles and numbering derived from shared STO constants where practical.
 - `scripts/post_build.py` - compatibility entrypoint for Word post-build.
 - `scripts/sto_post_build/` - Python post-build package: formula repair, DOCX XML normalization, Word COM automation, dirty field cleanup, and PDF export.
@@ -123,6 +124,9 @@ local absolute paths there.
   a working paper, preprint, SSRN, arXiv or NBER item, prefer `techreport`, `misc` or `online` over `article`.
 - For `lab`, sources are optional until the first `[@key]` citation. After adding a citation, add `references.bib` and a
   `СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ` structural section unless config explicitly says otherwise.
+- Keep title-page frontmatter aligned with the selected profile: `lab` should say laboratory work, `coursework` should
+  say course work, and `nir` should say NIR/research work. `semester` and `year` must be numbers; `specialtyCode` should
+  look like `01.03.02`.
 - Use `\begin{sto_list}` / `\begin{sto_enum}` for lists. Add an introductory sentence ending in `:` or `.`, do not leave
   a trailing preposition before the list, do not write `1).`, keep markers sequential, do not mix marker styles at one
   indentation level, and make the last list item end with a period.

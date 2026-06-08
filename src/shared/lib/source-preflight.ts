@@ -175,7 +175,7 @@ export function runSourcePreflight(
 	}
 	validateUnusedEquationLabels(files, definitions, issues);
 
-	validateMetadata(files, issues);
+	validateMetadata(files, issues, config);
 	validateBibliography(files, absoluteSourceDir, cwd, config, issues);
 	validateReferat(files, issues, config);
 	validateDocumentStructure(files, issues, config);
