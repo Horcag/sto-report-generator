@@ -199,7 +199,7 @@ function runSyntheticValidatorTests(): void {
 				<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer2.xml"/>
 			</Relationships>`,
 			'word/footer1.xml': `<w:ftr ${namespaces}><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:instrText>PAGE</w:instrText></w:r></w:p></w:ftr>`,
-			'word/footer2.xml': `<w:ftr ${namespaces}><w:p><w:r><w:t></w:t></w:r></w:p></w:ftr>`,
+			'word/footer2.xml': `<w:ftr ${namespaces}><w:p><w:r><w:t>Самара 2026</w:t></w:r></w:p></w:ftr>`,
 		},
 	);
 	assert.equal(

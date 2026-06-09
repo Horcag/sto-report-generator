@@ -1,5 +1,6 @@
 import {
 	AlignmentType,
+	Footer,
 	IParagraphOptions,
 	IRunOptions,
 	Paragraph,
@@ -10,24 +11,46 @@ import {
 import { ReportMetadata } from '@/entities/report';
 import { STO_RULES } from '@/shared/config';
 
-export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
-	// Helper to ensure 12pt (24 half-points) and Times New Roman
-	const t = (options: IRunOptions) =>
-		new TextRun({ size: 24, font: 'Times New Roman', ...options });
-	const br = (options: IRunOptions = {}) =>
-		new TextRun({ size: 24, break: 1, ...options });
+function titlePageText(options: IRunOptions): TextRun {
+	return new TextRun({ size: 24, font: 'Times New Roman', ...options });
+}
 
-	// Helper for paragraphs to reset default indents from "Normal" style and disable justification stretch
-	const p = (options: IParagraphOptions) => {
-		const { spacing, ...rest } = options;
-		return new Paragraph({
-			style: 'TitlePageText',
-			indent: { firstLine: 0, left: 0 },
-			alignment: AlignmentType.LEFT, // Explicitly left to stop justified stretching
-			spacing: { before: 0, after: 0, ...spacing },
-			...rest,
-		});
-	};
+function titlePageLineBreak(options: IRunOptions = {}): TextRun {
+	return new TextRun({ size: 24, break: 1, ...options });
+}
+
+function titlePageParagraph(options: IParagraphOptions): Paragraph {
+	const { spacing, ...rest } = options;
+	return new Paragraph({
+		style: 'TitlePageText',
+		indent: { firstLine: 0, left: 0 },
+		alignment: AlignmentType.LEFT,
+		spacing: { before: 0, after: 0, ...spacing },
+		...rest,
+	});
+}
+
+export function createTitlePageFooter(metadata: ReportMetadata): Footer {
+	return new Footer({
+		children: [
+			titlePageParagraph({
+				alignment: AlignmentType.CENTER,
+				spacing: { line: 240, lineRule: 'auto' },
+				children: [
+					titlePageText({
+						text: `${metadata.city} ${metadata.year}`,
+						bold: true,
+					}),
+				],
+			}),
+		],
+	});
+}
+
+export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
+	const t = titlePageText;
+	const br = titlePageLineBreak;
+	const p = titlePageParagraph;
 
 	const empty = (options: IParagraphOptions = {}) =>
 		p({ children: [t({ text: '' })], ...options });
@@ -302,32 +325,5 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 						children: [t({ text: '“___”_____________ 20___ г.' })],
 					}),
 				]),
-
-		// Empty paragraphs to push to bottom
-		empty({
-			alignment: AlignmentType.CENTER,
-			spacing: { line: 240, lineRule: 'auto' },
-		}),
-		empty({
-			alignment: AlignmentType.CENTER,
-			spacing: { line: 240, lineRule: 'auto' },
-		}),
-		empty({
-			alignment: AlignmentType.CENTER,
-			spacing: { line: 240, lineRule: 'auto' },
-		}),
-		empty({
-			alignment: AlignmentType.CENTER,
-			spacing: { line: 240, lineRule: 'auto' },
-		}),
-
-		// P33: City and Year
-		p({
-			alignment: AlignmentType.CENTER,
-			spacing: { line: 240, lineRule: 'auto' },
-			children: [
-				t({ text: `${metadata.city} ${metadata.year}`, bold: true }),
-			],
-		}),
 	];
 }

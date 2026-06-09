@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import AdmZip from 'adm-zip';
 
 import { buildReport } from '@/app/builder';
 import { readDocxEntry } from '@/shared/lib/docx-archive';
@@ -41,6 +42,11 @@ async function main(): Promise<void> {
 
 	await buildReport(tempMd, tempDocx);
 	const documentXml = readDocxEntry(tempDocx, 'word/document.xml');
+	const footerXml = new AdmZip(tempDocx)
+		.getEntries()
+		.filter(entry => /^word\/footer\d+\.xml$/.test(entry.entryName))
+		.map(entry => entry.getData().toString('utf-8'))
+		.join('\n');
 	fs.rmSync(tempRoot, { recursive: true, force: true });
 
 	assert.ok(documentXml.includes('Проверил'));
@@ -53,6 +59,8 @@ async function main(): Promise<void> {
 			'Министерство науки и высшего образования Российской Федерации',
 		),
 	);
+	assert.ok(!documentXml.includes('Самара 2026'));
+	assert.ok(footerXml.includes('Самара 2026'));
 
 	console.log('Title page metadata test passed.');
 }

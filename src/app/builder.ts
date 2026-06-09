@@ -17,7 +17,7 @@ import {
 } from '@/features/markdown-parser';
 import { MARGINS, STO_NUMBERING, STO_STYLES } from '@/shared/config';
 import { clearDirtyFieldFlags } from '@/shared/lib/docx-archive';
-import { createTitlePage } from '@/widgets/title-page';
+import { createTitlePage, createTitlePageFooter } from '@/widgets/title-page';
 
 /**
  * Builds the final STO-compliant report from markdown files.
@@ -80,9 +80,8 @@ export async function buildReport(
 		);
 	}
 
-	const titlePage = createTitlePage(
-		finalMetadata as unknown as ReportMetadata,
-	);
+	const reportMetadata = finalMetadata as unknown as ReportMetadata;
+	const titlePage = createTitlePage(reportMetadata);
 	const documentBody = await parseMarkdownToDocx(
 		finalContent,
 		finalMetadata,
@@ -118,9 +117,7 @@ export async function buildReport(
 							}),
 						],
 					}),
-					first: new Footer({
-						children: [new Paragraph('')],
-					}),
+					first: createTitlePageFooter(reportMetadata),
 				},
 				children: [...titlePage, ...documentBody],
 			},

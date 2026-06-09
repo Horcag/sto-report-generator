@@ -715,10 +715,7 @@ function validatePageNumbering(input: ValidationInput): ValidationResult[] {
 	const hasTitlePage = regexMatches(/<w:titlePg\b/, input.docXml);
 	const firstFooter = input.footerXmlByType.first;
 	const titlePageNumberHidden =
-		hasTitlePage &&
-		(firstFooter === undefined ||
-			(!hasVisiblePageNumber(firstFooter) &&
-				extractWordText(firstFooter).trim().length === 0));
+		hasTitlePage && !hasVisiblePageNumber(firstFooter);
 
 	return [
 		resultFromPass(
