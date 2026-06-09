@@ -16,7 +16,7 @@ organizationLines:
   - "Тестовый университет"
 department: "Институт информатики и кибернетики"
 subdepartment: "Кафедра технической кибернетики"
-reportType: "Курсовая работа"
+reportType: "Отчёт по курсовой работе"
 degree: "по дисциплине «Тестовая дисциплина»"
 semester: 6
 specialtyCode: "01.03.02"

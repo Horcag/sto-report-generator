@@ -54,17 +54,17 @@ const PROFILE_METADATA_DEFAULTS: Record<
 	ProfileMetadataDefaults
 > = {
 	nir: {
-		reportType: 'Отчет о научно-исследовательской работе',
+		reportType: 'Отчёт о научно-исследовательской работе',
 		degree: 'бакалавра',
 		topicPrefix: 'Тема научно-исследовательской работы',
 	},
 	coursework: {
-		reportType: 'Курсовая работа',
+		reportType: 'Отчёт по курсовой работе',
 		degree: 'по дисциплине «Название дисциплины»',
 		topicPrefix: 'Тема курсовой работы',
 	},
 	lab: {
-		reportType: 'Лабораторная работа',
+		reportType: 'Отчёт по лабораторной работе',
 		degree: 'по дисциплине «Название дисциплины»',
 		topicPrefix: 'Тема лабораторной работы',
 	},
