@@ -227,6 +227,36 @@ export function validateMetadata(
 		);
 	}
 
+	for (const field of ['gradeLine', 'grade'] as const) {
+		const value = metadata.data[field];
+		if (value !== undefined && typeof value !== 'string') {
+			issues.push(
+				issue(
+					'metadata-field-invalid-type',
+					`metadata field "${field}" must be a string.`,
+					metadata.file,
+				),
+			);
+		}
+	}
+
+	const organizationLines = metadata.data.organizationLines;
+	if (
+		organizationLines !== undefined &&
+		(!Array.isArray(organizationLines) ||
+			!organizationLines.every(
+				line => typeof line === 'string' && line.trim().length > 0,
+			))
+	) {
+		issues.push(
+			issue(
+				'metadata-field-invalid-type',
+				'metadata field "organizationLines" must be a non-empty string array.',
+				metadata.file,
+			),
+		);
+	}
+
 	for (const field of [
 		'studentName',
 		'groupNumber',

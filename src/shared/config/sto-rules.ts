@@ -38,6 +38,9 @@ export interface StoRules {
 		};
 		imageMaxWidthEmu: number;
 	};
+	titlePage: {
+		organizationLines: string[];
+	};
 	headings: {
 		structuralNoTocUppercase: string[];
 		requiredStructuralUppercase: string[];

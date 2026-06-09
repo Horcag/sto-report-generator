@@ -1,4 +1,5 @@
 export interface ReportMetadata {
+	organizationLines?: string[];
 	department: string;
 	subdepartment: string;
 	reportType: string;
@@ -14,6 +15,8 @@ export interface ReportMetadata {
 	supervisorName: string;
 	supervisorTitle: string;
 	supervisorRole?: string;
+	gradeLine?: string;
+	grade?: string;
 	city: string;
 	year: number;
 	hideSignatures?: boolean;

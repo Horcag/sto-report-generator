@@ -8,6 +8,7 @@ import {
 } from 'docx';
 
 import { ReportMetadata } from '@/entities/report';
+import { STO_RULES } from '@/shared/config';
 
 export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 	// Helper to ensure 12pt (24 half-points) and Times New Roman
@@ -30,29 +31,25 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 
 	const empty = (options: IParagraphOptions = {}) =>
 		p({ children: [t({ text: '' })], ...options });
+	const supervisorRole = metadata.supervisorRole || 'Научный руководитель';
+	const gradeLine =
+		metadata.gradeLine ??
+		(metadata.grade !== undefined
+			? `Оценка ${metadata.grade || '________________________'}`
+			: undefined);
+	const organizationLines =
+		metadata.organizationLines ?? STO_RULES.titlePage.organizationLines;
+	const organizationChildren = organizationLines.flatMap((line, index) => [
+		...(index > 0 ? [br()] : []),
+		t({ text: line }),
+	]);
 
 	return [
 		// P1: "Министерство..." - Single line spacing, Centered
 		p({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 240, lineRule: 'auto' },
-			children: [
-				t({
-					text: 'Министерство науки и высшего образования Российской Федерации',
-				}),
-				br(),
-				t({
-					text: 'Федеральное государственное автономное образовательное',
-				}),
-				br(),
-				t({ text: 'учреждение высшего образования' }),
-				br(),
-				t({
-					text: '«Самарский национальный исследовательский университет ',
-				}),
-				br(),
-				t({ text: 'имени академика С.П. Королева»' }),
-			],
+			children: organizationChildren,
 		}),
 		// P2: Empty
 		empty({
@@ -182,7 +179,7 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 			tabStops: [{ type: TabStopType.RIGHT, position: 9638 }],
 			children: [
 				t({
-					text: `${metadata.supervisorRole || 'Научный руководитель'} ${metadata.supervisorName} ${metadata.supervisorTitle}`,
+					text: `${supervisorRole} ${metadata.supervisorName} ${metadata.supervisorTitle}`,
 				}),
 			],
 		}),
@@ -242,13 +239,7 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 					p({
 						indent: { left: 5670, firstLine: 0 },
 						spacing: { line: 240, lineRule: 'auto' },
-						children: [
-							t({
-								text:
-									metadata.supervisorRole ||
-									'Научный руководитель',
-							}),
-						],
+						children: [t({ text: supervisorRole })],
 					}),
 					p({
 						indent: { left: 5670, firstLine: 0 },
@@ -270,6 +261,15 @@ export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
 						spacing: { line: 240, lineRule: 'auto' },
 						children: [t({ text: '“___”_____________ 20___ г.' })],
 					}),
+					...(gradeLine
+						? [
+								p({
+									indent: { left: 5670, firstLine: 0 },
+									spacing: { line: 240, lineRule: 'auto' },
+									children: [t({ text: gradeLine })],
+								}),
+							]
+						: []),
 					empty({
 						indent: { left: 5670, firstLine: 0 },
 						spacing: { line: 240, lineRule: 'auto' },

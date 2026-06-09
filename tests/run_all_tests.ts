@@ -8,6 +8,7 @@ const tests = [
 	['tests/parser/run_parser_tests.ts'],
 	['tests/validator/run_validator_tests.ts'],
 	['tests/generator/run_generated_docx_validation.ts'],
+	['tests/generator/title_page_metadata_test.ts'],
 	['tests/scaffold/run_scaffold_tests.ts'],
 	['tests/bibliography/bib-gost.test.ts'],
 	['tests/generator/toc_regression.ts'],
