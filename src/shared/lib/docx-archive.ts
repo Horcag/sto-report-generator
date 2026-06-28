@@ -279,9 +279,8 @@ function normalizeFrontMatterParagraph(
 	fontSizeHalfPoints = '24',
 ): string {
 	const propertiesMatch = /<w:pPr\b[\s\S]*?<\/w:pPr>/.exec(paragraphXml);
-	let updatedParagraphXml = paragraphXml;
 	if (!propertiesMatch) {
-		updatedParagraphXml = paragraphXml.replace(
+		const updatedParagraphXml = paragraphXml.replace(
 			/(<w:p\b[^>]*>)/,
 			`$1<w:pPr>${FRONT_MATTER_PARAGRAPH_DEFAULTS}</w:pPr>`,
 		);
@@ -317,7 +316,7 @@ function normalizeFrontMatterParagraph(
 		'w:firstLine': '0',
 	});
 
-	updatedParagraphXml =
+	const updatedParagraphXml =
 		paragraphXml.slice(0, propertiesMatch.index) +
 		propertiesXml +
 		paragraphXml.slice(propertiesMatch.index + propertiesMatch[0].length);
