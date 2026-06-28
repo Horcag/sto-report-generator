@@ -55,6 +55,11 @@ async function main(): Promise<void> {
 		);
 	}
 
+	const numberedHeadingBlock = paragraphContaining(currentXml, 'Глава 1');
+	if (!numberedHeadingBlock?.includes('<w:numPr>')) {
+		errors.push('Markdown heading is missing Word numbering.');
+	}
+
 	for (const heading of [
 		'ВВЕДЕНИЕ',
 		'ЗАКЛЮЧЕНИЕ',

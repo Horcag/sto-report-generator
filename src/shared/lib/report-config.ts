@@ -36,6 +36,7 @@ export interface ReportConfig {
 	profileExplicit: boolean;
 	sourceDir: string;
 	outputDocx: string;
+	frontMatterDocx?: string;
 	document: ReportDocumentConfig;
 	preflight: ReportPreflightConfig;
 	postBuild: ReportPostBuildConfig;
@@ -66,6 +67,7 @@ interface RawReportConfig {
 	profile?: unknown;
 	sourceDir?: unknown;
 	outputDocx?: unknown;
+	frontMatterDocx?: unknown;
 	document?: RawReportDocumentConfig;
 	preflight?: RawReportPreflightConfig;
 	postBuild?: RawReportPostBuildConfig;
@@ -270,6 +272,12 @@ function normalizeRawConfig(
 	) {
 		pushInvalidType(diagnostics, 'outputDocx', 'a string', configPath);
 	}
+	if (
+		config.frontMatterDocx !== undefined &&
+		typeof config.frontMatterDocx !== 'string'
+	) {
+		pushInvalidType(diagnostics, 'frontMatterDocx', 'a string', configPath);
+	}
 	validatePortablePath(
 		diagnostics,
 		'sourceDir',
@@ -280,6 +288,12 @@ function normalizeRawConfig(
 		diagnostics,
 		'outputDocx',
 		config.outputDocx,
+		configPath,
+	);
+	validatePortablePath(
+		diagnostics,
+		'frontMatterDocx',
+		config.frontMatterDocx,
 		configPath,
 	);
 
@@ -520,6 +534,7 @@ export function resolveReportConfig(
 			options.outputPath ??
 			asString(raw.outputDocx) ??
 			`build/${reportSlug}.docx`,
+		frontMatterDocx: asString(raw.frontMatterDocx),
 		document: mergeDocumentConfig(
 			getReportProfileDocumentConfig(profile),
 			isObject(raw.document) ? raw.document : undefined,

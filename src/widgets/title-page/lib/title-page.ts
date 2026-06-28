@@ -30,6 +30,89 @@ function titlePageParagraph(options: IParagraphOptions): Paragraph {
 	});
 }
 
+function isPracticeReport(metadata: ReportMetadata): boolean {
+	return /практик/i.test(metadata.reportType);
+}
+
+function makeShortName(fullName: string): string {
+	const parts = fullName.trim().split(/\s+/);
+	if (parts.length < 2) {
+		return fullName;
+	}
+
+	const [lastName, firstName, patronymic] = parts;
+	const initials = [firstName, patronymic]
+		.filter(Boolean)
+		.map(part => `${part[0]}.`)
+		.join('');
+
+	return `${initials} ${lastName}`;
+}
+
+function getPracticeKind(metadata: ReportMetadata): string {
+	if (metadata.practiceKind) {
+		return metadata.practiceKind;
+	}
+
+	const match = metadata.degree.match(/Вид практики:\s*([^;]+)/i);
+	return match?.[1]?.trim() || 'производственная';
+}
+
+function getPracticeType(metadata: ReportMetadata): string {
+	if (metadata.practiceType) {
+		return metadata.practiceType;
+	}
+
+	const match = metadata.degree.match(/тип практики:\s*(.+)$/i);
+	return match?.[1]?.trim() || 'технологическая (научно-технологическая)';
+}
+
+function createPracticeSignatureParagraph(options: {
+	label: string;
+	name: string;
+	spacingBefore?: number;
+}): Paragraph[] {
+	return [
+		titlePageParagraph({
+			spacing: {
+				before: options.spacingBefore ?? 0,
+				after: 0,
+				line: 240,
+				lineRule: 'auto',
+			},
+			children: [titlePageText({ text: options.label })],
+		}),
+		titlePageParagraph({
+			indent: { left: 5000, firstLine: 0 },
+			spacing: {
+				before: 0,
+				after: 0,
+				line: 240,
+				lineRule: 'auto',
+			},
+			children: [
+				titlePageText({ text: '__________________  ' }),
+				titlePageText({ text: options.name }),
+			],
+		}),
+		titlePageParagraph({
+			indent: { left: 5000, firstLine: 0 },
+			spacing: {
+				before: 0,
+				after: 0,
+				line: 240,
+				lineRule: 'auto',
+			},
+			children: [
+				titlePageText({
+					text: '        (подпись)',
+					italics: true,
+				}),
+			],
+		}),
+	];
+}
+
 export function createTitlePageFooter(metadata: ReportMetadata): Footer {
 	return new Footer({
 		children: [
@@ -39,7 +122,7 @@ export function createTitlePageFooter(metadata: ReportMetadata): Footer {
 				children: [
 					titlePageText({
 						text: `${metadata.city} ${metadata.year}`,
-						bold: true,
+						bold: !isPracticeReport(metadata),
 					}),
 				],
 			}),
@@ -47,7 +130,161 @@ export function createTitlePageFooter(metadata: ReportMetadata): Footer {
 	});
 }
 
+function createPracticeTitlePage(metadata: ReportMetadata): Paragraph[] {
+	const t = titlePageText;
+	const br = titlePageLineBreak;
+	const p = titlePageParagraph;
+	const empty = (options: IParagraphOptions = {}) =>
+		p({ children: [t({ text: '' })], ...options });
+	const organizationLines =
+		metadata.organizationLines ?? STO_RULES.titlePage.organizationLines;
+	const organizationChildren = organizationLines.flatMap((line, index) => [
+		...(index > 0 ? [br()] : []),
+		t({ text: line }),
+	]);
+	const studentShortName =
+		metadata.studentShortName || makeShortName(metadata.studentName);
+	const universitySupervisorShortName =
+		metadata.universitySupervisorShortName ||
+		makeShortName(metadata.supervisorName);
+	const organizationSupervisorName =
+		metadata.organizationSupervisorName || '__________________';
+	const organizationSupervisorTitle =
+		metadata.organizationSupervisorTitle || '__________________';
+	const organizationSupervisorRole =
+		metadata.organizationSupervisorRole ||
+		'Руководитель практики от профильной организации';
+
+	return [
+		p({
+			alignment: AlignmentType.CENTER,
+			spacing: { line: 240, lineRule: 'auto' },
+			children: organizationChildren,
+		}),
+		empty({
+			alignment: AlignmentType.CENTER,
+			spacing: { line: 240, lineRule: 'auto' },
+		}),
+		p({
+			alignment: AlignmentType.CENTER,
+			spacing: { line: 240, lineRule: 'auto' },
+			children: [t({ text: metadata.department })],
+		}),
+		p({
+			alignment: AlignmentType.CENTER,
+			spacing: { line: 240, lineRule: 'auto' },
+			children: [t({ text: metadata.subdepartment })],
+		}),
+		empty({
+			alignment: AlignmentType.CENTER,
+			spacing: { before: 1080, after: 0 },
+		}),
+		p({
+			alignment: AlignmentType.CENTER,
+			spacing: { line: 240, lineRule: 'auto' },
+			children: [t({ text: 'ОТЧЕТ ПО ПРАКТИКЕ', bold: true, size: 28 })],
+		}),
+		empty({
+			alignment: AlignmentType.CENTER,
+			spacing: { before: 180, after: 0 },
+		}),
+		p({
+			alignment: AlignmentType.CENTER,
+			spacing: { line: 240, lineRule: 'auto' },
+			children: [
+				t({ text: 'Вид практики: ' }),
+				t({ text: getPracticeKind(metadata), italics: true }),
+				br(),
+				t({ text: 'Тип практики: ' }),
+				t({ text: getPracticeType(metadata), italics: true }),
+			],
+		}),
+		empty({
+			alignment: AlignmentType.CENTER,
+			spacing: { before: 180, after: 0 },
+		}),
+		p({
+			alignment: AlignmentType.CENTER,
+			spacing: { line: 240, lineRule: 'auto' },
+			children: [
+				t({
+					text: `по программе бакалавриата по направлению подготовки`,
+				}),
+				br(),
+				t({
+					text: `${metadata.specialtyCode} ${metadata.specialtyName},`,
+				}),
+				br(),
+				t({ text: `профиль «${metadata.profileName}»` }),
+			],
+		}),
+		empty({
+			alignment: AlignmentType.CENTER,
+			spacing: { before: 180, after: 0 },
+		}),
+		p({
+			alignment: AlignmentType.CENTER,
+			spacing: { line: 240, lineRule: 'auto' },
+			children: [
+				t({ text: 'Сроки прохождения практики: с ' }),
+				t({
+					text: metadata.practiceStartDate || '15.06.2026',
+					italics: true,
+				}),
+				t({ text: ' г. по ' }),
+				t({
+					text: metadata.practiceEndDate || '02.07.2026',
+					italics: true,
+				}),
+				t({ text: ' г.' }),
+			],
+		}),
+		...createPracticeSignatureParagraph({
+			label: `Обучающийся группы № ${metadata.groupNumber}`,
+			name: studentShortName,
+			spacingBefore: 360,
+		}),
+		...createPracticeSignatureParagraph({
+			label: `${metadata.supervisorRole || 'Руководитель практики от университета'}, ${metadata.supervisorTitle}`,
+			name: universitySupervisorShortName,
+			spacingBefore: 240,
+		}),
+		...createPracticeSignatureParagraph({
+			label: `${organizationSupervisorRole}, ${organizationSupervisorTitle}`,
+			name: organizationSupervisorName,
+			spacingBefore: 240,
+		}),
+		empty({ spacing: { before: 360, after: 0 } }),
+		p({
+			spacing: { line: 240, lineRule: 'auto' },
+			children: [
+				t({
+					text: `Дата сдачи ${metadata.submissionDate || '01.07.2026'} г.`,
+				}),
+				br(),
+				t({
+					text: `Дата защиты ${metadata.defenseDate || '02.07.2026'} г.`,
+				}),
+			],
+		}),
+		empty({ spacing: { before: 180, after: 0 } }),
+		p({
+			spacing: { line: 240, lineRule: 'auto' },
+			children: [
+				t({
+					text:
+						metadata.gradeLine || 'Оценка ________________________',
+				}),
+			],
+		}),
+	];
+}
+
 export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
+	if (isPracticeReport(metadata)) {
+		return createPracticeTitlePage(metadata);
+	}
+
 	const t = titlePageText;
 	const br = titlePageLineBreak;
 	const p = titlePageParagraph;

@@ -193,6 +193,15 @@ fs.rmSync(tempRoot, { recursive: true, force: true });
 fs.mkdirSync(tempRoot, { recursive: true });
 
 expectPass('valid-minimal', validFiles());
+expectPass(
+	'referat-without-figure-table-placeholders',
+	validFiles({
+		'01_referat.md': `\\sto_structural_heading{РЕФЕРАТ}
+
+Отчет содержит {{PAGES}} страниц и {{SOURCES}} источников.
+`,
+	}),
+);
 expectPass('lab-without-referat-or-sources', labFiles());
 
 expectIssue(

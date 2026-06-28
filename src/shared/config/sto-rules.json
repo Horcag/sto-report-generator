@@ -66,6 +66,7 @@
 			"{{TABLES}}",
 			"{{SOURCES}}"
 		],
+		"requiredStatisticPlaceholders": ["{{PAGES}}", "{{SOURCES}}"],
 		"keywordCount": {
 			"min": 5,
 			"max": 15

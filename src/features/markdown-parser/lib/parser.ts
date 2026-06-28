@@ -1,7 +1,10 @@
 import { AlignmentType, Paragraph, TextRun } from 'docx';
 import { marked, Token, Tokens } from 'marked';
 
-import { getNumberedHeadingStyleId } from '@/shared/config';
+import {
+	getNumberedHeadingStyleId,
+	HEADING_NUMBERING_REFERENCE,
+} from '@/shared/config';
 import { mathJaxReady } from '@/shared/lib/math-converter';
 
 import { loadBibliography } from './parser/bibliography-loader';
@@ -79,6 +82,13 @@ class MarkdownParser {
 							style: getNumberedHeadingStyleId(
 								headingToken.depth,
 							),
+							numbering: {
+								reference: HEADING_NUMBERING_REFERENCE,
+								level: Math.max(
+									0,
+									Math.min(headingToken.depth - 1, 5),
+								),
+							},
 							children: await parseInline(
 								headingToken.tokens,
 								this.context,

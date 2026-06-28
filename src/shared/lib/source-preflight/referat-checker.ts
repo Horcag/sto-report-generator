@@ -42,7 +42,11 @@ export function validateReferat(
 		return;
 	}
 
-	for (const placeholder of STO_RULES.referat.statisticPlaceholders) {
+	const requiredStatisticPlaceholders =
+		STO_RULES.referat.requiredStatisticPlaceholders ??
+		STO_RULES.referat.statisticPlaceholders;
+
+	for (const placeholder of requiredStatisticPlaceholders) {
 		if (!referat.content.includes(placeholder)) {
 			issues.push(
 				issue(

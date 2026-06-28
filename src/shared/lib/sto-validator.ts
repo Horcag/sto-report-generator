@@ -190,7 +190,7 @@ function isMathLayoutTable(tableXml: string): boolean {
 }
 
 function countTablesWithoutHeaderRepeat(docXml: string): number {
-	const tables = docXml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g) ?? [];
+	const tables = getReportTables(docXml);
 
 	return tables.filter(tableXml => {
 		if (isMathLayoutTable(tableXml)) {
@@ -246,6 +246,21 @@ function getBodyElements(docXml: string): string[] {
 	return (
 		bodyXml?.match(/<w:p\b[\s\S]*?<\/w:p>|<w:tbl\b[\s\S]*?<\/w:tbl>/g) ?? []
 	);
+}
+
+function getReportBodyElements(docXml: string): string[] {
+	const elements = getBodyElements(docXml);
+	const reportStartIndex = elements.findIndex(
+		elementXml =>
+			isParagraphXml(elementXml) &&
+			extractWordText(elementXml).trim().toLocaleUpperCase('ru-RU') ===
+				'РЕФЕРАТ',
+	);
+	return reportStartIndex >= 0 ? elements.slice(reportStartIndex) : elements;
+}
+
+function getReportTables(docXml: string): string[] {
+	return getReportBodyElements(docXml).filter(isTableXml);
 }
 
 function isParagraphXml(elementXml: string): boolean {
@@ -304,7 +319,7 @@ function findNextVisibleParagraph(
 }
 
 function countTablesWithoutAdjacentCaption(docXml: string): number {
-	const elements = getBodyElements(docXml);
+	const elements = getReportBodyElements(docXml);
 	let count = 0;
 
 	for (let index = 0; index < elements.length; index++) {
@@ -328,7 +343,7 @@ function countTablesWithoutAdjacentCaption(docXml: string): number {
 }
 
 function countImagesWithoutFollowingCaption(docXml: string): number {
-	const elements = getBodyElements(docXml);
+	const elements = getReportBodyElements(docXml);
 	let count = 0;
 
 	for (let index = 0; index < elements.length; index++) {
@@ -352,7 +367,7 @@ function countImagesWithoutFollowingCaption(docXml: string): number {
 }
 
 function countTablesWithDiagonalBorders(docXml: string): number {
-	const tables = docXml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g) ?? [];
+	const tables = getReportTables(docXml);
 	return tables.filter(
 		tableXml =>
 			!isMathLayoutTable(tableXml) &&
@@ -514,7 +529,7 @@ function hasStylePropertyOrInheritedByIdOrName(
 }
 
 function countEmptyTableCells(docXml: string): number {
-	const tables = docXml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g) ?? [];
+	const tables = getReportTables(docXml);
 	let emptyCells = 0;
 
 	for (const tableXml of tables) {
@@ -537,7 +552,7 @@ function countEmptyTableCells(docXml: string): number {
 }
 
 function countTableHeaderFinalPeriods(docXml: string): number {
-	const tables = docXml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g) ?? [];
+	const tables = getReportTables(docXml);
 	let cellsWithFinalPeriod = 0;
 
 	for (const tableXml of tables) {

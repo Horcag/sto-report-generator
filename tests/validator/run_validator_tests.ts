@@ -321,6 +321,27 @@ function runSyntheticValidatorTests(): void {
 		false,
 	);
 
+	const frontMatterTableFixture = writeXmlFixture(
+		'front-matter-table',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:r><w:t>Титульный лист</w:t></w:r></w:p>
+			<w:tbl>
+				<w:tr><w:tc><w:p><w:r><w:t>Показатель.</w:t></w:r></w:p></w:tc></w:tr>
+				<w:tr><w:tc><w:p><w:r><w:t>Значение</w:t></w:r></w:p></w:tc></w:tr>
+			</w:tbl>
+			<w:p><w:pPr><w:pStyle w:val="StructuralHeadingNoTOC"/></w:pPr><w:r><w:t>РЕФЕРАТ</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	assert.equal(
+		getCheck(frontMatterTableFixture, 'Table Header Final Period').passed,
+		true,
+	);
+	assert.equal(
+		getCheck(frontMatterTableFixture, 'Table Caption Adjacency').passed,
+		true,
+	);
+
 	const diagonalBorderFixture = writeXmlFixture(
 		'diagonal-table-border',
 		`<w:document ${namespaces}><w:body>

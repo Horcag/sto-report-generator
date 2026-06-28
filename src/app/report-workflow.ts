@@ -1,7 +1,10 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
-import { unpackDocx } from '@/shared/lib/docx-archive';
+import {
+	insertDocxBodyBeforeText,
+	unpackDocx,
+} from '@/shared/lib/docx-archive';
 import {
 	resolveReportConfig,
 	resolveReportPath,
@@ -103,6 +106,17 @@ export async function generateReport(
 	}
 
 	await buildReport(sourceDir, outputDocx);
+
+	if (config.frontMatterDocx) {
+		insertDocxBodyBeforeText({
+			targetDocxPath: outputDocx,
+			sourceDocxPath: resolveReportPath(
+				reportDir,
+				config.frontMatterDocx,
+			),
+			beforeText: 'Реферат',
+		});
+	}
 
 	if (config.postBuild.enabled) {
 		runPostBuild(outputDocx, sourceDir, config.postBuild.exportPdf);

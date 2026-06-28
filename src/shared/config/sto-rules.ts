@@ -48,6 +48,7 @@ export interface StoRules {
 	referat: {
 		fileName: string;
 		statisticPlaceholders: string[];
+		requiredStatisticPlaceholders?: string[];
 		keywordCount: {
 			min: number;
 			max: number;

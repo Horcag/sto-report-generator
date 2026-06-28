@@ -28,6 +28,18 @@ def normalize_tables(doc: Any) -> int:
     return changed
 
 
+def pluralize_ru(number: int, form1: str, form2: str, form5: str) -> str:
+    number = abs(number) % 100
+    number_last_digit = number % 10
+    if 10 < number < 20:
+        return form5
+    if 1 < number_last_digit < 5:
+        return form2
+    if number_last_digit == 1:
+        return form1
+    return form5
+
+
 def normalize_inline_images(doc: Any) -> tuple[int, int]:
     centered = 0
     scaled = 0
@@ -213,7 +225,11 @@ def run_word_post_build(
         if broken_references:
             raise RuntimeError("\n".join(broken_references))
 
-        page_replacements = {**replacements, "{{PAGES}}": str(pages)}
+        page_replacements = {
+            **replacements,
+            "{{PAGES}}": str(pages),
+            "{{PAGES_WORD}}": pluralize_ru(pages, "страницу", "страницы", "страниц"),
+        }
         replace_placeholders(doc, page_replacements)
         doc.Save()
         pdf_path = export_pdf(doc, docx_path, pdf_output_path)

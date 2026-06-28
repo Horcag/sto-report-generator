@@ -15,6 +15,17 @@ export interface ReportMetadata {
 	supervisorName: string;
 	supervisorTitle: string;
 	supervisorRole?: string;
+	studentShortName?: string;
+	universitySupervisorShortName?: string;
+	organizationSupervisorName?: string;
+	organizationSupervisorTitle?: string;
+	organizationSupervisorRole?: string;
+	practiceKind?: string;
+	practiceType?: string;
+	practiceStartDate?: string;
+	practiceEndDate?: string;
+	submissionDate?: string;
+	defenseDate?: string;
 	gradeLine?: string;
 	grade?: string;
 	city: string;

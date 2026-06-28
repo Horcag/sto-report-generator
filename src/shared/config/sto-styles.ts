@@ -21,6 +21,7 @@ export const NUMBERED_HEADING_STYLE_IDS = [
 	'StoHeading5',
 	'StoHeading6',
 ] as const;
+export const HEADING_NUMBERING_REFERENCE = 'heading-numbering';
 export const STRUCTURAL_HEADING_STYLE_ID = 'StructuralHeading';
 export const STRUCTURAL_HEADING_NO_TOC_STYLE_ID = 'StructuralHeadingNoTOC';
 
@@ -234,6 +235,27 @@ export const STO_STYLES: IStylesOptions = {
 
 export const STO_NUMBERING: INumberingOptions = {
 	config: [
+		{
+			reference: HEADING_NUMBERING_REFERENCE,
+			levels: NUMBERED_HEADING_STYLE_IDS.map((_, index) => ({
+				level: index,
+				format: 'decimal',
+				text: Array.from(
+					{ length: index + 1 },
+					(__, levelIndex) => `%${levelIndex + 1}`,
+				).join('.'),
+				alignment: AlignmentType.LEFT,
+				style: {
+					paragraph: {
+						indent: {
+							left: 0,
+							firstLine: TYPOGRAPHY.firstLineIndentDxa,
+						},
+					},
+				},
+				suffix: 'space',
+			})),
+		},
 		{
 			reference: 'main-numbering',
 			levels: [

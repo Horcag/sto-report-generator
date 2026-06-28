@@ -24,6 +24,18 @@ def paragraph_has_visible_content(paragraph: Any) -> bool:
     return bool(text or has_drawing)
 
 
+def element_text(element: Any) -> str:
+    namespace = {"w": WORD_NS}
+    return "".join(element.xpath(".//w:t/text()", namespaces=namespace)).strip()
+
+
+def report_body_elements(elements: list[Any]) -> list[Any]:
+    for index, element in enumerate(elements):
+        if element.tag == f"{{{WORD_NS}}}p" and element_text(element).upper() == "РЕФЕРАТ":
+            return elements[index:]
+    return elements
+
+
 def set_paragraph_space_before(paragraph: Any, value: str) -> None:
     paragraph_properties = paragraph.find(f"{{{WORD_NS}}}pPr")
     if paragraph_properties is None:
@@ -71,7 +83,7 @@ def add_spacing_after_data_tables(document_root: Any) -> int:
     if body is None:
         return 0
 
-    elements = list(body)
+    elements = report_body_elements(list(body))
     changed = 0
     for index, element in enumerate(elements):
         if not is_data_table(element, namespace):
