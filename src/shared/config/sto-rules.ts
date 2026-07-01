@@ -53,6 +53,10 @@ export interface StoRules {
 			min: number;
 			max: number;
 		};
+		keywordParagraph: {
+			spacingBeforeDxa: number;
+			spacingAfterDxa: number;
+		};
 		semanticMarkers: string[];
 		maxTextLengthChars: number;
 	};
@@ -84,6 +88,11 @@ export interface StoRules {
 		};
 	};
 	bibliography: {
+		paragraph: {
+			leftIndentDxa: number;
+			hangingIndentDxa: number;
+			tabStopDxa: number;
+		};
 		urlProtocols: string[];
 		urldatePattern: string;
 		latinLangidValues: string[];

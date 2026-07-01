@@ -42,6 +42,7 @@ export interface StoFlagToken {
 }
 
 export interface ProcessTokensContext {
+	structuralHeading?: string;
 	isBib?: boolean;
 	isStoList?: boolean;
 	listType?: 'bullet' | 'ordered';

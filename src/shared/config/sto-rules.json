@@ -71,6 +71,10 @@
 			"min": 5,
 			"max": 15
 		},
+		"keywordParagraph": {
+			"spacingBeforeDxa": 360,
+			"spacingAfterDxa": 240
+		},
 		"semanticMarkers": ["Объект", "Цель", "результат"],
 		"maxTextLengthChars": 850
 	},
@@ -180,6 +184,11 @@
 		}
 	},
 	"bibliography": {
+		"paragraph": {
+			"leftIndentDxa": 720,
+			"hangingIndentDxa": 360,
+			"tabStopDxa": 1134
+		},
 		"urlProtocols": ["http", "https", "ftp"],
 		"urldatePattern": "^\\d{4}-\\d{2}-\\d{2}$",
 		"latinLangidValues": ["english", "en"],

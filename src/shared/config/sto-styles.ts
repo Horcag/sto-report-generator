@@ -12,6 +12,7 @@ const TYPOGRAPHY = STO_RULES.typography;
 const NESTED_LIST_INDENT = TYPOGRAPHY.nestedListIndentStepDxa;
 const TOC_RIGHT_TAB_STOP = TYPOGRAPHY.tocRightTabStopDxa;
 const TOC_LEVEL_INDENTS = TYPOGRAPHY.tocLevelIndentsDxa;
+const BIBLIOGRAPHY_PARAGRAPH = STO_RULES.bibliography.paragraph;
 
 export const NUMBERED_HEADING_STYLE_IDS = [
 	'StoHeading1',
@@ -267,8 +268,9 @@ export const STO_NUMBERING: INumberingOptions = {
 					style: {
 						paragraph: {
 							indent: {
-								left: 0,
-								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+								left: BIBLIOGRAPHY_PARAGRAPH.leftIndentDxa,
+								hanging:
+									BIBLIOGRAPHY_PARAGRAPH.hangingIndentDxa,
 							},
 						},
 					},
@@ -287,12 +289,13 @@ export const STO_NUMBERING: INumberingOptions = {
 					style: {
 						paragraph: {
 							indent: {
-								left: 0,
-								firstLine: TYPOGRAPHY.firstLineIndentDxa,
+								left: BIBLIOGRAPHY_PARAGRAPH.leftIndentDxa,
+								hanging:
+									BIBLIOGRAPHY_PARAGRAPH.hangingIndentDxa,
 							},
 						},
 					},
-					suffix: 'space',
+					suffix: 'tab',
 				},
 			],
 		},

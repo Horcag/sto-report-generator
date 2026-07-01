@@ -63,7 +63,12 @@ class MarkdownParser {
 		currentContext: ProcessTokensContext = {},
 	): Promise<DocxElement[]> {
 		const elements: DocxElement[] = [];
+		let activeStructuralHeading = currentContext.structuralHeading;
 		for (const token of tokensToProcess) {
+			const tokenContext: ProcessTokensContext = {
+				...currentContext,
+				structuralHeading: activeStructuralHeading,
+			};
 			switch (token.type) {
 				case 'stoFlag':
 					elements.push(
@@ -71,11 +76,22 @@ class MarkdownParser {
 							token as unknown as StoFlagToken,
 							this.context,
 							this.processTokens.bind(this),
-							currentContext,
+							tokenContext,
 						)),
 					);
+					if (
+						(token as unknown as StoFlagToken).flagType ===
+						'structural_heading'
+					) {
+						activeStructuralHeading = (
+							(token as unknown as StoFlagToken).text || ''
+						)
+							.trim()
+							.toUpperCase();
+					}
 					break;
 				case 'heading': {
+					activeStructuralHeading = undefined;
 					const headingToken = token as Tokens.Heading;
 					elements.push(
 						new Paragraph({
@@ -111,7 +127,7 @@ class MarkdownParser {
 									key => getCitationNumber(this.context, key),
 									text => this.references.replaceRefs(text),
 								),
-							currentContext,
+							tokenContext,
 						)),
 					);
 					break;
@@ -128,7 +144,7 @@ class MarkdownParser {
 									text => this.references.replaceRefs(text),
 								),
 							this.processTokens.bind(this),
-							currentContext,
+							tokenContext,
 						)),
 					);
 					break;

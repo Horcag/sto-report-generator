@@ -172,6 +172,56 @@ function runSyntheticValidatorTests(): void {
 	assert.equal(sparseCitationCheck.passed, false);
 	assert.match(sparseCitationCheck.error ?? '', /2/);
 
+	const bibliographyTabNumberingFixture = writeXmlFixture(
+		'bibliography-tab-numbering',
+		`<w:document ${namespaces}><w:body/></w:document>`,
+		`<w:styles ${namespaces}/>`,
+		{
+			'word/numbering.xml': `<w:numbering ${namespaces}>
+				<w:abstractNum w:abstractNumId="0">
+					<w:lvl w:ilvl="0">
+						<w:numFmt w:val="decimal"/>
+						<w:lvlText w:val="%1"/>
+						<w:suff w:val="tab"/>
+						<w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr>
+					</w:lvl>
+				</w:abstractNum>
+			</w:numbering>`,
+		},
+	);
+	assert.equal(
+		getCheck(
+			bibliographyTabNumberingFixture,
+			'Bibliography Numbering Indent & Format',
+		).passed,
+		true,
+	);
+
+	const bibliographySpaceNumberingFixture = writeXmlFixture(
+		'bibliography-space-numbering',
+		`<w:document ${namespaces}><w:body/></w:document>`,
+		`<w:styles ${namespaces}/>`,
+		{
+			'word/numbering.xml': `<w:numbering ${namespaces}>
+				<w:abstractNum w:abstractNumId="0">
+					<w:lvl w:ilvl="0">
+						<w:numFmt w:val="decimal"/>
+						<w:lvlText w:val="%1"/>
+						<w:suff w:val="space"/>
+						<w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr>
+					</w:lvl>
+				</w:abstractNum>
+			</w:numbering>`,
+		},
+	);
+	assert.equal(
+		getCheck(
+			bibliographySpaceNumberingFixture,
+			'Bibliography Numbering Indent & Format',
+		).passed,
+		false,
+	);
+
 	const tableHeaderPeriodFixture = writeXmlFixture(
 		'table-header-period',
 		`<w:document ${namespaces}><w:body>

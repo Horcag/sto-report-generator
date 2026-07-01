@@ -1,4 +1,11 @@
-import { Paragraph, StyleLevel, TableOfContents, TextRun } from 'docx';
+import {
+	AlignmentType,
+	Paragraph,
+	StyleLevel,
+	TableOfContents,
+	TabStopType,
+	TextRun,
+} from 'docx';
 import { Token } from 'marked';
 
 import {
@@ -16,6 +23,19 @@ import {
 	StoFlagToken,
 } from '../../types';
 import { formatBibItem } from '../../utils/bib-formatter';
+
+const URL_PATTERN = /https?:\/\/[^\s)]+/g;
+const URL_BREAK_OPPORTUNITY = '\u200B';
+
+function addUrlBreakOpportunities(text: string): string {
+	return text.replace(URL_PATTERN, url =>
+		url.replace(
+			/^(https?:\/\/)(.+)$/i,
+			(_match, protocol, rest) =>
+				`${protocol}${rest.replace(/([/.?&=#_-])/g, `$1${URL_BREAK_OPPORTUNITY}`)}`,
+		),
+	);
+}
 
 /**
  * Handles STO-specific flags like structural headings and bibliography.
@@ -83,19 +103,36 @@ export async function handleStoFlag(
 				const item = context.bibDb.find(b => b.citationKey === citKey);
 				if (item) {
 					const text = formatBibItem(item);
+					const docxText = addUrlBreakOpportunities(text);
 					bibElements.push(
 						new Paragraph({
 							style: 'Normal',
+							alignment: AlignmentType.JUSTIFIED,
+							spacing: {
+								before: 0,
+								after: 0,
+								line: STO_RULES.typography.normalLineSpacingDxa,
+								lineRule: 'auto',
+							},
 							indent: {
 								left: 0,
+								right: 0,
 								firstLine:
 									STO_RULES.typography.firstLineIndentDxa,
 							},
+							tabStops: [
+								{
+									type: TabStopType.LEFT,
+									position:
+										STO_RULES.bibliography.paragraph
+											.tabStopDxa,
+								},
+							],
 							numbering: {
 								reference: 'bib-numbering',
 								level: 0,
 							},
-							children: [new TextRun({ text })],
+							children: [new TextRun({ text: docxText })],
 						}),
 					);
 				} else {

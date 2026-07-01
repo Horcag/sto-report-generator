@@ -4,8 +4,12 @@ from pathlib import Path
 from .docx_package import clear_dirty_fields
 from .formula_replacement import replace_formulas_from_markdown
 from .models import PostBuildResult
-from .word_automation import run_word_post_build
-from .xml_layout import get_counts_from_docx, normalize_docx_xml_layout
+from .word_automation import export_docx_to_pdf, run_word_post_build
+from .xml_layout import (
+    get_counts_from_docx,
+    normalize_docx_xml_layout,
+    normalize_front_matter_table_geometry,
+)
 
 
 def select_source_dir(docx_path: str | Path, report_source_dir: str | Path | None) -> Path | None:
@@ -61,7 +65,12 @@ def post_build(
         pdf_output_path,
     )
 
+    front_matter_table_changes = normalize_front_matter_table_geometry(absolute_docx_path)
     dirty_fields = clear_dirty_fields(absolute_docx_path)
+    pdf_path = word_result.pdf_path
+    if front_matter_table_changes:
+        pdf_path = export_docx_to_pdf(absolute_docx_path, pdf_output_path)
+
     return PostBuildResult(
         pages=word_result.pages,
         figures=counts.figures,
@@ -74,7 +83,7 @@ def post_build(
         table_spacing_changes=table_spacing_changes,
         moved_small_tables=word_result.moved_small_tables,
         dirty_fields=dirty_fields,
-        pdf_path=word_result.pdf_path,
+        pdf_path=pdf_path,
     )
 
 

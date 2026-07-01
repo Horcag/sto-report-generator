@@ -18,14 +18,28 @@ from .models import WordPostBuildResult
 
 
 def normalize_tables(doc: Any) -> int:
+    report_start = report_start_position(doc)
     changed = 0
     for index in range(1, doc.Tables.Count + 1):
         try:
-            doc.Tables(index).Rows(1).HeadingFormat = True
+            table = doc.Tables(index)
+            if table.Range.Start < report_start:
+                continue
+            table.Rows(1).HeadingFormat = True
             changed += 1
         except Exception:
             continue
     return changed
+
+
+def report_start_position(doc: Any) -> int:
+    for paragraph in doc.Paragraphs:
+        try:
+            if paragraph.Range.Text.strip().upper() == "РЕФЕРАТ":
+                return paragraph.Range.Start
+        except Exception:
+            continue
+    return 0
 
 
 def pluralize_ru(number: int, form1: str, form2: str, form5: str) -> str:
@@ -242,6 +256,25 @@ def run_word_post_build(
             moved_small_tables=moved_small_tables,
             pdf_path=pdf_path,
         )
+    finally:
+        if doc is not None:
+            with contextlib.suppress(Exception):
+                doc.Close(False)
+        if word is not None:
+            with contextlib.suppress(Exception):
+                word.Quit()
+
+
+def export_docx_to_pdf(
+    docx_path: str | Path,
+    pdf_output_path: str | Path | None = None,
+) -> str:
+    word = None
+    doc = None
+    try:
+        word = create_word_application()
+        doc = word.Documents.Open(os.path.abspath(str(docx_path)), ReadOnly=True)
+        return export_pdf(doc, docx_path, pdf_output_path)
     finally:
         if doc is not None:
             with contextlib.suppress(Exception):

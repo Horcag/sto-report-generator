@@ -4,6 +4,7 @@ import {
 	Table,
 	TableCell,
 	TableRow,
+	TextRun,
 	WidthType,
 } from 'docx';
 import { Tokens as MarkedTokens, Token } from 'marked';
@@ -17,6 +18,25 @@ import {
 	ProcessTokensContext,
 } from '../../types';
 import { handleBlockMath } from './math-handler';
+
+function isReferatKeywordsParagraph(text: string): boolean {
+	const trimmed = text.trim();
+	if (!trimmed.includes(',') || !/[A-ZА-ЯЁ]/.test(trimmed)) {
+		return false;
+	}
+
+	const keywords = trimmed
+		.replace(/[.]$/, '')
+		.split(',')
+		.map(item => item.trim())
+		.filter(Boolean);
+
+	return (
+		keywords.length >= STO_RULES.referat.keywordCount.min &&
+		keywords.length <= STO_RULES.referat.keywordCount.max &&
+		trimmed === trimmed.toUpperCase()
+	);
+}
 
 /**
  * Handles paragraph tokens and converts them to Docx Paragraphs or Tables (for math blocks).
@@ -115,6 +135,35 @@ export async function handleParagraph(
 			new Paragraph({
 				style: 'TableCaption',
 				children: await parseInline(token.tokens || []),
+			}),
+		];
+	}
+
+	if (
+		currentContext.structuralHeading === 'РЕФЕРАТ' &&
+		isReferatKeywordsParagraph(text)
+	) {
+		return [
+			new Paragraph({
+				style: 'Normal',
+				alignment: AlignmentType.JUSTIFIED,
+				spacing: {
+					before: STO_RULES.referat.keywordParagraph.spacingBeforeDxa,
+					after: STO_RULES.referat.keywordParagraph.spacingAfterDxa,
+					line: STO_RULES.typography.normalLineSpacingDxa,
+					lineRule: 'auto',
+				},
+				indent: {
+					left: 0,
+					right: 0,
+					firstLine: STO_RULES.typography.firstLineIndentDxa,
+				},
+				children: [
+					new TextRun({
+						text: text.trim(),
+						allCaps: true,
+					}),
+				],
 			}),
 		];
 	}

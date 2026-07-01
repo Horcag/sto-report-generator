@@ -603,8 +603,14 @@
 <w:p>
 <w:pPr>
 <w:pStyle w:val="Normal"/>
+<w:spacing w:after="240" w:before="360" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:right="0" w:firstLine="709"/>
+<w:jc w:val="both"/>
 </w:pPr>
 <w:r>
+<w:rPr>
+<w:caps/>
+</w:rPr>
 <w:t xml:space="preserve">ГЕНЕРАТОР ОТЧЕТОВ, ГОСТ, МАРКДАУН, АВТОМАТИЗАЦИЯ, TYPESCRIPT, DOCX</w:t>
 </w:r>
 </w:p>
@@ -1269,10 +1275,15 @@
 <w:ilvl w:val="0"/>
 <w:numId w:val="5"/>
 </w:numPr>
-<w:ind w:left="0" w:firstLine="709"/>
+<w:tabs>
+<w:tab w:val="left" w:pos="1134"/>
+</w:tabs>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:left="0" w:right="0" w:firstLine="709"/>
+<w:jc w:val="both"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Петров, П. П. Автоматизация документооборота в учебном процессе [Текст] / П. П. Петров, С. С. Сидоров // Вестник кибернетики. – 2024. – Т. 10, № 2. – С. 45-50.</w:t>
+<w:t xml:space="preserve">Петров, П.П. Автоматизация документооборота в учебном процессе / П.П. Петров, С.С. Сидоров // Вестник кибернетики. – 2024. – Т. 10, № 2. – С. 45-50.</w:t>
 </w:r>
 </w:p>
 <w:sectPr>

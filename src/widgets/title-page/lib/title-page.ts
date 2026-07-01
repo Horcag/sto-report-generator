@@ -1,11 +1,19 @@
 import {
 	AlignmentType,
+	BorderStyle,
 	Footer,
+	HeightRule,
 	IParagraphOptions,
 	IRunOptions,
 	Paragraph,
+	Table,
+	TableCell,
+	TableLayoutType,
+	TableRow,
 	TabStopType,
 	TextRun,
+	VerticalAlignTable,
+	WidthType,
 } from 'docx';
 
 import { ReportMetadata } from '@/entities/report';
@@ -67,49 +75,120 @@ function getPracticeType(metadata: ReportMetadata): string {
 	return match?.[1]?.trim() || 'технологическая (научно-технологическая)';
 }
 
-function createPracticeSignatureParagraph(options: {
-	label: string;
+interface PracticeSignatureRow {
+	labelLines: string[];
 	name: string;
-	spacingBefore?: number;
-}): Paragraph[] {
+}
+
+const NO_TABLE_BORDERS = {
+	top: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+	bottom: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+	left: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+	right: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+	insideHorizontal: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+	insideVertical: { style: BorderStyle.NONE, size: 0, color: 'auto' },
+};
+const PRACTICE_SIGNATURE_ROW_MIN_HEIGHT_DXA = 880;
+
+function createPracticeSignatureCell(
+	children: Paragraph[],
+	width: number,
+): TableCell {
+	return new TableCell({
+		width: { size: width, type: WidthType.DXA },
+		verticalAlign: VerticalAlignTable.CENTER,
+		children,
+	});
+}
+
+function createSignatureLineCell(width: number): TableCell {
+	return createPracticeSignatureCell(
+		[
+			titlePageParagraph({
+				alignment: AlignmentType.CENTER,
+				spacing: { line: 240, lineRule: 'auto' },
+				children: [titlePageText({ text: '______________________' })],
+			}),
+			titlePageParagraph({
+				alignment: AlignmentType.CENTER,
+				spacing: { line: 240, lineRule: 'auto' },
+				children: [
+					titlePageText({
+						text: '(подпись)',
+						italics: true,
+						size: 16,
+					}),
+				],
+			}),
+		],
+		width,
+	);
+}
+
+function createPracticeSignatureTable(rows: PracticeSignatureRow[]): Table {
+	const columnWidths = [4644, 2977, 2007];
+	return new Table({
+		width: { size: 9628, type: WidthType.DXA },
+		columnWidths,
+		layout: TableLayoutType.FIXED,
+		borders: NO_TABLE_BORDERS,
+		alignment: AlignmentType.LEFT,
+		rows: rows.map(
+			row =>
+				new TableRow({
+					height: {
+						value: PRACTICE_SIGNATURE_ROW_MIN_HEIGHT_DXA,
+						rule: HeightRule.ATLEAST,
+					},
+					children: [
+						createPracticeSignatureCell(
+							row.labelLines.map(line =>
+								titlePageParagraph({
+									spacing: {
+										line: 240,
+										lineRule: 'auto',
+									},
+									children: [titlePageText({ text: line })],
+								}),
+							),
+							columnWidths[0],
+						),
+						createSignatureLineCell(columnWidths[1]),
+						createPracticeSignatureCell(
+							[
+								titlePageParagraph({
+									spacing: {
+										line: 240,
+										lineRule: 'auto',
+									},
+									children: [
+										titlePageText({ text: row.name }),
+									],
+								}),
+							],
+							columnWidths[2],
+						),
+					],
+				}),
+		),
+	});
+}
+
+function createPracticeSignatureBlock(
+	rows: PracticeSignatureRow[],
+	spacingBefore = 360,
+): Array<Paragraph | Table> {
 	return [
 		titlePageParagraph({
 			spacing: {
-				before: options.spacingBefore ?? 0,
+				before: spacingBefore,
 				after: 0,
 				line: 240,
 				lineRule: 'auto',
 			},
-			children: [titlePageText({ text: options.label })],
+			children: [titlePageText({ text: '' })],
 		}),
-		titlePageParagraph({
-			indent: { left: 5000, firstLine: 0 },
-			spacing: {
-				before: 0,
-				after: 0,
-				line: 240,
-				lineRule: 'auto',
-			},
-			children: [
-				titlePageText({ text: '__________________  ' }),
-				titlePageText({ text: options.name }),
-			],
-		}),
-		titlePageParagraph({
-			indent: { left: 5000, firstLine: 0 },
-			spacing: {
-				before: 0,
-				after: 0,
-				line: 240,
-				lineRule: 'auto',
-			},
-			children: [
-				titlePageText({
-					text: '        (подпись)',
-					italics: true,
-				}),
-			],
-		}),
+		createPracticeSignatureTable(rows),
 	];
 }
 
@@ -130,7 +209,9 @@ export function createTitlePageFooter(metadata: ReportMetadata): Footer {
 	});
 }
 
-function createPracticeTitlePage(metadata: ReportMetadata): Paragraph[] {
+function createPracticeTitlePage(
+	metadata: ReportMetadata,
+): Array<Paragraph | Table> {
 	const t = titlePageText;
 	const br = titlePageLineBreak;
 	const p = titlePageParagraph;
@@ -149,11 +230,6 @@ function createPracticeTitlePage(metadata: ReportMetadata): Paragraph[] {
 		makeShortName(metadata.supervisorName);
 	const organizationSupervisorName =
 		metadata.organizationSupervisorName || '__________________';
-	const organizationSupervisorTitle =
-		metadata.organizationSupervisorTitle || '__________________';
-	const organizationSupervisorRole =
-		metadata.organizationSupervisorRole ||
-		'Руководитель практики от профильной организации';
 
 	return [
 		p({
@@ -239,21 +315,33 @@ function createPracticeTitlePage(metadata: ReportMetadata): Paragraph[] {
 				t({ text: ' г.' }),
 			],
 		}),
-		...createPracticeSignatureParagraph({
-			label: `Обучающийся группы № ${metadata.groupNumber}`,
-			name: studentShortName,
-			spacingBefore: 360,
-		}),
-		...createPracticeSignatureParagraph({
-			label: `${metadata.supervisorRole || 'Руководитель практики от университета'}, ${metadata.supervisorTitle}`,
-			name: universitySupervisorShortName,
-			spacingBefore: 240,
-		}),
-		...createPracticeSignatureParagraph({
-			label: `${organizationSupervisorRole}, ${organizationSupervisorTitle}`,
-			name: organizationSupervisorName,
-			spacingBefore: 240,
-		}),
+		...createPracticeSignatureBlock(
+			[
+				{
+					labelLines: [
+						`Обучающийся группы № ${metadata.groupNumber}`,
+					],
+					name: studentShortName,
+				},
+				{
+					labelLines: [
+						'Руководитель практики',
+						'от университета, доцент кафедры',
+						'технической кибернетики, к.т.н.',
+					],
+					name: universitySupervisorShortName,
+				},
+				{
+					labelLines: [
+						'Руководитель практики',
+						'от ВСО СК России по Самарскому',
+						'гарнизону, руководитель отдела',
+					],
+					name: organizationSupervisorName,
+				},
+			],
+			360,
+		),
 		empty({ spacing: { before: 360, after: 0 } }),
 		p({
 			spacing: { line: 240, lineRule: 'auto' },
@@ -280,7 +368,9 @@ function createPracticeTitlePage(metadata: ReportMetadata): Paragraph[] {
 	];
 }
 
-export function createTitlePage(metadata: ReportMetadata): Paragraph[] {
+export function createTitlePage(
+	metadata: ReportMetadata,
+): Array<Paragraph | Table> {
 	if (isPracticeReport(metadata)) {
 		return createPracticeTitlePage(metadata);
 	}

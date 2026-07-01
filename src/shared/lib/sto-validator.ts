@@ -366,6 +366,24 @@ function countImagesWithoutFollowingCaption(docXml: string): number {
 	return count;
 }
 
+function getNumberingLevels(numberingXml: string): string[] {
+	return numberingXml.match(/<w:lvl\b[\s\S]*?<\/w:lvl>/g) ?? [];
+}
+
+function hasExpectedBibliographyNumbering(numberingXml: string): boolean {
+	const bibliographyParagraph = STO_RULES.bibliography.paragraph;
+	const bibliographyIndentPattern = new RegExp(
+		String.raw`<w:ind\b(?=[^>]*w:left="${bibliographyParagraph.leftIndentDxa}")(?=[^>]*w:hanging="${bibliographyParagraph.hangingIndentDxa}")`,
+	);
+
+	return getNumberingLevels(numberingXml).some(
+		levelXml =>
+			regexMatches(/<w:lvlText w:val="%1"\/>/, levelXml) &&
+			regexMatches(bibliographyIndentPattern, levelXml) &&
+			!regexMatches(/<w:suff\b[^>]*w:val="space"/, levelXml),
+	);
+}
+
 function countTablesWithDiagonalBorders(docXml: string): number {
 	const tables = getReportTables(docXml);
 	return tables.filter(
@@ -751,6 +769,11 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 	const citationNumbers = extractCitationNumbers(documentText);
 	const missingCitationNumbers = getMissingCitationNumbers(citationNumbers);
 	const highestCitationNumber = citationNumbers.at(-1) ?? 0;
+	const legacyBibliographyMarkers = [
+		'[Текст]',
+		'[Электронный ресурс]',
+		'Электрон. дан.',
+	];
 
 	return [
 		resultFromFailure(
@@ -762,6 +785,13 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 			'Citation Number Sequence',
 			missingCitationNumbers.length === 0,
 			`Citation numbers must be dense from [1] to [${highestCitationNumber}]; missing: ${missingCitationNumbers.join(', ')}.`,
+		),
+		resultFromFailure(
+			'Bibliography Legacy Resource Markers',
+			legacyBibliographyMarkers.some(marker =>
+				documentText.includes(marker),
+			),
+			`Detected legacy bibliography marker. Do not use ${legacyBibliographyMarkers.join(', ')} in source-list records.`,
 		),
 		resultFromFailure(
 			'Math Formatting (Unparsed)',
@@ -864,13 +894,8 @@ function validateNumbering(numberingXml: string | null): ValidationResult[] {
 	}
 
 	const firstLineIndent = STO_RULES.typography.firstLineIndentDxa;
-	const bibLevelMatch = regexMatches(
-		new RegExp(
-			String.raw`<w:lvlText w:val="%1"/>.*?<w:ind[^>]*w:left="0"[^>]*w:firstLine="${firstLineIndent}"`,
-			's',
-		),
-		numberingXml,
-	);
+	const bibliographyParagraph = STO_RULES.bibliography.paragraph;
+	const bibLevelMatch = hasExpectedBibliographyNumbering(numberingXml);
 	const listLevelMatch = regexMatches(
 		new RegExp(
 			String.raw`<w:lvlText w:val="${escapeRegExp(STO_RULES.typography.listMarker)}"/>.*?<w:ind[^>]*w:left="0"[^>]*w:firstLine="${firstLineIndent}"`,
@@ -883,7 +908,7 @@ function validateNumbering(numberingXml: string | null): ValidationResult[] {
 		resultFromPass(
 			'Bibliography Numbering Indent & Format',
 			bibLevelMatch,
-			`Bibliography numbering missing or has incorrect indent (expected left 0, firstLine ${firstLineIndent}) / dot format.`,
+			`Bibliography numbering missing or has incorrect indent/suffix (expected left ${bibliographyParagraph.leftIndentDxa}, hanging ${bibliographyParagraph.hangingIndentDxa}, tab after number) / dot format.`,
 		),
 		resultFromPass(
 			'List Numbering Indent & Format',

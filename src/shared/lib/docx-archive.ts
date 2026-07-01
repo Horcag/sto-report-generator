@@ -3,6 +3,7 @@ import path from 'node:path';
 import AdmZip from 'adm-zip';
 
 const DOCUMENT_XML_PATH = 'word/document.xml';
+const SETTINGS_XML_PATH = 'word/settings.xml';
 const RELATIONSHIP_REFERENCE_PATTERN = /\s+r:(?:id|embed|link)="[^"]+"/;
 const PAGE_BREAK_PARAGRAPH = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
 const FRONT_MATTER_PARAGRAPH_DEFAULTS =
@@ -59,6 +60,14 @@ function readArchiveEntry(
 	return entry.getData().toString('utf8');
 }
 
+function readOptionalArchiveEntry(
+	archive: AdmZip,
+	entryPath: string,
+): string | null {
+	const entry = archive.getEntry(entryPath);
+	return entry ? entry.getData().toString('utf8') : null;
+}
+
 function splitDocumentBody(
 	documentXml: string,
 	docxPath: string,
@@ -101,7 +110,7 @@ function splitTopLevelWordElements(xml: string): string[] {
 		}
 
 		const start = index + startOffset;
-		const openingMatch = /^<w:([A-Za-z0-9]+)(?:\s[^>]*)?>/.exec(
+		const openingMatch = /^<w:([A-Za-z0-9]+)(?:\s[^>]*)?\/?>/.exec(
 			xml.slice(start),
 		);
 		if (!openingMatch) {
@@ -159,6 +168,15 @@ function getWordText(xml: string): string {
 		.replace(/&apos;/g, "'");
 }
 
+function escapeXml(value: string): string {
+	return value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&apos;');
+}
+
 function findInsertIndex(elements: string[], beforeText: string): number {
 	const normalizedNeedle = beforeText.trim().toLocaleUpperCase('ru-RU');
 	const index = elements.findIndex(element =>
@@ -212,6 +230,22 @@ function ensureTagAttributes(
 			return updatedTagXml;
 		},
 	);
+}
+
+function ensureEmptyTagAttributes(
+	tagXml: string,
+	attributes: Record<string, string>,
+): string {
+	let updatedTagXml = tagXml;
+	for (const [name, value] of Object.entries(attributes)) {
+		if (!new RegExp(`\\s${name}=`).test(updatedTagXml)) {
+			updatedTagXml = updatedTagXml.replace(
+				/\/?>/,
+				` ${name}="${value}"$&`,
+			);
+		}
+	}
+	return updatedTagXml;
 }
 
 function ensureRunProperty(
@@ -274,15 +308,67 @@ function normalizeFrontMatterRun(
 	);
 }
 
+function ensureFrontMatterParagraphMarkRunProperties(
+	paragraphPropertiesXml: string,
+	fontSizeHalfPoints: string,
+): string {
+	const propertiesMatch = /<w:rPr\b[\s\S]*?<\/w:rPr>|<w:rPr\b[^>]*\/>/.exec(
+		paragraphPropertiesXml,
+	);
+	if (!propertiesMatch) {
+		return paragraphPropertiesXml.replace(
+			'</w:pPr>',
+			`<w:rPr>${createFrontMatterRunDefaults(fontSizeHalfPoints)}</w:rPr></w:pPr>`,
+		);
+	}
+
+	let runPropertiesXml = propertiesMatch[0];
+	if (runPropertiesXml.endsWith('/>')) {
+		runPropertiesXml = runPropertiesXml.replace(/\/>$/, '></w:rPr>');
+	}
+	runPropertiesXml = ensureRunProperty(
+		runPropertiesXml,
+		'rFonts',
+		FRONT_MATTER_RUN_FONTS,
+	);
+	runPropertiesXml = ensureRunProperty(
+		runPropertiesXml,
+		'sz',
+		`<w:sz w:val="${fontSizeHalfPoints}"/>`,
+	);
+	runPropertiesXml = ensureRunProperty(
+		runPropertiesXml,
+		'szCs',
+		`<w:szCs w:val="${fontSizeHalfPoints}"/>`,
+	);
+
+	return (
+		paragraphPropertiesXml.slice(0, propertiesMatch.index) +
+		runPropertiesXml +
+		paragraphPropertiesXml.slice(
+			propertiesMatch.index + propertiesMatch[0].length,
+		)
+	);
+}
+
 function normalizeFrontMatterParagraph(
 	paragraphXml: string,
 	fontSizeHalfPoints = '24',
 ): string {
-	const propertiesMatch = /<w:pPr\b[\s\S]*?<\/w:pPr>/.exec(paragraphXml);
+	if (/^<w:p\b[^>]*\/>$/.test(paragraphXml.trim())) {
+		return paragraphXml.replace(
+			/\/>$/,
+			`><w:pPr>${FRONT_MATTER_PARAGRAPH_DEFAULTS}<w:rPr>${createFrontMatterRunDefaults(fontSizeHalfPoints)}</w:rPr></w:pPr></w:p>`,
+		);
+	}
+
+	const propertiesMatch = /<w:pPr\b[\s\S]*?<\/w:pPr>|<w:pPr\b[^>]*\/>/.exec(
+		paragraphXml,
+	);
 	if (!propertiesMatch) {
 		const updatedParagraphXml = paragraphXml.replace(
 			/(<w:p\b[^>]*>)/,
-			`$1<w:pPr>${FRONT_MATTER_PARAGRAPH_DEFAULTS}</w:pPr>`,
+			`$1<w:pPr>${FRONT_MATTER_PARAGRAPH_DEFAULTS}<w:rPr>${createFrontMatterRunDefaults(fontSizeHalfPoints)}</w:rPr></w:pPr>`,
 		);
 		return updatedParagraphXml.replace(/<w:r\b[\s\S]*?<\/w:r>/g, runXml =>
 			normalizeFrontMatterRun(runXml, fontSizeHalfPoints),
@@ -290,6 +376,9 @@ function normalizeFrontMatterParagraph(
 	}
 
 	let propertiesXml = propertiesMatch[0];
+	if (propertiesXml.endsWith('/>')) {
+		propertiesXml = propertiesXml.replace(/\/>$/, '></w:pPr>');
+	}
 	propertiesXml = ensureParagraphProperty(
 		propertiesXml,
 		'spacing',
@@ -315,6 +404,10 @@ function normalizeFrontMatterParagraph(
 		'w:left': '0',
 		'w:firstLine': '0',
 	});
+	propertiesXml = ensureFrontMatterParagraphMarkRunProperties(
+		propertiesXml,
+		fontSizeHalfPoints,
+	);
 
 	const updatedParagraphXml =
 		paragraphXml.slice(0, propertiesMatch.index) +
@@ -326,16 +419,334 @@ function normalizeFrontMatterParagraph(
 	);
 }
 
+function getTopLevelTableRows(tableXml: string): string[] {
+	return tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/g) ?? [];
+}
+
+function getRowCells(rowXml: string): string[] {
+	return rowXml.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
+}
+
+function assignmentSignatureNameByRow(
+	rows: string[],
+	rowIndex: number,
+	fallback: string,
+): string {
+	const cells = getRowCells(rows[rowIndex] ?? '');
+	const text = getWordText(cells[2] ?? '').trim();
+	return text || fallback;
+}
+
+function assignmentGroupNumber(tableXml: string): string {
+	return (
+		/группы\s*№\s*([0-9A-Za-zА-Яа-яЁё-]+)/i.exec(
+			getWordText(tableXml),
+		)?.[1] ?? '6302-010302D'
+	);
+}
+
+function canonicalFrontMatterParagraphXml(
+	text: string,
+	options: {
+		alignment?: 'left' | 'center';
+		italics?: boolean;
+		size?: string;
+	} = {},
+): string {
+	const alignment = options.alignment ?? 'left';
+	const size = options.size ?? '24';
+	const italicXml = options.italics ? '<w:i/><w:iCs/>' : '';
+	const alignmentXml = `<w:jc w:val="${alignment}"/>`;
+	return [
+		'<w:p>',
+		'<w:pPr>',
+		'<w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>',
+		'<w:ind w:left="0" w:firstLine="0"/>',
+		alignmentXml,
+		'</w:pPr>',
+		'<w:r>',
+		`<w:rPr>${FRONT_MATTER_RUN_FONTS}${italicXml}<w:sz w:val="${size}"/><w:szCs w:val="${size}"/></w:rPr>`,
+		`<w:t>${escapeXml(text)}</w:t>`,
+		'</w:r>',
+		'</w:p>',
+	].join('');
+}
+
+function canonicalFrontMatterCellXml(
+	paragraphs: string[],
+	options: { verticalAlign?: 'center' | 'bottom'; widthDxa?: string } = {},
+): string {
+	const widthXml =
+		options.widthDxa !== undefined
+			? `<w:tcW w:w="${options.widthDxa}" w:type="dxa"/>`
+			: '';
+	return [
+		'<w:tc>',
+		`<w:tcPr>${widthXml}<w:vAlign w:val="${options.verticalAlign ?? 'center'}"/></w:tcPr>`,
+		...paragraphs,
+		'</w:tc>',
+	].join('');
+}
+
+function canonicalSignatureLineCellXml(): string {
+	return canonicalFrontMatterCellXml(
+		[
+			canonicalFrontMatterParagraphXml('______________________', {
+				alignment: 'center',
+			}),
+			canonicalFrontMatterParagraphXml('(подпись)', {
+				alignment: 'center',
+				italics: true,
+				size: '16',
+			}),
+		],
+		{ widthDxa: '2916' },
+	);
+}
+
+function canonicalFrontMatterSignatureRowXml(
+	labelLines: string[],
+	name: string,
+): string {
+	return [
+		'<w:tr>',
+		'<w:trPr><w:trHeight w:val="980" w:hRule="atLeast"/></w:trPr>',
+		canonicalFrontMatterCellXml(
+			labelLines.map(line => canonicalFrontMatterParagraphXml(line)),
+			{ widthDxa: '4263' },
+		),
+		canonicalSignatureLineCellXml(),
+		canonicalFrontMatterCellXml([canonicalFrontMatterParagraphXml(name)], {
+			widthDxa: '1675',
+		}),
+		'</w:tr>',
+	].join('');
+}
+
+function normalizeAssignmentSignatureTable(
+	tableXml: string,
+): string | undefined {
+	if (!getWordText(tableXml).includes('Задание принял к исполнению')) {
+		return undefined;
+	}
+
+	const rows = getTopLevelTableRows(tableXml);
+	const universitySupervisorName = assignmentSignatureNameByRow(
+		rows,
+		0,
+		'Л.В. Логанова',
+	);
+	const organizationSupervisorName = assignmentSignatureNameByRow(
+		rows,
+		1,
+		'Г.Н. Дунаев',
+	);
+	const studentName = assignmentSignatureNameByRow(rows, 2, 'Н.С. Лебедев');
+	const groupNumber = assignmentGroupNumber(tableXml);
+
+	return [
+		'<w:tbl>',
+		'<w:tblPr>',
+		'<w:tblW w:w="8854" w:type="dxa"/>',
+		'<w:jc w:val="left"/>',
+		'<w:tblBorders>',
+		'<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>',
+		'<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>',
+		'<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>',
+		'<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>',
+		'<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>',
+		'<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>',
+		'</w:tblBorders>',
+		'<w:tblLayout w:type="fixed"/>',
+		'<w:tblLook w:val="0400"/>',
+		'</w:tblPr>',
+		'<w:tblGrid><w:gridCol w:w="4263"/><w:gridCol w:w="2916"/><w:gridCol w:w="1675"/></w:tblGrid>',
+		canonicalFrontMatterSignatureRowXml(
+			[
+				'Руководитель практики',
+				'от университета, доцент кафедры',
+				'технической кибернетики, к.т.н.',
+			],
+			universitySupervisorName,
+		),
+		canonicalFrontMatterSignatureRowXml(
+			[
+				'Руководитель практики',
+				'от ВСО СК России по Самарскому',
+				'гарнизону, руководитель отдела',
+			],
+			organizationSupervisorName,
+		),
+		canonicalFrontMatterSignatureRowXml(
+			[
+				'Задание принял к исполнению',
+				`обучающийся группы № ${groupNumber}`,
+			],
+			studentName,
+		),
+		'</w:tbl>',
+	].join('');
+}
+
+function isAssignmentPlanTable(tableXml: string): boolean {
+	return getWordText(tableXml).includes('Планируемые результаты');
+}
+
+function getTableGridWidthDxa(tableXml: string): string | undefined {
+	const gridMatch = /<w:tblGrid\b[\s\S]*?<\/w:tblGrid>/.exec(tableXml);
+	if (!gridMatch) {
+		return undefined;
+	}
+
+	const widths = [
+		...gridMatch[0].matchAll(/<w:gridCol\b[^>]*\sw:w="([^"]+)"/g),
+	]
+		.map(match => Number.parseFloat(match[1]))
+		.filter(width => Number.isFinite(width));
+	if (widths.length === 0) {
+		return undefined;
+	}
+
+	return String(Math.round(widths.reduce((sum, width) => sum + width, 0)));
+}
+
+function normalizeFrontMatterTableProperties(tableXml: string): string {
+	const tableWidthDxa = getTableGridWidthDxa(tableXml);
+	const tableWidthXml = tableWidthDxa
+		? `<w:tblW w:w="${tableWidthDxa}" w:type="dxa"/>`
+		: undefined;
+	const tablePropertiesMatch = /<w:tblPr\b[\s\S]*?<\/w:tblPr>/.exec(tableXml);
+	if (!tablePropertiesMatch) {
+		if (!tableWidthXml) {
+			return tableXml;
+		}
+		return tableXml.replace(
+			/(<w:tbl\b[^>]*>)/,
+			`$1<w:tblPr>${tableWidthXml}</w:tblPr>`,
+		);
+	}
+
+	let tablePropertiesXml = tablePropertiesMatch[0].replace(
+		/<w:tblCellMar\b[\s\S]*?<\/w:tblCellMar>|<w:tblCellMar\b[^>]*\/>/g,
+		'',
+	);
+	if (tableWidthXml && /<w:tblW\b/.test(tablePropertiesXml)) {
+		tablePropertiesXml = tablePropertiesXml.replace(
+			/<w:tblW\b[\s\S]*?<\/w:tblW>|<w:tblW\b[^>]*\/>/,
+			tableWidthXml,
+		);
+	} else if (tableWidthXml) {
+		tablePropertiesXml = tablePropertiesXml.replace(
+			/(<w:tblPr\b[^>]*>)/,
+			`$1${tableWidthXml}`,
+		);
+	}
+
+	return (
+		tableXml.slice(0, tablePropertiesMatch.index) +
+		tablePropertiesXml +
+		tableXml.slice(
+			tablePropertiesMatch.index + tablePropertiesMatch[0].length,
+		)
+	);
+}
+
+function normalizeFrontMatterTableGeometry(tableXml: string): string {
+	return normalizeFrontMatterTableProperties(tableXml)
+		.replace(/<w:tcW\b[^>]*(?:\/>|>[\s\S]*?<\/w:tcW>)/g, '')
+		.replace(/<w:trHeight\b[^>]*(?:\/>|><\/w:trHeight>)/g, tagXml =>
+			ensureEmptyTagAttributes(tagXml, {
+				'w:hRule': 'atLeast',
+			}),
+		);
+}
+
 function normalizeFrontMatterElement(elementXml: string): string {
 	if (elementXml.startsWith('<w:p')) {
 		return normalizeFrontMatterParagraph(elementXml);
 	}
 	if (elementXml.startsWith('<w:tbl')) {
-		return elementXml.replace(/<w:p\b[\s\S]*?<\/w:p>/g, paragraphXml =>
-			normalizeFrontMatterParagraph(paragraphXml, '20'),
+		const signatureTableXml = normalizeAssignmentSignatureTable(elementXml);
+		if (signatureTableXml) {
+			return signatureTableXml;
+		}
+		if (isAssignmentPlanTable(elementXml)) {
+			return elementXml.replace(/<w:p\b[\s\S]*?<\/w:p>/g, paragraphXml =>
+				normalizeFrontMatterParagraph(paragraphXml, '24'),
+			);
+		}
+		return normalizeFrontMatterTableGeometry(elementXml).replace(
+			/<w:p\b[\s\S]*?<\/w:p>/g,
+			paragraphXml => normalizeFrontMatterParagraph(paragraphXml, '20'),
 		);
 	}
 	return elementXml;
+}
+
+function copyFrontMatterSettings(
+	targetArchive: AdmZip,
+	sourceArchive: AdmZip,
+): void {
+	const sourceSettingsXml = readOptionalArchiveEntry(
+		sourceArchive,
+		SETTINGS_XML_PATH,
+	);
+	const targetSettingsXml = readOptionalArchiveEntry(
+		targetArchive,
+		SETTINGS_XML_PATH,
+	);
+	if (sourceSettingsXml === null || targetSettingsXml === null) {
+		return;
+	}
+
+	let updatedSettingsXml = targetSettingsXml;
+	const sourceDefaultTabStop =
+		/<w:defaultTabStop\b[^>]*\bw:val="([^"]+)"/.exec(
+			sourceSettingsXml,
+		)?.[1] ?? null;
+	if (sourceDefaultTabStop !== null) {
+		updatedSettingsXml = updatedSettingsXml.replace(
+			/<w:defaultTabStop\b[^>]*\/>/,
+			`<w:defaultTabStop w:val="${sourceDefaultTabStop}"/>`,
+		);
+	}
+
+	if (
+		sourceSettingsXml.includes('<w:autoHyphenation') &&
+		!updatedSettingsXml.includes('<w:autoHyphenation')
+	) {
+		updatedSettingsXml = updatedSettingsXml.replace(
+			/(<w:defaultTabStop\b[^>]*\/>)/,
+			'$1<w:autoHyphenation/>',
+		);
+	}
+	const bottomHyphenationSettingName = 'useWord2013TrackBottomHyphenation';
+	const sourceBottomHyphenationSetting = new RegExp(
+		`<w:compatSetting\\b(?=[^>]*\\bw:name="${bottomHyphenationSettingName}")[^>]*/>`,
+	).exec(sourceSettingsXml)?.[0];
+	if (sourceBottomHyphenationSetting) {
+		const targetBottomHyphenationPattern = new RegExp(
+			`<w:compatSetting\\b(?=[^>]*\\bw:name="${bottomHyphenationSettingName}")[^>]*/>`,
+		);
+		if (targetBottomHyphenationPattern.test(updatedSettingsXml)) {
+			updatedSettingsXml = updatedSettingsXml.replace(
+				targetBottomHyphenationPattern,
+				sourceBottomHyphenationSetting,
+			);
+		} else if (updatedSettingsXml.includes('</w:compat>')) {
+			updatedSettingsXml = updatedSettingsXml.replace(
+				'</w:compat>',
+				`${sourceBottomHyphenationSetting}</w:compat>`,
+			);
+		}
+	}
+
+	if (updatedSettingsXml !== targetSettingsXml) {
+		targetArchive.updateFile(
+			SETTINGS_XML_PATH,
+			Buffer.from(updatedSettingsXml, 'utf8'),
+		);
+	}
 }
 
 export function insertDocxBodyBeforeText(options: {
@@ -390,5 +801,6 @@ export function insertDocxBodyBeforeText(options: {
 		DOCUMENT_XML_PATH,
 		Buffer.from(updatedDocumentXml, 'utf8'),
 	);
+	copyFrontMatterSettings(targetArchive, sourceArchive);
 	fs.writeFileSync(options.targetDocxPath, targetArchive.toBuffer());
 }
