@@ -1,5 +1,6 @@
 import contextlib
 import os
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -52,6 +53,156 @@ def pluralize_ru(number: int, form1: str, form2: str, form5: str) -> str:
     if number_last_digit == 1:
         return form1
     return form5
+
+
+def page_replacements(pages: int) -> dict[str, str]:
+    return {
+        "{{PAGES}}": str(pages),
+        "{{PAGES_WORD}}": pluralize_ru(pages, "страницу", "страницы", "страниц"),
+    }
+
+
+def normalize_replacement_text(text: str) -> str:
+    return text.replace(" ,", "").replace(", ,", ",")
+
+
+def collect_page_placeholder_paragraphs(doc: Any) -> list[tuple[Any, str]]:
+    paragraphs = []
+    for paragraph in doc.Paragraphs:
+        text = paragraph.Range.Text.rstrip("\r\x07")
+        if "{{PAGES}}" in text or "{{PAGES_WORD}}" in text:
+            paragraphs.append((paragraph, text))
+    return paragraphs
+
+
+def render_page_placeholder_text(
+    template: str,
+    replacements: Mapping[str, str],
+    pages: int,
+) -> str:
+    rendered = template
+    for placeholder, value in {**replacements, **page_replacements(pages)}.items():
+        rendered = rendered.replace(placeholder, value)
+    return normalize_replacement_text(rendered)
+
+
+def replace_paragraph_text(paragraph: Any, text: str) -> None:
+    text_range = paragraph.Range
+    text_range.End = max(text_range.Start, text_range.End - 1)
+    text_range.Text = text
+
+
+def replace_literal_text(doc: Any, old_text: str, new_text: str) -> None:
+    if old_text == new_text:
+        return
+
+    range_object = doc.Content
+    range_object.Find.ClearFormatting()
+    range_object.Find.Replacement.ClearFormatting()
+    range_object.Find.Execute(
+        old_text,
+        False,
+        False,
+        False,
+        False,
+        False,
+        True,
+        WD_FIND_CONTINUE,
+        False,
+        new_text,
+        WD_REPLACE_ALL,
+    )
+
+
+def update_toc(doc: Any) -> None:
+    if doc.TablesOfContents.Count > 0:
+        doc.TablesOfContents(1).Update()
+
+
+def stabilize_page_replacements(
+    doc: Any,
+    templates: list[tuple[Any, str]],
+    replacements: Mapping[str, str],
+    max_iterations: int = 5,
+) -> int:
+    doc.Repaginate()
+    pages = doc.ComputeStatistics(WD_STATISTIC_PAGES)
+
+    for _ in range(max_iterations):
+        for paragraph, template in templates:
+            replace_paragraph_text(
+                paragraph,
+                render_page_placeholder_text(template, replacements, pages),
+            )
+
+        update_toc(doc)
+        doc.Repaginate()
+        actual_pages = doc.ComputeStatistics(WD_STATISTIC_PAGES)
+        if actual_pages == pages:
+            return pages
+        pages = actual_pages
+
+    for paragraph, template in templates:
+        replace_paragraph_text(
+            paragraph,
+            render_page_placeholder_text(template, replacements, pages),
+        )
+    update_toc(doc)
+    doc.Repaginate()
+    return doc.ComputeStatistics(WD_STATISTIC_PAGES)
+
+
+def resync_saved_page_replacements(
+    doc: Any,
+    templates: list[tuple[Any, str]],
+    replacements: Mapping[str, str],
+    pages: int,
+) -> int:
+    if not templates:
+        return pages
+
+    doc.Repaginate()
+    saved_pages = doc.ComputeStatistics(WD_STATISTIC_PAGES)
+    if saved_pages == pages:
+        return pages
+
+    for _paragraph, template in templates:
+        replace_literal_text(
+            doc,
+            render_page_placeholder_text(template, replacements, pages),
+            render_page_placeholder_text(template, replacements, saved_pages),
+        )
+    update_toc(doc)
+    doc.Repaginate()
+    return saved_pages
+
+
+def resync_pdf_page_replacements(
+    doc: Any,
+    docx_path: str | Path,
+    pdf_path: str,
+    pdf_output_path: str | Path | None,
+    templates: list[tuple[Any, str]],
+    replacements: Mapping[str, str],
+    pages: int,
+) -> tuple[int, str]:
+    if not templates:
+        return pages, pdf_path
+
+    pdf_pages = count_pdf_pages(pdf_path)
+    if pdf_pages == pages:
+        return pages, pdf_path
+
+    for _paragraph, template in templates:
+        replace_literal_text(
+            doc,
+            render_page_placeholder_text(template, replacements, pages),
+            render_page_placeholder_text(template, replacements, pdf_pages),
+        )
+    update_toc(doc)
+    doc.Repaginate()
+    doc.Save()
+    return pdf_pages, export_pdf(doc, docx_path, pdf_output_path)
 
 
 def normalize_inline_images(doc: Any) -> tuple[int, int]:
@@ -145,6 +296,63 @@ def export_pdf(doc: Any, docx_path: str | Path, pdf_output_path: str | Path | No
     return pdf_path
 
 
+def count_pdf_pages(pdf_path: str | Path) -> int:
+    data = Path(pdf_path).read_bytes()
+    return len(re.findall(rb"/Type\s*/Page\b", data))
+
+
+def replace_referat_page_count(doc: Any, pages: int) -> bool:
+    page_word = pluralize_ru(pages, "страницу", "страницы", "страниц")
+    pattern = re.compile(
+        r"^(Отчет по практике содержит )\d+\s+\S+(\s+и\s+\d+\s+(?:источник|источника|источников)\.)$"
+    )
+
+    for paragraph in doc.Paragraphs:
+        text = paragraph.Range.Text.rstrip("\r\x07")
+        match = pattern.match(text)
+        if not match:
+            continue
+        updated = f"{match.group(1)}{pages} {page_word}{match.group(2)}"
+        if updated == text:
+            return False
+        replace_literal_text(doc, text, updated)
+        return True
+    return False
+
+
+def resync_docx_page_count_from_pdf(
+    docx_path: str | Path,
+    pdf_path: str | Path,
+    pdf_output_path: str | Path | None = None,
+) -> tuple[int, str]:
+    pages = count_pdf_pages(pdf_path)
+    word = None
+    doc = None
+    try:
+        word = create_word_application()
+        doc = word.Documents.Open(os.path.abspath(str(docx_path)), ReadOnly=False)
+        current_pdf_path = str(pdf_path)
+        for _ in range(3):
+            update_toc(doc)
+            replace_referat_page_count(doc, pages)
+            update_toc(doc)
+            doc.Repaginate()
+            doc.Save()
+            current_pdf_path = export_pdf(doc, docx_path, pdf_output_path)
+            exported_pages = count_pdf_pages(current_pdf_path)
+            if exported_pages == pages:
+                return pages, current_pdf_path
+            pages = exported_pages
+        return pages, current_pdf_path
+    finally:
+        if doc is not None:
+            with contextlib.suppress(Exception):
+                doc.Close(False)
+        if word is not None:
+            with contextlib.suppress(Exception):
+                word.Quit()
+
+
 def find_broken_references(doc: Any) -> list[str]:
     errors: list[str] = []
     for paragraph in doc.Paragraphs:
@@ -225,28 +433,42 @@ def run_word_post_build(
         word = create_word_application()
         doc = word.Documents.Open(os.path.abspath(str(docx_path)), ReadOnly=False)
 
-        if doc.TablesOfContents.Count > 0:
-            doc.TablesOfContents(1).Update()
+        update_toc(doc)
 
         normalized_tables = normalize_tables(doc)
         centered_images, scaled_images = normalize_inline_images(doc)
         moved_small_tables = keep_small_tables_on_one_page(doc)
+        page_placeholder_paragraphs = collect_page_placeholder_paragraphs(doc)
+        replace_placeholders(doc, replacements)
 
-        doc.Repaginate()
-        pages = doc.ComputeStatistics(WD_STATISTIC_PAGES)
+        pages = (
+            stabilize_page_replacements(doc, page_placeholder_paragraphs, replacements)
+            if page_placeholder_paragraphs
+            else doc.ComputeStatistics(WD_STATISTIC_PAGES)
+        )
 
         broken_references = find_broken_references(doc)
         if broken_references:
             raise RuntimeError("\n".join(broken_references))
 
-        page_replacements = {
-            **replacements,
-            "{{PAGES}}": str(pages),
-            "{{PAGES_WORD}}": pluralize_ru(pages, "страницу", "страницы", "страниц"),
-        }
-        replace_placeholders(doc, page_replacements)
+        doc.Save()
+        pages = resync_saved_page_replacements(
+            doc,
+            page_placeholder_paragraphs,
+            replacements,
+            pages,
+        )
         doc.Save()
         pdf_path = export_pdf(doc, docx_path, pdf_output_path)
+        pages, pdf_path = resync_pdf_page_replacements(
+            doc,
+            docx_path,
+            pdf_path,
+            pdf_output_path,
+            page_placeholder_paragraphs,
+            replacements,
+            pages,
+        )
 
         return WordPostBuildResult(
             pages=pages,

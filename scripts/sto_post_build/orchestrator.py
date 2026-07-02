@@ -4,7 +4,11 @@ from pathlib import Path
 from .docx_package import clear_dirty_fields
 from .formula_replacement import replace_formulas_from_markdown
 from .models import PostBuildResult
-from .word_automation import export_docx_to_pdf, run_word_post_build
+from .word_automation import (
+    export_docx_to_pdf,
+    resync_docx_page_count_from_pdf,
+    run_word_post_build,
+)
 from .xml_layout import (
     get_counts_from_docx,
     normalize_docx_xml_layout,
@@ -70,9 +74,14 @@ def post_build(
     pdf_path = word_result.pdf_path
     if front_matter_table_changes:
         pdf_path = export_docx_to_pdf(absolute_docx_path, pdf_output_path)
+    final_pages, pdf_path = resync_docx_page_count_from_pdf(
+        absolute_docx_path,
+        pdf_path,
+        pdf_output_path,
+    )
 
     return PostBuildResult(
-        pages=word_result.pages,
+        pages=final_pages,
         figures=counts.figures,
         tables=counts.tables,
         sources=counts.sources,
@@ -80,7 +89,7 @@ def post_build(
         centered_images=word_result.centered_images,
         scaled_images=word_result.scaled_images,
         formula_replacements=formula_replacements,
-        table_spacing_changes=table_spacing_changes,
+        table_spacing_changes=table_spacing_changes + front_matter_table_changes,
         moved_small_tables=word_result.moved_small_tables,
         dirty_fields=dirty_fields,
         pdf_path=pdf_path,
