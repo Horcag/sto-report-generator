@@ -180,6 +180,9 @@ try {
     Copy-Item -LiteralPath $request.inputDocx -Destination $stagedInputDocx
     Write-Output "Word acceptance: staged input in a short local path."
 
+    & (Join-Path $PSScriptRoot "check_word_license.ps1")
+    Write-Output "Word acceptance: Microsoft Office license verified."
+
     $word = New-Object -ComObject Word.Application
     $word.Visible = $false
     $word.DisplayAlerts = 0

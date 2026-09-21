@@ -37,8 +37,9 @@ jobs:
             - name: Install Node dependencies
               run: npm ci
 
-            - name: Verify Microsoft Word COM is available
+            - name: Verify Microsoft Word and its license are available
               run: |
+                  & ./scripts/check_word_license.ps1
                   $word = $null
                   try {
                       $word = New-Object -ComObject Word.Application

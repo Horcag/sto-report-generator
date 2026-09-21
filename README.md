@@ -202,6 +202,11 @@ npm run accept:word -- reports/my_report/build/my_report.docx \
 инструкцией запустить приемку на WSL/Windows. Для `samara-template-2022` список ожидаемых отображаемых имен стилей
 берется из TypeScript-конфигурации генератора и передается в PowerShell через UTF-8 JSON.
 
+Microsoft Office должен быть активирован для того же Windows-пользователя, который запускает команду или self-hosted
+runner. Перед запуском Word проверяется лицензия поддерживаемого Microsoft 365 Apps или Office-продукта с Word:
+vNext/device через `vnextdiag.ps1`, legacy/volume через `OSPP.VBS`; режимы `NOTIFICATIONS` и истекший
+grace period завершают приемку сразу с понятной ошибкой, а не оставляют PDF-экспорт зависшим.
+
 `accept-word` не заменяет `--renderer word`: он не выполняет Python/pywin32 post-build, не чинит формулы и не делает
 format-repair из `scripts/sto_post_build/`. Это только финальная приемка уже сгенерированного DOCX в Microsoft Word.
 
