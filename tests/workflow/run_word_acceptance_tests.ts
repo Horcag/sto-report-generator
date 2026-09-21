@@ -59,6 +59,35 @@ function testPowerShellHashFallback(): void {
 	assert.equal(calculate(true), expected);
 }
 
+function testPowerShellUsesShortWordStagingPaths(): void {
+	const script = readFileSync(
+		path.resolve('scripts', 'word_acceptance.ps1'),
+		'utf8',
+	);
+	assert.match(script, /GetTempPath\(\)/);
+	assert.match(
+		script,
+		/\$word\.Documents\.Open\(\$stagedInputDocx, \$false, \$false\)/,
+	);
+	assert.match(
+		script,
+		/Copy-Item -LiteralPath \$stagedAcceptedDocx -Destination \$request\.acceptedDocx/,
+	);
+	assert.match(script, /\$document\.Save\(\)/);
+	assert.doesNotMatch(script, /\$document\.SaveAs2\(/);
+	assert.match(
+		script,
+		/Remove-Item -LiteralPath \$stagingDirectory -Recurse -Force/,
+	);
+	assert.match(script, /\$Document\.Styles\.Item\(\[string\]\$DisplayName\)/);
+	assert.doesNotMatch(
+		script,
+		/foreach \(\$style in @\(\$Document\.Styles\)\)/,
+	);
+	assert.match(script, /System\.Drawing\.Text\.InstalledFontCollection/);
+	assert.doesNotMatch(script, /\$Word\.FontNames/);
+}
+
 function main(): void {
 	const inputDocx = path.join(
 		process.cwd(),
@@ -182,6 +211,7 @@ function main(): void {
 		);
 	}
 	testPowerShellHashFallback();
+	testPowerShellUsesShortWordStagingPaths();
 
 	console.log('Word acceptance launcher tests passed.');
 }

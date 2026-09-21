@@ -7,7 +7,6 @@ param(
 $ErrorActionPreference = "Stop"
 
 $WdStatisticPages = 2
-$WdFormatXmlDocument = 16
 $WdExportFormatPdf = 17
 $WdDoNotSaveChanges = 0
 
@@ -58,13 +57,12 @@ function Ensure-ParentDirectory($Path) {
     }
 }
 
-function Test-FontInstalled($Word, $FontName) {
-    for ($index = 1; $index -le $Word.FontNames.Count; $index++) {
-        if ($Word.FontNames.Item($index) -eq $FontName) {
-            return $true
-        }
-    }
-    return $false
+function Test-FontInstalled($FontName) {
+    Add-Type -AssemblyName System.Drawing
+    $installedFonts = New-Object System.Drawing.Text.InstalledFontCollection
+    return @(
+        $installedFonts.Families | Where-Object { $_.Name -eq $FontName }
+    ).Count -gt 0
 }
 
 function Update-DocumentForAcceptance($Document) {
@@ -90,10 +88,13 @@ function Update-DocumentForAcceptance($Document) {
 }
 
 function Test-StyleExists($Document, $DisplayName) {
-    foreach ($style in @($Document.Styles)) {
-        if ($style.NameLocal -eq $DisplayName -or $style.Name -eq $DisplayName) {
+    try {
+        $style = $Document.Styles.Item([string]$DisplayName)
+        if ($style -ne $null) {
             return $true
         }
+    } catch {
+        # Fall through to the built-in heading lookup below.
     }
 
     # Word localizes built-in heading names in the COM model even when OOXML
@@ -140,9 +141,20 @@ if ([System.IO.Path]::GetFullPath($request.inputDocx) -eq [System.IO.Path]::GetF
 Ensure-ParentDirectory $request.acceptedDocx
 Ensure-ParentDirectory $request.pdf
 Ensure-ParentDirectory $request.manifest
+if (Test-Path -LiteralPath $request.acceptedDocx) {
+    Remove-Item -LiteralPath $request.acceptedDocx -Force
+}
 if (Test-Path -LiteralPath $request.pdf) {
     Remove-Item -LiteralPath $request.pdf -Force
 }
+
+$stagingDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("sto-word-" + [System.Guid]::NewGuid().ToString("N").Substring(0, 8))
+$stagedInputDocx = Join-Path $stagingDirectory "input.docx"
+$stagedAcceptedDocx = Join-Path $stagingDirectory "accepted.docx"
+$stagedPdf = Join-Path $stagingDirectory "accepted.pdf"
+New-Item -ItemType Directory -Force -Path $stagingDirectory | Out-Null
+Copy-Item -LiteralPath $request.inputDocx -Destination $stagedInputDocx
+Write-Output "Word acceptance: staged input in a short local path."
 
 $word = $null
 $document = $null
@@ -151,13 +163,20 @@ try {
     $word = New-Object -ComObject Word.Application
     $word.Visible = $false
     $word.DisplayAlerts = 0
+    Write-Output "Word acceptance: Microsoft Word COM started."
 
-    if (-not (Test-FontInstalled $word $request.requiredFont)) {
+    if (-not (Test-FontInstalled $request.requiredFont)) {
         throw "Required font is not installed: $($request.requiredFont)"
     }
+    Write-Output "Word acceptance: required font is installed."
 
-    $document = $word.Documents.Open($request.inputDocx, $false, $false)
+    # Word retains legacy path-length constraints even when the host and Git
+    # support long paths. Work from a short local staging directory, then copy
+    # the accepted artifacts to the caller's requested destinations.
+    $document = $word.Documents.Open($stagedInputDocx, $false, $false)
+    Write-Output "Word acceptance: staged DOCX opened."
     Update-DocumentForAcceptance $document
+    Write-Output "Word acceptance: fields, TOC, and pagination updated."
     $pageCountBeforeReopen = [int]$document.ComputeStatistics($WdStatisticPages)
     $styleChecks = Get-StyleChecks $document $request.expectedStyles
     $missingStyles = @($styleChecks | Where-Object { -not $_.exists })
@@ -165,17 +184,24 @@ try {
         $missingNames = ($missingStyles | ForEach-Object { $_.displayName }) -join ", "
         throw "Required Word styles are missing: $missingNames"
     }
+    Write-Output "Word acceptance: required styles verified."
 
-    $document.SaveAs2($request.acceptedDocx, $WdFormatXmlDocument)
-    $document.ExportAsFixedFormat($request.pdf, $WdExportFormatPdf)
+    $document.Save()
+    $document.ExportAsFixedFormat($stagedPdf, $WdExportFormatPdf)
+    Write-Output "Word acceptance: DOCX and PDF exported."
     $document.Close($WdDoNotSaveChanges)
     $document = $null
+    Copy-Item -LiteralPath $stagedInputDocx -Destination $stagedAcceptedDocx
 
-    $reopened = $word.Documents.Open($request.acceptedDocx, $false, $true)
+    $reopened = $word.Documents.Open($stagedAcceptedDocx, $false, $true)
     Update-DocumentForAcceptance $reopened
     $pageCountAfterReopen = [int]$reopened.ComputeStatistics($WdStatisticPages)
     $reopened.Close($WdDoNotSaveChanges)
     $reopened = $null
+
+    Copy-Item -LiteralPath $stagedAcceptedDocx -Destination $request.acceptedDocx
+    Copy-Item -LiteralPath $stagedPdf -Destination $request.pdf
+    Write-Output "Word acceptance: accepted artifacts copied to requested paths."
 
     $stable = $pageCountBeforeReopen -eq $pageCountAfterReopen
     $wordBuild = $null
@@ -235,5 +261,8 @@ try {
         try {
             $word.Quit()
         } catch {}
+    }
+    if (Test-Path -LiteralPath $stagingDirectory) {
+        Remove-Item -LiteralPath $stagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
