@@ -114,7 +114,11 @@ function isForbiddenPath(filePath: string): boolean {
 
 function assertRequiredFiles(packedFiles: PackedFile[]): void {
 	const packedPaths = new Set(packedFiles.map(file => file.path));
-	const requiredPaths = ['LICENSE', 'scripts/word_acceptance.ps1'];
+	const requiredPaths = [
+		'LICENSE',
+		'scripts/check_word_license.ps1',
+		'scripts/word_acceptance.ps1',
+	];
 	const missingPaths = requiredPaths.filter(
 		filePath => !packedPaths.has(filePath),
 	);

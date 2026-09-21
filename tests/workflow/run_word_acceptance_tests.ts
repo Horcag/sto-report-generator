@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 
 import {
@@ -57,6 +63,214 @@ function testPowerShellHashFallback(): void {
 
 	assert.equal(calculate(false), expected);
 	assert.equal(calculate(true), expected);
+}
+
+function testPowerShellLicenseStatusParsing(): void {
+	const executable = 'powershell.exe';
+	const availability = spawnSync(executable, [
+		'-NoProfile',
+		'-Command',
+		'exit 0',
+	]);
+	if (availability.error) return;
+
+	mkdirSync(path.resolve('.agent-work'), { recursive: true });
+	const temporaryDirectory = mkdtempSync(
+		path.resolve('.agent-work', 'word-license-test-'),
+	);
+	const statusPath = path.join(temporaryDirectory, 'status.txt');
+	const vnextStatusPath = path.join(temporaryDirectory, 'vnext-status.txt');
+	const scriptPath = path.resolve('scripts', 'check_word_license.ps1');
+	const run = (status: string, vnextStatus?: string) => {
+		writeFileSync(statusPath, status, 'utf8');
+		if (vnextStatus !== undefined) {
+			writeFileSync(vnextStatusPath, vnextStatus, 'utf8');
+		}
+		const args = [
+			'-NoProfile',
+			'-ExecutionPolicy',
+			'Bypass',
+			'-File',
+			toPowerShellPath(scriptPath),
+			'-StatusTextPath',
+			toPowerShellPath(statusPath),
+		];
+		if (vnextStatus !== undefined) {
+			args.push(
+				'-VNextStatusTextPath',
+				toPowerShellPath(vnextStatusPath),
+			);
+		}
+		return spawnSync(executable, args, { encoding: 'utf8' });
+	};
+	const legacyVNextStatus = `
+========== Mode per ProductReleaseId ==========
+o365proplusretail = Legacy
+
+========== vNext licenses found ==========
+No licenses found.
+`;
+
+	try {
+		const licensed = run(
+			`
+---------------------------------------
+LICENSE NAME: Office 16, Office16O365ProPlusR_Subscription1 edition
+LICENSE STATUS:  ---NOTIFICATIONS---
+ERROR CODE: 0xC004F009
+---------------------------------------
+LICENSE NAME: Office 16, Office16O365ProPlusR_Subscription2 edition
+LICENSE STATUS:  ---LICENSED---
+`,
+			legacyVNextStatus,
+		);
+		assert.equal(licensed.status, 0, licensed.stderr);
+		assert.match(licensed.stdout, /LICENSED/);
+
+		const unlicensed = run(
+			`
+LICENSE NAME: Office 16, Office16O365ProPlusR_Subscription2 edition
+LICENSE STATUS:  ---NOTIFICATIONS---
+ERROR CODE: 0xC004F009
+`,
+			legacyVNextStatus,
+		);
+		assert.notEqual(unlicensed.status, 0);
+		assert.match(
+			`${unlicensed.stdout}\n${unlicensed.stderr}`,
+			/activated legacy Office license.*NOTIFICATIONS.*0xC004F009/s,
+		);
+
+		const vnextLicensed = run(
+			`LICENSE NAME: Office 16, Office16O365ProPlusR_Subscription2 edition
+LICENSE STATUS:  ---NOTIFICATIONS---
+ERROR CODE: 0xC004F009`,
+			`o365proplusretail = vNext
+{
+    "Version": "1.0",
+    "Type": "User",
+    "Product": "O365ProPlusRetail",
+    "LicenseState": "Licensed"
+}`,
+		);
+		assert.equal(vnextLicensed.status, 0, vnextLicensed.stderr);
+		assert.match(vnextLicensed.stdout, /LICENSED \(vNext\/device\)/);
+
+		const vnextUnlicensed = run(
+			`LICENSE NAME: Office 16, Office16O365ProPlusR_Subscription2 edition
+LICENSE STATUS:  ---LICENSED---`,
+			`o365proplusretail = vNext
+{
+    "Version": "1.0",
+    "Type": "User",
+    "Product": "O365ProPlusRetail",
+    "LicenseState": "RFM"
+}`,
+		);
+		assert.notEqual(vnextUnlicensed.status, 0);
+		assert.match(
+			`${vnextUnlicensed.stdout}\n${vnextUnlicensed.stderr}`,
+			/Current vNext status: RFM/,
+		);
+
+		const staleVnextLicense = run(
+			`LICENSE NAME: Office 16, Office16O365ProPlusR_Subscription2 edition
+LICENSE STATUS:  ---NOTIFICATIONS---
+ERROR CODE: 0xC004F009`,
+			`o365proplusretail = Legacy
+{
+    "Version": "1.0",
+    "Type": "User",
+    "Product": "O365ProPlusRetail",
+    "LicenseState": "Licensed"
+}`,
+		);
+		assert.notEqual(staleVnextLicense.status, 0);
+		assert.match(
+			`${staleVnextLicense.stdout}\n${staleVnextLicense.stderr}`,
+			/activated legacy Office license.*NOTIFICATIONS.*0xC004F009/s,
+		);
+
+		for (const licenseName of [
+			'Office 16, Office16O365BusinessR_Subscription1 edition',
+			'Office 21, Office21Standard2021VL_KMS_Client edition',
+			'Office 21, Office21Word2021VL_KMS_Client edition',
+		]) {
+			const supportedLegacyEdition = run(
+				`LICENSE NAME: ${licenseName}\nLICENSE STATUS:  ---LICENSED---`,
+				'office21standard2021volume = Legacy',
+			);
+			assert.equal(
+				supportedLegacyEdition.status,
+				0,
+				supportedLegacyEdition.stderr,
+			);
+		}
+	} finally {
+		rmSync(temporaryDirectory, { recursive: true, force: true });
+	}
+}
+
+function testPowerShellUsesShortWordStagingPaths(): void {
+	const script = readFileSync(
+		path.resolve('scripts', 'word_acceptance.ps1'),
+		'utf8',
+	);
+	assert.match(script, /GetTempPath\(\)/);
+	assert.match(
+		script,
+		/\$word\.Documents\.Open\(\$stagedInputDocx, \$false, \$false\)/,
+	);
+	assert.match(
+		script,
+		/Copy-Item -LiteralPath \$stagedAcceptedDocx -Destination \$request\.acceptedDocx/,
+	);
+	assert.match(script, /\$document\.Save\(\)/);
+	assert.doesNotMatch(script, /\$document\.SaveAs2\(/);
+	assert.ok(
+		script.indexOf('$document.ExportAsFixedFormat') <
+			script.indexOf('$styleChecks = Get-StyleChecks'),
+		'Word style COM lookups must happen after PDF export',
+	);
+	assert.match(
+		script,
+		/Remove-Item -LiteralPath \$stagingDirectory -Recurse -Force/,
+	);
+	assert.match(script, /\$Document\.Styles\.Item\(\[string\]\$DisplayName\)/);
+	assert.doesNotMatch(
+		script,
+		/foreach \(\$style in @\(\$Document\.Styles\)\)/,
+	);
+	assert.match(script, /System\.Drawing\.Text\.InstalledFontCollection/);
+	assert.doesNotMatch(script, /\$Word\.FontNames/);
+	assert.match(script, /check_word_license\.ps1/);
+	const licenseScript = readFileSync(
+		path.resolve('scripts', 'check_word_license.ps1'),
+		'utf8',
+	);
+	assert.doesNotMatch(
+		licenseScript,
+		/^\s*exit\b/m,
+		'the nested license preflight must return without terminating its caller',
+	);
+	assert.ok(
+		script.indexOf('check_word_license.ps1') <
+			script.indexOf('New-Object -ComObject Word.Application'),
+		'Office licensing must be checked before starting Word COM',
+	);
+	assert.match(script, /\[int\]\$field\.Type -ne \$WdFieldTOC/);
+	assert.match(
+		script,
+		/foreach \(\$previousOutput in @\(\$request\.acceptedDocx, \$request\.pdf, \$request\.manifest\)\)/,
+	);
+	assert.match(script, /Move-Item -LiteralPath \$temporaryPath/);
+	assert.match(
+		script,
+		/for \(\$attempt = 1; \$attempt -le 4; \$attempt\+\+\)/,
+	);
+	assert.match(script, /\$operationError = \$_/);
+	assert.match(script, /\$secondaryErrors -join \[Environment\]::NewLine/);
+	assert.doesNotMatch(script, /Write-Warning \$cleanupMessage/);
 }
 
 function main(): void {
@@ -182,6 +396,8 @@ function main(): void {
 		);
 	}
 	testPowerShellHashFallback();
+	testPowerShellLicenseStatusParsing();
+	testPowerShellUsesShortWordStagingPaths();
 
 	console.log('Word acceptance launcher tests passed.');
 }
