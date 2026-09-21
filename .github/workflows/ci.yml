@@ -19,7 +19,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
 
             - name: Set up Go
               uses: actions/setup-go@v6
@@ -42,7 +42,7 @@ jobs:
                 os: [ubuntu-latest, windows-latest, macos-latest]
         steps:
             - name: Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
 
             - name: Set up Node.js
               uses: actions/setup-node@v7
@@ -51,7 +51,7 @@ jobs:
                   cache: npm
 
             - name: Set up uv
-              uses: astral-sh/setup-uv@v10.2.0
+              uses: astral-sh/setup-uv@v10.1.0
               with:
                   enable-cache: true
                   cache-python: true
@@ -87,19 +87,19 @@ jobs:
             SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
               with:
                   fetch-depth: 0
 
             - name: Download JavaScript coverage
-              uses: actions/download-artifact@v7
+              uses: actions/download-artifact@v8
               with:
                   name: javascript-coverage
                   path: coverage
 
             - name: SonarQube Scan
               if: ${{ env.SONAR_TOKEN != '' }}
-              uses: SonarSource/sonarqube-scan-action@v7
+              uses: SonarSource/sonarqube-scan-action@v8
               env:
                   SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
                   SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}

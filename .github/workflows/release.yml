@@ -15,7 +15,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
 
             - name: Set up Node.js
               uses: actions/setup-node@v4
@@ -24,7 +24,7 @@ jobs:
                   cache: npm
 
             - name: Set up uv
-              uses: astral-sh/setup-uv@v8.1.0
+              uses: astral-sh/setup-uv@v10.1.0
               with:
                   enable-cache: true
                   cache-python: true
@@ -43,7 +43,7 @@ jobs:
               run: npm pack --pack-destination .agent-work
 
             - name: Upload package artifact
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v7
               with:
                   name: sto-report-generator-package
                   path: .agent-work/*.tgz
