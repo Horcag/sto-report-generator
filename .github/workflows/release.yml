@@ -43,7 +43,7 @@ jobs:
               run: npm pack --pack-destination .agent-work
 
             - name: Upload package artifact
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v7
               with:
                   name: sto-report-generator-package
                   path: .agent-work/*.tgz
