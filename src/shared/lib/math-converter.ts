@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { mml2omml } from '@hungknguyen/mathml2omml';
 import {
 	Math as DocxMath,
@@ -29,10 +31,29 @@ type DocxMathChild =
 
 let mathJaxInstance: MathJaxApi | undefined;
 
+export function normalizeMathJaxImportSpecifier(file: string): string {
+	if (/^[a-zA-Z]:[\\/]/.test(file)) {
+		const url = new URL('file:///');
+		url.pathname = `/${file.replace(/\\/g, '/')}`;
+		return url.href;
+	}
+	if (path.isAbsolute(file)) {
+		return pathToFileURL(file).href;
+	}
+	return file;
+}
+
+async function importMathJaxComponent(file: string): Promise<unknown> {
+	return import(normalizeMathJaxImportSpecifier(file));
+}
+
 export async function mathJaxReady(): Promise<boolean> {
 	if (!mathJaxInstance) {
 		mathJaxInstance = await mathjax.init({
-			loader: { load: ['input/tex'] },
+			loader: {
+				load: ['input/tex'],
+				require: importMathJaxComponent,
+			},
 		});
 	}
 	return true;

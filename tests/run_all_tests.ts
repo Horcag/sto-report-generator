@@ -6,6 +6,7 @@ const tests = [
 	['tests/source-preflight/run_source_preflight_tests.ts'],
 	['tests/source-preflight/regression_checks.ts', 'example'],
 	['tests/parser/run_parser_tests.ts'],
+	['tests/shared/run_math_converter_tests.ts'],
 	['tests/validator/run_validator_tests.ts'],
 	['tests/generator/run_generated_docx_validation.ts'],
 	['tests/workflow/run_portability_tests.ts'],
