@@ -1,10 +1,7 @@
 import { AlignmentType, Paragraph, TextRun } from 'docx';
 import { marked, Token, Tokens } from 'marked';
 
-import {
-	getNumberedHeadingStyleId,
-	HEADING_NUMBERING_REFERENCE,
-} from '@/shared/config';
+import { getNumberedHeadingStyleId } from '@/shared/config';
 import { mathJaxReady } from '@/shared/lib/math-converter';
 
 import { loadBibliography } from './parser/bibliography-loader';
@@ -28,6 +25,34 @@ import { mathExtension, stoExtension } from './utils/extensions';
 
 marked.use({ extensions: [stoExtension, mathExtension] });
 
+function stripExpectedHeadingNumber(
+	tokens: Token[] | undefined,
+	expectedNumber: string,
+): Token[] {
+	if (!tokens || tokens.length === 0) {
+		return [];
+	}
+	const first = tokens[0];
+	if (first.type === 'text') {
+		const textToken = first as Tokens.Text;
+		const escapedNumber = expectedNumber.replaceAll('.', String.raw`\.`);
+		const expectedPrefix = new RegExp(`^${escapedNumber}\\.?\\s+`);
+		const cleanedText = textToken.text.replace(expectedPrefix, '');
+		const cleanedRaw = textToken.raw.replace(expectedPrefix, '');
+		if (cleanedText !== textToken.text) {
+			return [
+				{
+					...textToken,
+					text: cleanedText,
+					raw: cleanedRaw,
+				},
+				...tokens.slice(1),
+			];
+		}
+	}
+	return tokens;
+}
+
 interface MarkdownParserOptions {
 	sourceDir?: string;
 }
@@ -35,6 +60,7 @@ interface MarkdownParserOptions {
 class MarkdownParser {
 	private context: ParserContext;
 	private references: ReferenceRegistry;
+	private readonly headingCounters = Array.from({ length: 6 }, () => 0);
 
 	constructor(bibDb: BibItem[] = [], options: MarkdownParserOptions = {}) {
 		this.context = {
@@ -57,6 +83,13 @@ class MarkdownParser {
 
 	private replaceRefs = (text: string): string =>
 		this.references.replaceRefs(text);
+
+	private getExpectedHeadingNumber(depth: number): string {
+		const index = Math.max(0, Math.min(depth - 1, 5));
+		this.headingCounters[index] += 1;
+		this.headingCounters.fill(0, index + 1);
+		return this.headingCounters.slice(0, index + 1).join('.');
+	}
 
 	private async processTokens(
 		tokensToProcess: Token[],
@@ -93,20 +126,19 @@ class MarkdownParser {
 				case 'heading': {
 					activeStructuralHeading = undefined;
 					const headingToken = token as Tokens.Heading;
+					const expectedNumber = this.getExpectedHeadingNumber(
+						headingToken.depth,
+					);
 					elements.push(
 						new Paragraph({
 							style: getNumberedHeadingStyleId(
 								headingToken.depth,
 							),
-							numbering: {
-								reference: HEADING_NUMBERING_REFERENCE,
-								level: Math.max(
-									0,
-									Math.min(headingToken.depth - 1, 5),
-								),
-							},
 							children: await parseInline(
-								headingToken.tokens,
+								stripExpectedHeadingNumber(
+									headingToken.tokens,
+									expectedNumber,
+								),
 								this.context,
 								this.getCitationNum,
 								this.replaceRefs,

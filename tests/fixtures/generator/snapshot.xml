@@ -756,25 +756,17 @@
 <w:p>
 <w:pPr>
 <w:pStyle w:val="StoHeading1"/>
-<w:numPr>
-<w:ilvl w:val="0"/>
-<w:numId w:val="3"/>
-</w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">1 Основная часть</w:t>
+<w:t xml:space="preserve">Основная часть</w:t>
 </w:r>
 </w:p>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="StoHeading2"/>
-<w:numPr>
-<w:ilvl w:val="1"/>
-<w:numId w:val="3"/>
-</w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">1.1 Математические формулы</w:t>
+<w:t xml:space="preserve">Математические формулы</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -945,13 +937,9 @@
 <w:p>
 <w:pPr>
 <w:pStyle w:val="StoHeading2"/>
-<w:numPr>
-<w:ilvl w:val="1"/>
-<w:numId w:val="3"/>
-</w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">1.2 Таблицы и списки</w:t>
+<w:t xml:space="preserve">Таблицы и списки</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -967,7 +955,7 @@
 <w:pStyle w:val="TableCaption"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Таблица 1 – Сравнение форматов (1)</w:t>
+<w:t xml:space="preserve">Таблица 1 – Сравнение форматов</w:t>
 </w:r>
 </w:p>
 <w:tbl>
@@ -1132,7 +1120,7 @@
 <w:pStyle w:val="Normal"/>
 <w:numPr>
 <w:ilvl w:val="0"/>
-<w:numId w:val="4"/>
+<w:numId w:val="3"/>
 </w:numPr>
 </w:pPr>
 <w:r>
@@ -1144,7 +1132,7 @@
 <w:pStyle w:val="Normal"/>
 <w:numPr>
 <w:ilvl w:val="0"/>
-<w:numId w:val="4"/>
+<w:numId w:val="3"/>
 </w:numPr>
 </w:pPr>
 <w:r>
@@ -1156,7 +1144,7 @@
 <w:pStyle w:val="Normal"/>
 <w:numPr>
 <w:ilvl w:val="0"/>
-<w:numId w:val="4"/>
+<w:numId w:val="3"/>
 </w:numPr>
 </w:pPr>
 <w:r>
@@ -1166,13 +1154,9 @@
 <w:p>
 <w:pPr>
 <w:pStyle w:val="StoHeading2"/>
-<w:numPr>
-<w:ilvl w:val="1"/>
-<w:numId w:val="3"/>
-</w:numPr>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">1.3 Изображения</w:t>
+<w:t xml:space="preserve">Изображения</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -1241,7 +1225,7 @@
 <w:pStyle w:val="FigureCaption"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Рисунок 1 – Пример сгенерированного SVG-изображения (1)</w:t>
+<w:t xml:space="preserve">Рисунок 1 – Пример сгенерированного SVG-изображения</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -1273,7 +1257,7 @@
 <w:pStyle w:val="Normal"/>
 <w:numPr>
 <w:ilvl w:val="0"/>
-<w:numId w:val="5"/>
+<w:numId w:val="4"/>
 </w:numPr>
 <w:tabs>
 <w:tab w:val="left" w:pos="1134"/>

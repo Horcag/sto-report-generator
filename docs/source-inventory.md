@@ -19,11 +19,21 @@
 Класс происхождения: репозиторный fixture, извлеченный из шаблона Самарского университета.
 
 - `tests/fixtures/validator/etalon/SHablon_oformlenija_VKR_2022_5_6.dotm` используется для сравнения OpenXML стилей.
+- `tests/fixtures/validator/etalon/dotm-style-contract.json` фиксирует SHA-256 fixture, инвентарь всех 79 style ID,
+  их display names, семантический отпечаток без служебных revision-метаданных и статус переноса (`mapped`, `adapted`, `deferred`
+  или `ignored`). Проверка выполняется в переносимом CI без Word.
 - `docs/architecture/dotm-template-style-audit.md` содержит безопасную сводку параметров из `word/styles.xml` и
   `word/numbering.xml`.
 
+Acquisition evidence: файл, загруженный из LMS, `template_vkr_2022_5_6_1_9778.dotm` имеет SHA-256
+`869c0bea96ce2f6ece4d42a36adf2657e997ad23c627a6cd5760e97638702146`. Он не совпадает с tracked fixture побайтово,
+но все 79 style definitions дают тот же нормализованный semantic SHA-256
+`0c3050bd4c548273f4f530822e08f64764775b25d97139ecf158cf0f80e2c820`. Закрытый URL курса и локальные пути намеренно
+не публикуются. Ни один из двух файлов не содержит `vbaProject.bin`, несмотря на расширение `.dotm`.
+
 Генератор не зависит от макросов DOTM. Штатный preset `samara-template-2022` переносит точные display names для
-сопоставленных генераторных стилей, сохраняя style ID и форматирование. `stylePreset: "default"` оставлен только как
+сопоставленных генераторных стилей, но не повторяет DOTM style ID и не заявляет полную побитовую идентичность
+форматирования. `stylePreset: "default"` оставлен только как
 явный режим совместимости со старыми нейтральными именами.
 
 ## Внешние методические материалы преподавателя

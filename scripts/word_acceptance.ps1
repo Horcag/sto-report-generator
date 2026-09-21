@@ -1,6 +1,7 @@
 param(
-    [Parameter(Mandatory = $true)]
-    [string]$RequestJson
+    [string]$RequestJson,
+    [string]$HashOnlyPath,
+    [switch]$ForceHashFallback
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,8 +29,26 @@ function Write-Utf8Json($Path, $Value) {
     )
 }
 
-function Get-Sha256($Path) {
-    return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
+function Get-Sha256($Path, [bool]$ForceFallback = $false) {
+    if (-not $ForceFallback -and (Get-Command Get-FileHash -ErrorAction SilentlyContinue)) {
+        return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
+    }
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        $sha = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes = $sha.ComputeHash($stream)
+        return (-join ($hashBytes | ForEach-Object { $_.ToString("x2") }))
+    } finally {
+        $stream.Close()
+    }
+}
+
+if ($HashOnlyPath) {
+    Write-Output (Get-Sha256 $HashOnlyPath $ForceHashFallback)
+    exit 0
+}
+if (-not $RequestJson) {
+    throw "RequestJson is required unless HashOnlyPath is used."
 }
 
 function Ensure-ParentDirectory($Path) {

@@ -2,6 +2,70 @@ import { Token, TokenizerThis } from 'marked';
 
 import { SUPPORTED_STO_ENVIRONMENTS } from '@/shared/config';
 
+const PARENTHESIZED_ITEM_PATTERN =
+	/^([ \t]*)((?:[A-Za-zА-Яа-яЁё]|\d+)\))\s+(.+)$/u;
+
+function tokenizeStoListContent(
+	lexer: TokenizerThis['lexer'],
+	content: string,
+): Token[] {
+	const tokens: Token[] = [];
+	const ordinaryLines: string[] = [];
+	let currentItem:
+		| { indentLevel: number; marker: string; contentLines: string[] }
+		| undefined;
+
+	const flushOrdinaryLines = () => {
+		if (ordinaryLines.some(line => line.trim().length > 0)) {
+			lexer.blockTokens(ordinaryLines.join('\n'), tokens);
+		}
+		ordinaryLines.length = 0;
+	};
+	const flushParenthesizedItem = () => {
+		if (!currentItem) return;
+		const text = `${currentItem.marker} ${currentItem.contentLines
+			.map(line => line.trim())
+			.filter(Boolean)
+			.join(' ')}`;
+		tokens.push({
+			type: 'paragraph',
+			raw: text,
+			text,
+			tokens: lexer.inlineTokens(text),
+			stoParenthesizedListItem: true,
+			stoParenthesizedIndentLevel: currentItem.indentLevel,
+		} as Token);
+		currentItem = undefined;
+	};
+
+	for (const line of content.split(/\r?\n/)) {
+		const itemMatch = PARENTHESIZED_ITEM_PATTERN.exec(line);
+		if (itemMatch) {
+			flushOrdinaryLines();
+			flushParenthesizedItem();
+			const indentation = itemMatch[1].replaceAll('\t', '    ').length;
+			currentItem = {
+				indentLevel: Math.floor(indentation / 2),
+				marker: itemMatch[2],
+				contentLines: [itemMatch[3]],
+			};
+			continue;
+		}
+
+		if (currentItem && line.trim().length > 0) {
+			currentItem.contentLines.push(line);
+			continue;
+		}
+
+		flushParenthesizedItem();
+		ordinaryLines.push(line);
+	}
+
+	flushParenthesizedItem();
+	flushOrdinaryLines();
+	return tokens;
+}
+
 export const stoExtension = {
 	name: 'stoFlag',
 	level: 'block' as const,
@@ -40,8 +104,10 @@ export const stoExtension = {
 			}
 
 			const content = match[2];
-			const blockTokens: Token[] = [];
-			this.lexer.blockTokens(content, blockTokens);
+			const blockTokens =
+				envName === 'sto_list' || envName === 'sto_enum'
+					? tokenizeStoListContent(this.lexer, content)
+					: this.lexer.blockTokens(content, []);
 			return {
 				type: 'stoFlag',
 				raw: match[0],

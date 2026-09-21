@@ -8,6 +8,8 @@ const tests = [
 	['tests/parser/run_parser_tests.ts'],
 	['tests/shared/run_math_converter_tests.ts'],
 	['tests/validator/run_validator_tests.ts'],
+	['tests/validator/template_style_conformance_test.ts'],
+	['tests/validator/dotm_style_contract_test.ts'],
 	['tests/generator/run_generated_docx_validation.ts'],
 	['tests/workflow/run_portability_tests.ts'],
 	['tests/workflow/run_word_acceptance_tests.ts'],

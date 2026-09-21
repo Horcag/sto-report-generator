@@ -73,6 +73,53 @@ function assertDefaultDotmStyleNames(): void {
 	}
 }
 
+function assertDefaultDotmStyleProperties(): void {
+	const stylesXml = readDocxEntry(outputDocx, 'word/styles.xml');
+	const expectedProperties = new Map<string, RegExp[]>([
+		[
+			'StoHeading1',
+			[
+				/<w:keepNext\b/,
+				/<w:keepLines\b/,
+				/<w:numPr\b/,
+				/<w:spacing\b(?=[^>]*w:before="0")(?=[^>]*w:after="120")(?=[^>]*w:line="360")/,
+				/<w:ind\b(?=[^>]*w:firstLine="709")/,
+			],
+		],
+		[
+			STRUCTURAL_HEADING_STYLE_ID,
+			[
+				/<w:spacing\b(?=[^>]*w:before="0")(?=[^>]*w:after="120")(?=[^>]*w:line="360")/,
+				/<w:pageBreakBefore\b/,
+			],
+		],
+		[
+			STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
+			[
+				/<w:spacing\b(?=[^>]*w:before="0")(?=[^>]*w:after="240")(?=[^>]*w:line="240")/,
+				/<w:pageBreakBefore\b/,
+			],
+		],
+		[
+			'TitlePageText',
+			[
+				/<w:spacing\b(?=[^>]*w:before="0")(?=[^>]*w:after="0")(?=[^>]*w:line="240")/,
+				/<w:sz\b(?=[^>]*w:val="28")/,
+			],
+		],
+		['TOC1', [/<w:jc\b(?=[^>]*w:val="left")/]],
+		['FigureCaption', [/<w:keepLines\b/]],
+		['TableCaption', [/<w:keepNext\b/, /<w:keepLines\b/]],
+	]);
+
+	for (const [styleId, patterns] of expectedProperties) {
+		const styleXml = findStyleXml(stylesXml, styleId);
+		for (const pattern of patterns) {
+			assert.match(styleXml, pattern, `${styleId} is missing ${pattern}`);
+		}
+	}
+}
+
 async function main(): Promise<void> {
 	fs.rmSync(tempRoot, { recursive: true, force: true });
 	fs.mkdirSync(tempRoot, { recursive: true });
@@ -82,6 +129,7 @@ async function main(): Promise<void> {
 		stylePreset: 'default',
 	});
 	assertDefaultDotmStyleNames();
+	assertDefaultDotmStyleProperties();
 	unpackDocx(outputDocx, unpackedDir);
 
 	const failed = validateSTO(unpackedDir).filter(result => !result.passed);

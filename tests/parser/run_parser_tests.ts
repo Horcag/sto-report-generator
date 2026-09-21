@@ -243,6 +243,103 @@ async function main(): Promise<void> {
 		/Citation source not found/,
 	);
 
+	const headingElements = await parseMarkdownToDocx(
+		'# 1 Основной раздел\n\n## 1.1 Подраздел\n\n# 2026 год\n\n# 12 причин',
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: headingXml } = await packAndReadXml(
+		headingElements,
+		path.join(tempRoot, 'heading-test.docx'),
+	);
+	const headingParagraph = paragraphContaining(headingXml, 'Основной раздел');
+	assert.ok(getWordText(headingParagraph).includes('Основной раздел'));
+	assert.ok(
+		!getWordText(headingParagraph).startsWith('1 Основной раздел'),
+		'Heading text must have leading section number stripped.',
+	);
+	assert.equal(
+		getWordText(paragraphContaining(headingXml, '2026 год')),
+		'2026 год',
+		'A year at the start of a heading is content, not a section number.',
+	);
+	assert.equal(
+		getWordText(paragraphContaining(headingXml, '12 причин')),
+		'12 причин',
+		'A quantity at the start of a heading must not be discarded.',
+	);
+
+	const captionElements = await parseMarkdownToDocx(
+		String.raw`Рисунок 1 – Название схемы (@fig:schema)
+
+Таблица 1 – Данные расчета (@tab:calc)
+`,
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: captionXml } = await packAndReadXml(
+		captionElements,
+		path.join(tempRoot, 'caption-test.docx'),
+	);
+	const figParagraph = paragraphContaining(captionXml, 'Название схемы');
+	assert.ok(
+		!getWordText(figParagraph).includes('(1)'),
+		'Figure caption must strip trailing anchor label without leaving (1).',
+	);
+	const tabParagraph = paragraphContaining(captionXml, 'Данные расчета');
+	assert.ok(
+		!getWordText(tabParagraph).includes('(1)'),
+		'Table caption must strip trailing anchor label without leaving (1).',
+	);
+
+	const russianListElements = await parseMarkdownToDocx(
+		String.raw`\begin{sto_list}
+а) *первый* пункт задачи [@used];
+  б) вложенный пункт задачи;
+    в) глубоко вложенный пункт задачи;
+1) третий пункт задачи.
+\end{sto_list}
+`,
+		{ bibliography: bibPath },
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: russianListXml } = await packAndReadXml(
+		russianListElements,
+		path.join(tempRoot, 'russian-list-test.docx'),
+	);
+	const russianA = paragraphContaining(russianListXml, 'первый пункт задачи');
+	const russianB = paragraphContaining(
+		russianListXml,
+		'вложенный пункт задачи',
+	);
+	const russianC = paragraphContaining(
+		russianListXml,
+		'глубоко вложенный пункт задачи',
+	);
+	const numericItem = paragraphContaining(
+		russianListXml,
+		'третий пункт задачи',
+	);
+	assert.ok(getWordText(russianA).includes('а) первый пункт задачи'));
+	assert.ok(!getWordText(russianA).includes('- а)'));
+	assert.ok(getWordText(russianA).includes('[1]'));
+	assert.match(russianA, /<w:i\/>/);
+	assert.ok(getWordText(russianB).includes('б) вложенный пункт задачи'));
+	assert.ok(!getWordText(russianB).includes('- б)'));
+	assert.match(russianB, /<w:ind\b(?=[^>]*w:left="709")/);
+	assert.ok(
+		getWordText(russianC).includes('в) глубоко вложенный пункт задачи'),
+	);
+	assert.match(russianC, /<w:ind\b(?=[^>]*w:left="1418")/);
+	assert.ok(getWordText(numericItem).includes('1) третий пункт задачи'));
+	assert.ok(!getWordText(numericItem).includes('1. третий пункт задачи'));
+	assert.doesNotMatch(russianListXml, /Courier New/);
+	assert.notEqual(
+		russianA,
+		russianB,
+		'Russian letter list items must be separate paragraphs.',
+	);
+
 	console.log('Parser tests passed.');
 }
 
