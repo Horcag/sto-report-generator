@@ -17,14 +17,14 @@ jobs:
         name: Accept example in installed Microsoft Word
         runs-on: [self-hosted, windows, word]
         timeout-minutes: 15
+        env:
+            GIT_CONFIG_COUNT: 1
+            GIT_CONFIG_KEY_0: core.longpaths
+            GIT_CONFIG_VALUE_0: 'true'
         defaults:
             run:
                 shell: pwsh
         steps:
-            - name: Enable long paths in Git for Windows
-              shell: cmd
-              run: git config --global core.longpaths true
-
             - name: Check out the selected revision
               uses: actions/checkout@v7
 

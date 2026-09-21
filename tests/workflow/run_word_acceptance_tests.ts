@@ -86,6 +86,19 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 	);
 	assert.match(script, /System\.Drawing\.Text\.InstalledFontCollection/);
 	assert.doesNotMatch(script, /\$Word\.FontNames/);
+	assert.match(script, /\[int\]\$field\.Type -ne \$WdFieldTOC/);
+	assert.match(
+		script,
+		/foreach \(\$previousOutput in @\(\$request\.acceptedDocx, \$request\.pdf, \$request\.manifest\)\)/,
+	);
+	assert.match(script, /Move-Item -LiteralPath \$temporaryPath/);
+	assert.match(
+		script,
+		/for \(\$attempt = 1; \$attempt -le 4; \$attempt\+\+\)/,
+	);
+	assert.match(script, /\$operationError = \$_/);
+	assert.match(script, /\$secondaryErrors -join \[Environment\]::NewLine/);
+	assert.doesNotMatch(script, /Write-Warning \$cleanupMessage/);
 }
 
 function main(): void {

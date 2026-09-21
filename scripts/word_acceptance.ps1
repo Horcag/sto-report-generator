@@ -9,6 +9,7 @@ $ErrorActionPreference = "Stop"
 $WdStatisticPages = 2
 $WdExportFormatPdf = 17
 $WdDoNotSaveChanges = 0
+$WdFieldTOC = 13
 
 function Read-Utf8Json($Path) {
     $text = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
@@ -21,11 +22,19 @@ function Write-Utf8Json($Path, $Value) {
         New-Item -ItemType Directory -Force -Path $directory | Out-Null
     }
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText(
-        $Path,
-        (($Value | ConvertTo-Json -Depth 8) + [Environment]::NewLine),
-        $utf8NoBom
-    )
+    $temporaryPath = "$Path.tmp-$([System.Guid]::NewGuid().ToString('N'))"
+    try {
+        [System.IO.File]::WriteAllText(
+            $temporaryPath,
+            (($Value | ConvertTo-Json -Depth 8) + [Environment]::NewLine),
+            $utf8NoBom
+        )
+        Move-Item -LiteralPath $temporaryPath -Destination $Path -Force
+    } finally {
+        if (Test-Path -LiteralPath $temporaryPath) {
+            Remove-Item -LiteralPath $temporaryPath -Force
+        }
+    }
 }
 
 function Get-Sha256($Path, [bool]$ForceFallback = $false) {
@@ -67,7 +76,12 @@ function Test-FontInstalled($FontName) {
 
 function Update-DocumentForAcceptance($Document) {
     foreach ($field in @($Document.Fields)) {
-        $field.Update() | Out-Null
+        # A table of contents is also present in Document.Fields. Updating it
+        # here and again through TablesOfContents can leave Word's fixed-format
+        # exporter spinning indefinitely, so update every TOC exactly once.
+        if ([int]$field.Type -ne $WdFieldTOC) {
+            $field.Update() | Out-Null
+        }
     }
     foreach ($section in @($Document.Sections)) {
         foreach ($header in @($section.Headers)) {
@@ -141,25 +155,31 @@ if ([System.IO.Path]::GetFullPath($request.inputDocx) -eq [System.IO.Path]::GetF
 Ensure-ParentDirectory $request.acceptedDocx
 Ensure-ParentDirectory $request.pdf
 Ensure-ParentDirectory $request.manifest
-if (Test-Path -LiteralPath $request.acceptedDocx) {
-    Remove-Item -LiteralPath $request.acceptedDocx -Force
-}
-if (Test-Path -LiteralPath $request.pdf) {
-    Remove-Item -LiteralPath $request.pdf -Force
+foreach ($previousOutput in @($request.acceptedDocx, $request.pdf, $request.manifest)) {
+    if (Test-Path -LiteralPath $previousOutput) {
+        Remove-Item -LiteralPath $previousOutput -Force
+    }
 }
 
-$stagingDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("sto-word-" + [System.Guid]::NewGuid().ToString("N").Substring(0, 8))
-$stagedInputDocx = Join-Path $stagingDirectory "input.docx"
-$stagedAcceptedDocx = Join-Path $stagingDirectory "accepted.docx"
-$stagedPdf = Join-Path $stagingDirectory "accepted.pdf"
-New-Item -ItemType Directory -Force -Path $stagingDirectory | Out-Null
-Copy-Item -LiteralPath $request.inputDocx -Destination $stagedInputDocx
-Write-Output "Word acceptance: staged input in a short local path."
-
+$stagingDirectory = $null
+$stagedInputDocx = $null
+$stagedAcceptedDocx = $null
+$stagedPdf = $null
 $word = $null
 $document = $null
 $reopened = $null
+$operationError = $null
+$shutdownErrors = @()
+$cleanupErrorMessage = $null
 try {
+    $stagingDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("sto-word-" + [System.Guid]::NewGuid().ToString("N").Substring(0, 8))
+    $stagedInputDocx = Join-Path $stagingDirectory "input.docx"
+    $stagedAcceptedDocx = Join-Path $stagingDirectory "accepted.docx"
+    $stagedPdf = Join-Path $stagingDirectory "accepted.pdf"
+    New-Item -ItemType Directory -Force -Path $stagingDirectory | Out-Null
+    Copy-Item -LiteralPath $request.inputDocx -Destination $stagedInputDocx
+    Write-Output "Word acceptance: staged input in a short local path."
+
     $word = New-Object -ComObject Word.Application
     $word.Visible = $false
     $word.DisplayAlerts = 0
@@ -239,30 +259,66 @@ try {
         stylePreset = $request.stylePreset
         styleChecks = $styleChecks
     }
-    Write-Utf8Json $request.manifest $manifest
-
     if (-not $stable) {
         throw "Word page count changed after reopening accepted DOCX."
     }
+    Write-Utf8Json $request.manifest $manifest
 
-    Write-Output "Word acceptance complete: $($request.manifest)"
+} catch {
+    $operationError = $_
 } finally {
     if ($reopened -ne $null) {
         try {
             $reopened.Close($WdDoNotSaveChanges)
-        } catch {}
+        } catch {
+            $shutdownErrors += "Failed to close the reopened Word document: $($_.Exception.Message)"
+        }
     }
     if ($document -ne $null) {
         try {
             $document.Close($WdDoNotSaveChanges)
-        } catch {}
+        } catch {
+            $shutdownErrors += "Failed to close the primary Word document: $($_.Exception.Message)"
+        }
     }
     if ($word -ne $null) {
         try {
             $word.Quit()
-        } catch {}
+        } catch {
+            $shutdownErrors += "Failed to quit Microsoft Word: $($_.Exception.Message)"
+        }
     }
-    if (Test-Path -LiteralPath $stagingDirectory) {
-        Remove-Item -LiteralPath $stagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
+    if ($stagingDirectory -and (Test-Path -LiteralPath $stagingDirectory)) {
+        $cleanupError = $null
+        for ($attempt = 1; $attempt -le 4; $attempt++) {
+            try {
+                Remove-Item -LiteralPath $stagingDirectory -Recurse -Force -ErrorAction Stop
+                $cleanupError = $null
+                break
+            } catch {
+                $cleanupError = $_
+                Start-Sleep -Milliseconds 250
+            }
+        }
+        if (Test-Path -LiteralPath $stagingDirectory) {
+            $cleanupErrorMessage = "Failed to remove Word acceptance staging directory after four attempts: $stagingDirectory. $cleanupError"
+        }
     }
 }
+
+$secondaryErrors = @($shutdownErrors)
+if ($cleanupErrorMessage) {
+    $secondaryErrors += $cleanupErrorMessage
+}
+if ($operationError) {
+    $message = "Word acceptance failed: $($operationError.Exception.Message)"
+    if ($secondaryErrors.Count -gt 0) {
+        $message += [Environment]::NewLine + ($secondaryErrors -join [Environment]::NewLine)
+    }
+    throw $message
+}
+if ($secondaryErrors.Count -gt 0) {
+    throw ($secondaryErrors -join [Environment]::NewLine)
+}
+
+Write-Output "Word acceptance complete: $($request.manifest)"
