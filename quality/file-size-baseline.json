@@ -1,0 +1,26 @@
+{
+  "files": {
+    "scripts/sto_post_build/word_automation.py": 518,
+    "scripts/sto_post_build/xml_layout.py": 467,
+    "src/app/report-scaffold.ts": 478,
+    "src/features/markdown-parser/lib/utils/bib-formatter.ts": 498,
+    "src/index.ts": 407,
+    "src/shared/config/sto-styles.ts": 477,
+    "src/shared/lib/docx-archive.ts": 806,
+    "src/shared/lib/report-config.ts": 682,
+    "src/shared/lib/source-preflight/bibliography-checker.ts": 503,
+    "src/shared/lib/source-preflight/formula-checker.ts": 425,
+    "src/shared/lib/source-preflight/list-checker.ts": 462,
+    "src/shared/lib/sto-validator.ts": 1112,
+    "src/widgets/title-page/lib/title-page.ts": 656,
+    "tests/source-preflight/run_source_preflight_tests.ts": 1454,
+    "tests/validator/run_validator_tests.ts": 481
+  },
+  "measurement": "physical_lines_including_blanks_and_comments",
+  "schema_version": 1,
+  "thresholds": {
+    "critical_above": 1000,
+    "error_above": 500,
+    "warning_above": 350
+  }
+}

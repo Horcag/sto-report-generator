@@ -9,7 +9,29 @@ on:
 permissions:
     contents: read
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+    cancel-in-progress: true
+
 jobs:
+    workflow-lint:
+        name: Workflow lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Set up Go
+              uses: actions/setup-go@v6
+              with:
+                  go-version: '1.25.x'
+
+            - name: Install actionlint
+              run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+            - name: Lint GitHub Actions workflows
+              run: actionlint -color
+
     quality:
         name: Quality gate (${{ matrix.os }})
         runs-on: ${{ matrix.os }}
@@ -43,6 +65,14 @@ jobs:
             - name: Run TypeScript quality gate
               run: npm run ci:check
 
+            - name: Upload JavaScript coverage
+              if: ${{ matrix.os == 'ubuntu-latest' }}
+              uses: actions/upload-artifact@v5
+              with:
+                  name: javascript-coverage
+                  path: coverage/lcov.info
+                  if-no-files-found: error
+
             - name: Run Python quality gate
               run: npm run python:quality
 
@@ -59,6 +89,12 @@ jobs:
               uses: actions/checkout@v6
               with:
                   fetch-depth: 0
+
+            - name: Download JavaScript coverage
+              uses: actions/download-artifact@v6
+              with:
+                  name: javascript-coverage
+                  path: coverage
 
             - name: SonarQube Scan
               if: ${{ env.SONAR_TOKEN != '' }}

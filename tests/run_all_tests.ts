@@ -16,6 +16,7 @@ const tests = [
 	['tests/bibliography/bib-gost.test.ts'],
 	['tests/generator/toc_regression.ts'],
 	['tests/generator/run_generator_snapshot_test.ts'],
+	['tests/quality/lcov_gate.test.ts'],
 ];
 
 for (const args of tests) {

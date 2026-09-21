@@ -1,0 +1,89 @@
+name: Native Word acceptance
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: native-word-acceptance-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    accept-example-in-word:
+        name: Accept example in installed Microsoft Word
+        runs-on: [self-hosted, windows, word]
+        timeout-minutes: 15
+        defaults:
+            run:
+                shell: pwsh
+        steps:
+            - name: Check out the selected revision
+              uses: actions/checkout@v6
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24.x
+                  cache: npm
+
+            - name: Install Node dependencies
+              run: npm ci
+
+            - name: Verify Microsoft Word COM is available
+              run: |
+                  $word = $null
+                  try {
+                      $word = New-Object -ComObject Word.Application
+                      if ([string]::IsNullOrWhiteSpace([string]$word.Version)) {
+                          throw 'Microsoft Word did not report a version.'
+                      }
+                      Write-Host "Microsoft Word version: $($word.Version)"
+                  } finally {
+                      if ($null -ne $word) {
+                          $word.Quit()
+                      }
+                  }
+
+            - name: Build the portable example DOCX
+              run: npm run build:example:raw
+
+            - name: Run native Word acceptance
+              run: |
+                  New-Item -ItemType Directory -Force artifacts | Out-Null
+                  npm run accept:word -- .agent-work/example-raw.docx --accepted-docx artifacts/example.accepted.docx --pdf artifacts/example.accepted.pdf --manifest artifacts/example.acceptance.json
+
+            - name: Verify acceptance evidence
+              run: |
+                  $requiredArtifacts = @(
+                      'artifacts/example.accepted.docx',
+                      'artifacts/example.accepted.pdf',
+                      'artifacts/example.acceptance.json'
+                  )
+                  foreach ($artifact in $requiredArtifacts) {
+                      if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {
+                          throw "Acceptance artifact is missing: $artifact"
+                      }
+                      if ((Get-Item -LiteralPath $artifact).Length -eq 0) {
+                          throw "Acceptance artifact is empty: $artifact"
+                      }
+                  }
+                  $manifest = Get-Content -LiteralPath artifacts/example.acceptance.json -Raw | ConvertFrom-Json
+                  if (-not $manifest.stablePageCount) {
+                      throw 'Word page count was not stable after reopening the accepted DOCX.'
+                  }
+                  if (-not $manifest.requiredFont.installed) {
+                      throw 'The required Times New Roman font was not available to Word.'
+                  }
+                  if ($manifest.styleChecks | Where-Object { -not $_.exists }) {
+                      throw 'The accepted document is missing a required Word style.'
+                  }
+
+            - name: Upload Word acceptance artifacts
+              if: ${{ always() }}
+              uses: actions/upload-artifact@v5
+              with:
+                  name: native-word-acceptance-${{ github.run_id }}
+                  if-no-files-found: warn
+                  path: artifacts/

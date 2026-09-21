@@ -1,0 +1,12 @@
+{
+	"minimums": {
+		"lines": 80.5,
+		"functions": 91.5,
+		"branches": 77
+	},
+	"measured": {
+		"lines": 80.67,
+		"functions": 91.96,
+		"branches": 77.22
+	}
+}
