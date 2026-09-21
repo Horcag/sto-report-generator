@@ -96,12 +96,16 @@ export function coverageFailures(
 	});
 }
 
-export function readCoverageMinimums(path: string): CoverageMinimums {
+export function readCoverageMinimums(
+	path: string,
+	platform = process.platform,
+): CoverageMinimums {
 	const config = JSON.parse(readFileSync(path, 'utf8')) as {
 		minimums?: CoverageMinimums;
+		platformMinimums?: Record<string, Partial<CoverageMinimums>>;
 	};
 	if (!config.minimums) {
 		throw new Error(`Coverage baseline has no minimums: ${path}`);
 	}
-	return config.minimums;
+	return { ...config.minimums, ...config.platformMinimums?.[platform] };
 }

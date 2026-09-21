@@ -4,9 +4,21 @@
 		"functions": 91.5,
 		"branches": 77
 	},
+	"platformMinimums": {
+		"win32": {
+			"lines": 80.3
+		}
+	},
 	"measured": {
-		"lines": 80.67,
-		"functions": 91.96,
-		"branches": 77.22
+		"linux": {
+			"lines": 80.67,
+			"functions": 91.96,
+			"branches": 77.22
+		},
+		"win32": {
+			"lines": 80.36,
+			"functions": 91.81,
+			"branches": 77.32
+		}
 	}
 }

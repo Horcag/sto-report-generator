@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import {
 	coverageFailures,
 	parseLcov,
 	percentage,
+	readCoverageMinimums,
 } from '../../scripts/quality/lcov-gate';
 
 function expectThrows(action: () => unknown, message: string): void {
@@ -62,5 +66,21 @@ expectThrows(
 	() => coverageFailures(summary, { lines: 101, functions: 0, branches: 0 }),
 	'Invalid lines coverage minimum',
 );
+
+const baselineDirectory = mkdtempSync(join(tmpdir(), 'coverage-baseline-'));
+const baselinePath = join(baselineDirectory, 'baseline.json');
+const defaultMinimums = { lines: 80.5, functions: 91.5, branches: 77 };
+writeFileSync(
+	baselinePath,
+	JSON.stringify({
+		minimums: defaultMinimums,
+		platformMinimums: { win32: { lines: 80.3 } },
+	}),
+);
+assert.deepEqual(readCoverageMinimums(baselinePath, 'linux'), defaultMinimums);
+assert.deepEqual(readCoverageMinimums(baselinePath, 'win32'), {
+	...defaultMinimums,
+	lines: 80.3,
+});
 
 console.log('LCOV gate tests passed.');

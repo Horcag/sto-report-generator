@@ -24,7 +24,7 @@ This is a release/acceptance signal, not a pull-request gate. Do not add it to G
 
 `npm run ci:check` is the portable gate used on Linux, Windows, and macOS. It checks formatting, ESLint, TypeScript, FSD boundaries, policy tests, coverage, the package contents, file sizes, local Markdown links, spelling, and the npm audit. Python formatting, Ruff, MyPy, and Python tests run immediately afterwards.
 
-JavaScript coverage is measured against committed line, function, and branch thresholds. The Ubuntu report is uploaded and passed to SonarQube. Threshold changes must be reviewed as policy changes; ordinary feature work should add tests instead of lowering them.
+JavaScript coverage is measured against committed line, function, and branch thresholds. A narrowly scoped Windows line threshold records c8's platform-specific instrumentation result without weakening Linux or macOS. The Ubuntu report is uploaded and passed to SonarQube. Threshold changes must be reviewed as policy changes; ordinary feature work should add tests instead of lowering them.
 
 The file-size policy blocks new source files above 500 lines and prevents known oversized files from growing. Run `npm run check:file-size -- --update-baseline` only when an oversized file was reduced or removed and the updated baseline is intentionally part of the change.
 
