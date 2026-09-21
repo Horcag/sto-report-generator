@@ -1,0 +1,9 @@
+{
+	"all": true,
+	"extension": [".ts"],
+	"include": ["src/**/*.ts"],
+	"exclude": ["tests/**", "src/**/*.d.ts"],
+	"exclude-after-remap": true,
+	"reporter": ["text", "lcov"],
+	"temp-directory": ".agent-work/coverage-v8"
+}

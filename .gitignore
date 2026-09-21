@@ -1,6 +1,8 @@
 node_modules/
 dist/
 build/
+coverage/
+artifacts/
 .DS_Store
 *.log
 __pycache__/

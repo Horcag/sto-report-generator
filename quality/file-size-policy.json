@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "baseline_path": "quality/file-size-baseline.json",
+  "thresholds": {
+    "warning_above": 350,
+    "error_above": 500,
+    "critical_above": 1000
+  },
+  "source_roots": ["src", "tests", "scripts"],
+  "extensions": [
+    ".py",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".ts",
+    ".tsx",
+    ".json"
+  ],
+  "excluded_globs": [
+    "**/__pycache__/**",
+    "**/.cache/**",
+    "**/.mypy_cache/**",
+    "**/.pytest_cache/**",
+    "**/.ruff_cache/**",
+    "**/.venv/**",
+    "**/node_modules/**",
+    "**/coverage/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/out/**",
+    "**/vendor/**",
+    "**/generated/**",
+    "**/*.generated.*"
+  ]
+}

@@ -1,0 +1,69 @@
+version: '0.2'
+language: en,ru
+import:
+    - '@cspell/dict-ru_ru/cspell-ext.json'
+useGitignore: true
+enableGlobDot: true
+ignorePaths:
+    - node_modules/**
+    - .agent-work/**
+    - reports/**
+    - research/**
+    - output/**
+    - coverage/**
+    - tests/fixtures/**
+words:
+    - BibTeX
+    - DOCX
+    - DOTM
+    - Hablon
+    - MathML
+    - MyPy
+    - NBER
+    - OMML
+    - OOXML
+    - OpenXML
+    - PowerShell
+    - Referat
+    - Ruff
+    - SSRN
+    - Samara
+    - SonarQube
+    - Steiger
+    - Times New Roman
+    - TypeScript
+    - WordprocessingML
+    - booktitle
+    - dataclasses
+    - frontmatter
+    - fursov
+    - hungknguyen
+    - inproceedings
+    - ivanov
+    - langid
+    - oformlenija
+    - omml
+    - pywin32
+    - referat
+    - samarsky
+    - techreport
+    - tsconfig
+    - tsx
+    - urldate
+    - venv
+    - wslpath
+    - Загол
+    - Рефер
+    - Содерж
+    - Фурсов
+    - агентных
+    - агентные
+    - алиас
+    - Версионируемая
+    - Версионируемый
+    - Микротипографика
+    - плейсхолдеры
+    - просмотрщике
+    - рендерера
+    - репозиторный
+    - титульнике
