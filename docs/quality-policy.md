@@ -30,7 +30,7 @@ The file-size policy blocks new source files above 500 lines and prevents known 
 
 The pre-push hook runs the complete gate from an exported snapshot of the prepared Git index. Unstaged work is neither tested nor modified, so a passing hook means the exact content about to be pushed passed the gate.
 
-GitHub Actions syntax is checked separately with pinned actionlint. No suppression file is needed now; add one only together with a documented, reviewed suppression for a concrete false positive.
+GitHub Actions syntax is checked separately with pinned actionlint. `.github/actionlint.yaml` declares the intentional `word` label used by the self-hosted acceptance runner; it contains no ignored diagnostics.
 
 ## Dependency maintenance
 

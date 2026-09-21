@@ -91,6 +91,7 @@ def check_markdown_file(markdown_path: Path, root: Path) -> list[LinkIssue]:
 
 
 def check_markdown_links(root: Path) -> list[LinkIssue]:
+    root = root.resolve()
     return [
         issue
         for markdown_path in iter_markdown_files(root)
