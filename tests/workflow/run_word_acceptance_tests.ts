@@ -75,6 +75,11 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 	);
 	assert.match(script, /\$document\.Save\(\)/);
 	assert.doesNotMatch(script, /\$document\.SaveAs2\(/);
+	assert.ok(
+		script.indexOf('$document.ExportAsFixedFormat') <
+			script.indexOf('$styleChecks = Get-StyleChecks'),
+		'Word style COM lookups must happen after PDF export',
+	);
 	assert.match(
 		script,
 		/Remove-Item -LiteralPath \$stagingDirectory -Recurse -Force/,

@@ -198,6 +198,13 @@ try {
     Update-DocumentForAcceptance $document
     Write-Output "Word acceptance: fields, TOC, and pagination updated."
     $pageCountBeforeReopen = [int]$document.ComputeStatistics($WdStatisticPages)
+
+    $document.Save()
+    $document.ExportAsFixedFormat($stagedPdf, $WdExportFormatPdf)
+    Write-Output "Word acceptance: DOCX and PDF exported."
+
+    # Querying Word styles creates additional COM proxies. Keep those lookups
+    # after fixed-format export so they cannot interfere with Word's PDF path.
     $styleChecks = Get-StyleChecks $document $request.expectedStyles
     $missingStyles = @($styleChecks | Where-Object { -not $_.exists })
     if ($missingStyles.Count -gt 0) {
@@ -206,9 +213,6 @@ try {
     }
     Write-Output "Word acceptance: required styles verified."
 
-    $document.Save()
-    $document.ExportAsFixedFormat($stagedPdf, $WdExportFormatPdf)
-    Write-Output "Word acceptance: DOCX and PDF exported."
     $document.Close($WdDoNotSaveChanges)
     $document = $null
     Copy-Item -LiteralPath $stagedInputDocx -Destination $stagedAcceptedDocx
