@@ -40,3 +40,7 @@ entities.json
 
 .gemini-local/
 GEMINI.md
+
+# Local tool runtime locks
+.lock
+kanban/.lock
