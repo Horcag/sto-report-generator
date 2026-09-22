@@ -87,6 +87,8 @@ export function createSourceTextContext(content: string): SourceTextContext {
 	maskPattern(chars, content, /(?<!\$)\$[^$\r\n]+\$(?!\$)/g);
 	maskPattern(chars, content, /!\[[^\]\r\n]*]\([^)\r\n]+\)/g);
 	maskMarkdownLinkTargets(chars, content);
+	maskPattern(chars, content, /<!--[\s\S]*?-->/g);
+	maskPattern(chars, content, /<br\s*\/?>/gi);
 	maskPattern(chars, content, /^\s*\|.*$/gm);
 	maskPattern(chars, content, /\b(?:https?:\/\/|www\.)[^\s<>)]+/gi);
 	maskPattern(chars, content, /\bv\d+(?:\.\d+)+\b/gi);

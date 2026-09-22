@@ -960,7 +960,7 @@
 </w:p>
 <w:tbl>
 <w:tblPr>
-<w:tblW w:type="pct" w:w="100%"/>
+<w:tblW w:type="dxa" w:w="9355"/>
 <w:tblBorders>
 <w:top w:val="single" w:color="auto" w:sz="4"/>
 <w:left w:val="single" w:color="auto" w:sz="4"/>
@@ -969,20 +969,32 @@
 <w:insideH w:val="single" w:color="auto" w:sz="4"/>
 <w:insideV w:val="single" w:color="auto" w:sz="4"/>
 </w:tblBorders>
+<w:tblLayout w:type="fixed"/>
+<w:tblCellMar>
+<w:top w:type="dxa" w:w="0"/>
+<w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="0"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tblCellMar>
 </w:tblPr>
 <w:tblGrid>
-<w:gridCol w:w="100"/>
-<w:gridCol w:w="100"/>
-<w:gridCol w:w="100"/>
+<w:gridCol w:w="4316"/>
+<w:gridCol w:w="2262"/>
+<w:gridCol w:w="2777"/>
 </w:tblGrid>
 <w:tr>
 <w:trPr>
+<w:cantSplit/>
 <w:tblHeader/>
 </w:trPr>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4316"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Параметр</w:t>
@@ -990,9 +1002,13 @@
 </w:p>
 </w:tc>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2262"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Markdown</w:t>
@@ -1000,9 +1016,13 @@
 </w:p>
 </w:tc>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2777"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">MS Word</w:t>
@@ -1011,10 +1031,17 @@
 </w:tc>
 </w:tr>
 <w:tr>
+<w:trPr>
+<w:cantSplit/>
+</w:trPr>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4316"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Читаемость</w:t>
@@ -1022,9 +1049,13 @@
 </w:p>
 </w:tc>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2262"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Высокая</w:t>
@@ -1032,9 +1063,13 @@
 </w:p>
 </w:tc>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2777"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Низкая (XML)</w:t>
@@ -1043,10 +1078,17 @@
 </w:tc>
 </w:tr>
 <w:tr>
+<w:trPr>
+<w:cantSplit/>
+</w:trPr>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4316"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Скорость написания</w:t>
@@ -1054,9 +1096,13 @@
 </w:p>
 </w:tc>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2262"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Быстро</w:t>
@@ -1064,9 +1110,13 @@
 </w:p>
 </w:tc>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2777"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Медленно</w:t>
@@ -1075,10 +1125,17 @@
 </w:tc>
 </w:tr>
 <w:tr>
+<w:trPr>
+<w:cantSplit/>
+</w:trPr>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="4316"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Контроль версий (Git)</w:t>
@@ -1086,9 +1143,13 @@
 </w:p>
 </w:tc>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2262"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Да</w:t>
@@ -1096,9 +1157,13 @@
 </w:p>
 </w:tc>
 <w:tc>
+<w:tcPr>
+<w:tcW w:type="dxa" w:w="2777"/>
+</w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Нет</w:t>
