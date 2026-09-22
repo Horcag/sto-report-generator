@@ -1,0 +1,106 @@
+{"timestamp":"2026-09-02T08:06:41.252007386+04:00","action":"create","task_id":1,"detail":"Полная ревизия STO Report Generator"}
+{"timestamp":"2026-09-02T08:06:41.266004137+04:00","action":"create","task_id":2,"detail":"Кроссплатформенный pipeline и контракт renderer"}
+{"timestamp":"2026-09-02T08:06:41.280198672+04:00","action":"create","task_id":3,"detail":"README для GitHub и скриншоты"}
+{"timestamp":"2026-09-02T08:06:41.294547432+04:00","action":"create","task_id":4,"detail":"Совместимые названия Word-стилей"}
+{"timestamp":"2026-09-02T08:06:41.309238503+04:00","action":"create","task_id":5,"detail":"Инвентарь нормативных источников"}
+{"timestamp":"2026-09-02T08:06:41.323910797+04:00","action":"create","task_id":6,"detail":"CI matrix и воспроизводимость DOCX"}
+{"timestamp":"2026-09-02T08:06:41.337885543+04:00","action":"create","task_id":7,"detail":"Пакетирование CLI без клонирования репозитория"}
+{"timestamp":"2026-09-02T08:06:41.354039252+04:00","action":"create","task_id":8,"detail":"LibreOffice preview backend"}
+{"timestamp":"2026-09-02T08:06:41.373267455+04:00","action":"create","task_id":9,"detail":"Удаленный Microsoft renderer без локального Word"}
+{"timestamp":"2026-09-02T08:06:41.390427078+04:00","action":"create","task_id":10,"detail":"GUI discovery без Electron по умолчанию"}
+{"timestamp":"2026-09-02T08:06:41.408409595+04:00","action":"create","task_id":11,"detail":"Полная нумерация приложений А.1"}
+{"timestamp":"2026-09-02T08:06:41.426503417+04:00","action":"create","task_id":12,"detail":"Расширенные библиографические типы"}
+{"timestamp":"2026-09-02T08:06:47.917987937+04:00","action":"move","task_id":1,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-02T08:06:47.932320546+04:00","action":"move","task_id":2,"detail":"backlog -\u003e todo"}
+{"timestamp":"2026-09-02T08:06:47.932731765+04:00","action":"move","task_id":3,"detail":"backlog -\u003e todo"}
+{"timestamp":"2026-09-02T08:06:47.933074515+04:00","action":"move","task_id":4,"detail":"backlog -\u003e todo"}
+{"timestamp":"2026-09-02T08:06:47.933408754+04:00","action":"move","task_id":5,"detail":"backlog -\u003e todo"}
+{"timestamp":"2026-09-02T08:06:47.934594433+04:00","action":"move","task_id":6,"detail":"backlog -\u003e todo"}
+{"timestamp":"2026-09-02T08:06:47.959297082+04:00","action":"edit","task_id":3,"detail":"README для GitHub и скриншоты"}
+{"timestamp":"2026-09-02T08:06:47.974113637+04:00","action":"edit","task_id":6,"detail":"CI matrix и воспроизводимость DOCX"}
+{"timestamp":"2026-09-02T08:11:34.250120692+04:00","action":"create","task_id":13,"detail":"Герметичный npm release без локальных файлов"}
+{"timestamp":"2026-09-02T08:11:34.270435694+04:00","action":"create","task_id":14,"detail":"Устранить high advisories production dependencies"}
+{"timestamp":"2026-09-02T08:11:34.287594065+04:00","action":"move","task_id":13,"detail":"backlog -\u003e todo"}
+{"timestamp":"2026-09-02T08:11:34.288119851+04:00","action":"move","task_id":14,"detail":"backlog -\u003e todo"}
+{"timestamp":"2026-09-02T08:20:47.897337826+04:00","action":"create","task_id":15,"detail":"Выбрать и добавить реальную лицензию"}
+{"timestamp":"2026-09-02T08:20:47.921665739+04:00","action":"move","task_id":15,"detail":"backlog -\u003e todo"}
+{"timestamp":"2026-09-02T08:36:20.048044615+04:00","action":"move","task_id":2,"detail":"todo -\u003e in-progress"}
+{"timestamp":"2026-09-02T08:36:20.049404957+04:00","action":"move","task_id":3,"detail":"todo -\u003e in-progress"}
+{"timestamp":"2026-09-02T08:36:20.050660187+04:00","action":"move","task_id":4,"detail":"todo -\u003e in-progress"}
+{"timestamp":"2026-09-02T08:36:20.053452616+04:00","action":"move","task_id":5,"detail":"todo -\u003e in-progress"}
+{"timestamp":"2026-09-02T08:36:20.05471564+04:00","action":"move","task_id":6,"detail":"todo -\u003e in-progress"}
+{"timestamp":"2026-09-02T08:36:20.087063235+04:00","action":"move","task_id":13,"detail":"todo -\u003e review"}
+{"timestamp":"2026-09-02T08:36:20.109938464+04:00","action":"move","task_id":14,"detail":"todo -\u003e review"}
+{"timestamp":"2026-09-02T08:36:24.963210624+04:00","action":"edit","task_id":14,"detail":"Устранить high advisories production dependencies"}
+{"timestamp":"2026-09-02T08:36:24.963284903+04:00","action":"block","task_id":14,"detail":"High advisories documented; dependency/lockfile remediation remains a separate reviewed update."}
+{"timestamp":"2026-09-02T09:00:10.544385139+04:00","action":"move","task_id":1,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-02T09:00:10.544955299+04:00","action":"move","task_id":2,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-02T09:00:10.545510331+04:00","action":"move","task_id":3,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-02T09:00:10.547001629+04:00","action":"move","task_id":4,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-02T09:00:10.547680447+04:00","action":"move","task_id":5,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-02T09:00:10.548339305+04:00","action":"move","task_id":6,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-02T09:00:10.548886862+04:00","action":"move","task_id":13,"detail":"review -\u003e done"}
+{"timestamp":"2026-09-02T09:00:10.583167821+04:00","action":"edit","task_id":1,"detail":"Полная ревизия STO Report Generator"}
+{"timestamp":"2026-09-02T14:50:15.042623529+04:00","action":"move","task_id":15,"detail":"todo -\u003e in-progress"}
+{"timestamp":"2026-09-02T14:50:28.697251078+04:00","action":"create","task_id":16,"detail":"WSL → установленный Word: обязательная финальная приемка"}
+{"timestamp":"2026-09-02T14:50:28.711378382+04:00","action":"edit","task_id":8,"detail":"LibreOffice preview backend"}
+{"timestamp":"2026-09-02T14:50:28.711416106+04:00","action":"block","task_id":8,"detail":"LibreOffice не соответствует требованию пользователя: Word-шаблоны и идентичная пагинация не гарантируются. Не рассматривать как финальный renderer; максимум необязательный preview."}
+{"timestamp":"2026-09-02T15:13:50.796187287+04:00","action":"move","task_id":16,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-02T15:16:19.278844723+04:00","action":"edit","task_id":15,"detail":"Выбрать и добавить реальную лицензию"}
+{"timestamp":"2026-09-02T15:16:19.294167593+04:00","action":"move","task_id":15,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-02T15:16:19.309290578+04:00","action":"edit","task_id":16,"detail":"WSL → установленный Word: обязательная финальная приемка"}
+{"timestamp":"2026-09-02T15:16:19.324365776+04:00","action":"move","task_id":16,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-21T19:04:21.588304378+04:00","action":"create","task_id":17,"detail":"Финализировать DOTM-стили, security и публикацию"}
+{"timestamp":"2026-09-21T19:04:30.153159758+04:00","action":"move","task_id":17,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-21T19:26:22.955864174+04:00","action":"edit","task_id":14,"detail":"Устранить high advisories production dependencies"}
+{"timestamp":"2026-09-21T19:26:22.95601372+04:00","action":"release","task_id":14,"detail":"atlas-lime"}
+{"timestamp":"2026-09-21T19:26:23.00453928+04:00","action":"move","task_id":14,"detail":"review -\u003e done"}
+{"timestamp":"2026-09-21T19:26:30.081060581+04:00","action":"edit","task_id":14,"detail":"Устранить high advisories production dependencies"}
+{"timestamp":"2026-09-21T19:26:30.081113269+04:00","action":"unblock","task_id":14,"detail":"Устранить high advisories production dependencies"}
+{"timestamp":"2026-09-21T19:26:30.100961988+04:00","action":"edit","task_id":14,"detail":"Устранить high advisories production dependencies"}
+{"timestamp":"2026-09-21T19:35:31.334056779+04:00","action":"edit","task_id":17,"detail":"Финализировать DOTM-стили, security и публикацию"}
+{"timestamp":"2026-09-21T19:35:31.334123771+04:00","action":"release","task_id":17,"detail":"bloom-tiger"}
+{"timestamp":"2026-09-21T19:35:31.359518607+04:00","action":"edit","task_id":4,"detail":"Совместимые названия Word-стилей"}
+{"timestamp":"2026-09-21T19:35:39.078332323+04:00","action":"edit","task_id":17,"detail":"Финализировать DOTM-стили, security и публикацию"}
+{"timestamp":"2026-09-21T19:35:39.078384876+04:00","action":"claim","task_id":17,"detail":"bloom-tiger"}
+{"timestamp":"2026-09-21T19:35:39.105664322+04:00","action":"edit","task_id":17,"detail":"Финализировать DOTM-стили, security и публикацию"}
+{"timestamp":"2026-09-21T19:35:39.133168319+04:00","action":"move","task_id":17,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-21T19:35:39.162194093+04:00","action":"edit","task_id":17,"detail":"Финализировать DOTM-стили, security и публикацию"}
+{"timestamp":"2026-09-21T19:35:39.162336496+04:00","action":"release","task_id":17,"detail":"bloom-tiger"}
+{"timestamp":"2026-09-22T06:38:21.082942052+04:00","action":"create","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T06:38:30.503268515+04:00","action":"move","task_id":18,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-22T06:46:52.09903354+04:00","action":"create","task_id":19,"detail":"Починить зависание локальной Microsoft Word acceptance после восстановления Office"}
+{"timestamp":"2026-09-22T06:46:52.140183495+04:00","action":"create","task_id":20,"detail":"Исследовать замену формульной layout-таблицы на стиль MTDisplayEquation"}
+{"timestamp":"2026-09-22T06:49:43.146607309+04:00","action":"move","task_id":18,"detail":"in-progress -\u003e review"}
+{"timestamp":"2026-09-22T06:49:43.146721986+04:00","action":"handoff","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T06:49:43.146745471+04:00","action":"release","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T06:53:14.349684573+04:00","action":"edit","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T06:53:14.34984992+04:00","action":"claim","task_id":18,"detail":"plume-mint"}
+{"timestamp":"2026-09-22T06:53:14.386057439+04:00","action":"edit","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T06:53:14.386323686+04:00","action":"release","task_id":18,"detail":"plume-mint"}
+{"timestamp":"2026-09-22T07:09:18.004665389+04:00","action":"edit","task_id":19,"detail":"Починить зависание локальной Microsoft Word acceptance после восстановления Office"}
+{"timestamp":"2026-09-22T07:09:18.004824046+04:00","action":"claim","task_id":19,"detail":"codex-word-fix"}
+{"timestamp":"2026-09-22T07:09:27.100557271+04:00","action":"move","task_id":19,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-22T07:54:43.029571645+04:00","action":"move","task_id":19,"detail":"in-progress -\u003e review"}
+{"timestamp":"2026-09-22T07:54:43.030764911+04:00","action":"handoff","task_id":19,"detail":"Починить зависание локальной Microsoft Word acceptance после восстановления Office"}
+{"timestamp":"2026-09-22T07:54:43.03084383+04:00","action":"block","task_id":19,"detail":"Microsoft Office for the Windows runner user is not activated: OSPP reports NOTIFICATIONS / 0xC004F009 (expired grace). Activate Microsoft 365, then rerun native Word acceptance to obtain a real green DOCX/PDF/manifest/diagnostics receipt."}
+{"timestamp":"2026-09-22T07:54:43.030897677+04:00","action":"release","task_id":19,"detail":"Починить зависание локальной Microsoft Word acceptance после восстановления Office"}
+{"timestamp":"2026-09-22T15:04:28.036029401+04:00","action":"edit","task_id":19,"detail":"Починить зависание локальной Microsoft Word acceptance после восстановления Office"}
+{"timestamp":"2026-09-22T15:04:28.036298162+04:00","action":"unblock","task_id":19,"detail":"Починить зависание локальной Microsoft Word acceptance после восстановления Office"}
+{"timestamp":"2026-09-22T15:04:28.036360059+04:00","action":"claim","task_id":19,"detail":"codex-word-fix"}
+{"timestamp":"2026-09-22T15:04:28.15215977+04:00","action":"move","task_id":19,"detail":"review -\u003e done"}
+{"timestamp":"2026-09-22T15:04:28.232222971+04:00","action":"edit","task_id":19,"detail":"Починить зависание локальной Microsoft Word acceptance после восстановления Office"}
+{"timestamp":"2026-09-22T15:04:28.232349494+04:00","action":"release","task_id":19,"detail":"codex-word-fix"}
+{"timestamp":"2026-09-22T15:09:12.851168645+04:00","action":"create","task_id":21,"detail":"Заменять плейсхолдеры статистики в реферате до Word-приёмки"}
+{"timestamp":"2026-09-22T15:16:58.638428078+04:00","action":"edit","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T15:16:58.638640878+04:00","action":"claim","task_id":18,"detail":"drift-star"}
+{"timestamp":"2026-09-22T15:16:58.746716937+04:00","action":"edit","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T15:16:58.746859898+04:00","action":"release","task_id":18,"detail":"drift-star"}
+{"timestamp":"2026-09-22T15:21:04.37302203+04:00","action":"edit","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T15:21:04.373251288+04:00","action":"claim","task_id":18,"detail":"linen-rapid"}
+{"timestamp":"2026-09-22T15:21:04.481470547+04:00","action":"edit","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T15:21:04.481635908+04:00","action":"release","task_id":18,"detail":"linen-rapid"}
+{"timestamp":"2026-09-22T15:24:18.62543898+04:00","action":"edit","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T15:24:18.625546569+04:00","action":"claim","task_id":18,"detail":"vivid-raven"}
+{"timestamp":"2026-09-22T15:24:18.70320639+04:00","action":"edit","task_id":18,"detail":"Полностью переработать генерацию таблиц по СТО и эталонному DOTM"}
+{"timestamp":"2026-09-22T15:24:18.703414645+04:00","action":"release","task_id":18,"detail":"vivid-raven"}

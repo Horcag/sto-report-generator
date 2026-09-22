@@ -1,8 +1,6 @@
 name: Native Word acceptance
 
 on:
-    push:
-        branches: [master]
     workflow_dispatch:
 
 permissions:
@@ -37,22 +35,6 @@ jobs:
             - name: Install Node dependencies
               run: npm ci
 
-            - name: Verify Microsoft Word and its license are available
-              run: |
-                  & ./scripts/check_word_license.ps1
-                  $word = $null
-                  try {
-                      $word = New-Object -ComObject Word.Application
-                      if ([string]::IsNullOrWhiteSpace([string]$word.Version)) {
-                          throw 'Microsoft Word did not report a version.'
-                      }
-                      Write-Host "Microsoft Word version: $($word.Version)"
-                  } finally {
-                      if ($null -ne $word) {
-                          $word.Quit()
-                      }
-                  }
-
             - name: Build the portable example DOCX
               run: npm run build:example:raw
 
@@ -78,6 +60,12 @@ jobs:
                       }
                   }
                   $manifest = Get-Content -LiteralPath artifacts/example.acceptance.json -Raw | ConvertFrom-Json
+                  if ($manifest.status -ne 'accepted') {
+                      throw "Word acceptance did not finish successfully. Status: $($manifest.status)"
+                  }
+                  if (-not $manifest.execution.processCleanupVerified) {
+                      throw 'Word acceptance process cleanup was not verified.'
+                  }
                   if (-not $manifest.stablePageCount) {
                       throw 'Word page count was not stable after reopening the accepted DOCX.'
                   }

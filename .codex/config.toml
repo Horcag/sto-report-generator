@@ -1,0 +1,3 @@
+
+[mcp_servers.agent_control_plane]
+url = "http://127.0.0.1:9259/mcp"

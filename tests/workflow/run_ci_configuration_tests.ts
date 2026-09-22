@@ -24,14 +24,27 @@ assert.match(
 	'fork pull requests must not receive repository secrets',
 );
 
-assert.match(nativeWordWorkflow, /^\s{4}push:\s*$/m);
-assert.match(nativeWordWorkflow, /^\s{8}branches:\s*\[master\]\s*$/m);
 assert.match(nativeWordWorkflow, /^\s{4}workflow_dispatch:\s*$/m);
+assert.doesNotMatch(
+	nativeWordWorkflow,
+	/^\s{4}push:\s*$/m,
+	'native Word acceptance must remain manual-only',
+);
 assert.doesNotMatch(nativeWordWorkflow, /^\s{4}pull_request(?:_target)?:\s*$/m);
 assert.match(
 	nativeWordWorkflow,
 	/^\s{8}runs-on:\s*\[self-hosted, windows, word\]\s*$/m,
 	'native Word acceptance must remain isolated from untrusted pull requests',
+);
+assert.doesNotMatch(
+	nativeWordWorkflow,
+	/check_word_license\.ps1/,
+	'license diagnostics must not block native Word capability acceptance',
+);
+assert.match(nativeWordWorkflow, /\$manifest\.status -ne 'accepted'/);
+assert.match(
+	nativeWordWorkflow,
+	/\$manifest\.execution\.processCleanupVerified/,
 );
 
 console.log('CI configuration tests passed.');
