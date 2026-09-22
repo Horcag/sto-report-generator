@@ -1,0 +1,123 @@
+fixture_style_id,generator_style,layer,property,fixture_value,generated_value,unit,delta_generated_minus_fixture,basis
+-,FigureCaption,computedPPr,ind.firstLine,0.0,0.0,twips,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedPPr,spacing.after,240.0,240.0,twips,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedPPr,spacing.before,120.0,120.0,twips,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedPPr,spacing.line,1.0,1.0,line240-multiple,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedRPr,sz.val,28.0,28.0,half-points,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedRPr,szCs.val,28.0,28.0,half-points,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedPPr,ind.firstLine,0.0,0.0,twips,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedPPr,spacing.after,120.0,120.0,twips,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedPPr,spacing.before,120.0,120.0,twips,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedPPr,spacing.line,1.0,1.0,line240-multiple,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedRPr,sz.val,28.0,28.0,half-points,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedRPr,szCs.val,28.0,28.0,half-points,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+1,StoHeading1,computedPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedPPr,spacing.after,120.0,120.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,numberingLevelPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,numberingLevelPPr,ind.left,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedPPr,ind.firstLine,709.0,709.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedPPr,spacing.after,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,ind.firstLine,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,ind.left,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,spacing.after,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,tabs.tab.pos,9356.0,9356.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,spacing.after,0.0,0.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,numberingLevelPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,numberingLevelPPr,ind.left,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,ind.firstLine,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,ind.left,284.0,284.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,spacing.after,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,tabs.tab.pos,9356.0,9356.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,spacing.after,0.0,0.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,numberingLevelPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,numberingLevelPPr,ind.left,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,ind.firstLine,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,ind.left,567.0,567.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,spacing.after,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,tabs.tab.pos,9356.0,9356.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,spacing.after,0.0,0.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,numberingLevelPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,numberingLevelPPr,ind.left,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,ind.firstLine,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,ind.left,851.0,851.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,spacing.after,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,tabs.tab.pos,9356.0,9356.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedPPr,spacing.after,,0.0,twips,,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedPPr,spacing.before,200.0,0.0,twips,-200.0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedPPr,spacing.line,,1.5,line240-multiple,,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedRPr,sz.val,24.0,28.0,half-points,4.0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedRPr,szCs.val,24.0,28.0,half-points,4.0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,numberingLevelPPr,ind.firstLine,709.0,709.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,numberingLevelPPr,ind.left,0.0,0.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedPPr,ind.firstLine,,709.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedPPr,spacing.after,,0.0,twips,,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedPPr,spacing.before,200.0,0.0,twips,-200.0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedPPr,spacing.line,,1.5,line240-multiple,,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedRPr,sz.val,24.0,28.0,half-points,4.0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedRPr,szCs.val,24.0,28.0,half-points,4.0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,numberingLevelPPr,ind.firstLine,709.0,709.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,numberingLevelPPr,ind.left,0.0,0.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,ind.firstLine,0.0,0.0,twips,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,spacing.after,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,spacing.before,,0.0,twips,,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,spacing.line,1.0,1.0,line240-multiple,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedRPr,sz.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedRPr,szCs.val,28.0,28.0,half-points,0.0,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+afc,StructuralHeading,computedPPr,ind.firstLine,,0.0,twips,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedPPr,spacing.after,120.0,120.0,twips,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedPPr,spacing.before,,0.0,twips,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedPPr,spacing.line,1.5,1.5,line240-multiple,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedRPr,sz.val,28.0,28.0,half-points,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedRPr,szCs.val,28.0,28.0,half-points,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedPPr,ind.firstLine,0.0,0.0,twips,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedPPr,spacing.after,240.0,240.0,twips,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedPPr,spacing.before,,0.0,twips,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedPPr,spacing.line,1.0,1.0,line240-multiple,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedRPr,sz.val,28.0,28.0,half-points,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedRPr,szCs.val,28.0,28.0,half-points,0.0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff1,TableText,computedPPr,ind.firstLine,0.0,0.0,twips,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedPPr,spacing.after,,0.0,twips,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedPPr,spacing.before,,0.0,twips,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedPPr,spacing.line,1.0,1.0,line240-multiple,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedRPr,sz.val,28.0,28.0,half-points,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedRPr,szCs.val,28.0,28.0,half-points,0.0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."

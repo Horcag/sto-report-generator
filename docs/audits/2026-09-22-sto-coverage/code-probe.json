@@ -1,0 +1,10 @@
+{
+  "historicalRevision": "09b079fef3b037f79b33cc486f96133c6efca044",
+  "inputCharacterPreserved": false,
+  "zeroWidthSpaceInserted": true,
+  "observedChanges": [
+    "an escaped ampersand was decoded",
+    "a zero-width space was inserted in a URL-like literal"
+  ],
+  "interpretation": "A code-block contract needs character and whitespace preservation in addition to visual formatting. The OpenXML payload is intentionally not published."
+}

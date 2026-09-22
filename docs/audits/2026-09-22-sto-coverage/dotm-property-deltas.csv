@@ -1,0 +1,186 @@
+fixture_style_id,generator_style,layer,property,fixture_value,generated_value,basis
+-,FigureCaption,computedPPr,suppressAutoHyphens,True,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedRPr,color.val,,000000,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedRPr,lang.bidi,ar-SA,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedRPr,lang.eastAsia,ru-RU,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-,FigureCaption,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedPPr,suppressAutoHyphens,True,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedRPr,color.val,,000000,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedRPr,lang.bidi,ar-SA,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedRPr,lang.eastAsia,ru-RU,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+-1,TableCaption,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+1,StoHeading1,computedPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedPPr,numPr.children,"[{""name"":""numId"",""attrs"":{""val"":""32""}}]","[{""name"":""ilvl"",""attrs"":{""val"":""0""}},{""name"":""numId"",""attrs"":{""val"":""5""}}]",IMPLEMENTATION ADAPTATION: generator-owned numbering; src/shared/config/sto-styles.ts:288-341.
+1,StoHeading1,computedPPr,pStyle.val,,ListParagraph,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedPPr,suppressAutoHyphens,True,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedRPr,bCs,,True,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedRPr,lang.eastAsia,ru-RU,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,numberingLevelPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1,StoHeading1,numberingLevelPPr,ind.left,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedPPr,spacing.after,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedRPr,lang.eastAsia,ru-RU,,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+1-,Normal,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:118-137; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,ind.firstLine,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,ind.left,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,spacing.after,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedPPr,tabs.children,"[{""name"":""tab"",""attrs"":{""val"":""right"",""leader"":""dot"",""pos"":""9356""}}]","[{""name"":""tab"",""attrs"":{""val"":""right"",""pos"":""9356"",""leader"":""dot""}}]",IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedRPr,lang.eastAsia,en-US,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+13,TOC1,computedRPr,rFonts.eastAsiaTheme,majorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,numPr.children,"[{""name"":""ilvl"",""attrs"":{""val"":""1""}}]","[{""name"":""ilvl"",""attrs"":{""val"":""1""}},{""name"":""numId"",""attrs"":{""val"":""5""}}]",IMPLEMENTATION ADAPTATION: generator-owned numbering; src/shared/config/sto-styles.ts:288-341.
+2,StoHeading2,computedPPr,pStyle.val,,ListParagraph,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,pageBreakBefore.val,0,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedPPr,suppressAutoHyphens,True,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedRPr,bCs,,True,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedRPr,lang.eastAsia,ru-RU,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,numberingLevelPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+2,StoHeading2,numberingLevelPPr,ind.left,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,ind.firstLine,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,spacing.after,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedPPr,tabs.children,"[{""name"":""tab"",""attrs"":{""val"":""right"",""leader"":""dot"",""pos"":""9356""}}]","[{""name"":""tab"",""attrs"":{""val"":""right"",""pos"":""9356"",""leader"":""dot""}}]",IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedRPr,lang.eastAsia,en-US,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+23,TOC2,computedRPr,rFonts.eastAsiaTheme,majorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,numPr.children,"[{""name"":""ilvl"",""attrs"":{""val"":""2""}}]","[{""name"":""ilvl"",""attrs"":{""val"":""2""}},{""name"":""numId"",""attrs"":{""val"":""5""}}]",IMPLEMENTATION ADAPTATION: generator-owned numbering; src/shared/config/sto-styles.ts:288-341.
+3,StoHeading3,computedPPr,pStyle.val,,ListParagraph,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,pageBreakBefore.val,0,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedPPr,suppressAutoHyphens,True,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedRPr,bCs,,True,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedRPr,lang.eastAsia,ru-RU,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,numberingLevelPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+3,StoHeading3,numberingLevelPPr,ind.left,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,ind.firstLine,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,spacing.after,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedPPr,tabs.children,"[{""name"":""tab"",""attrs"":{""val"":""right"",""leader"":""dot"",""pos"":""9356""}}]","[{""name"":""tab"",""attrs"":{""val"":""right"",""pos"":""9356"",""leader"":""dot""}}]",IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedRPr,lang.eastAsia,en-US,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+33,TOC3,computedRPr,rFonts.eastAsiaTheme,majorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,numPr.children,"[{""name"":""ilvl"",""attrs"":{""val"":""3""}}]","[{""name"":""ilvl"",""attrs"":{""val"":""3""}},{""name"":""numId"",""attrs"":{""val"":""5""}}]",IMPLEMENTATION ADAPTATION: generator-owned numbering; src/shared/config/sto-styles.ts:288-341.
+4,StoHeading4,computedPPr,pStyle.val,,ListParagraph,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,pageBreakBefore.val,0,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedPPr,suppressAutoHyphens,True,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedRPr,bCs,,True,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedRPr,lang.eastAsia,ru-RU,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedRPr,lang.val,en-US,ru-RU,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,numberingLevelPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+4,StoHeading4,numberingLevelPPr,ind.left,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,ind.firstLine,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,spacing.after,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedPPr,tabs.children,"[{""name"":""tab"",""attrs"":{""val"":""right"",""leader"":""dot"",""pos"":""9356""}}]","[{""name"":""tab"",""attrs"":{""val"":""right"",""pos"":""9356"",""leader"":""dot""}}]",IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedRPr,color.val,,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedRPr,lang.eastAsia,en-US,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+43,TOC4,computedRPr,rFonts.eastAsiaTheme,majorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:78-95; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedPPr,numPr.children,"[{""name"":""ilvl"",""attrs"":{""val"":""4""}},{""name"":""numId"",""attrs"":{""val"":""19""}}]","[{""name"":""ilvl"",""attrs"":{""val"":""4""}},{""name"":""numId"",""attrs"":{""val"":""5""}}]",IMPLEMENTATION ADAPTATION: generator-owned numbering; src/shared/config/sto-styles.ts:288-341.
+5,StoHeading5,computedPPr,pStyle.val,,ListParagraph,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedPPr,spacing.after,,0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedPPr,spacing.before,200,0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedPPr,spacing.line,,360,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedPPr,spacing.lineRule,,auto,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedRPr,b,,True,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,bCs,,True,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,color.themeColor,accent1,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,color.themeShade,7F,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,color.val,243F60,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,lang.eastAsia,ru-RU,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,rFonts.asciiTheme,majorHAnsi,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,rFonts.cstheme,majorBidi,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,rFonts.eastAsiaTheme,majorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,rFonts.hAnsiTheme,majorHAnsi,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+5,StoHeading5,computedRPr,sz.val,24,28,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,computedRPr,szCs.val,24,28,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+5,StoHeading5,numberingLevelRPr,rFonts.hint,default,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedPPr,ind.firstLine,,709,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedPPr,jc.val,,left,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedPPr,numPr.children,"[{""name"":""ilvl"",""attrs"":{""val"":""5""}},{""name"":""numId"",""attrs"":{""val"":""19""}}]","[{""name"":""ilvl"",""attrs"":{""val"":""5""}},{""name"":""numId"",""attrs"":{""val"":""5""}}]",IMPLEMENTATION ADAPTATION: generator-owned numbering; src/shared/config/sto-styles.ts:288-341.
+6,StoHeading6,computedPPr,pStyle.val,,ListParagraph,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedPPr,spacing.after,,0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedPPr,spacing.before,200,0,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedPPr,spacing.line,,360,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedPPr,spacing.lineRule,,auto,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedRPr,b,,True,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,bCs,,True,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,color.themeColor,accent1,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,color.themeShade,7F,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,color.val,243F60,000000,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,i,True,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,iCs,True,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,lang.eastAsia,ru-RU,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,rFonts.asciiTheme,majorHAnsi,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,rFonts.cstheme,majorBidi,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,rFonts.eastAsiaTheme,majorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,rFonts.hAnsiTheme,majorHAnsi,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+6,StoHeading6,computedRPr,sz.val,24,28,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,computedRPr,szCs.val,24,28,DOCUMENTED ADAPTATION: heading-level policy; docs/architecture/dotm-template-style-audit.md:50-56.
+6,StoHeading6,numberingLevelRPr,rFonts.hint,default,,IMPLEMENTATION: src/shared/config/sto-styles.ts:139-186; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,shd.color,auto,,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,shd.fill,FFFFFF,,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,shd.val,clear,,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,spacing.after,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedPPr,spacing.before,,0,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedRPr,lang.bidi,ar-SA,,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedRPr,lang.eastAsia,ru-RU,,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+ac,TitlePageText,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,IMPLEMENTATION: src/shared/config/sto-styles.ts:246-259; normative basis for this exact delta UNIDENTIFIED.
+afc,StructuralHeading,computedPPr,ind.firstLine,,0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedPPr,spacing.before,,0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedPPr,suppressAutoHyphens,True,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedRPr,color.val,,000000,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedRPr,lang.bidi,ar-SA,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedRPr,lang.eastAsia,ru-RU,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedRPr,rFonts.cstheme,majorBidi,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+afc,StructuralHeading,computedRPr,rFonts.eastAsiaTheme,majorEastAsia,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedPPr,shd.color,auto,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedPPr,shd.fill,FFFFFF,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedPPr,shd.val,clear,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedPPr,spacing.before,,0,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedRPr,bCs,,True,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedRPr,lang.bidi,ar-SA,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedRPr,lang.eastAsia,ru-RU,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff0,StructuralHeadingNoTOC,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,UNIDENTIFIED: no authoritative source line was found for this exact numeric XML delta.
+aff1,TableText,computedPPr,spacing.after,,0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedPPr,spacing.before,,0,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedRPr,color.val,,000000,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedRPr,lang.bidi,ar-SA,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedRPr,lang.eastAsia,ru-RU,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."
+aff1,TableText,computedRPr,rFonts.eastAsiaTheme,minorEastAsia,,"IMPLEMENTATION: src/shared/config/sto-styles.ts:191-259; captions' no-hyphenation rule is local-source-14 (withheld extracted text):477-479,526-528; numeric basis for this exact delta UNIDENTIFIED."

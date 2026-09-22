@@ -1,0 +1,80 @@
+style_id,type,style_name,classification,generator_style,based_on,next_style,linked_style
+-,paragraph,+№ - Название рисунка,mapped,FigureCaption,1-,1-,-0
+-0,character,+№ - Название рисунка Знак,ignored,,a2,,-
+-1,paragraph,+№ - Название таблицы,mapped,TableCaption,1-,a1,-2
+-2,character,+№ - Название таблицы Знак,ignored,,a2,,-1
+1,paragraph,+Заголовок 1 уровня,mapped,StoHeading1,,1-,
+1-,paragraph,+Абзац с отступом 1-ой строки,mapped,Normal,,,
+10,paragraph,heading 1,ignored,,a1,a1,11
+100,paragraph,Стиль _абзац с отступом 1 строки + По центру Первая строка:  0 см,ignored,,1-,,
+11,character,Заголовок 1 Знак,ignored,,a2,,10
+12,paragraph,toc 1,ignored,,13,a1,
+13,paragraph,+Оглавление 1,mapped,TOC1,,,
+2,paragraph,+Заголовок 2 уровня,mapped,StoHeading2,1,1-,
+20,paragraph,heading 2,ignored,,a1,a1,21
+21,character,Заголовок 2 Знак,ignored,,a2,,20
+22,paragraph,toc 2,ignored,,23,a1,
+23,paragraph,+Оглавление 2,mapped,TOC2,13,a1,
+24,paragraph,+Приложение Заголовок 2,deferred,,,1-,
+3,paragraph,+Заголовок 3 уровня,mapped,StoHeading3,2,1-,
+30,paragraph,heading 3,ignored,,a1,a1,31
+31,character,Заголовок 3 Знак,ignored,,a2,,30
+32,paragraph,toc 3,ignored,,33,a1,
+33,paragraph,+Оглавление 3,mapped,TOC3,13,a1,
+4,paragraph,+Заголовок 4 уровня,mapped,StoHeading4,3,1-,
+40,paragraph,heading 4,ignored,,a1,a1,41
+41,character,Заголовок 4 Знак,ignored,,a2,,40
+42,paragraph,toc 4,ignored,,43,a1,
+43,paragraph,+Оглавление 4,mapped,TOC4,13,a1,
+5,paragraph,heading 5,mapped,StoHeading5,a1,a1,50
+50,character,Заголовок 5 Знак,ignored,,a2,,5
+51,paragraph,toc 5,deferred,,a1,a1,
+6,paragraph,heading 6,mapped,StoHeading6,a1,a1,60
+60,character,Заголовок 6 Знак,ignored,,a2,,6
+7,paragraph,heading 7,ignored,,a1,a1,70
+70,character,Заголовок 7 Знак,ignored,,a2,,7
+8,paragraph,heading 8,ignored,,a1,a1,80
+80,character,Заголовок 8 Знак,ignored,,a2,,8
+9,paragraph,heading 9,ignored,,a1,a1,90
+90,character,Заголовок 9 Знак,ignored,,a2,,9
+MTDisplayEquation,paragraph,MTDisplayEquation,deferred,,a1,a1,
+a,numbering,+Список автонумер заголовков,adapted,,,,
+a0,paragraph,+Список использованных источников,adapted,,af2,,afe
+a1,paragraph,Normal,ignored,,,,
+a2,character,Default Paragraph Font,ignored,,,,
+a3,table,Normal Table,ignored,,,,
+a4,numbering,No List,ignored,,,,
+a5,table,Table Grid,ignored,,a3,,
+a6,paragraph,Plain Text,ignored,,a1,,a7
+a7,character,Текст Знак,ignored,,,,a6
+a8,paragraph,footer,ignored,,a1,,a9
+a9,character,Нижний колонтитул Знак,ignored,,,,a8
+aa,character,page number,ignored,,a2,,
+ab,paragraph,+Тит_Тема ВКР,deferred,,ac,,
+ac,paragraph,+Тит_Абзац по центру,mapped,TitlePageText,1-,,
+ad,paragraph,Balloon Text,ignored,,a1,,ae
+ae,character,Текст выноски Знак,ignored,,,,ad
+af,character,Hyperlink,ignored,,,,
+af0,paragraph,header,ignored,,a1,,af1
+af1,character,Верхний колонтитул Знак,ignored,,,,af0
+af2,paragraph,List Paragraph,ignored,,,,af3
+af3,character,Абзац списка Знак,ignored,,a2,,af2
+af4,paragraph,Subtitle,ignored,,a1,a1,af5
+af5,character,Подзаголовок Знак,ignored,,a2,,af4
+af6,paragraph,TOC Heading,ignored,,10,a1,
+af7,paragraph,footnote text,ignored,,a1,,af8
+af8,character,Текст сноски Знак,ignored,,a2,,af7
+af9,character,footnote reference,ignored,,a2,,
+afa,paragraph,Body Text,ignored,,a1,,afb
+afb,character,Основной текст Знак,ignored,,a2,,afa
+afc,paragraph,+ЗАГОЛОВОК по центру,mapped,StructuralHeading,,1-,afd
+afd,character,+ЗАГОЛОВОК по центру Знак,ignored,,11,,afc
+afe,character,+Список использованных источников Знак,ignored,,af3,,a0
+aff,paragraph,+Заголовки,ignored,,a1,a1,
+aff0,paragraph,+ЗаголРеферСодерж,mapped,StructuralHeadingNoTOC,ac,1-,
+aff1,paragraph,+Текст в таблице,mapped,TableText,1-,,
+aff2,paragraph,+ПРИЛОЖЕНИЕ А и Загол. на сл. строке,deferred,,afc,1-,
+aff3,paragraph,Стиль +ПРИЛОЖЕНИЕ А + не все прописные,deferred,,a1,,
+aff4,paragraph,+КлючСловаРеферат,deferred,,1-,,
+apple-converted-space,character,apple-converted-space,ignored,,a2,,
+pubnames,character,pub_names,ignored,,a2,,

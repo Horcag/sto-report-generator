@@ -1,0 +1,80 @@
+{
+  "historicalRevision": "09b079fef3b037f79b33cc486f96133c6efca044",
+  "cases": [
+    {
+      "case": "baseline",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-left-1twip",
+      "injectedProperty": "<w:ind w:left=\"1\" w:firstLine=\"709\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-right-1twip",
+      "injectedProperty": "<w:ind w:right=\"1\" w:firstLine=\"709\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-first-line-minus-1twip",
+      "injectedProperty": "<w:ind w:firstLine=\"708\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-line-minus-1unit",
+      "injectedProperty": "<w:spacing w:line=\"359\" w:lineRule=\"auto\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-after-1twip",
+      "injectedProperty": "<w:spacing w:after=\"1\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-left-10mm",
+      "injectedProperty": "<w:ind w:left=\"567\" w:firstLine=\"709\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-right-10mm",
+      "injectedProperty": "<w:ind w:right=\"567\" w:firstLine=\"709\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-first-line-0",
+      "injectedProperty": "<w:ind w:firstLine=\"0\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-line-single",
+      "injectedProperty": "<w:spacing w:line=\"240\" w:lineRule=\"auto\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    },
+    {
+      "case": "body-after-24pt",
+      "injectedProperty": "<w:spacing w:after=\"480\"/>",
+      "targetText": "Настоящий документ…",
+      "checks": 40,
+      "failed": []
+    }
+  ]
+}

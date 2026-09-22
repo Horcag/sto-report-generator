@@ -1,0 +1,30 @@
+logical_source_id,source_type,evidence_level,covered_by
+local-source-01,Local source-corpus inventory,Инвентаризация и извлечение; релевантные требования в дополнении,local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-02,Local NIR report form,"Инвентаризация форм, XML/текст; полный Word golden для каждой формы отсутствует",local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-03,Local NIR review form,"Инвентаризация форм, XML/текст; полный Word golden для каждой формы отсутствует",local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-04,Local NIR plan form,"Инвентаризация форм, XML/текст; полный Word golden для каждой формы отсутствует",local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-05,Local methodical material: lists and bibliography,Правила и примеры; перечни/формулы дополнительно визуально,special-atoms.csv
+local-source-06,Local NIR report example,Инвентаризация и извлечение; релевантные требования в дополнении,local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-07,СТО 02068410-004-2018 (edition 2019; local copy not published),Разделы 1–7 и приложения; OCR + визуальные страницы,local-only: sto-matrix.md; published rows in full-matrix.csv
+local-source-08,Local methodical material: lists and bibliography,Правила и примеры; перечни/формулы дополнительно визуально,special-atoms.csv
+local-source-09,Local NIR statement form,"Инвентаризация форм, XML/текст; полный Word golden для каждой формы отсутствует",local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-10,ГОСТ Р 7.0.5-2008 (local copy not published),Индекс разделов и применимых типов; полная атомизация всех подпунктов ГОСТ НЕ завершена,local-only: special-source-index.md; published rows in full-matrix.csv
+local-source-11,ГОСТ Р 7.0.100-2018 (local copy not published),Индекс разделов и применимых типов; полная атомизация всех подпунктов ГОСТ НЕ завершена,local-only: special-source-index.md; published rows in full-matrix.csv
+local-source-12,ГОСТ Р 7.0.108-2022 (local copy not published),Индекс разделов и применимых типов; полная атомизация всех подпунктов ГОСТ НЕ завершена,local-only: special-source-index.md; published rows in full-matrix.csv
+local-source-13,Local lecture material: bibliography,Правила и примеры; перечни/формулы дополнительно визуально,special-atoms.csv
+local-source-14,Local qualification-work formatting guide,Инвентаризация и извлечение; релевантные требования в дополнении,local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-15,Editorial handbook excerpt: lists,Правила и примеры; перечни/формулы дополнительно визуально,special-atoms.csv
+local-source-16,Qualification-work visual examples (23 PDF pages),Текст + визуально все 23 страницы,local-only: sto-visual-report.md; published rows in full-matrix.csv
+local-source-17,Laboratory report example (DOCX),"Инвентаризация форм, XML/текст; полный Word golden для каждой формы отсутствует",local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-18,Laboratory report example (PDF),Инвентаризация и извлечение; релевантные требования в дополнении,local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-19,Local methodical material: formula typesetting,Правила и примеры; перечни/формулы дополнительно визуально,special-atoms.csv
+local-source-20,Local methodical material: lists and bibliography,Правила и примеры; перечни/формулы дополнительно визуально,special-atoms.csv
+local-source-21,Local academic-text formatting instruction,Инвентаризация и извлечение; релевантные требования в дополнении,local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-22,Local laboratory-work formatting instruction,Инвентаризация и извлечение; релевантные требования в дополнении,local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-23,Local laboratory-work formatting instruction,Инвентаризация и извлечение; релевантные требования в дополнении,local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-24,Presentation example (PPTX),"Учтён; презентация/доклад — отдельный продукт, не спецификация DOCX",local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-25,Local referat example,"Инвентаризация форм, XML/текст; полный Word golden для каждой формы отсутствует",local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-26,Local DOTM template (semantics audited; file omitted),"XML: все 79 стилей, numbering, glossary; четыре варианта",local-only: dotm-matrix.md; published rows in full-matrix.csv
+local-source-27,СТО 02068410-004-2018 (edition 2019; local copy not published),Разделы 1–7 и приложения; OCR + визуальные страницы,local-only: sto-matrix.md; published rows in full-matrix.csv
+local-source-28,Lecture outline: academic document formatting,Инвентаризация и извлечение; релевантные требования в дополнении,local-only: supplement-matrix.md; published rows in full-matrix.csv
+local-source-29,Lecture: presentation and oral report,"Учтён; презентация/доклад — отдельный продукт, не спецификация DOCX",local-only: supplement-matrix.md; published rows in full-matrix.csv
