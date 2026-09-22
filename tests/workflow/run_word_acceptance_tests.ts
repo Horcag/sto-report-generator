@@ -462,6 +462,10 @@ async function main(): Promise<void> {
 			() => detectWordAcceptanceHost(),
 			/Word acceptance requires WSL/,
 		);
+		await assert.rejects(
+			runWordAcceptance({ inputDocx: path.resolve('package.json') }),
+			/Word acceptance requires WSL/,
+		);
 	}
 	await assert.rejects(
 		runWordAcceptance({ inputDocx: '.agent-work/does-not-exist.docx' }),
