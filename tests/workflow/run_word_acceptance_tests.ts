@@ -13,7 +13,9 @@ import path from 'node:path';
 import {
 	createWordAcceptancePlan,
 	detectWordAcceptanceHost,
+	WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS,
 	WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION,
+	WORD_ACCEPTANCE_TIMEOUT_MS,
 } from '@/app/word-acceptance';
 import { getStoStylePresetDisplayNames } from '@/shared/config';
 
@@ -31,8 +33,7 @@ function toPowerShellPath(absolutePath: string): string {
 }
 
 function testPowerShellHashFallback(): void {
-	const executable =
-		process.platform === 'win32' ? 'powershell.exe' : 'powershell.exe';
+	const executable = 'powershell.exe';
 	const availability = spawnSync(executable, [
 		'-NoProfile',
 		'-Command',
@@ -63,6 +64,25 @@ function testPowerShellHashFallback(): void {
 
 	assert.equal(calculate(false), expected);
 	assert.equal(calculate(true), expected);
+	const dispatch = spawnSync(
+		executable,
+		[
+			'-NoProfile',
+			'-ExecutionPolicy',
+			'Bypass',
+			'-File',
+			toPowerShellPath(
+				path.resolve('tests/workflow/word_pdf_export_test.ps1'),
+			),
+		],
+		{ encoding: 'utf8', timeout: 30_000 },
+	);
+	assert.equal(
+		dispatch.status,
+		0,
+		dispatch.stderr || dispatch.error?.message,
+	);
+	assert.match(dispatch.stdout, /Typed PDF dispatch test passed/);
 }
 
 function testPowerShellLicenseStatusParsing(): void {
@@ -226,16 +246,23 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 		/Copy-Item -LiteralPath \$stagedAcceptedDocx -Destination \$request\.acceptedDocx/,
 	);
 	assert.match(script, /\$document\.Save\(\)/);
-	assert.doesNotMatch(script, /\$document\.SaveAs2\(/);
+	assert.doesNotMatch(script, /Lock-DocumentFieldsForPdfExport/);
+	assert.doesNotMatch(script, /\$field\.Locked = \$true/);
+	assert.match(script, /Add-Type -Path.*word_pdf_export\.cs/);
+	assert.match(script, /\[WordAcceptance\.PdfExporter\]::Export/);
+	assert.doesNotMatch(script, /\$document\.ExportAsFixedFormat\(/);
 	assert.ok(
-		script.indexOf('$document.ExportAsFixedFormat') <
+		script.indexOf('$word.Documents.Open($stagedAcceptedDocx') <
+			script.indexOf('[WordAcceptance.PdfExporter]::Export'),
+		'PDF export must use a freshly reopened accepted DOCX',
+	);
+	assert.ok(
+		script.indexOf('[WordAcceptance.PdfExporter]::Export') <
 			script.indexOf('$styleChecks = Get-StyleChecks'),
 		'Word style COM lookups must happen after PDF export',
 	);
-	assert.match(
-		script,
-		/Remove-Item -LiteralPath \$stagingDirectory -Recurse -Force/,
-	);
+	assert.match(script, /"staging\.path"/);
+	assert.match(script, /"word-process\.json"/);
 	assert.match(script, /\$Document\.Styles\.Item\(\[string\]\$DisplayName\)/);
 	assert.doesNotMatch(
 		script,
@@ -243,7 +270,7 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 	);
 	assert.match(script, /System\.Drawing\.Text\.InstalledFontCollection/);
 	assert.doesNotMatch(script, /\$Word\.FontNames/);
-	assert.match(script, /check_word_license\.ps1/);
+	assert.match(script, /Get-LicenseDiagnostic/);
 	const licenseScript = readFileSync(
 		path.resolve('scripts', 'check_word_license.ps1'),
 		'utf8',
@@ -253,21 +280,33 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 		/^\s*exit\b/m,
 		'the nested license preflight must return without terminating its caller',
 	);
-	assert.ok(
-		script.indexOf('check_word_license.ps1') <
-			script.indexOf('New-Object -ComObject Word.Application'),
-		'Office licensing must be checked before starting Word COM',
+	assert.match(
+		script,
+		/capability verification will continue/,
+		'Office licensing diagnostics must not block capability verification',
 	);
+	assert.match(script, /interactionMode -eq "interactive"/);
+	assert.match(script, /GetWindowThreadProcessId/);
+	assert.match(script, /COM reused a pre-existing Word process/);
+	assert.match(script, /if \(\$ownsWordProcess\)/);
+	assert.match(script, /Assert-OutputFile \$request\.pdf "PDF"/);
+	assert.match(script, /renderer = "word-desktop-interactive"/);
+	assert.match(script, /Get-WordPrinterDiagnostic/);
+	assert.match(script, /selectedForWord = if \(\$defaultPrinter\)/);
+	assert.doesNotMatch(script, /Set-SafeWordLayoutPrinter/);
+	assert.match(script, /SetDefaultPrinter/);
+	assert.match(script, /temporarilyChangedSystemDefault/);
+	assert.match(script, /LegacyDefaultPrinterMode/);
+	assert.match(script, /legacyDefaultPrinterModePresent/);
+	assert.match(script, /Restore-DefaultPrinter/);
+	assert.match(script, /ActiveWindow\.Panes\(1\)\.Pages\.Count/);
+	assert.doesNotMatch(script, /\.ComputeStatistics\(/);
 	assert.match(script, /\[int\]\$field\.Type -ne \$WdFieldTOC/);
 	assert.match(
 		script,
 		/foreach \(\$previousOutput in @\(\$request\.acceptedDocx, \$request\.pdf, \$request\.manifest\)\)/,
 	);
 	assert.match(script, /Move-Item -LiteralPath \$temporaryPath/);
-	assert.match(
-		script,
-		/for \(\$attempt = 1; \$attempt -le 4; \$attempt\+\+\)/,
-	);
 	assert.match(script, /\$operationError = \$_/);
 	assert.match(script, /\$secondaryErrors -join \[Environment\]::NewLine/);
 	assert.doesNotMatch(script, /Write-Warning \$cleanupMessage/);
@@ -312,6 +351,22 @@ function main(): void {
 	);
 	assert.equal(plan.request.requiredFont, 'Times New Roman');
 	assert.equal(plan.request.stylePreset, 'samara-template-2022');
+	assert.equal(WORD_ACCEPTANCE_TIMEOUT_MS, 180_000);
+	assert.equal(WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS, 45_000);
+	assert.equal(plan.request.interactionMode, 'background');
+	assert.deepEqual(plan.request.attemptedModes, ['background']);
+	assert.equal(
+		plan.request.runnerPidPath,
+		`WIN:${path.join(path.dirname(requestJsonPath), 'runner.pid')}`,
+	);
+	assert.equal(
+		plan.request.wordPidPath,
+		`WIN:${path.join(path.dirname(requestJsonPath), 'word.pid')}`,
+	);
+	assert.equal(
+		plan.request.printerStatePath,
+		`WIN:${path.join(path.dirname(requestJsonPath), 'printer-state.txt')}`,
+	);
 	assert.equal(plan.request.inputDocx, `WIN:${path.resolve(inputDocx)}`);
 	assert.equal(
 		plan.request.acceptedDocx,
@@ -398,6 +453,45 @@ function main(): void {
 	testPowerShellHashFallback();
 	testPowerShellLicenseStatusParsing();
 	testPowerShellUsesShortWordStagingPaths();
+	const launcher = readFileSync(
+		path.resolve('src', 'app', 'word-acceptance.ts'),
+		'utf8',
+	);
+	assert.match(launcher, /WORD_ACCEPTANCE_TIMEOUT_MS,/);
+	assert.match(launcher, /WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS/);
+	assert.match(launcher, /retrying interactively/);
+	assert.match(
+		launcher,
+		/windowsHide: plan\.request\.interactionMode === 'background'/,
+	);
+	assert.match(launcher, /result\.stdout,[\s\S]*result\.stderr,/);
+	assert.match(launcher, /stop_word_acceptance\.ps1/);
+	assert.match(launcher, /writeWordAcceptanceFailureManifest/);
+	assert.match(launcher, /pageCountBeforeFailure/);
+	assert.match(launcher, /stage:[\s\S]*'exportPdf'/);
+	const cleanupScript = readFileSync(
+		path.resolve('scripts', 'stop_word_acceptance.ps1'),
+		'utf8',
+	);
+	assert.match(cleanupScript, /Get-CimInstance Win32_Process/);
+	assert.match(cleanupScript, /Refusing to stop PID/);
+	assert.match(cleanupScript, /attempt -le 100/);
+	assert.match(cleanupScript, /Restore-DefaultPrinter/);
+	assert.match(cleanupScript, /LegacyDefaultPrinterMode/);
+	assert.match(cleanupScript, /Get-WordPreservationMessage/);
+	assert.match(cleanupScript, /GetVisibleTopLevelWindowTitles/);
+	assert.match(cleanupScript, /unexpected window\(s\)/);
+	assert.match(cleanupScript, /The user may have opened another document/);
+	assert.ok(
+		cleanupScript.indexOf('wordPidPath') <
+			cleanupScript.indexOf('printerStatePath'),
+		'cleanup must stop Word before restoring the user printer',
+	);
+	assert.ok(
+		cleanupScript.indexOf('wordPidPath') <
+			cleanupScript.indexOf('runnerPidPath'),
+		'cleanup must stop the owned Word process before its PowerShell controller',
+	);
 
 	console.log('Word acceptance launcher tests passed.');
 }
