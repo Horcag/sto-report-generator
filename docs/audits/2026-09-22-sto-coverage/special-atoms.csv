@@ -1,0 +1,130 @@
+id,area,source_page,source_clause,requirement,status,implementation,check_or_missing
+F01,formula,1,FORM:5-8,use formula editor,partial,src/shared/lib/math-converter.ts:215-226,no rendered OMML acceptance
+F02,formula,1,FORM:9-16,select Math style,manual,src/shared/lib/math-converter.ts:76-105,no style assertion
+F03,formula,1,FORM:9-16,select Function style,partial,src/shared/lib/source-preflight/formula-checker.ts:33-60,syntax only
+F04,formula,1,FORM:9-16,select Variable style,manual,src/shared/lib/math-converter.ts:117-120,no italic assertion
+F05,formula,1,FORM:9-16,select Greek-Symbol style,manual,src/shared/lib/math-converter.ts:117-120,no Greek style assertion
+F06,formula,1,FORM:9-16,select Vector-Matrix style,missing,src/shared/lib/math-converter.ts:76-200,no policy
+F07,formula,1,FORM:9-16,select Text style for text fragment,manual,src/features/markdown-parser/lib/parser/handlers/math-handler.ts:42-44,fallback is not semantic Text style
+F08,formula,1,FORM:20,digits upright,manual,src/shared/lib/math-converter.ts:117-120,no OMML run property test
+F09,formula,1,FORM:21-23,decimal separator comma,partial,src/shared/lib/source-preflight/formula-checker.ts:321-370,no decimal semantic test
+F10,formula,1,FORM:24-26,Latin variable italic,manual,src/shared/lib/math-converter.ts:117-120,no style test
+F11,formula,1,FORM:24-26,unit letter italic,manual,src/shared/lib/math-converter.ts:117-120,no style test
+F12,formula,1,FORM:27-28,uppercase Greek upright,manual,src/shared/lib/math-converter.ts:117-120,no style test
+F13,formula,1,FORM:28-29,lowercase Greek italic,manual,src/shared/lib/math-converter.ts:117-120,no style test
+F14,formula,1,FORM:32,lowercase vector upright bold,missing,src/shared/lib/math-converter.ts:76-200,no vector detection/style
+F15,formula,1,FORM:33,uppercase matrix upright bold,missing,src/shared/lib/math-converter.ts:76-200,no matrix detection/style
+F16,formula,1,FORM:34,ordinary function upright,partial,src/shared/lib/source-preflight/formula-checker.ts:33-60,no output-style test
+F17,formula,1,FORM:35,trigonometric function upright,partial,src/shared/lib/source-preflight/formula-checker.ts:33-60,no output-style test
+F18,formula,1,FORM:36,temperature unit upright,missing,src/shared/lib/math-converter.ts:117-120,no unit policy
+F19,formula,1,FORM:37,chemical element upright,missing,src/shared/lib/math-converter.ts:117-120,no chemistry policy
+F20,formula,1,FORM:39-40,abbreviated subscript upright,missing,src/shared/lib/math-converter.ts:122-148,no classifier
+F21,formula,1,FORM:40-41,numeric subscript retained as index,manual,src/shared/lib/math-converter.ts:122-148,no fixture
+F22,formula,1,FORM:42-44,break first on relation sign,manual,src/shared/lib/source-preflight/formula-checker.ts:72-119,no layout test
+F23,formula,1,FORM:43-44,break second on ellipsis,manual,src/shared/lib/source-preflight/formula-checker.ts:72-119,no layout test
+F24,formula,1,FORM:44,break third on plus/minus,manual,src/shared/lib/source-preflight/formula-checker.ts:72-119,no layout test
+F25,formula,1,FORM:44-45,break last on multiplication cross,manual,src/shared/lib/source-preflight/formula-checker.ts:72-119,no layout test
+F26,formula,1,FORM:45-46,never break at division,partial,src/shared/lib/source-preflight/formula-checker.ts:72-119,source check only
+F27,formula,1,FORM:46-47,repeat operator at next line,manual,src/shared/lib/source-preflight/formula-checker.ts:72-119,no layout test
+F28,formula,2,FORM:151-152,do not separate subscript from base,manual,src/shared/lib/math-converter.ts:122-148,Word no-break needed
+F29,formula,2,FORM:151-152,do not separate superscript from base,manual,src/shared/lib/math-converter.ts:131-148,Word no-break needed
+F30,formula,2,FORM:152-154,do not separate integrand from integral,manual,src/shared/lib/math-converter.ts:164-200,Word no-break needed
+F31,formula,2,FORM:152-154,do not separate expression from logarithm,manual,src/shared/lib/math-converter.ts:76-105,Word no-break needed
+F32,formula,2,FORM:152-154,do not separate expression from sum/product,manual,src/shared/lib/math-converter.ts:194-200,Word no-break needed
+F33,formula,2,FORM:155-156,small non-independent formula inline,manual,src/features/markdown-parser/lib/parser/handlers/inline-parser.ts:103,author classification
+F34,formula,2,FORM:156-159,important formula display,manual,src/features/markdown-parser/lib/parser/handlers/math-handler.ts:19-92,author classification
+F35,formula,2,FORM:156-159,numbered formula display,partial,src/features/markdown-parser/lib/parser/handlers/math-handler.ts:23-37,visual result absent
+F36,formula,2,FORM:157-159,long formula display,manual,src/features/markdown-parser/lib/parser/handlers/math-handler.ts:19-92,no length rule
+F37,formula,2,FORM:157-159,sum/product formula display,manual,src/features/markdown-parser/lib/parser/handlers/math-handler.ts:19-92,no semantic rule
+F38,formula,2,FORM:160-168,number only formula referenced in text,manual,src/shared/lib/source-preflight/formula-checker.ts:181-267,no reference semantic test
+F39,formula,2,FORM:167-168,number enclosed in parentheses,partial,src/features/markdown-parser/lib/parser/handlers/math-handler.ts:29-36,test needs rendered fixture
+F40,formula,2,FORM:167-168,number at right page edge,manual,src/features/markdown-parser/lib/parser/handlers/math-handler.ts:64-90,Word geometry absent
+F41,formula,2,FORM:178-181,consecutive display formulas comma/semicolon,partial,src/shared/lib/source-preflight/formula-checker.ts:151-179,only adjacent blocks
+F42,formula,2,FORM:182-183,Russian punctuation around formula,partial,src/shared/lib/source-preflight/formula-checker.ts:151-179,context incomplete
+F43,formula,2,FORM:184-186,round brackets cover expression height,manual,src/shared/lib/math-converter.ts:215-226,no rendered fixture
+F44,formula,2,FORM:184-186,square brackets cover expression height,manual,src/shared/lib/math-converter.ts:215-226,no rendered fixture
+F45,formula,2,FORM:184-186,braces cover expression height,manual,src/shared/lib/math-converter.ts:215-226,no rendered fixture
+F46,formula,2,FORM:187-190,mid-dot primary multiplication sign,partial,src/shared/lib/source-preflight/formula-checker.ts:122-148,no rendered glyph test
+F47,formula,3,FORM:200-205,no dot between number and letter,partial,src/shared/lib/source-preflight/formula-checker.ts:122-148,operand semantics absent
+F48,formula,3,FORM:200-205,no dot with vector-matrix or parentheses/function argument,partial,src/shared/lib/source-preflight/formula-checker.ts:122-148,operand semantics absent
+F49,formula,3,FORM:206-209,cross only permitted product contexts,partial,src/shared/lib/source-preflight/formula-checker.ts:122-148,semantic context absent
+F50,formula,3,FORM:211-214,ellipsis preceded/followed by operation signs,partial,src/shared/lib/source-preflight/formula-checker.ts:321-364,no AST test
+L01,list,1,LIST:8-9,top item hyphen,partial,src/shared/config/sto-styles.ts:354-370,no Word indent test
+L02,list,1,LIST:10-13,second level Russian lower letter parenthesis,implemented,src/shared/config/sto-styles.ts:371-385; sto-rules.json:81-117,source tests
+L03,list,1,LIST:10-13,exclude й,implemented,sto-rules.json:81-117,source tests
+L04,list,1,LIST:10-13,exclude ё,implemented,sto-rules.json:81-117,source tests
+L05,list,1,LIST:10-13,exclude з,implemented,sto-rules.json:81-117,source tests
+L06,list,1,LIST:10-13,exclude о,implemented,sto-rules.json:81-117,source tests
+L07,list,1,LIST:10-13,exclude ч,implemented,sto-rules.json:81-117,source tests
+L08,list,1,LIST:10-13,exclude ь,implemented,sto-rules.json:81-117,source tests
+L09,list,1,LIST:10-13,exclude ы,implemented,sto-rules.json:81-117,source tests
+L10,list,1,LIST:10-13,exclude ъ,implemented,sto-rules.json:81-117,source tests
+L11,list,1,LIST:14-16,third level Arabic parenthesis,implemented,src/shared/config/sto-styles.ts:386-401,render absent
+L12,list,1,LIST:15-16,no point after parenthesis,partial,src/shared/lib/source-preflight/list-checker.ts:185-218,no rendered test
+L13,list,1,LIST:15-16,every item paragraph indent,manual,src/shared/config/sto-styles.ts:354-451,no effective-layout proof
+L14,list,4,LIST:45-49,lead-in sentence before list,partial,src/shared/lib/source-preflight/list-checker.ts:133-183,heuristic only
+L15,list,4,LIST:49-54,lead-in generalizing word,manual,src/shared/lib/source-preflight/list-checker.ts:133-183,semantic only
+L16,list,4,LIST:55-61,move trailing preposition into first item,partial,src/shared/lib/source-preflight/list-checker.ts:133-183,fixed word set
+L17,list,5,LIST:69-73,colon after direct lead-in,partial,src/shared/lib/source-preflight/list-checker.ts:133-183,semantic relation absent
+L18,list,5,LIST:74-77,full stop allowed after weak lead-in,manual,src/shared/lib/source-preflight/list-checker.ts:133-183,semantic relation absent
+L19,list,8,LIST:example,inline list uses comma for simple items,missing,src/shared/lib/source-preflight/list-checker.ts:419-462,no model
+L20,list,8,LIST:example,inline list uses semicolon for complex items,missing,src/shared/lib/source-preflight/list-checker.ts:419-462,no model
+L21,list,11,LIST:122-132,uppercase-letter marker dot,unsupported,src/shared/config/sto-styles.ts:354-451,no level
+L22,list,11,LIST:122-132,Roman marker dot,unsupported,src/shared/config/sto-styles.ts:354-451,no level
+L23,list,11,LIST:122-132,decimal marker dot,partial,ordered-numbering.ts:404-419,no capitalization policy
+L24,list,11,LIST:122-132,upper/dot item begins uppercase,manual,src/shared/lib/source-preflight/list-checker.ts:185-417,no generator level
+L25,list,11,LIST:122-132,upper/dot item ends full stop,partial,src/shared/lib/source-preflight/list-checker.ts:185-417,no render
+L26,list,12,LIST:133-160,lower-letter parenthesis item begins lowercase,partial,src/shared/lib/source-preflight/list-checker.ts:185-417,no semantic phrase check
+L27,list,12,LIST:133-160,Arabic-parenthesis item begins lowercase,partial,src/shared/lib/source-preflight/list-checker.ts:185-417,no semantic phrase check
+L28,list,12,LIST:133-160,hyphen item begins lowercase,partial,src/shared/lib/source-preflight/list-checker.ts:185-417,no semantic phrase check
+L29,list,12,LIST:133-160,lower/simple nonfinal item comma,partial,src/shared/lib/source-preflight/list-checker.ts:185-417,no multi-paragraph support
+L30,list,12,LIST:133-160,lower/complex nonfinal item semicolon,partial,src/shared/lib/source-preflight/list-checker.ts:185-417,no syntax model
+L31,list,13,LIST:168-184,last item full stop,implemented,src/shared/lib/source-preflight/list-checker.ts:185-417,source tests
+L32,list,13,LIST:168-184,marker style not mixed at level,implemented,src/shared/lib/source-preflight/list-checker.ts:354-417,source tests
+L33,list,13,LIST:168-184,number sequence consecutive,implemented,src/shared/lib/source-preflight/list-checker.ts:354-417,source tests
+B01,bibliography,22,G100:5.2.3,book title required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:29;141-170,default Без названия masks missing data
+B02,bibliography,31,G100:5.2.6,book responsibility required category,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:270-305,no complete field validation
+B03,bibliography,38,G100:5.3.3,edition statement required when present,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:154,no source completeness validation
+B04,bibliography,46,G100:5.5.3,place required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:161,uses [Б. м.] fallback
+B05,bibliography,49,G100:5.5.4,publisher required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:162,uses [б. и.] fallback
+B06,bibliography,52,G100:5.5.5,publication date required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:163,no required-year validation in formatter
+B07,bibliography,55,G100:5.6.3,book extent required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:166-169,no source completeness validation
+B08,bibliography,26,G100:5.2.4,parallel title optional,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:354-356,no field route
+B09,bibliography,27,G100:5.2.5,title-related information conditional,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:354-356,only type/howpublished route
+B10,bibliography,39,G100:5.3.4,parallel edition optional,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:154,no field route
+B11,bibliography,41,G100:5.3.5,edition responsibility conditional,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:308-327,note heuristic only
+B12,bibliography,41,G100:5.3.6,additional edition data required,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:154,no distinct field
+B13,bibliography,57,G100:5.6.4,other physical characteristics optional,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:166-169,no field
+B14,bibliography,57,G100:5.6.5,size optional,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:166-169,no field
+B15,bibliography,60,G100:5.6.6,accompanying material optional,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:166-169,no field
+B16,bibliography,60,G100:5.7,series area,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:141-170,no field route
+B17,bibliography,64,G100:5.8,note area and prescribed punctuation,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:308-327,limited editor/publication parsing
+B18,bibliography,68,G100:5.9,identifier/access conditions,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:426-445,URL/access only
+B19,bibliography,71,G100:5.10,content/media/access area,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:19-88,no fields
+B20,bibliography,81,G100:6.1,multi-level record,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:19-88,no nesting model
+B21,bibliography,82,G100:6.2,multipart monograph,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:141-170,no level model
+B22,bibliography,87,G100:6.3,serial resource,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:91-114,article is not serial record
+B23,bibliography,96,G100:7.1,component record structure,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:91-139,limited types
+B24,bibliography,98,G100:7.2,component title/responsibility,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:91-139,no full conditional areas
+B25,bibliography,100,G100:7.3,identifying resource title/responsibility,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:91-139,no full fields
+B26,bibliography,102,G100:7.4,component location/pages,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:377-387,no roman/no-page cases
+B27,bibliography,104,G100:7.5,component notes,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:91-139,no structured notes
+B28,bibliography,110,G100:7.8,review/abstract record,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:19-88,no type
+B29,bibliography,9,G108:4.3,electronic exact version,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no version field
+B30,bibliography,9,G108:5.3.1,electronic primary title,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:29;213-250,no source-title validation
+B31,bibliography,10,G108:5.3.4,electronic volume/count,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no field
+B32,bibliography,10,G108:5.3.5,system/access/update/restriction notes,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:426-445,accessmode only
+B33,bibliography,13,G108:6.3,legal/normative electronic reference,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:173-184,generic norm only
+B34,bibliography,13,G108:6.4,electronic standard reference,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:173-184,no standard template
+B35,bibliography,15,G108:6.7,presentation reference,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no type
+B36,bibliography,16,G108:6.9,image reference,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no type
+B37,bibliography,16,G108:6.10,audiovisual reference,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no type
+B38,bibliography,18,G108:6.11,computer program reference,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no type
+B39,bibliography,18,G108:6.12,dataset reference,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no type
+B40,bibliography,9,G005:7.4,end-reference numbering,implemented,src/shared/config/sto-styles.ts:333-350; src/features/markdown-parser/lib/parser/handlers/sto-handler.ts:100-144,visual template comparison manual
+B41,bibliography,7,G005:5,in-text reference,partial,citation parser,only numeric marker
+B42,bibliography,8,G005:6,footnote reference,unsupported,none,no footnote engine
+B43,bibliography,12,G005:8,repeated reference,unsupported,none,no repeat state
+B44,bibliography,23,G005:9,complex reference,unsupported,none,no combined reference model
+B45,bibliography,24,G005:10,electronic reference note,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:426-445,not full G005 mode
+B46,bibliography,26,G005:11,archival reference,unsupported,none,no type

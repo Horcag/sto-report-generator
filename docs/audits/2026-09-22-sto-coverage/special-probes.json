@@ -1,0 +1,22 @@
+{
+  "execution": {
+    "cwd": "[repository root]",
+    "formula_command": "npx tsx -e \"import { mathJaxReady, convertLatex2Math } from '@/shared/lib/math-converter'; async function main(){ console.log(await mathJaxReady()); for (const x of ['x=\\\\frac{1}{','\\\\badcommand{x}','\\\\left( x']) { try {const r=convertLatex2Math(x); console.log('OK',JSON.stringify(x),r.constructor.name)} catch(e) {console.log('THROW',JSON.stringify(x),e instanceof Error ? e.message : String(e))}}}; main()\"",
+    "bibliography_command": "npx tsx -e \"import { formatBibItem } from '@/features/markdown-parser/lib/utils/bib-formatter'; const item={citationKey:'four',entryType:'book',entryTags:{author:'А, А. and Б, Б. and В, В. and Г, Г.',title:'T',address:'М.',publisher:'P',year:'2026',pages:'1'}}; console.log(formatBibItem(item as any));\""
+  },
+  "formula_raw_stdout": [
+    "true",
+    "Type not supported: merror",
+    "OK \"x=\\\\frac{1}{\" Math$1",
+    "OK \"\\\\badcommand{x}\" Math$1",
+    "Type not supported: merror",
+    "OK \"\\\\left( x\" Math$1"
+  ],
+  "bibliography_raw_stdout": [
+    "T / А. А, Б. Б, В. В, Г. Г. – М. : P, 2026. – 1 с."
+  ],
+  "interpretation": {
+    "formula": "These malformed inputs did not throw; this does not prove the catch fallback unreachable for initialization or OMML/JSDOM failures.",
+    "four_authors": "Exactly four authors produce no author heading, matching the 4+ lecture scheme; no B05 implementation defect was found."
+  }
+}

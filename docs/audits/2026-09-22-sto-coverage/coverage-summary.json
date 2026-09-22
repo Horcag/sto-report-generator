@@ -1,0 +1,27 @@
+{
+  "auditDate": "2026-09-22",
+  "auditedRevision": "09b079fef3b037f79b33cc486f96133c6efca044",
+  "scope": "Historical source, code, generated-document, and limited Word/layout audit. This public summary excludes local source materials and generated evidence.",
+  "requirementRows": 401,
+  "categories": {
+    "sto": 219,
+    "formulaListBibliography": 129,
+    "applicabilityFormsTemplates": 53
+  },
+  "statusCounts": {
+    "manual": 126,
+    "partial": 146,
+    "implemented": 22,
+    "missing": 35,
+    "unsupported": 29,
+    "notApplicable": 12,
+    "otherQualifiedStatuses": 31
+  },
+  "templateComparison": {
+    "stylesInventoried": 79,
+    "mappedStyles": 17,
+    "numericComparisons": 122,
+    "rawPropertyDifferences": 185
+  },
+  "interpretation": "Overlapping rows must not be converted into a compliance percentage. Statuses describe the historical audit evidence, not a current release claim."
+}
