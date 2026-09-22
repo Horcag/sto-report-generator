@@ -8,7 +8,7 @@
 - TypeScript generation owns deterministic document structure: title page, styles, numbering, bibliography insertion, formula/table/figure blocks and page setup.
 - The `portable` renderer stops after TypeScript generation and optional DOCX XML validation. It does not import `win32com`, does not require Microsoft Word, and does not claim authoritative PDF pagination.
 - The `word` renderer is the explicit compatibility path for Word-dependent repair and normalization after the DOCX exists: field updates, Word formula repair, TOC, image/table normalization and PDF export.
-- The `accept-word` command is a separate final-acceptance path for an already generated DOCX. From WSL it invokes Windows PowerShell and Microsoft Word COM directly, writes a separate accepted DOCX/PDF by default, verifies stable Word page count after reopen, and emits a JSON manifest. It does not run the Python/pywin32 repair pipeline.
+- The `accept-word` command is a separate final-acceptance path for an already generated DOCX. From WSL it invokes Windows PowerShell and Microsoft Word COM directly in the current interactive user session, tries background automation first, and falls back to visible Word only after a bounded failure. It writes a separate accepted DOCX/PDF by default, verifies the output files and stable Word page count after reopen, records license state as a non-blocking diagnostic, and emits a JSON manifest. It does not run the Python/pywin32 repair pipeline.
 - DOCX validator owns final XML assertions after unpacking: actual styles, section margins, page numbering, captions, fields, table/image layout and generated citation/math integrity.
 - Do not move business rules into post-build only because they are convenient there. Prefer source preflight for authoring errors and DOCX validator for final layout assertions.
 
@@ -23,6 +23,8 @@
 - `docx_package.py` reads and rewrites DOCX ZIP parts and clears dirty Word field flags.
 - `xml_layout.py` performs pure DOCX XML normalization and counts figures, tables, and used sources. Source count is derived from the highest generated citation number, because TypeScript emits only cited bibliography records and numbers them densely by first use. Add XML-only fixes here when Word COM is not needed.
 - `word_automation.py` contains all `win32com`/Word COM operations: TOC update, table header repeat, image normalization, small-table keep-together handling and PDF export. It must fail early with an actionable unsupported-platform message on Linux, WSL, and macOS.
+- `scripts/word_pdf_export.cs` supplies an explicit managed argument array to Word PDF export. On the tested Office installation, direct PowerShell dispatch hung while typed dispatch succeeded against the same document; this is a verified workaround, not a claim about every Office version. No Windows Python dependency is needed for acceptance.
+- The launcher runs exact-process cleanup after every attempt. Word identity receipts include PID, start time, and executable path. Staging is removed only after process cleanup; failed cleanup retains the request and prevents a retry. The manifest moves from `pendingCleanup` to `accepted` only after cleanup succeeds.
 - `scripts/word_acceptance.ps1` contains the acceptance-only Word COM runtime used by `src/app/word-acceptance.ts`. Keep the PowerShell source ASCII-safe; pass localized style names through the UTF-8 JSON request generated from TypeScript style configuration.
 
 ## Document-Control Notes
