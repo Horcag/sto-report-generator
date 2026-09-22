@@ -8,12 +8,16 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import {
 	createWordAcceptancePlan,
 	detectWordAcceptanceHost,
+	runWordAcceptance,
+	WORD_ACCEPTANCE_OVERALL_TIMEOUT_MS,
 	WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION,
+	WORD_ACCEPTANCE_STAGE_TIMEOUT_MS,
 } from '@/app/word-acceptance';
 import { getStoStylePresetDisplayNames } from '@/shared/config';
 
@@ -242,6 +246,10 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 		/foreach \(\$style in @\(\$Document\.Styles\)\)/,
 	);
 	assert.match(script, /System\.Drawing\.Text\.InstalledFontCollection/);
+	assert.match(script, /GetWindowThreadProcessId/);
+	assert.match(script, /reused a pre-existing automation process/);
+	assert.match(script, /Set-DiagnosticStage "document\.pdf-export"/);
+	assert.match(script, /Set-DiagnosticFinal "failed"/);
 	assert.doesNotMatch(script, /\$Word\.FontNames/);
 	assert.match(script, /check_word_license\.ps1/);
 	const licenseScript = readFileSync(
@@ -273,7 +281,7 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 	assert.doesNotMatch(script, /Write-Warning \$cleanupMessage/);
 }
 
-function main(): void {
+async function main(): Promise<void> {
 	const inputDocx = path.join(
 		process.cwd(),
 		'example',
@@ -295,6 +303,8 @@ function main(): void {
 			hostKind: 'wsl',
 			toHostPath: fakeHostPath,
 			requestJsonPath,
+			runId: 'test-run-id',
+			startedAt: '2026-09-22T00:00:00.000Z',
 		},
 	);
 
@@ -312,6 +322,22 @@ function main(): void {
 	);
 	assert.equal(plan.request.requiredFont, 'Times New Roman');
 	assert.equal(plan.request.stylePreset, 'samara-template-2022');
+	assert.equal(plan.request.runId, 'test-run-id');
+	assert.equal(plan.request.startedAt, '2026-09-22T00:00:00.000Z');
+	assert.equal(WORD_ACCEPTANCE_STAGE_TIMEOUT_MS, 120_000);
+	assert.equal(WORD_ACCEPTANCE_OVERALL_TIMEOUT_MS, 300_000);
+	assert.equal(
+		plan.request.runnerPidPath,
+		`WIN:${path.join(path.dirname(requestJsonPath), 'runner.pid')}`,
+	);
+	assert.equal(
+		plan.request.wordPidPath,
+		`WIN:${path.join(path.dirname(requestJsonPath), 'word.pid')}`,
+	);
+	assert.equal(
+		plan.request.wordPidsBeforePath,
+		`WIN:${path.join(path.dirname(requestJsonPath), 'word-pids-before.json')}`,
+	);
 	assert.equal(plan.request.inputDocx, `WIN:${path.resolve(inputDocx)}`);
 	assert.equal(
 		plan.request.acceptedDocx,
@@ -324,6 +350,16 @@ function main(): void {
 	assert.equal(
 		plan.request.manifest,
 		`WIN:${path.resolve(inputDocx).replace(/\.docx$/, '.acceptance.json')}`,
+	);
+	assert.equal(
+		plan.request.diagnostics,
+		`WIN:${path.resolve(inputDocx).replace(/\.docx$/, '.acceptance.diagnostics.json')}`,
+	);
+	assert.equal(
+		plan.diagnosticsPath,
+		path
+			.resolve(inputDocx)
+			.replace(/\.docx$/, '.acceptance.diagnostics.json'),
 	);
 
 	const expectedStyleMap = getStoStylePresetDisplayNames(
@@ -352,6 +388,7 @@ function main(): void {
 			acceptedDocx: 'accepted/final.docx',
 			pdf: 'accepted/final.pdf',
 			manifest: 'accepted/final.json',
+			diagnostics: 'accepted/final.diagnostics.json',
 		},
 		{
 			hostKind: 'windows',
@@ -372,6 +409,14 @@ function main(): void {
 		defaultPlan.request.acceptedDocx,
 		path.resolve('accepted/final.docx'),
 	);
+	assert.equal(
+		defaultPlan.diagnosticsPath,
+		path.resolve('accepted/final.diagnostics.json'),
+	);
+	assert.equal(
+		defaultPlan.request.diagnostics,
+		path.resolve('accepted/final.diagnostics.json'),
+	);
 
 	assert.throws(
 		() =>
@@ -388,18 +433,63 @@ function main(): void {
 			),
 		/separate accepted DOCX/,
 	);
+	assert.throws(
+		() =>
+			createWordAcceptancePlan(
+				{
+					inputDocx,
+					stylePreset: 'unsupported' as never,
+				},
+				{
+					hostKind: 'wsl',
+					toHostPath: fakeHostPath,
+					requestJsonPath,
+				},
+			),
+		/Supported style presets/,
+	);
 
-	if (process.platform !== 'win32' && !process.platform.startsWith('linux')) {
+	if (process.platform === 'win32') {
+		assert.equal(detectWordAcceptanceHost(), 'windows');
+	} else if (
+		process.platform === 'linux' &&
+		(os.release().toLowerCase().includes('microsoft') ||
+			os.release().toLowerCase().includes('wsl'))
+	) {
+		assert.equal(detectWordAcceptanceHost(), 'wsl');
+	} else {
 		assert.throws(
 			() => detectWordAcceptanceHost(),
 			/Word acceptance requires WSL/,
 		);
 	}
+	await assert.rejects(
+		runWordAcceptance({ inputDocx: '.agent-work/does-not-exist.docx' }),
+		/DOCX file not found/,
+	);
 	testPowerShellHashFallback();
 	testPowerShellLicenseStatusParsing();
 	testPowerShellUsesShortWordStagingPaths();
+	const launcher = readFileSync(
+		path.resolve('src', 'app', 'word-acceptance.ts'),
+		'utf8',
+	);
+	assert.match(launcher, /WORD_ACCEPTANCE_STAGE_TIMEOUT_MS/);
+	assert.match(launcher, /stop_word_acceptance\.ps1/);
+	assert.match(launcher, /status: 'timed_out'/);
+	const cleanupScript = readFileSync(
+		path.resolve('scripts', 'stop_word_acceptance.ps1'),
+		'utf8',
+	);
+	assert.match(cleanupScript, /Get-CimInstance Win32_Process/);
+	assert.match(cleanupScript, /Refusing to stop PID/);
+	assert.match(cleanupScript, /\/Automation/);
+	assert.match(cleanupScript, /Embedding/);
 
 	console.log('Word acceptance launcher tests passed.');
 }
 
-main();
+main().catch(error => {
+	console.error(error);
+	process.exit(1);
+});

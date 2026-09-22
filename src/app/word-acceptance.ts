@@ -1,4 +1,5 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -10,13 +11,16 @@ import {
 	StoStylePreset,
 } from '@/shared/config';
 
-export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
+export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 2;
+export const WORD_ACCEPTANCE_STAGE_TIMEOUT_MS = 120_000;
+export const WORD_ACCEPTANCE_OVERALL_TIMEOUT_MS = 300_000;
 
 export interface WordAcceptanceOptions {
 	inputDocx: string;
 	acceptedDocx?: string;
 	pdf?: string;
 	manifest?: string;
+	diagnostics?: string;
 	stylePreset?: StoStylePreset;
 }
 
@@ -26,14 +30,20 @@ export interface WordAcceptanceExpectedStyle {
 }
 
 export interface WordAcceptanceRequest {
-	schemaVersion: 1;
+	schemaVersion: 2;
+	runId: string;
+	startedAt: string;
 	inputDocx: string;
 	acceptedDocx: string;
 	pdf: string;
 	manifest: string;
+	diagnostics: string;
 	requiredFont: string;
 	stylePreset: StoStylePreset;
 	expectedStyles: WordAcceptanceExpectedStyle[];
+	runnerPidPath: string;
+	wordPidPath: string;
+	wordPidsBeforePath: string;
 }
 
 export type WordAcceptanceHostKind = 'windows' | 'wsl';
@@ -45,6 +55,7 @@ export interface WordAcceptancePlan {
 	request: WordAcceptanceRequest;
 	requestJsonPath: string;
 	scriptPath: string;
+	diagnosticsPath: string;
 }
 
 interface CreatePlanEnvironment {
@@ -52,6 +63,23 @@ interface CreatePlanEnvironment {
 	toHostPath: (absolutePath: string) => string;
 	requestJsonPath?: string;
 	scriptPath?: string;
+	runId?: string;
+	startedAt?: string;
+}
+
+interface WordAcceptanceDiagnostics {
+	schemaVersion?: number;
+	runId?: string;
+	status?: string;
+	stage?: string;
+	updatedAt?: string;
+	message?: string;
+	[key: string]: unknown;
+}
+
+interface CleanupResult {
+	ok: boolean;
+	details: string;
 }
 
 function resolveDefaultOutputPath(
@@ -59,11 +87,18 @@ function resolveDefaultOutputPath(
 	explicitPath: string | undefined,
 	suffix: string,
 ): string {
-	if (explicitPath) {
-		return path.resolve(explicitPath);
-	}
+	if (explicitPath) return path.resolve(explicitPath);
 	const parsed = path.parse(inputDocx);
 	return path.join(parsed.dir, `${parsed.name}${suffix}`);
+}
+
+function resolveDiagnosticsPath(
+	manifest: string,
+	explicitPath: string | undefined,
+): string {
+	if (explicitPath) return path.resolve(explicitPath);
+	const parsed = path.parse(manifest);
+	return path.join(parsed.dir, `${parsed.name}.diagnostics.json`);
 }
 
 function assertDifferentPaths(inputDocx: string, acceptedDocx: string): void {
@@ -83,9 +118,7 @@ function getExpectedStyles(
 }
 
 export function detectWordAcceptanceHost(): WordAcceptanceHostKind {
-	if (process.platform === 'win32') {
-		return 'windows';
-	}
+	if (process.platform === 'win32') return 'windows';
 	if (
 		process.platform === 'linux' &&
 		(os.release().toLowerCase().includes('microsoft') ||
@@ -103,9 +136,7 @@ function convertWslPathToWindows(absolutePath: string): string {
 		encoding: 'utf8',
 		shell: false,
 	});
-	if (result.error) {
-		throw result.error;
-	}
+	if (result.error) throw result.error;
 	if (result.status !== 0) {
 		throw new Error(
 			`wslpath failed for ${absolutePath}: ${result.stderr || result.stdout}`,
@@ -150,6 +181,7 @@ export function createWordAcceptancePlan(
 		options.manifest,
 		'.acceptance.json',
 	);
+	const diagnostics = resolveDiagnosticsPath(manifest, options.diagnostics);
 	const stylePreset = options.stylePreset ?? DEFAULT_STO_STYLE_PRESET;
 	if (!isStoStylePreset(stylePreset)) {
 		throw new Error(
@@ -164,26 +196,35 @@ export function createWordAcceptancePlan(
 	const requestJsonPath = path.resolve(
 		environment.requestJsonPath ?? createRequestJsonPath(),
 	);
+	const runtimeDirectory = path.dirname(requestJsonPath);
+	const hostPath = environment.toHostPath;
 	const request: WordAcceptanceRequest = {
 		schemaVersion: WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION,
-		inputDocx: environment.toHostPath(inputDocx),
-		acceptedDocx: environment.toHostPath(acceptedDocx),
-		pdf: environment.toHostPath(pdf),
-		manifest: environment.toHostPath(manifest),
+		runId: environment.runId ?? randomUUID(),
+		startedAt: environment.startedAt ?? new Date().toISOString(),
+		inputDocx: hostPath(inputDocx),
+		acceptedDocx: hostPath(acceptedDocx),
+		pdf: hostPath(pdf),
+		manifest: hostPath(manifest),
+		diagnostics: hostPath(diagnostics),
 		requiredFont: 'Times New Roman',
 		stylePreset,
 		expectedStyles: getExpectedStyles(stylePreset),
+		runnerPidPath: hostPath(path.join(runtimeDirectory, 'runner.pid')),
+		wordPidPath: hostPath(path.join(runtimeDirectory, 'word.pid')),
+		wordPidsBeforePath: hostPath(
+			path.join(runtimeDirectory, 'word-pids-before.json'),
+		),
 	};
-	const command =
-		environment.hostKind === 'wsl' ? 'powershell.exe' : 'powershell.exe';
+	const command = 'powershell.exe';
 	const args = [
 		'-NoProfile',
 		'-ExecutionPolicy',
 		'Bypass',
 		'-File',
-		environment.toHostPath(scriptPath),
+		hostPath(scriptPath),
 		'-RequestJson',
-		environment.toHostPath(requestJsonPath),
+		hostPath(requestJsonPath),
 	];
 
 	return {
@@ -193,10 +234,84 @@ export function createWordAcceptancePlan(
 		request,
 		requestJsonPath,
 		scriptPath,
+		diagnosticsPath: diagnostics,
 	};
 }
 
-export function runWordAcceptance(options: WordAcceptanceOptions): void {
+function readDiagnostics(pathname: string): WordAcceptanceDiagnostics | null {
+	try {
+		return JSON.parse(
+			fs.readFileSync(pathname, 'utf8'),
+		) as WordAcceptanceDiagnostics;
+	} catch {
+		return null;
+	}
+}
+
+function writeDiagnostics(
+	pathname: string,
+	value: WordAcceptanceDiagnostics,
+): void {
+	fs.mkdirSync(path.dirname(pathname), { recursive: true });
+	const temporaryPath = `${pathname}.tmp-${process.pid}`;
+	fs.writeFileSync(
+		temporaryPath,
+		`${JSON.stringify(value, null, 2)}\n`,
+		'utf8',
+	);
+	fs.renameSync(temporaryPath, pathname);
+}
+
+function stopOwnedWordAcceptanceProcesses(
+	plan: WordAcceptancePlan,
+): CleanupResult {
+	const cleanup = spawnSync(
+		plan.command,
+		[
+			'-NoProfile',
+			'-ExecutionPolicy',
+			'Bypass',
+			'-File',
+			toHostPath(
+				plan.hostKind,
+				path.join(
+					path.dirname(plan.scriptPath),
+					'stop_word_acceptance.ps1',
+				),
+			),
+			'-RequestJson',
+			toHostPath(plan.hostKind, plan.requestJsonPath),
+		],
+		{
+			encoding: 'utf8',
+			shell: false,
+			timeout: 15_000,
+			windowsHide: true,
+		},
+	);
+	return {
+		ok: !cleanup.error && cleanup.status === 0,
+		details: [cleanup.stdout, cleanup.stderr, cleanup.error?.message]
+			.filter(Boolean)
+			.join('\n')
+			.trim(),
+	};
+}
+
+function formatDiagnostics(
+	diagnostics: WordAcceptanceDiagnostics | null,
+): string {
+	if (!diagnostics) return '';
+	const details = [
+		diagnostics.stage ? `last stage: ${diagnostics.stage}` : '',
+		diagnostics.message ? `detail: ${diagnostics.message}` : '',
+	].filter(Boolean);
+	return details.length > 0 ? details.join('; ') : '';
+}
+
+export async function runWordAcceptance(
+	options: WordAcceptanceOptions,
+): Promise<void> {
 	if (!fs.existsSync(options.inputDocx)) {
 		throw new Error(`DOCX file not found: ${options.inputDocx}`);
 	}
@@ -212,20 +327,120 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		'utf8',
 	);
 
-	const result = spawnSync(plan.command, plan.args, {
-		cwd: process.cwd(),
-		encoding: 'utf8',
-		shell: false,
-	});
-	if (result.error) {
-		throw result.error;
-	}
-	if (result.status !== 0) {
-		throw new Error(
-			result.stderr || result.stdout || 'Word acceptance failed.',
-		);
-	}
-	if (result.stdout.trim()) {
-		console.log(result.stdout.trim());
+	let preserveRuntimeDirectory = false;
+	try {
+		const child = spawn(plan.command, plan.args, {
+			cwd: process.cwd(),
+			windowsHide: true,
+			shell: false,
+			stdio: ['ignore', 'pipe', 'pipe'],
+		});
+		let stdout = '';
+		let stderr = '';
+		child.stdout.setEncoding('utf8');
+		child.stderr.setEncoding('utf8');
+		child.stdout.on('data', chunk => {
+			stdout += chunk;
+		});
+		child.stderr.on('data', chunk => {
+			stderr += chunk;
+		});
+
+		const startedAt = Date.now();
+		let lastProgressAt = startedAt;
+		let lastUpdatedAt = '';
+		let timeoutReason = '';
+		const timeoutPromise = new Promise<'timeout'>(resolve => {
+			const timer = setInterval(() => {
+				const diagnostics = readDiagnostics(plan.diagnosticsPath);
+				if (
+					diagnostics?.updatedAt &&
+					diagnostics.updatedAt !== lastUpdatedAt
+				) {
+					lastUpdatedAt = diagnostics.updatedAt;
+					lastProgressAt = Date.now();
+				}
+				const now = Date.now();
+				if (now - startedAt > WORD_ACCEPTANCE_OVERALL_TIMEOUT_MS) {
+					timeoutReason = `overall timeout after ${WORD_ACCEPTANCE_OVERALL_TIMEOUT_MS / 1000} seconds`;
+					clearInterval(timer);
+					resolve('timeout');
+				} else if (
+					now - lastProgressAt >
+					WORD_ACCEPTANCE_STAGE_TIMEOUT_MS
+				) {
+					timeoutReason = `stage timeout after ${WORD_ACCEPTANCE_STAGE_TIMEOUT_MS / 1000} seconds without progress`;
+					clearInterval(timer);
+					resolve('timeout');
+				}
+			}, 1_000);
+			child.once('exit', () => clearInterval(timer));
+			child.once('error', () => clearInterval(timer));
+		});
+		const exitPromise = new Promise<
+			| {
+					kind: 'exit';
+					code: number | null;
+					signal: NodeJS.Signals | null;
+			  }
+			| { kind: 'error'; error: Error }
+		>(resolve => {
+			child.once('exit', (code, signal) =>
+				resolve({ kind: 'exit', code, signal }),
+			);
+			child.once('error', error => resolve({ kind: 'error', error }));
+		});
+		const outcome = await Promise.race([exitPromise, timeoutPromise]);
+
+		if (outcome === 'timeout') {
+			const beforeCleanup = readDiagnostics(plan.diagnosticsPath);
+			const cleanup = stopOwnedWordAcceptanceProcesses(plan);
+			preserveRuntimeDirectory = !cleanup.ok;
+			writeDiagnostics(plan.diagnosticsPath, {
+				...(beforeCleanup ?? {}),
+				schemaVersion: 1,
+				runId: plan.request.runId,
+				status: 'timed_out',
+				stage: beforeCleanup?.stage ?? 'unknown',
+				updatedAt: new Date().toISOString(),
+				message: timeoutReason,
+				cleanup:
+					cleanup.details || (cleanup.ok ? 'completed' : 'failed'),
+			});
+			throw new Error(
+				[
+					`Word acceptance stopped: ${timeoutReason}.`,
+					formatDiagnostics(beforeCleanup),
+					`Diagnostics: ${plan.diagnosticsPath}`,
+					cleanup.details,
+				]
+					.filter(Boolean)
+					.join('\n'),
+			);
+		}
+		if (outcome.kind === 'error') throw outcome.error;
+		if (outcome.code !== 0) {
+			const cleanup = stopOwnedWordAcceptanceProcesses(plan);
+			preserveRuntimeDirectory = !cleanup.ok;
+			const diagnostics = readDiagnostics(plan.diagnosticsPath);
+			throw new Error(
+				[
+					stderr.trim() || stdout.trim() || 'Word acceptance failed.',
+					formatDiagnostics(diagnostics),
+					`Diagnostics: ${plan.diagnosticsPath}`,
+					cleanup.details,
+				]
+					.filter(Boolean)
+					.join('\n'),
+			);
+		}
+		if (stdout.trim()) console.log(stdout.trim());
+	} finally {
+		if (!preserveRuntimeDirectory) {
+			fs.rmSync(path.dirname(plan.requestJsonPath), {
+				recursive: true,
+				force: true,
+			});
+		}
 	}
 }

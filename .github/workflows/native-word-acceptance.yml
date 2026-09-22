@@ -57,7 +57,7 @@ jobs:
               run: npm run build:example:raw
 
             - name: Run native Word acceptance
-              timeout-minutes: 5
+              timeout-minutes: 7
               run: |
                   New-Item -ItemType Directory -Force artifacts | Out-Null
                   npm run accept:word -- .agent-work/example-raw.docx --accepted-docx artifacts/example.accepted.docx --pdf artifacts/example.accepted.pdf --manifest artifacts/example.acceptance.json
@@ -67,7 +67,8 @@ jobs:
                   $requiredArtifacts = @(
                       'artifacts/example.accepted.docx',
                       'artifacts/example.accepted.pdf',
-                      'artifacts/example.acceptance.json'
+                      'artifacts/example.acceptance.json',
+                      'artifacts/example.acceptance.diagnostics.json'
                   )
                   foreach ($artifact in $requiredArtifacts) {
                       if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {
@@ -78,6 +79,10 @@ jobs:
                       }
                   }
                   $manifest = Get-Content -LiteralPath artifacts/example.acceptance.json -Raw | ConvertFrom-Json
+                  $diagnostics = Get-Content -LiteralPath artifacts/example.acceptance.diagnostics.json -Raw | ConvertFrom-Json
+                  if ($diagnostics.status -ne 'succeeded' -or $diagnostics.stage -ne 'complete') {
+                      throw "Word acceptance diagnostics are not terminal-success: $($diagnostics.status) / $($diagnostics.stage)"
+                  }
                   if (-not $manifest.stablePageCount) {
                       throw 'Word page count was not stable after reopening the accepted DOCX.'
                   }

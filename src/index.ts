@@ -268,12 +268,12 @@ async function runAudit(args: ParsedArgs): Promise<void> {
 	console.log('DOCX validation passed.');
 }
 
-function runAcceptWord(args: ParsedArgs): void {
+async function runAcceptWord(args: ParsedArgs): Promise<void> {
 	const inputDocx = args.positionals[1];
 	if (!inputDocx) {
 		throw new Error('accept-word command requires an input DOCX path.');
 	}
-	runWordAcceptance({
+	await runWordAcceptance({
 		inputDocx,
 		acceptedDocx: optionString(args, 'accepted-docx'),
 		pdf: optionString(args, 'pdf'),
@@ -390,7 +390,7 @@ async function main(): Promise<void> {
 			await runAudit(args);
 			break;
 		case 'accept-word':
-			runAcceptWord(args);
+			await runAcceptWord(args);
 			break;
 		case 'validate-docx':
 			runValidateDocx(args);

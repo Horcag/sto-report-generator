@@ -33,5 +33,10 @@ assert.match(
 	/^\s{8}runs-on:\s*\[self-hosted, windows, word\]\s*$/m,
 	'native Word acceptance must remain isolated from untrusted pull requests',
 );
+assert.match(
+	nativeWordWorkflow,
+	/- name: Run native Word acceptance\s+timeout-minutes: 7/m,
+	'the workflow timeout must leave time for the five-minute acceptance watchdog to clean up',
+);
 
 console.log('CI configuration tests passed.');
