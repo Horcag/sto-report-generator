@@ -14,11 +14,11 @@ uv run python scripts/quality/check_markdown_links.py --root .
 
 ## Native Word acceptance
 
-`.github/workflows/native-word-acceptance.yml` is manual-only. Its job is constrained to a runner carrying all of these labels: `self-hosted`, `windows`, and `word`. The `word` label is an operator-maintained assertion that licensed Microsoft Word is installed and permitted for COM automation.
+`.github/workflows/native-word-acceptance.yml` runs automatically after a push to `master` and can also be started manually. Its job is constrained to a runner carrying all of these labels: `self-hosted`, `windows`, and `word`. The `word` label is an operator-maintained assertion that Microsoft Word is installed and permitted for COM automation; before starting COM, the workflow checks supported Microsoft 365 Apps and Office products that contain Word through `vnextdiag.ps1` for vNext/device licensing and `OSPP.VBS` for legacy/volume licensing.
 
 The workflow builds the `example` document without a Word post-build, calls `accept-word` against the installed Word COM server, verifies its acceptance manifest, and uploads the accepted DOCX, PDF, and JSON manifest. The manifest proves the Word version, source and output hashes, installed Times New Roman font, required style checks, and stable pagination after reopening the accepted DOCX.
 
-This is a release/acceptance signal, not a pull-request gate. Do not add it to GitHub-hosted CI and do not infer Word availability from a `windows-latest` runner label.
+This is a post-merge release/acceptance signal, not a pull-request gate. Do not expose the self-hosted runner to untrusted pull-request code, do not add this job to GitHub-hosted CI, and do not infer Word availability from a `windows-latest` runner label. The Word step has a bounded timeout because Microsoft does not support unattended Office automation as a server-side workload.
 
 ## Pull-request gate
 

@@ -4,9 +4,9 @@ import * as path from 'node:path';
 import {
 	getNumberedHeadingStyleId,
 	STO_RULES,
-	STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
 	STRUCTURAL_HEADING_STYLE_ID,
 } from '../config';
+import { validateTemplateStyleConformance } from './sto-template-style-validator';
 
 /**
  * STO Validation Suite
@@ -918,117 +918,6 @@ function validateNumbering(numberingXml: string | null): ValidationResult[] {
 	];
 }
 
-function validateHeadingStyles(input: ValidationInput): ValidationResult[] {
-	const heading1PageBreak = hasStylePropertyOrInherited(
-		input.stylesXml,
-		input.heading1StyleIds,
-		/<w:pageBreakBefore\b/,
-	);
-	const structuralPageBreak = [
-		STRUCTURAL_HEADING_STYLE_ID,
-		STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
-	].every(styleId =>
-		hasStylePropertyOrInherited(
-			input.stylesXml,
-			[styleId],
-			/<w:pageBreakBefore\b/,
-		),
-	);
-
-	return [
-		resultFromFailure(
-			'Numbered Heading Alignment',
-			hasStyleProperty(
-				input.stylesXml,
-				input.heading1StyleIds,
-				/<w:jc\b[^>]*w:val="center"[^>]*\/>/,
-			),
-			'Numbered headings (Heading1) must not be centered.',
-		),
-		resultFromPass(
-			'Structural Heading Alignment',
-			hasStyleProperty(
-				input.stylesXml,
-				[STRUCTURAL_HEADING_STYLE_ID],
-				/<w:jc\b[^>]*w:val="center"[^>]*\/>/,
-			),
-			'Structural headings must be centered.',
-		),
-		resultFromPass(
-			'Heading 1 Page Break',
-			heading1PageBreak,
-			'Heading 1 must have a pageBreakBefore.',
-		),
-		resultFromPass(
-			'Structural Heading Page Break',
-			structuralPageBreak,
-			'Structural headings must have a pageBreakBefore.',
-		),
-	];
-}
-
-function validateCaptionStyles(stylesXml: string): ValidationResult[] {
-	const captionLineSpacingPattern = new RegExp(
-		String.raw`<w:spacing\b[^>]*w:line="${STO_RULES.typography.captionLineSpacingDxa}"`,
-	);
-	const zeroFirstLinePattern = /<w:ind\b[^>]*w:firstLine="0"/;
-
-	return [
-		resultFromPass(
-			'Figure Caption Style',
-			hasStyleProperty(
-				stylesXml,
-				['FigureCaption'],
-				captionLineSpacingPattern,
-			) &&
-				hasStyleProperty(
-					stylesXml,
-					['FigureCaption'],
-					/<w:jc\b[^>]*w:val="center"[^>]*\/>/,
-				) &&
-				hasStyleProperty(
-					stylesXml,
-					['FigureCaption'],
-					zeroFirstLinePattern,
-				),
-			`FigureCaption style must be centered, have no first-line indent, and use single line spacing (${STO_RULES.typography.captionLineSpacingDxa} DXA).`,
-		),
-		resultFromPass(
-			'Table Caption Style',
-			hasStyleProperty(
-				stylesXml,
-				['TableCaption'],
-				captionLineSpacingPattern,
-			) &&
-				hasStyleProperty(
-					stylesXml,
-					['TableCaption'],
-					/<w:jc\b[^>]*w:val="left"[^>]*\/>/,
-				) &&
-				hasStyleProperty(
-					stylesXml,
-					['TableCaption'],
-					zeroFirstLinePattern,
-				),
-			`TableCaption style must be left-aligned, have no first-line indent, and use single line spacing (${STO_RULES.typography.captionLineSpacingDxa} DXA).`,
-		),
-		resultFromPass(
-			'Table Text Style',
-			hasStyleProperty(
-				stylesXml,
-				['TableText'],
-				captionLineSpacingPattern,
-			) &&
-				hasStyleProperty(
-					stylesXml,
-					['TableText'],
-					zeroFirstLinePattern,
-				),
-			`TableText style must have no first-line indent and use single line spacing (${STO_RULES.typography.captionLineSpacingDxa} DXA).`,
-		),
-	];
-}
-
 function createValidationInput(
 	docXml: string,
 	stylesXml: string,
@@ -1097,8 +986,11 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 		...validateMathAndCitations(input.docXml),
 		...validateNumbering(input.numberingXml),
 		...validateFieldsTablesAndImages(input),
-		...validateHeadingStyles(input),
-		...validateCaptionStyles(input.stylesXml),
+		...validateTemplateStyleConformance(
+			input.stylesXml,
+			input.numberingXml,
+			input.heading1StyleIds,
+		),
 	];
 }
 

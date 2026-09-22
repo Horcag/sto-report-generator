@@ -1,6 +1,8 @@
 name: Native Word acceptance
 
 on:
+    push:
+        branches: [master]
     workflow_dispatch:
 
 permissions:
@@ -15,6 +17,10 @@ jobs:
         name: Accept example in installed Microsoft Word
         runs-on: [self-hosted, windows, word]
         timeout-minutes: 15
+        env:
+            GIT_CONFIG_COUNT: 1
+            GIT_CONFIG_KEY_0: core.longpaths
+            GIT_CONFIG_VALUE_0: 'true'
         defaults:
             run:
                 shell: pwsh
@@ -31,8 +37,9 @@ jobs:
             - name: Install Node dependencies
               run: npm ci
 
-            - name: Verify Microsoft Word COM is available
+            - name: Verify Microsoft Word and its license are available
               run: |
+                  & ./scripts/check_word_license.ps1
                   $word = $null
                   try {
                       $word = New-Object -ComObject Word.Application
@@ -50,6 +57,7 @@ jobs:
               run: npm run build:example:raw
 
             - name: Run native Word acceptance
+              timeout-minutes: 5
               run: |
                   New-Item -ItemType Directory -Force artifacts | Out-Null
                   npm run accept:word -- .agent-work/example-raw.docx --accepted-docx artifacts/example.accepted.docx --pdf artifacts/example.accepted.pdf --manifest artifacts/example.acceptance.json

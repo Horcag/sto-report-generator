@@ -6,7 +6,18 @@ import {
 	TabStopType,
 } from 'docx';
 
+import {
+	createNumberedHeadingStyle,
+	HEADING_NUMBERING_REFERENCE,
+	NUMBERED_HEADING_STYLE_IDS,
+} from './sto-heading-styles';
 import { STO_RULES } from './sto-rules';
+
+export {
+	getNumberedHeadingStyleId,
+	HEADING_NUMBERING_REFERENCE,
+	NUMBERED_HEADING_STYLE_IDS,
+} from './sto-heading-styles';
 
 const TYPOGRAPHY = STO_RULES.typography;
 const NESTED_LIST_INDENT = TYPOGRAPHY.nestedListIndentStepDxa;
@@ -14,15 +25,6 @@ const TOC_RIGHT_TAB_STOP = TYPOGRAPHY.tocRightTabStopDxa;
 const TOC_LEVEL_INDENTS = TYPOGRAPHY.tocLevelIndentsDxa;
 const BIBLIOGRAPHY_PARAGRAPH = STO_RULES.bibliography.paragraph;
 
-export const NUMBERED_HEADING_STYLE_IDS = [
-	'StoHeading1',
-	'StoHeading2',
-	'StoHeading3',
-	'StoHeading4',
-	'StoHeading5',
-	'StoHeading6',
-] as const;
-export const HEADING_NUMBERING_REFERENCE = 'heading-numbering';
 export const STRUCTURAL_HEADING_STYLE_ID = 'StructuralHeading';
 export const STRUCTURAL_HEADING_NO_TOC_STYLE_ID = 'StructuralHeadingNoTOC';
 export const STO_STYLE_PRESET_NAMES = [
@@ -55,10 +57,6 @@ const SAMARA_TEMPLATE_2022_STYLE_NAMES: Record<string, string> = {
 	StoHeading6: 'heading 6',
 };
 
-function getSamaraTemplate2022StyleNames(): Record<string, string> {
-	return { ...SAMARA_TEMPLATE_2022_STYLE_NAMES };
-}
-
 export function isStoStylePreset(value: unknown): value is StoStylePreset {
 	return (
 		typeof value === 'string' &&
@@ -67,7 +65,7 @@ export function isStoStylePreset(value: unknown): value is StoStylePreset {
 }
 
 function getSamaraTemplate2022StyleName(styleId: string): string | undefined {
-	return getSamaraTemplate2022StyleNames()[styleId];
+	return SAMARA_TEMPLATE_2022_STYLE_NAMES[styleId];
 }
 
 function applySamaraTemplate2022StyleNames(
@@ -77,43 +75,6 @@ function applySamaraTemplate2022StyleNames(
 	return presetName ? { ...style, name: presetName } : style;
 }
 
-export function getNumberedHeadingStyleId(depth: number): string {
-	const normalizedDepth = globalThis.Math.min(
-		globalThis.Math.max(globalThis.Math.trunc(depth), 1),
-		NUMBERED_HEADING_STYLE_IDS.length,
-	);
-	return (
-		NUMBERED_HEADING_STYLE_IDS[normalizedDepth - 1] ??
-		NUMBERED_HEADING_STYLE_IDS[0]
-	);
-}
-
-function createNumberedHeadingStyle(level: number) {
-	return {
-		id: getNumberedHeadingStyleId(level),
-		name: `STO Heading ${level}`,
-		basedOn: 'Normal',
-		next: 'Normal',
-		quickFormat: true,
-		run: { bold: true, size: TYPOGRAPHY.fontSizeHalfPoints },
-		paragraph: {
-			spacing:
-				level === 1
-					? { before: 120, after: 120 }
-					: { before: 200, after: 0 },
-			alignment: AlignmentType.LEFT,
-			indent: { firstLine: TYPOGRAPHY.firstLineIndentDxa },
-			outlineLevel: level - 1,
-			keepNext: true,
-			...(level === 1 ? { pageBreakBefore: true } : {}),
-		},
-	};
-}
-
-function getTocIndent(level: number): number {
-	return TOC_LEVEL_INDENTS[level - 1] ?? 0;
-}
-
 function createTocStyle(level: number) {
 	return {
 		id: `TOC${level}`,
@@ -121,7 +82,8 @@ function createTocStyle(level: number) {
 		basedOn: level === 1 ? 'Normal' : 'TOC1',
 		next: 'Normal',
 		paragraph: {
-			indent: { left: getTocIndent(level), firstLine: 0 },
+			alignment: AlignmentType.LEFT,
+			indent: { left: TOC_LEVEL_INDENTS[level - 1] ?? 0, firstLine: 0 },
 			tabStops: [
 				{
 					type: TabStopType.RIGHT,
@@ -142,7 +104,7 @@ export const STO_STYLES: IStylesOptions = {
 				font: TYPOGRAPHY.fontFamily,
 				size: TYPOGRAPHY.fontSizeHalfPoints,
 				color: TYPOGRAPHY.fontColor,
-				language: { value: 'ru-RU' }, // Set language for native 'lowerLetter' numbering
+				language: { value: 'ru-RU' },
 			},
 			paragraph: {
 				spacing: {
@@ -177,27 +139,6 @@ export const STO_STYLES: IStylesOptions = {
 		{
 			id: STRUCTURAL_HEADING_STYLE_ID,
 			name: 'Structural Heading',
-			basedOn: getNumberedHeadingStyleId(1),
-			next: 'Normal',
-			quickFormat: true,
-			run: {
-				bold: true,
-				size: TYPOGRAPHY.fontSizeHalfPoints,
-				allCaps: true,
-			},
-			paragraph: {
-				spacing: { before: 120, after: 240 }, // 12pt after
-				alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
-				indent: { firstLine: 0 },
-				outlineLevel: 0,
-				keepNext: true,
-				// @ts-expect-error missing type in docx library for some properties
-				pageBreakBefore: true,
-			},
-		},
-		{
-			id: STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
-			name: 'Structural Heading No TOC',
 			basedOn: 'Normal',
 			next: 'Normal',
 			quickFormat: true,
@@ -207,10 +148,39 @@ export const STO_STYLES: IStylesOptions = {
 				allCaps: true,
 			},
 			paragraph: {
-				spacing: { before: 120, after: 240 }, // 12pt after
-				alignment: AlignmentType.CENTER, // STO: unnumbered structural headings are centered
+				spacing: {
+					before: 0,
+					after: 120,
+					line: TYPOGRAPHY.normalLineSpacingDxa,
+					lineRule: 'auto',
+				},
+				alignment: AlignmentType.CENTER,
 				indent: { firstLine: 0 },
-				keepNext: true,
+				outlineLevel: 0,
+				// @ts-expect-error missing type in docx library for some properties
+				pageBreakBefore: true,
+			},
+		},
+		{
+			id: STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
+			name: 'Structural Heading No TOC',
+			basedOn: 'TitlePageText',
+			next: 'Normal',
+			quickFormat: true,
+			run: {
+				bold: true,
+				size: TYPOGRAPHY.fontSizeHalfPoints,
+				allCaps: true,
+			},
+			paragraph: {
+				spacing: {
+					before: 0,
+					after: 240,
+					line: TYPOGRAPHY.captionLineSpacingDxa,
+					lineRule: 'auto',
+				},
+				alignment: AlignmentType.CENTER,
+				indent: { firstLine: 0 },
 				// @ts-expect-error missing type in docx library for some properties
 				pageBreakBefore: true,
 			},
@@ -233,6 +203,7 @@ export const STO_STYLES: IStylesOptions = {
 					line: TYPOGRAPHY.captionLineSpacingDxa,
 					lineRule: 'auto',
 				}, // Single spacing, 6pt before, 12pt after
+				keepLines: true,
 			},
 		},
 		{
@@ -251,6 +222,7 @@ export const STO_STYLES: IStylesOptions = {
 					lineRule: 'auto',
 				}, // Single spacing, 6pt before, 6pt after
 				keepNext: true,
+				keepLines: true,
 			},
 		},
 		{
@@ -274,11 +246,16 @@ export const STO_STYLES: IStylesOptions = {
 			id: 'TitlePageText',
 			name: 'Title Page Text',
 			basedOn: 'Normal',
-			run: { size: 24 }, // 12pt
+			run: { size: TYPOGRAPHY.fontSizeHalfPoints },
 			paragraph: {
 				alignment: AlignmentType.CENTER,
 				indent: { firstLine: 0 },
-				spacing: { before: 0, after: 0 },
+				spacing: {
+					before: 0,
+					after: 0,
+					line: TYPOGRAPHY.captionLineSpacingDxa,
+					lineRule: 'auto',
+				},
 			},
 		},
 		...TOC_LEVEL_INDENTS.map((_, index) => createTocStyle(index + 1)),
@@ -304,7 +281,7 @@ export function getStoStylePresetDisplayNames(
 	stylePreset: StoStylePreset,
 ): Record<string, string> {
 	return stylePreset === 'samara-template-2022'
-		? getSamaraTemplate2022StyleNames()
+		? { ...SAMARA_TEMPLATE_2022_STYLE_NAMES }
 		: {};
 }
 

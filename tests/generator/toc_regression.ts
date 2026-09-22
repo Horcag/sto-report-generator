@@ -39,6 +39,7 @@ async function main(): Promise<void> {
 
 	await buildReport(tempMd, tempDocx);
 	const currentXml = readDocxEntry(tempDocx, 'word/document.xml');
+	const stylesXml = readDocxEntry(tempDocx, 'word/styles.xml');
 	const errors: string[] = [];
 
 	const abstractBlock = paragraphContaining(currentXml, 'РЕФЕРАТ');
@@ -56,8 +57,15 @@ async function main(): Promise<void> {
 	}
 
 	const numberedHeadingBlock = paragraphContaining(currentXml, 'Глава 1');
-	if (!numberedHeadingBlock?.includes('<w:numPr>')) {
-		errors.push('Markdown heading is missing Word numbering.');
+	const headingStyle =
+		/<w:style\b(?=[^>]*w:styleId="StoHeading1")[\s\S]*?<\/w:style>/.exec(
+			stylesXml,
+		)?.[0];
+	if (
+		!numberedHeadingBlock?.includes('<w:pStyle w:val="StoHeading1"') ||
+		!headingStyle?.includes('<w:numPr>')
+	) {
+		errors.push('Markdown heading is missing style-linked Word numbering.');
 	}
 
 	for (const heading of [
