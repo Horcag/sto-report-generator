@@ -16,6 +16,7 @@ const tests = [
 	['tests/workflow/run_portability_tests.ts'],
 	['tests/workflow/run_ci_configuration_tests.ts'],
 	['tests/workflow/run_word_acceptance_tests.ts'],
+	['tests/workflow/run_word_acceptance_launcher_tests.ts'],
 	['tests/generator/title_page_metadata_test.ts'],
 	['tests/generator/front_matter_docx_test.ts'],
 	['tests/scaffold/run_scaffold_tests.ts'],

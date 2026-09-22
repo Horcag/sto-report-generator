@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,6 +12,10 @@ import {
 } from '@/shared/config';
 
 export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
+export const WORD_ACCEPTANCE_TIMEOUT_MS = 180_000;
+export const WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS = 45_000;
+
+export type WordAcceptanceInteractionMode = 'background' | 'interactive';
 
 export interface WordAcceptanceOptions {
 	inputDocx: string;
@@ -34,6 +39,11 @@ export interface WordAcceptanceRequest {
 	requiredFont: string;
 	stylePreset: StoStylePreset;
 	expectedStyles: WordAcceptanceExpectedStyle[];
+	runnerPidPath: string;
+	wordPidPath: string;
+	printerStatePath: string;
+	interactionMode: WordAcceptanceInteractionMode;
+	attemptedModes: WordAcceptanceInteractionMode[];
 }
 
 export type WordAcceptanceHostKind = 'windows' | 'wsl';
@@ -45,6 +55,9 @@ export interface WordAcceptancePlan {
 	request: WordAcceptanceRequest;
 	requestJsonPath: string;
 	scriptPath: string;
+	localAcceptedDocx: string;
+	localPdf: string;
+	localManifest: string;
 }
 
 interface CreatePlanEnvironment {
@@ -173,6 +186,17 @@ export function createWordAcceptancePlan(
 		requiredFont: 'Times New Roman',
 		stylePreset,
 		expectedStyles: getExpectedStyles(stylePreset),
+		runnerPidPath: environment.toHostPath(
+			path.join(path.dirname(requestJsonPath), 'runner.pid'),
+		),
+		wordPidPath: environment.toHostPath(
+			path.join(path.dirname(requestJsonPath), 'word.pid'),
+		),
+		printerStatePath: environment.toHostPath(
+			path.join(path.dirname(requestJsonPath), 'printer-state.txt'),
+		),
+		interactionMode: 'background',
+		attemptedModes: ['background'],
 	};
 	const command =
 		environment.hostKind === 'wsl' ? 'powershell.exe' : 'powershell.exe';
@@ -193,6 +217,9 @@ export function createWordAcceptancePlan(
 		request,
 		requestJsonPath,
 		scriptPath,
+		localAcceptedDocx: acceptedDocx,
+		localPdf: pdf,
+		localManifest: manifest,
 	};
 }
 
@@ -206,26 +233,257 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		toHostPath: absolutePath => toHostPath(hostKind, absolutePath),
 	});
 	fs.mkdirSync(path.dirname(plan.requestJsonPath), { recursive: true });
+	let cleanupVerified = false;
+
+	try {
+		writeWordAcceptanceRequest(plan);
+		const backgroundFailure = runWordAcceptanceAttempt(
+			plan,
+			WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS,
+			() => {
+				cleanupVerified = true;
+			},
+		);
+		if (!backgroundFailure) return;
+
+		console.warn(
+			`Background Word automation was not usable; retrying interactively.\n${backgroundFailure}`,
+		);
+		plan.request.interactionMode = 'interactive';
+		plan.request.attemptedModes.push('interactive');
+		cleanupVerified = false;
+		writeWordAcceptanceRequest(plan);
+		const interactiveFailure = runWordAcceptanceAttempt(
+			plan,
+			WORD_ACCEPTANCE_TIMEOUT_MS,
+			() => {
+				cleanupVerified = true;
+			},
+		);
+		if (interactiveFailure) {
+			writeWordAcceptanceFailureManifest(
+				plan,
+				backgroundFailure,
+				interactiveFailure,
+			);
+			throw new Error(
+				`Word desktop acceptance failed in both background and interactive modes.\nBackground attempt:\n${backgroundFailure}\nInteractive attempt:\n${interactiveFailure}`,
+			);
+		}
+	} finally {
+		if (cleanupVerified) {
+			fs.rmSync(path.dirname(plan.requestJsonPath), {
+				recursive: true,
+				force: true,
+			});
+		}
+	}
+}
+
+function getFileEvidence(filePath: string): {
+	exists: boolean;
+	path: string;
+	sha256?: string;
+	sizeBytes?: number;
+} {
+	if (!fs.existsSync(filePath)) return { exists: false, path: filePath };
+	const bytes = fs.readFileSync(filePath);
+	return {
+		exists: true,
+		path: filePath,
+		sha256: createHash('sha256').update(bytes).digest('hex'),
+		sizeBytes: bytes.length,
+	};
+}
+
+function writeWordAcceptanceFailureManifest(
+	plan: WordAcceptancePlan,
+	backgroundFailure: string,
+	interactiveFailure: string,
+): void {
+	const evidence = `${backgroundFailure}\n${interactiveFailure}`;
+	const pageMatches = [
+		...evidence.matchAll(/DOCX saved with (\d+) pages\./g),
+	];
+	const lastPageMatch = pageMatches.at(-1);
+	const pageCount = lastPageMatch ? Number(lastPageMatch[1]) : null;
+	const acceptedDocx = getFileEvidence(plan.localAcceptedDocx);
+	const pdf = getFileEvidence(plan.localPdf);
+	const manifest = {
+		schemaVersion: WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION,
+		renderer: 'word-desktop-interactive',
+		status: 'failed',
+		execution: {
+			requestedMode: 'auto',
+			completedMode: null,
+			attemptedModes: plan.request.attemptedModes,
+		},
+		capabilityChecks: {
+			openedDocx: evidence.includes('staged DOCX opened.'),
+			updatedFieldsAndToc: evidence.includes(
+				'fields, TOC, and pagination updated.',
+			),
+			repaginated: evidence.includes(
+				'fields, TOC, and pagination updated.',
+			),
+			savedAcceptedDocx: acceptedDocx.exists,
+			exportedPdf: pdf.exists,
+			reopenedAcceptedDocx: false,
+			stablePageCount: false,
+		},
+		officeLicenseDiagnostic: {
+			status: 'warning',
+			message: evidence.includes('---NOTIFICATIONS---, 0xC004F009')
+				? 'Microsoft Word reported ---NOTIFICATIONS---, 0xC004F009; capability verification continued.'
+				: 'The Office licensing diagnostic did not block capability verification.',
+		},
+		printer: {
+			restoredSystemDefault: evidence.includes(
+				'Restored and verified Windows default printer:',
+			),
+		},
+		pageCountBeforeFailure: pageCount,
+		acceptedDocx,
+		pdf,
+		failure: {
+			stage:
+				pageCount !== null && !pdf.exists
+					? 'exportPdf'
+					: 'wordDesktopAcceptance',
+			backgroundAttempt: backgroundFailure,
+			interactiveAttempt: interactiveFailure,
+		},
+	};
+	fs.mkdirSync(path.dirname(plan.localManifest), { recursive: true });
+	fs.writeFileSync(
+		plan.localManifest,
+		`${JSON.stringify(manifest, null, 2)}\n`,
+		'utf8',
+	);
+}
+
+function writeWordAcceptanceRequest(plan: WordAcceptancePlan): void {
 	fs.writeFileSync(
 		plan.requestJsonPath,
 		`${JSON.stringify(plan.request, null, 2)}\n`,
 		'utf8',
 	);
+}
 
+function runWordAcceptanceAttempt(
+	plan: WordAcceptancePlan,
+	timeout: number,
+	onCleanupVerified: () => void,
+): string | null {
 	const result = spawnSync(plan.command, plan.args, {
 		cwd: process.cwd(),
 		encoding: 'utf8',
 		shell: false,
+		timeout,
+		windowsHide: plan.request.interactionMode === 'background',
+		env:
+			plan.request.interactionMode === 'interactive'
+				? { ...process.env, WINDOWS_CONSOLE_VISIBLE: '1' }
+				: process.env,
 	});
-	if (result.error) {
-		throw result.error;
-	}
-	if (result.status !== 0) {
+
+	let cleanupDetails: string;
+	try {
+		cleanupDetails = stopOwnedWordAcceptanceProcesses(plan);
+	} catch (error) {
 		throw new Error(
-			result.stderr || result.stdout || 'Word acceptance failed.',
+			[
+				error instanceof Error ? error.message : String(error),
+				result.stdout,
+				result.stderr,
+			]
+				.filter(Boolean)
+				.join('\n'),
+			{ cause: error },
 		);
 	}
-	if (result.stdout.trim()) {
-		console.log(result.stdout.trim());
+	if (!result.error && result.status === 0) {
+		const manifest = JSON.parse(
+			fs.readFileSync(plan.localManifest, 'utf8'),
+		);
+		if (manifest.status !== 'pendingCleanup') {
+			throw new Error(
+				'Word acceptance did not produce a pending acceptance manifest.',
+			);
+		}
+		manifest.status = 'accepted';
+		manifest.execution.processCleanupVerified = true;
+		const pendingPath = `${plan.localManifest}.pending`;
+		fs.writeFileSync(
+			pendingPath,
+			`${JSON.stringify(manifest, null, 2)}\n`,
+			'utf8',
+		);
+		fs.renameSync(pendingPath, plan.localManifest);
+		onCleanupVerified();
+		if (result.stdout.trim()) console.log(result.stdout.trim());
+		return null;
 	}
+	onCleanupVerified();
+	if (
+		result.error &&
+		'code' in result.error &&
+		result.error.code === 'ETIMEDOUT'
+	) {
+		return [
+			`Word ${plan.request.interactionMode} attempt exceeded ${timeout / 1000} seconds.`,
+			result.stdout,
+			result.stderr,
+			cleanupDetails,
+		]
+			.filter(Boolean)
+			.join('\n');
+	}
+	return [
+		result.error?.message,
+		result.stdout,
+		result.stderr,
+		!result.stdout && !result.stderr ? 'Word acceptance failed.' : null,
+		cleanupDetails,
+	]
+		.filter(Boolean)
+		.join('\n');
+}
+
+function environmentHostPath(plan: WordAcceptancePlan): string {
+	return toHostPath(plan.hostKind, plan.requestJsonPath);
+}
+
+function stopOwnedWordAcceptanceProcesses(plan: WordAcceptancePlan): string {
+	const cleanup = spawnSync(
+		plan.command,
+		[
+			'-NoProfile',
+			'-ExecutionPolicy',
+			'Bypass',
+			'-File',
+			toHostPath(
+				plan.hostKind,
+				path.resolve('scripts/stop_word_acceptance.ps1'),
+			),
+			'-RequestJson',
+			environmentHostPath(plan),
+		],
+		{
+			encoding: 'utf8',
+			shell: false,
+			timeout: 45_000,
+			windowsHide: true,
+		},
+	);
+	const details = [cleanup.stdout, cleanup.stderr]
+		.filter(Boolean)
+		.join('\n')
+		.trim();
+	if (cleanup.error || cleanup.status !== 0) {
+		throw new Error(
+			`Word acceptance cleanup could not prove that its owned processes exited.${details ? `\n${details}` : ''}`,
+		);
+	}
+	return details;
 }
