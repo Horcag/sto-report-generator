@@ -243,7 +243,7 @@ async function main(): Promise<void> {
 		/Citation source not found/,
 	);
 
-	// Test Table formatting: cantSplit, tblHeader, column widths, centered bold headers, <br>
+	// Test table formatting: pagination, explicit widths, Markdown alignment and <br>.
 	const tableDocPath = path.join(tempRoot, 'table-test.docx');
 	const tableElements = await parseMarkdownToDocx(
 		String.raw`<!-- widths: 30, 70 -->
@@ -269,11 +269,15 @@ async function main(): Promise<void> {
 		/<w:cantSplit\/>/,
 		'Table rows must have cantSplit',
 	);
-	assert.match(tableDocXml, /<w:b\/>/, 'Table header must have bold text');
+	assert.doesNotMatch(
+		tableDocXml,
+		/<w:b\/>/,
+		'Table headers must not be made bold implicitly',
+	);
 	assert.match(
 		tableDocXml,
 		/<w:jc w:val="center"\/>/,
-		'Table header must be centered',
+		'Markdown center alignment must be preserved in the header',
 	);
 	assert.match(tableDocXml, /<w:br\/>/, '<br> tags must produce w:br runs');
 	assert.match(

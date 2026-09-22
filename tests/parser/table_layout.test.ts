@@ -35,7 +35,7 @@ async function run(): Promise<void> {
 	} as unknown as Tokens.Table);
 	assert.deepEqual(emptyWidths, []);
 
-	// Delimiter-based widths
+	// CommonMark delimiter length must not masquerade as a physical width hint.
 	const delimToken = {
 		header: [{ text: 'A' }, { text: 'B' }],
 		rows: [[{ text: '1' }, { text: '2' }]],
@@ -44,7 +44,10 @@ async function run(): Promise<void> {
 	} as unknown as Tokens.Table;
 	const delimWidths = computeTableColumnWidths(delimToken);
 	assert.equal(delimWidths.length, 2);
-	assert.ok(delimWidths[1] > delimWidths[0]);
+	assert.ok(Math.abs(delimWidths[0] - delimWidths[1]) <= 1);
+
+	const explicitWidths = computeTableColumnWidths(delimToken, [1, 3]);
+	assert.ok(explicitWidths[1] > explicitWidths[0] * 2);
 
 	// 2. Integration test: Table with center/right alignment, bold cells, br tags, header markup
 	const markdown = `
@@ -67,6 +70,25 @@ async function run(): Promise<void> {
 	assert.match(docXml, /w:jc w:val="right"/);
 	assert.match(docXml, /<w:b\/>/);
 	assert.match(docXml, /<w:br\/>/);
+	assert.match(
+		docXml,
+		/<w:tblCellMar><w:top w:type="dxa" w:w="0"\/><w:left w:type="dxa" w:w="108"\/><w:bottom w:type="dxa" w:w="0"\/><w:right w:type="dxa" w:w="108"\/><\/w:tblCellMar>/,
+	);
+
+	const plainHeaderElements = await parseMarkdownToDocx(
+		'| Заголовок | Значение |\n| :--- | ---: |\n| Текст | 1 |',
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const plainHeaderXml = await packAndReadXml(
+		plainHeaderElements,
+		path.join(tempRoot, 'table_plain_header.docx'),
+	);
+	assert.doesNotMatch(
+		plainHeaderXml,
+		/<w:b\/>/,
+		'STO and the canonical DOTM do not make table headers bold by default',
+	);
 
 	// 3. Wide table exceeding TOTAL_TABLE_WIDTH_DXA to exercise the proportional scaling branch
 	const wideHeaders = Array.from(

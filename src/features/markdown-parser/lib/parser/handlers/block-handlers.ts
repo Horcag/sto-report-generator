@@ -6,7 +6,6 @@ import {
 	TableLayoutType,
 	TableRow,
 	TextRun,
-	VerticalAlign,
 	WidthType,
 } from 'docx';
 import { Tokens as MarkedTokens, Token } from 'marked';
@@ -243,6 +242,44 @@ export async function handleList(
 }
 
 const TOTAL_TABLE_WIDTH_DXA = 9355; // A4 (11906) - Left margin (1701) - Right margin (850)
+const TABLE_CELL_HORIZONTAL_MARGIN_DXA = 108; // Normal Table in the canonical DOTM
+const MIN_COLUMN_WIDTH_DXA = 720;
+
+function visibleTextWidth(text: string): number {
+	const clean = text
+		.replace(/<br\s*\/?\s*>/gi, '\n')
+		.replace(/<[^>]+>/g, '')
+		.replace(/[*_`]/g, '');
+	return Math.max(
+		...clean.split('\n').map(line =>
+			Array.from(line).reduce((width, char) => {
+				if (/\s/u.test(char)) return width + 0.35;
+				if (/[.,:;!|'ijlI1]/u.test(char)) return width + 0.45;
+				if (/[MWЖШЩЮФ]/u.test(char)) return width + 1.25;
+				return width + 1;
+			}, 0),
+		),
+	);
+}
+
+function normalizeWidths(weights: number[]): number[] {
+	const floors = weights.map(() => MIN_COLUMN_WIDTH_DXA);
+	const available = TOTAL_TABLE_WIDTH_DXA - floors.reduce((a, b) => a + b, 0);
+	if (available <= 0) {
+		const equal = Math.floor(TOTAL_TABLE_WIDTH_DXA / weights.length);
+		const widths = weights.map(() => equal);
+		widths[widths.length - 1] +=
+			TOTAL_TABLE_WIDTH_DXA - widths.reduce((a, b) => a + b, 0);
+		return widths;
+	}
+	const sum = weights.reduce((a, b) => a + b, 0);
+	const widths = floors.map((floor, index) =>
+		Math.round(floor + available * (weights[index] / sum)),
+	);
+	widths[widths.length - 1] +=
+		TOTAL_TABLE_WIDTH_DXA - widths.reduce((a, b) => a + b, 0);
+	return widths;
+}
 
 export function computeTableColumnWidths(
 	token: MarkedTokens.Table,
@@ -253,112 +290,29 @@ export function computeTableColumnWidths(
 
 	// 1. Explicit widths from <!-- widths: ... -->
 	if (explicitWidths && explicitWidths.length === numCols) {
-		const sumExplicit = explicitWidths.reduce((a, b) => a + b, 0);
-		if (sumExplicit > 0) {
-			const widths = explicitWidths.map(w =>
-				Math.round((w / sumExplicit) * TOTAL_TABLE_WIDTH_DXA),
-			);
-			const diff =
-				TOTAL_TABLE_WIDTH_DXA - widths.reduce((a, b) => a + b, 0);
-			widths[widths.length - 1] += diff;
-			return widths;
-		}
+		const sum = explicitWidths.reduce((a, b) => a + b, 0);
+		const widths = explicitWidths.map(width =>
+			Math.round((width / sum) * TOTAL_TABLE_WIDTH_DXA),
+		);
+		widths[widths.length - 1] +=
+			TOTAL_TABLE_WIDTH_DXA - widths.reduce((a, b) => a + b, 0);
+		return widths;
 	}
 
-	// 2. Delimiter line dashes (|:---|:------------------|)
-	if (token.raw) {
-		const rawLines = token.raw
-			.split('\n')
-			.map(l => l.trim())
-			.filter(Boolean);
-		if (rawLines.length >= 2) {
-			const delimLine = rawLines[1];
-			if (/^\|?[\s:-]+\|/.test(delimLine)) {
-				const parts = delimLine
-					.split('|')
-					.map(p => p.trim())
-					.filter(p => p.length > 0);
-				if (parts.length === numCols) {
-					const dashCounts = parts.map(
-						p => (p.match(/-/g) || []).length,
-					);
-					const minDashes = Math.min(...dashCounts);
-					const maxDashes = Math.max(...dashCounts);
-					if (maxDashes - minDashes >= 3) {
-						const sumDashes = dashCounts.reduce((a, b) => a + b, 0);
-						const widths = dashCounts.map(d =>
-							Math.round((d / sumDashes) * TOTAL_TABLE_WIDTH_DXA),
-						);
-						const diff =
-							TOTAL_TABLE_WIDTH_DXA -
-							widths.reduce((a, b) => a + b, 0);
-						widths[widths.length - 1] += diff;
-						return widths;
-					}
-				}
-			}
-		}
-	}
-
-	// 3. Content-based measurement
-	const colMetrics = [];
+	// Markdown delimiter dashes express alignment, not physical width. Estimate
+	// readable widths from visible text and reserve a real minimum for every column.
+	const weights: number[] = [];
 	for (let c = 0; c < numCols; c++) {
-		const headerText = token.header[c]?.text || '';
 		const cellTexts = [
-			headerText,
+			token.header[c]?.text || '',
 			...token.rows.map(row => row[c]?.text || ''),
 		];
-
-		let maxWordLen = 0;
-		let totalLen = 0;
-		for (const text of cellTexts) {
-			const clean = text.replace(/<[^>]+>/g, ' ');
-			totalLen += clean.trim().length;
-			const words = clean.split(/[\s,;:()[\]{}]+/);
-			for (const w of words) {
-				if (w.length > maxWordLen) maxWordLen = w.length;
-			}
-		}
-		const avgLen = totalLen / cellTexts.length;
-		const effectiveMaxWordLen = Math.min(maxWordLen, 20);
-		colMetrics.push({
-			c,
-			maxWordLen: effectiveMaxWordLen,
-			avgLen,
-			totalLen,
-		});
+		const measured = cellTexts.map(visibleTextWidth);
+		const peak = Math.max(...measured, 1);
+		const mean = measured.reduce((a, b) => a + b, 0) / measured.length;
+		weights.push(Math.sqrt(peak * Math.max(mean, 1)));
 	}
-
-	const minWidths = colMetrics.map(m =>
-		Math.max(900, m.maxWordLen * 110 + 350),
-	);
-	const weights = colMetrics.map(m => Math.pow(Math.max(m.avgLen, 8), 0.55));
-	const sumWeights = weights.reduce((a, b) => a + b, 0);
-	const sumMin = minWidths.reduce((a, b) => a + b, 0);
-
-	let widths: number[];
-	if (sumMin < TOTAL_TABLE_WIDTH_DXA) {
-		const remaining = TOTAL_TABLE_WIDTH_DXA - sumMin;
-		widths = minWidths.map((minW, i) =>
-			Math.round(minW + (weights[i] / sumWeights) * remaining),
-		);
-	} else {
-		// When sumMin exceeds total table width, distribute proportionally to minWidths
-		const colFloor = Math.max(
-			200,
-			Math.floor(TOTAL_TABLE_WIDTH_DXA / numCols),
-		);
-		const effectiveMin = minWidths.map(minW => Math.max(colFloor, minW));
-		const sumEffective = effectiveMin.reduce((a, b) => a + b, 0);
-		widths = effectiveMin.map(w =>
-			Math.floor((w / sumEffective) * TOTAL_TABLE_WIDTH_DXA),
-		);
-	}
-
-	const diff = TOTAL_TABLE_WIDTH_DXA - widths.reduce((a, b) => a + b, 0);
-	widths[widths.length - 1] += diff;
-
-	return widths;
+	return normalizeWidths(weights);
 }
 
 function getCellAlignment(
@@ -399,7 +353,6 @@ export async function handleTable(
 			rowCells.push(
 				new TableCell({
 					width: { size: colWidth, type: WidthType.DXA },
-					verticalAlign: VerticalAlign.CENTER,
 					children: [
 						new Paragraph({
 							style: 'TableText',
@@ -428,13 +381,11 @@ export async function handleTable(
 		headerCells.push(
 			new TableCell({
 				width: { size: colWidth, type: WidthType.DXA },
-				verticalAlign: VerticalAlign.CENTER,
 				children: [
 					new Paragraph({
 						style: 'TableText',
-						alignment: AlignmentType.CENTER,
+						alignment: getCellAlignment(token.align[colIdx]),
 						children: await parseInline(cell.tokens, {
-							bold: true,
 							allowBold: true,
 						}),
 					}),
@@ -453,10 +404,10 @@ export async function handleTable(
 		layout: TableLayoutType.FIXED,
 		columnWidths: columnWidths,
 		margins: {
-			top: 100,
-			bottom: 100,
-			left: 150,
-			right: 150,
+			top: 0,
+			bottom: 0,
+			left: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
+			right: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
 		},
 		rows: [headerRow, ...rows],
 	});

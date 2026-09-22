@@ -983,16 +983,16 @@
 </w:tblBorders>
 <w:tblLayout w:type="fixed"/>
 <w:tblCellMar>
-<w:top w:type="dxa" w:w="100"/>
-<w:left w:type="dxa" w:w="150"/>
-<w:bottom w:type="dxa" w:w="100"/>
-<w:right w:type="dxa" w:w="150"/>
+<w:top w:type="dxa" w:w="0"/>
+<w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="0"/>
+<w:right w:type="dxa" w:w="108"/>
 </w:tblCellMar>
 </w:tblPr>
 <w:tblGrid>
-<w:gridCol w:w="3667"/>
-<w:gridCol w:w="2844"/>
-<w:gridCol w:w="2844"/>
+<w:gridCol w:w="4316"/>
+<w:gridCol w:w="2262"/>
+<w:gridCol w:w="2777"/>
 </w:tblGrid>
 <w:tr>
 <w:trPr>
@@ -1001,57 +1001,42 @@
 </w:trPr>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="3667"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="4316"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
-<w:jc w:val="center"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
-<w:rPr>
-<w:b/>
-<w:bCs/>
-</w:rPr>
 <w:t xml:space="preserve">Параметр</w:t>
 </w:r>
 </w:p>
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="2844"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="2262"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
-<w:jc w:val="center"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
-<w:rPr>
-<w:b/>
-<w:bCs/>
-</w:rPr>
 <w:t xml:space="preserve">Markdown</w:t>
 </w:r>
 </w:p>
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="2844"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="2777"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="TableText"/>
-<w:jc w:val="center"/>
+<w:jc w:val="left"/>
 </w:pPr>
 <w:r>
-<w:rPr>
-<w:b/>
-<w:bCs/>
-</w:rPr>
 <w:t xml:space="preserve">MS Word</w:t>
 </w:r>
 </w:p>
@@ -1063,8 +1048,7 @@
 </w:trPr>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="3667"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="4316"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1078,8 +1062,7 @@
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="2844"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="2262"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1093,8 +1076,7 @@
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="2844"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="2777"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1113,8 +1095,7 @@
 </w:trPr>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="3667"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="4316"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1128,8 +1109,7 @@
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="2844"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="2262"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1143,8 +1123,7 @@
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="2844"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="2777"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1163,8 +1142,7 @@
 </w:trPr>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="3667"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="4316"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1178,8 +1156,7 @@
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="2844"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="2262"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1193,8 +1170,7 @@
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="dxa" w:w="2844"/>
-<w:vAlign w:val="center"/>
+<w:tcW w:type="dxa" w:w="2777"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
