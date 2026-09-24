@@ -21,6 +21,7 @@ function statistics(docxPath: string): Record<string, unknown> {
 		{ encoding: 'utf8', shell: false },
 	);
 	assert.equal(result.status, 0, result.stderr);
+	assert.ok(Buffer.from(result.stdout, 'utf8').every(byte => byte < 128));
 	return JSON.parse(result.stdout) as Record<string, unknown>;
 }
 

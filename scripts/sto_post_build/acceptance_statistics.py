@@ -22,7 +22,7 @@ def main() -> int:
                 "sources": counts.sources,
                 "replacements": create_replacements(counts.figures, counts.tables, counts.sources),
             },
-            ensure_ascii=False,
+            ensure_ascii=True,
         )
     )
     return 0
