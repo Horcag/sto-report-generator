@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import {
 	mkdirSync,
 	mkdtempSync,
@@ -19,70 +18,13 @@ import {
 } from '@/app/word-acceptance';
 import { getStoStylePresetDisplayNames } from '@/shared/config';
 
+import {
+	testPowerShellHashFallback,
+	toPowerShellPath,
+} from './word_acceptance_hash_test';
+
 function fakeHostPath(absolutePath: string): string {
 	return `WIN:${absolutePath}`;
-}
-
-function toPowerShellPath(absolutePath: string): string {
-	if (process.platform === 'win32') return absolutePath;
-	const conversion = spawnSync('wslpath', ['-w', absolutePath], {
-		encoding: 'utf8',
-	});
-	assert.equal(conversion.status, 0, conversion.stderr);
-	return conversion.stdout.trim();
-}
-
-function testPowerShellHashFallback(): void {
-	const executable = 'powershell.exe';
-	const availability = spawnSync(executable, [
-		'-NoProfile',
-		'-Command',
-		'exit 0',
-	]);
-	if (availability.error) return;
-
-	const fixturePath = path.resolve('package.json');
-	const scriptPath = path.resolve('scripts', 'word_acceptance.ps1');
-	const expected = createHash('sha256')
-		.update(readFileSync(fixturePath))
-		.digest('hex');
-	const calculate = (forceFallback: boolean): string => {
-		const args = [
-			'-NoProfile',
-			'-ExecutionPolicy',
-			'Bypass',
-			'-File',
-			toPowerShellPath(scriptPath),
-			'-HashOnlyPath',
-			toPowerShellPath(fixturePath),
-		];
-		if (forceFallback) args.push('-ForceHashFallback');
-		const result = spawnSync(executable, args, { encoding: 'utf8' });
-		assert.equal(result.status, 0, result.stderr);
-		return result.stdout.trim();
-	};
-
-	assert.equal(calculate(false), expected);
-	assert.equal(calculate(true), expected);
-	const dispatch = spawnSync(
-		executable,
-		[
-			'-NoProfile',
-			'-ExecutionPolicy',
-			'Bypass',
-			'-File',
-			toPowerShellPath(
-				path.resolve('tests/workflow/word_pdf_export_test.ps1'),
-			),
-		],
-		{ encoding: 'utf8', timeout: 30_000 },
-	);
-	assert.equal(
-		dispatch.status,
-		0,
-		dispatch.stderr || dispatch.error?.message,
-	);
-	assert.match(dispatch.stdout, /Typed PDF dispatch test passed/);
 }
 
 function testPowerShellLicenseStatusParsing(): void {
@@ -300,6 +242,16 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 	assert.match(script, /legacyDefaultPrinterModePresent/);
 	assert.match(script, /Restore-DefaultPrinter/);
 	assert.match(script, /ActiveWindow\.Panes\(1\)\.Pages\.Count/);
+	assert.match(script, /Set-ReferatStatistics \$document \$request/);
+	assert.match(
+		script,
+		/Referat statistic placeholders remain after Word replacement/,
+	);
+	assert.match(
+		script,
+		/Accepted DOCX still contains referat statistic placeholders/,
+	);
+	assert.match(script, /referatStatistics = \[ordered\]@\{/);
 	assert.doesNotMatch(script, /\.ComputeStatistics\(/);
 	assert.match(script, /\[int\]\$field\.Type -ne \$WdFieldTOC/);
 	assert.match(
@@ -339,6 +291,10 @@ function main(): void {
 
 	assert.equal(plan.hostKind, 'wsl');
 	assert.equal(plan.command, 'powershell.exe');
+	assert.equal(
+		plan.scriptPath,
+		path.resolve(__dirname, '..', '..', 'scripts', 'word_acceptance.ps1'),
+	);
 	assert.deepEqual(plan.args.slice(0, 4), [
 		'-NoProfile',
 		'-ExecutionPolicy',
@@ -355,6 +311,12 @@ function main(): void {
 	assert.equal(WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS, 45_000);
 	assert.equal(plan.request.interactionMode, 'background');
 	assert.deepEqual(plan.request.attemptedModes, ['background']);
+	assert.deepEqual(plan.request.statisticReplacements, {});
+	assert.deepEqual(plan.request.statisticCounts, {
+		figures: 0,
+		tables: 0,
+		sources: 0,
+	});
 	assert.equal(
 		plan.request.runnerPidPath,
 		`WIN:${path.join(path.dirname(requestJsonPath), 'runner.pid')}`,

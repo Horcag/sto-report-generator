@@ -19,6 +19,8 @@ import { validateSTO, ValidationResult } from '@/shared/lib/sto-validator';
 
 import { buildReport } from './builder';
 
+const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
+
 export interface GenerateReportOptions {
 	reportDir: string;
 	outputPath?: string;
@@ -52,7 +54,7 @@ function runPostBuild(
 	const args = [
 		'run',
 		'python',
-		'scripts/post_build.py',
+		path.join(PACKAGE_ROOT, 'scripts/post_build.py'),
 		outputDocx,
 		sourceDir,
 	];
@@ -61,7 +63,7 @@ function runPostBuild(
 	}
 
 	const result = spawnSync('uv', args, {
-		cwd: process.cwd(),
+		cwd: PACKAGE_ROOT,
 		encoding: 'utf8',
 		shell: false,
 	});

@@ -49,6 +49,28 @@ function withFakeWord(
 				signal: null,
 			};
 			if (command === 'wslpath') return { ...result, stdout: args[1] };
+			if (command === 'uv') {
+				assert.deepEqual(args.slice(0, 4), [
+					'run',
+					'python',
+					'-m',
+					'scripts.sto_post_build.acceptance_statistics',
+				]);
+				assert.equal(args[4], input);
+				return {
+					...result,
+					stdout: JSON.stringify({
+						figures: 1,
+						tables: 1,
+						sources: 1,
+						replacements: {
+							'{{FIGURES}}': '1 рисунок',
+							'{{TABLES}}': '1 таблица',
+							'{{SOURCES}}': '1 источник',
+						},
+					}),
+				};
+			}
 			assert.equal(command, 'powershell.exe');
 			const requestPath = args[args.indexOf('-RequestJson') + 1];
 			assert.ok(requestPath, 'every launch must have a request receipt');
@@ -63,6 +85,11 @@ function withFakeWord(
 			if (cleanup)
 				return { ...result, status: scenario.cleanupFails ? 1 : 0 };
 			const request = JSON.parse(fs.readFileSync(requestPath, 'utf8'));
+			assert.deepEqual(request.statisticCounts, {
+				figures: 1,
+				tables: 1,
+				sources: 1,
+			});
 			if (
 				request.interactionMode === 'background' ||
 				scenario.exportFails

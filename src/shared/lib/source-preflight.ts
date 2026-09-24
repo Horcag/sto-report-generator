@@ -18,15 +18,13 @@ import { validateSourcePunctuation } from './source-preflight/punctuation-checke
 import { validateReferat } from './source-preflight/referat-checker';
 import {
 	collectLabelDefinitions,
+	validateObjectReferences,
 	validateUnknownReferences,
 	validateUnusedEquationLabels,
 } from './source-preflight/reference-checker';
 import { validateSoftTextRules } from './source-preflight/soft-text-checker';
 import { validateDocumentStructure } from './source-preflight/structure-checker';
-import {
-	validateMarkdownTables,
-	validateTableAndFigureOrder,
-} from './source-preflight/table-figure-checker';
+import { validateMarkdownTables } from './source-preflight/table-figure-checker';
 import {
 	LabelDefinitions,
 	SourceFile,
@@ -179,7 +177,7 @@ export function runSourcePreflight(
 	validateBibliography(files, absoluteSourceDir, cwd, config, issues);
 	validateReferat(files, issues, config);
 	validateDocumentStructure(files, issues, config);
-	validateTableAndFigureOrder(files, issues);
+	validateObjectReferences(files, issues);
 
 	return {
 		config,

@@ -116,6 +116,7 @@ function assertRequiredFiles(packedFiles: PackedFile[]): void {
 	const packedPaths = new Set(packedFiles.map(file => file.path));
 	const requiredPaths = [
 		'LICENSE',
+		'bin/sto-report-generator.cjs',
 		'scripts/check_word_license.ps1',
 		'scripts/word_acceptance.ps1',
 	];

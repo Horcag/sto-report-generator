@@ -168,7 +168,11 @@ export async function handleParagraph(
 		];
 	}
 
-	if (/^(?:Рисунок|Рис\.)\s*(?:@fig:[a-zA-Z0-9_-]+|\d+)/.test(text.trim())) {
+	if (
+		/^(?:Рисунок|Рис\.)\s*(?:@fig:[a-zA-Z0-9_-]+|(?:[А-Я]\.)?\d+)/.test(
+			text.trim(),
+		)
+	) {
 		return [
 			new Paragraph({
 				style: 'FigureCaption',
@@ -177,7 +181,9 @@ export async function handleParagraph(
 		];
 	}
 
-	if (/^Таблица\s*(?:@tab:[a-zA-Z0-9_-]+|\d+)/.test(text.trim())) {
+	if (
+		/^Таблица\s*(?:@tab:[a-zA-Z0-9_-]+|(?:[А-Я]\.)?\d+)/.test(text.trim())
+	) {
 		return [
 			new Paragraph({
 				style: 'TableCaption',
@@ -399,6 +405,10 @@ export async function handleTable(
 			rowCells.push(
 				new TableCell({
 					width: { size: colWidth, type: WidthType.DXA },
+					margins: {
+						left: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
+						right: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
+					},
 					children: [
 						new Paragraph({
 							style: 'TableText',
@@ -427,6 +437,10 @@ export async function handleTable(
 		headerCells.push(
 			new TableCell({
 				width: { size: colWidth, type: WidthType.DXA },
+				margins: {
+					left: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
+					right: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
+				},
 				children: [
 					new Paragraph({
 						style: 'TableText',

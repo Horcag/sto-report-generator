@@ -2,8 +2,12 @@
 	"name": "sto-report-generator",
 	"version": "1.0.0",
 	"description": "Generates docx reports complying with university STO requirements from Markdown",
-	"private": true,
+	"private": false,
+	"bin": {
+		"sto-report-generator": "bin/sto-report-generator.cjs"
+	},
 	"files": [
+		"bin",
 		"src",
 		"scripts",
 		"docs",
@@ -80,7 +84,8 @@
 		"jsdom": "30.1.0",
 		"marked": "^18.0.13",
 		"mathjax": "4.1.3",
-		"tsconfig-paths": "^4.2.0"
+		"tsconfig-paths": "^4.2.0",
+		"tsx": "4.23.15"
 	},
 	"devDependencies": {
 		"@cspell/dict-ru_ru": "2.3.2",
@@ -99,7 +104,6 @@
 		"prettier": "^3.9.8",
 		"steiger": "^0.6.0",
 		"ts-node": "^10.9.2",
-		"tsx": "4.23.15",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.70.0"
 	}

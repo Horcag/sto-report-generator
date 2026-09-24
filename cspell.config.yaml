@@ -23,6 +23,8 @@ words:
     - OMML
     - OOXML
     - OSPP
+    - Obrazcy
+    - Oform
     - OpenXML
     - PowerShell
     - Referat
@@ -47,9 +49,12 @@ words:
     - pywin32
     - referat
     - samarsky
+    - soffice
+    - substack
     - techreport
     - tsconfig
     - tsx
+    - twips
     - urldate
     - venv
     - vnextdiag

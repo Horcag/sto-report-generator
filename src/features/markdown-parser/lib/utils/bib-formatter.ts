@@ -1,14 +1,23 @@
 import { BibItem } from '../types';
-
-interface AuthorBlock {
-	heading: string;
-	responsibility: string;
-}
-
-interface NoteBlock {
-	responsibility: string[];
-	publication: string[];
-}
+import {
+	appendArea,
+	appendUrlArea,
+	buildPrimaryDescription,
+	cleanDoi,
+	cleanText,
+	ensureFinalDot,
+	formatPageCount,
+	formatPages,
+	formatPlacePublisherYear,
+	formatVolumeIssue,
+	isEnglish,
+	normalizeRecord,
+	parseAuthors,
+	parseNote,
+	titleWithType,
+	type AuthorBlock,
+	type NoteBlock,
+} from './bib-format-utils';
 
 /**
  * GOST R 7.0.100-2018 formatter for Russian academic source lists.
@@ -53,6 +62,16 @@ export function formatBibItem(item: BibItem): string {
 			);
 		case 'norm':
 			return formatNorm(tags, title);
+		case 'standard':
+			return formatStandard(tags, title);
+		case 'patent':
+			return formatPatent(tags, title, authorBlock, isEng);
+		case 'thesis':
+		case 'phdthesis':
+		case 'mastersthesis':
+			return formatThesis(tags, title, typeInfo, authorBlock, isEng);
+		case 'inonline':
+			return formatSitePart(tags, title, authorBlock, isEng);
 		case 'techreport':
 			return formatTechReport(tags, title, typeInfo, authorBlock, isEng);
 		case 'misc':
@@ -66,26 +85,97 @@ export function formatBibItem(item: BibItem): string {
 				noteBlock,
 			);
 		default:
-			if (tags.url) {
-				return formatOnline(
-					tags,
-					title,
-					typeInfo,
-					authorBlock,
-					isEng,
-					noteBlock,
-				);
-			}
-			return normalizeRecord(
-				appendYear(
-					buildPrimaryDescription(
-						titleWithType(title, typeInfo),
-						authorBlock,
-					),
-					tags.year,
-				),
+			throw new Error(
+				`Unsupported bibliography type "${item.entryType}" for @${item.citationKey}.`,
 			);
 	}
+}
+
+function formatPatent(
+	tags: Record<string, string>,
+	title: string,
+	authorBlock: AuthorBlock,
+	isEng: boolean,
+): string {
+	const designation = [cleanText(tags.country), cleanText(tags.number)]
+		.filter(Boolean)
+		.join(' ');
+	const kind = isEng ? 'patent' : 'пат.';
+	const responsibility = [authorBlock.responsibility, cleanText(tags.holder)]
+		.filter(Boolean)
+		.join(' ; ');
+	let record = buildPrimaryDescription(
+		titleWithType(title, `${kind} ${designation}`.trim()),
+		{ heading: authorBlock.heading, responsibility },
+	);
+	record = appendArea(record, cleanText(tags.date || tags.year));
+	record = appendArea(
+		record,
+		formatPageCount(tags.pages || tags.numpages, isEng),
+	);
+	record = appendUrlArea(record, tags);
+	return normalizeRecord(record);
+}
+
+function formatThesis(
+	tags: Record<string, string>,
+	title: string,
+	typeInfo: string,
+	authorBlock: AuthorBlock,
+	isEng: boolean,
+): string {
+	const responsibility = [
+		authorBlock.responsibility,
+		cleanText(tags.institution || tags.school),
+	]
+		.filter(Boolean)
+		.join(' ; ');
+	let record = buildPrimaryDescription(
+		titleWithType(title, typeInfo || (isEng ? 'thesis' : 'дис.')),
+		{ heading: authorBlock.heading, responsibility },
+	);
+	record = appendArea(
+		record,
+		formatPlacePublisherYear(tags.address || tags.location, '', tags.year),
+	);
+	record = appendArea(
+		record,
+		formatPageCount(tags.pages || tags.numpages, isEng),
+	);
+	record = appendUrlArea(record, tags);
+	return normalizeRecord(record);
+}
+
+function formatStandard(tags: Record<string, string>, title: string): string {
+	const designation = cleanText(tags.number);
+	let record = designation ? `${designation}. ${title}` : title;
+	record = appendArea(
+		record,
+		formatPlacePublisherYear(
+			tags.address || tags.location,
+			tags.publisher,
+			tags.year,
+		),
+	);
+	record = appendArea(
+		record,
+		formatPageCount(tags.pages || tags.numpages, false),
+	);
+	record = appendUrlArea(record, tags);
+	return normalizeRecord(record);
+}
+
+function formatSitePart(
+	tags: Record<string, string>,
+	title: string,
+	authorBlock: AuthorBlock,
+	isEng: boolean,
+): string {
+	const website = cleanText(tags.website || tags.booktitle);
+	let record = `${buildPrimaryDescription(title, authorBlock)} // ${website} : ${isEng ? 'website' : 'сайт'}.`;
+	record = appendArea(record, cleanText(tags.year));
+	record = appendUrlArea(record, tags);
+	return normalizeRecord(record);
 }
 
 function formatArticle(
@@ -248,251 +338,4 @@ function formatOnline(
 		record = appendArea(record, publicationNote);
 	}
 	return normalizeRecord(record);
-}
-
-function buildPrimaryDescription(
-	titleBlock: string,
-	authorBlock: AuthorBlock,
-	noteBlock?: NoteBlock,
-): string {
-	const responsibilityParts = [
-		authorBlock.responsibility,
-		...(noteBlock?.responsibility ?? []),
-	].filter(Boolean);
-	const responsibility = responsibilityParts.join(' ; ');
-	const description = authorBlock.heading
-		? `${authorBlock.heading}. ${titleBlock}`
-		: titleBlock;
-
-	return responsibility ? `${description} / ${responsibility}` : description;
-}
-
-function parseAuthors(rawAuthors: string, isEng: boolean): AuthorBlock {
-	const raw = rawAuthors.trim();
-	if (!raw) {
-		return { heading: '', responsibility: '' };
-	}
-
-	const withoutBraces = cleanText(raw);
-	const isCollective = /^\{+[^{}].*}+$/s.test(raw) && !/\s+and\s+/i.test(raw);
-	if (isCollective) {
-		return { heading: '', responsibility: withoutBraces };
-	}
-
-	const hasOthers = /\bothers\b/i.test(raw);
-	const persons = raw
-		.split(/\s+and\s+/i)
-		.map(cleanText)
-		.filter(value => value && !/^others$/i.test(value));
-
-	if (persons.length === 0) {
-		return { heading: '', responsibility: '' };
-	}
-
-	if (hasOthers || persons.length > 4) {
-		const visibleAuthors = persons
-			.slice(0, 3)
-			.map(formatResponsibilityName);
-		return {
-			heading: '',
-			responsibility: `${visibleAuthors.join(', ')} ${isEng ? '[et al.]' : '[и др.]'}`,
-		};
-	}
-
-	const responsibility = persons.map(formatResponsibilityName).join(', ');
-	const heading =
-		persons.length <= 3 ? formatHeadingName(persons[0] ?? '') : '';
-	return { heading, responsibility };
-}
-
-function parseNote(rawNote: string): NoteBlock {
-	const note = cleanText(rawNote);
-	if (!note) {
-		return { responsibility: [], publication: [] };
-	}
-
-	const parts = note
-		.split(/\s+–\s+/)
-		.map(cleanText)
-		.map(compactInitials)
-		.filter(Boolean);
-	if (parts.length === 0) {
-		return { responsibility: [], publication: [] };
-	}
-
-	const [first, ...rest] = parts;
-	if (/^(под ред\.|ред\.|сост\.)/i.test(first)) {
-		return { responsibility: [first], publication: rest };
-	}
-	return { responsibility: [], publication: parts };
-}
-
-function formatHeadingName(rawName: string): string {
-	const name = cleanText(rawName);
-	const commaIndex = name.indexOf(',');
-	if (commaIndex < 0) {
-		return compactInitials(name);
-	}
-
-	const family = name.slice(0, commaIndex).trim();
-	const given = compactInitials(name.slice(commaIndex + 1).trim());
-	return given ? `${family}, ${given}` : family;
-}
-
-function formatResponsibilityName(rawName: string): string {
-	const name = cleanText(rawName);
-	const commaIndex = name.indexOf(',');
-	if (commaIndex < 0) {
-		return compactInitials(name);
-	}
-
-	const family = name.slice(0, commaIndex).trim();
-	const given = compactInitials(name.slice(commaIndex + 1).trim());
-	return given ? `${given} ${family}` : family;
-}
-
-function titleWithType(title: string, typeInfo: string): string {
-	return typeInfo ? `${title} : ${cleanText(typeInfo)}` : title;
-}
-
-function formatVolumeIssue(
-	volume: string | undefined,
-	issue: string | undefined,
-	isEng: boolean,
-): string {
-	const cleanVolume = cleanText(volume);
-	const cleanIssue = cleanText(issue).replace(/^№\s*/, '');
-	if (cleanVolume && cleanIssue) {
-		return `${isEng ? 'Vol.' : 'Т.'} ${cleanVolume}, № ${cleanIssue}`;
-	}
-	if (cleanVolume) {
-		return `${isEng ? 'Vol.' : 'Т.'} ${cleanVolume}`;
-	}
-	if (cleanIssue) {
-		return `№ ${cleanIssue}`;
-	}
-	return '';
-}
-
-function formatPages(pages: string | undefined, isEng: boolean): string {
-	const cleanPages = normalizePageRange(pages);
-	if (!cleanPages) {
-		return '';
-	}
-
-	if (/^(?:article|e)\s*/i.test(cleanPages)) {
-		return `${isEng ? 'Article' : 'Статья'} ${cleanPages.replace(/^article\s*/i, '').trim()}`;
-	}
-	return `${isEng ? 'P.' : 'С.'} ${cleanPages}`;
-}
-
-function formatPageCount(pages: string | undefined, isEng: boolean): string {
-	const cleanPages = cleanText(pages);
-	return cleanPages ? `${cleanPages} ${isEng ? 'p.' : 'с.'}` : '';
-}
-
-function formatPlacePublisherYear(
-	place: string | undefined,
-	publisher: string | undefined,
-	year: string | undefined,
-): string {
-	const cleanPlace = cleanText(place);
-	const cleanPublisher = cleanText(publisher);
-	const cleanYear = cleanText(year);
-
-	const result =
-		cleanPlace && cleanPublisher
-			? `${cleanPlace} : ${cleanPublisher}`
-			: cleanPlace || cleanPublisher;
-
-	if (cleanYear) {
-		return result ? `${result}, ${cleanYear}` : cleanYear;
-	}
-	return result;
-}
-
-function appendYear(record: string, year: string | undefined): string {
-	return appendArea(record, cleanText(year));
-}
-
-function appendArea(record: string, area: string | undefined): string {
-	const cleanArea = cleanText(area);
-	if (!cleanArea) {
-		return record;
-	}
-	return `${ensureFinalDot(record)} – ${ensureFinalDot(cleanArea)}`;
-}
-
-function appendUrlArea(record: string, tags: Record<string, string>): string {
-	if (!tags.url) {
-		return record;
-	}
-
-	const accessDate = formatAccessDate(tags.urldate);
-	const accessMode = cleanText(
-		tags.access || tags.accessmode || tags.availability,
-	);
-	const url = cleanText(tags.url);
-	let result = `${ensureFinalDot(record)} – URL: ${url}`;
-	if (accessDate) {
-		result += ` (дата обращения: ${accessDate}).`;
-	} else {
-		result = ensureFinalDot(result);
-	}
-	if (accessMode) {
-		result = appendArea(result, `Режим доступа: ${accessMode}`);
-	}
-	return result;
-}
-
-function formatAccessDate(rawDate: string | undefined): string {
-	const date = cleanText(rawDate);
-	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-	if (match) {
-		return `${match[3]}.${match[2]}.${match[1]}`;
-	}
-	return date;
-}
-
-function cleanDoi(rawDoi: string): string {
-	return cleanText(rawDoi).replace(
-		/^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i,
-		'',
-	);
-}
-
-function normalizePageRange(pages: string | undefined): string {
-	return cleanText(pages).replace(/--/g, '-');
-}
-
-function compactInitials(value: string): string {
-	return cleanText(value).replace(/([A-ZА-ЯЁ])\.\s+(?=[A-ZА-ЯЁ]\.)/g, '$1.');
-}
-
-function cleanText(value: string | undefined): string {
-	return (value ?? '').replace(/[{}]/g, '').replace(/\s+/g, ' ').trim();
-}
-
-function ensureFinalDot(value: string): string {
-	const trimmed = value.trim();
-	if (!trimmed) {
-		return trimmed;
-	}
-	return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
-}
-
-function normalizeRecord(record: string): string {
-	return ensureFinalDot(
-		record
-			.replace(/\s+/g, ' ')
-			.replace(/\s+([,.])/g, '$1')
-			.replace(/\.{2,}/g, '.')
-			.replace(/\s+–\s+/g, ' – ')
-			.trim(),
-	);
-}
-
-function isEnglish(langid: string | undefined): boolean {
-	const lang = cleanText(langid).toLowerCase();
-	return lang === 'english' || lang === 'en';
 }

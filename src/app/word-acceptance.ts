@@ -1,5 +1,4 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,6 +10,10 @@ import {
 	StoStylePreset,
 } from '@/shared/config';
 
+import { getFileEvidence } from './word-acceptance-evidence';
+import { readAcceptanceStatistics } from './word-acceptance-statistics';
+
+const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
 export const WORD_ACCEPTANCE_TIMEOUT_MS = 180_000;
 export const WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS = 45_000;
@@ -44,6 +47,9 @@ export interface WordAcceptanceRequest {
 	printerStatePath: string;
 	interactionMode: WordAcceptanceInteractionMode;
 	attemptedModes: WordAcceptanceInteractionMode[];
+	statisticReplacements: Record<string, string>;
+	statisticCounts: { figures: number; tables: number; sources: number };
+	pageWordForms: [string, string, string];
 }
 
 export type WordAcceptanceHostKind = 'windows' | 'wsl';
@@ -172,7 +178,8 @@ export function createWordAcceptancePlan(
 	assertDifferentPaths(inputDocx, acceptedDocx);
 
 	const scriptPath = path.resolve(
-		environment.scriptPath ?? 'scripts/word_acceptance.ps1',
+		environment.scriptPath ??
+			path.join(PACKAGE_ROOT, 'scripts/word_acceptance.ps1'),
 	);
 	const requestJsonPath = path.resolve(
 		environment.requestJsonPath ?? createRequestJsonPath(),
@@ -197,6 +204,9 @@ export function createWordAcceptancePlan(
 		),
 		interactionMode: 'background',
 		attemptedModes: ['background'],
+		statisticReplacements: {},
+		statisticCounts: { figures: 0, tables: 0, sources: 0 },
+		pageWordForms: ['страницу', 'страницы', 'страниц'],
 	};
 	const command =
 		environment.hostKind === 'wsl' ? 'powershell.exe' : 'powershell.exe';
@@ -232,6 +242,13 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		hostKind,
 		toHostPath: absolutePath => toHostPath(hostKind, absolutePath),
 	});
+	const statistics = readAcceptanceStatistics(options.inputDocx);
+	plan.request.statisticReplacements = statistics.replacements;
+	plan.request.statisticCounts = {
+		figures: statistics.figures,
+		tables: statistics.tables,
+		sources: statistics.sources,
+	};
 	fs.mkdirSync(path.dirname(plan.requestJsonPath), { recursive: true });
 	let cleanupVerified = false;
 
@@ -278,22 +295,6 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 			});
 		}
 	}
-}
-
-function getFileEvidence(filePath: string): {
-	exists: boolean;
-	path: string;
-	sha256?: string;
-	sizeBytes?: number;
-} {
-	if (!fs.existsSync(filePath)) return { exists: false, path: filePath };
-	const bytes = fs.readFileSync(filePath);
-	return {
-		exists: true,
-		path: filePath,
-		sha256: createHash('sha256').update(bytes).digest('hex'),
-		sizeBytes: bytes.length,
-	};
 }
 
 function writeWordAcceptanceFailureManifest(
@@ -464,7 +465,7 @@ function stopOwnedWordAcceptanceProcesses(plan: WordAcceptancePlan): string {
 			'-File',
 			toHostPath(
 				plan.hostKind,
-				path.resolve('scripts/stop_word_acceptance.ps1'),
+				path.join(PACKAGE_ROOT, 'scripts/stop_word_acceptance.ps1'),
 			),
 			'-RequestJson',
 			environmentHostPath(plan),

@@ -11,6 +11,7 @@ fs.mkdirSync(tempRoot, { recursive: true });
 
 const result = scaffoldReport({
 	slug: 'demo_report',
+	profile: 'nir',
 	dir: path.join(tempRoot, 'demo_report'),
 	title: 'Демонстрационный отчет',
 	studentName: 'Иванов Иван Иванович',
@@ -40,6 +41,10 @@ for (const expectedFile of [
 
 assert.equal(result.gitInitialized, true);
 assert.ok(fs.existsSync(path.join(result.targetDir, '.git')));
+assert.match(
+	fs.readFileSync(path.join(result.targetDir, '01_referat.md'), 'utf8'),
+	/Пояснительная записка: \{\{PAGES\}\} с\., \{\{FIGURES\}\}, \{\{TABLES\}\}, \{\{SOURCES\}\}\./,
+);
 const scaffoldPreflight = runSourcePreflight(result.targetDir);
 assert.equal(
 	scaffoldPreflight.passed,
@@ -88,6 +93,13 @@ assert.ok(
 	!fs.existsSync(path.join(labResult.targetDir, '91_sources.md')),
 	'lab profile must not create sources by default when there are no citations',
 );
+const labMetadata = fs.readFileSync(
+	path.join(labResult.targetDir, '00_metadata.md'),
+	'utf8',
+);
+assert.match(labMetadata, /reportProfile: "lab"/);
+assert.match(labMetadata, /supervisorName: ""/);
+assert.match(labMetadata, /hideSignatures: true/);
 const labPreflight = runSourcePreflight(labResult.targetDir);
 assert.equal(
 	labPreflight.passed,
@@ -97,12 +109,62 @@ assert.equal(
 		.join(', '),
 );
 
+for (const profile of ['vkr-bachelor', 'vkr-master'] as const) {
+	const vkrResult = scaffoldReport({
+		slug: `${profile}_demo`,
+		dir: path.join(tempRoot, `${profile}_demo`),
+		profile,
+		title: `Демонстрационная ${profile} работа`,
+		initGit: false,
+	});
+	const metadata = fs.readFileSync(
+		path.join(vkrResult.targetDir, '00_metadata.md'),
+		'utf8',
+	);
+	assert.match(metadata, new RegExp(`reportProfile: "${profile}"`));
+	assert.match(
+		metadata,
+		new RegExp(
+			`specialtyCode: "${profile === 'vkr-master' ? '01.04.02' : '01.03.02'}"`,
+		),
+	);
+	assert.match(metadata, /normControllerName:/);
+	assert.match(metadata, /vkrOrderNumber:/);
+	assert.match(metadata, /vkrQuestions:/);
+	assert.ok(fs.existsSync(path.join(vkrResult.targetDir, '01_referat.md')));
+	assert.equal(
+		runSourcePreflight(vkrResult.targetDir).passed,
+		true,
+		`${profile} scaffold must pass source preflight`,
+	);
+	if (profile === 'vkr-bachelor') {
+		fs.writeFileSync(
+			path.join(vkrResult.targetDir, '00_metadata.md'),
+			metadata.replace(/vkrOrderNumber:[^\r\n]*\r?\n/, ''),
+			'utf8',
+		);
+		assert.ok(
+			runSourcePreflight(vkrResult.targetDir).issues.some(
+				item =>
+					item.code === 'metadata-vkr-assignment-field-missing' &&
+					item.message.includes('vkrOrderNumber'),
+			),
+		);
+	}
+}
+
+assert.throws(
+	() => scaffoldReport({ slug: 'implicit_profile', initGit: false }),
+	/Select a report profile/,
+);
+
 fs.writeFileSync(path.join(tempRoot, 'occupied.txt'), 'x', 'utf8');
 assert.throws(
 	() =>
 		scaffoldReport({
 			slug: 'occupied',
 			dir: tempRoot,
+			profile: 'nir',
 			initGit: false,
 		}),
 	/Target report directory is not empty/,

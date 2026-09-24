@@ -115,3 +115,46 @@
 {"timestamp":"2026-09-22T18:08:22.017797593+04:00","action":"create","task_id":26,"detail":"Создать эталон Word для всех применимых конструкций DOTM"}
 {"timestamp":"2026-09-22T18:08:22.127405978+04:00","action":"create","task_id":27,"detail":"Завершить правила перечней и математической типографики"}
 {"timestamp":"2026-09-22T18:08:22.752259341+04:00","action":"create","task_id":28,"detail":"Завершить применимость форм и матрицу внешних ГОСТ"}
+{"timestamp":"2026-09-24T19:46:21.315333894+04:00","action":"move","task_id":23,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T19:55:06.31918834+04:00","action":"edit","task_id":23,"detail":"Сохранять исходные символы и пробелы в блоках кода"}
+{"timestamp":"2026-09-24T19:55:06.346179636+04:00","action":"move","task_id":23,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T19:55:06.372777771+04:00","action":"edit","task_id":26,"detail":"Создать эталон Word для всех применимых конструкций DOTM"}
+{"timestamp":"2026-09-24T19:59:43.60980867+04:00","action":"move","task_id":24,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T19:59:43.73128046+04:00","action":"edit","task_id":24,"detail":"Не пропускать ошибки преобразования математических формул"}
+{"timestamp":"2026-09-24T19:59:43.792495753+04:00","action":"move","task_id":24,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T20:14:22.425323541+04:00","action":"edit","task_id":22,"detail":"Проверять прямое форматирование абзацев DOCX"}
+{"timestamp":"2026-09-24T20:14:23.944294022+04:00","action":"move","task_id":22,"detail":"backlog -\u003e done"}
+{"timestamp":"2026-09-24T20:18:34.744150885+04:00","action":"edit","task_id":9,"detail":"Удаленный Microsoft renderer без локального Word"}
+{"timestamp":"2026-09-24T20:18:37.655925027+04:00","action":"move","task_id":9,"detail":"backlog -\u003e done"}
+{"timestamp":"2026-09-24T20:19:12.227526121+04:00","action":"edit","task_id":10,"detail":"GUI discovery без Electron по умолчанию"}
+{"timestamp":"2026-09-24T20:19:14.212481488+04:00","action":"move","task_id":10,"detail":"backlog -\u003e done"}
+{"timestamp":"2026-09-24T20:21:49.893117416+04:00","action":"edit","task_id":8,"detail":"LibreOffice preview backend"}
+{"timestamp":"2026-09-24T20:21:52.921149105+04:00","action":"move","task_id":8,"detail":"backlog -\u003e done"}
+{"timestamp":"2026-09-24T20:22:01.381661494+04:00","action":"edit","task_id":8,"detail":"LibreOffice preview backend"}
+{"timestamp":"2026-09-24T20:22:01.381910655+04:00","action":"unblock","task_id":8,"detail":"LibreOffice preview backend"}
+{"timestamp":"2026-09-24T20:27:38.660508121+04:00","action":"move","task_id":11,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T20:27:38.721999938+04:00","action":"move","task_id":7,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T20:27:38.831402062+04:00","action":"move","task_id":12,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T20:27:38.894222933+04:00","action":"move","task_id":21,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T20:27:38.971246958+04:00","action":"move","task_id":27,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T20:27:39.023336496+04:00","action":"move","task_id":25,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T20:37:12.177946019+04:00","action":"edit","task_id":11,"detail":"Полная нумерация приложений А.1"}
+{"timestamp":"2026-09-24T20:37:12.250499761+04:00","action":"move","task_id":11,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T20:37:12.301879298+04:00","action":"edit","task_id":25,"detail":"Проверять порядок и целостность ссылок на объекты"}
+{"timestamp":"2026-09-24T20:37:12.34159864+04:00","action":"move","task_id":25,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T20:37:25.99900285+04:00","action":"edit","task_id":12,"detail":"Расширенные библиографические типы"}
+{"timestamp":"2026-09-24T20:37:26.173285936+04:00","action":"move","task_id":12,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T20:37:26.283894315+04:00","action":"edit","task_id":21,"detail":"Заменять плейсхолдеры статистики в реферате до Word-приёмки"}
+{"timestamp":"2026-09-24T20:37:26.47956187+04:00","action":"move","task_id":21,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T20:37:34.234548309+04:00","action":"edit","task_id":27,"detail":"Завершить правила перечней и математической типографики"}
+{"timestamp":"2026-09-24T20:37:34.258693998+04:00","action":"move","task_id":27,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T20:39:21.143059094+04:00","action":"edit","task_id":7,"detail":"Пакетирование CLI без клонирования репозитория"}
+{"timestamp":"2026-09-24T20:39:21.166719738+04:00","action":"move","task_id":7,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T20:43:56.607530833+04:00","action":"edit","task_id":20,"detail":"Исследовать замену формульной layout-таблицы на стиль MTDisplayEquation"}
+{"timestamp":"2026-09-24T20:43:56.728367599+04:00","action":"move","task_id":20,"detail":"backlog -\u003e done"}
+{"timestamp":"2026-09-24T20:44:06.022306371+04:00","action":"move","task_id":26,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T20:44:06.116596062+04:00","action":"move","task_id":28,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-09-24T20:47:56.701940369+04:00","action":"edit","task_id":26,"detail":"Создать эталон Word для всех применимых конструкций DOTM"}
+{"timestamp":"2026-09-24T20:47:56.728060472+04:00","action":"move","task_id":26,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-09-24T21:04:24.533596297+04:00","action":"edit","task_id":28,"detail":"Завершить применимость форм и матрицу внешних ГОСТ"}
+{"timestamp":"2026-09-24T21:04:27.626502354+04:00","action":"move","task_id":28,"detail":"in-progress -\u003e done"}

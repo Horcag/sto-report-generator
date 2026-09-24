@@ -5,8 +5,14 @@ import path from 'node:path';
 import {
 	getReportProfileDocumentConfig,
 	isReportProfile,
+	REPORT_PROFILE_NAMES,
 	ReportProfile,
 } from '@/shared/lib/report-config';
+
+import {
+	reportGitignoreTemplate,
+	reportReadmeTemplate,
+} from './report-scaffold-readme';
 
 export interface ScaffoldReportOptions {
 	slug: string;
@@ -68,6 +74,16 @@ const PROFILE_METADATA_DEFAULTS: Record<
 		degree: 'по дисциплине «Название дисциплины»',
 		topicPrefix: 'Тема лабораторной работы',
 	},
+	'vkr-bachelor': {
+		reportType: 'ВЫПУСКНАЯ КВАЛИФИКАЦИОННАЯ РАБОТА',
+		degree: 'уровень бакалавриата',
+		topicPrefix: 'Тема ВКР',
+	},
+	'vkr-master': {
+		reportType: 'ВЫПУСКНАЯ КВАЛИФИКАЦИОННАЯ РАБОТА',
+		degree: 'уровень магистратуры',
+		topicPrefix: 'Тема ВКР',
+	},
 };
 
 function toPosixPath(value: string): string {
@@ -84,11 +100,11 @@ function assertValidSlug(slug: string): void {
 
 function resolveProfile(options: ScaffoldReportOptions): ReportProfile {
 	if (options.profile === undefined) {
-		return 'nir';
+		throw new Error('Select a report profile with --profile.');
 	}
 	if (!isReportProfile(options.profile)) {
 		throw new Error(
-			`Invalid report profile "${String(options.profile)}". Use nir, coursework or lab.`,
+			`Invalid report profile "${String(options.profile)}". Use ${REPORT_PROFILE_NAMES.join(', ')}.`,
 		);
 	}
 	return options.profile;
@@ -155,73 +171,24 @@ function metadataTemplate(
 department: "${options.department ?? 'Институт информатики и кибернетики'}"
 subdepartment: "${options.subdepartment ?? 'Кафедра технической кибернетики'}"
 reportType: "${options.reportType ?? defaults.reportType}"
+reportProfile: "${profile}"
 degree: "${options.degree ?? defaults.degree}"
 semester: ${options.semester ?? 6}
-specialtyCode: "${options.specialtyCode ?? '01.03.02'}"
+specialtyCode: "${options.specialtyCode ?? (profile === 'vkr-master' ? '01.04.02' : '01.03.02')}"
 specialtyName: "${options.specialtyName ?? 'Прикладная математика и информатика'}"
 profileName: "${options.profileName ?? 'Искусственный интеллект и компьютерные науки'}"
 studentName: "${options.studentName ?? 'Фамилия Имя Отчество'}"
 groupNumber: "${options.groupNumber ?? '0000 – 000000D'}"
 topicPrefix: "${defaults.topicPrefix}"
 topic: "${options.title ?? 'Название темы'}"
-supervisorName: "${options.supervisorName ?? 'Фамилия Имя Отчество'}"
-supervisorTitle: "${options.supervisorTitle ?? 'ученая степень, должность'}"
-${options.supervisorRole ? `supervisorRole: "${options.supervisorRole}"\n` : ''}${options.hideSignatures ? 'hideSignatures: true\n' : ''}city: "Самара"
+supervisorName: "${options.supervisorName ?? (profile === 'lab' ? '' : 'Фамилия Имя Отчество')}"
+supervisorTitle: "${options.supervisorTitle ?? (profile === 'lab' ? '' : 'ученая степень, должность')}"
+${profile.startsWith('vkr-') ? 'normControllerName: "Фамилия Имя Отчество"\nnormControllerTitle: "Нормоконтролёр"\n' : ''}
+${profile.startsWith('vkr-') ? 'vkrApprovalName: "Фамилия Имя Отчество"\nvkrOrderDate: "дд.мм.гггг"\nvkrOrderNumber: "номер приказа"\nvkrInitialData: "Исходные данные задания"\nvkrQuestions: "Перечень вопросов, подлежащих разработке"\nvkrAssignmentDate: "дд.мм.гггг"\n' : ''}
+${options.supervisorRole ? `supervisorRole: "${options.supervisorRole}"\n` : ''}${options.hideSignatures || profile === 'lab' ? 'hideSignatures: true\n' : ''}city: "Самара"
 year: ${year}
 ${bibliographyLine.trimEnd()}
 ---
-`;
-}
-
-function reportReadmeTemplate(
-	slug: string,
-	reportPath: string,
-	profile: ReportProfile,
-): string {
-	const profileLabel = {
-		nir: 'НИР',
-		coursework: 'курсовой работы',
-		lab: 'лабораторной работы',
-	}[profile];
-	return String.raw`# ${slug}
-
-Локальная папка ${profileLabel} создана генератором STO Report Generator.
-
-## Быстрый цикл
-
-Команды запускаются из корня генератора:
-
-    npm run check:source -- ${reportPath}
-    npm run generate:report -- ${reportPath} --renderer portable --validate
-    npm run generate:report -- ${reportPath} --renderer word --validate
-
-Файлы отчета собираются по алфавиту. Сохраняйте смысловые блоки в отдельных Markdown-файлах и не переносите весь отчет в один файл.
-
-## Что редактировать первым
-
-- 00_metadata.md: титульный лист и путь к bibliography.
-- 03_intro.md: цель, задачи, объект, предмет.
-- 10_methodology.md, 20_data.md, 30_results.md: основная часть.
-- 90_conclusion.md: выводы.
-- references.bib: BibTeX-источники, если работа использует цитирования.
-
-DOCX/PDF, временные распаковки и rendered-страницы игнорируются локальным git.
-`;
-}
-
-function reportGitignoreTemplate(): string {
-	return String.raw`*.docx
-*.pdf
-~$*.doc*
-~$*.dot*
-build/
-output/
-rendered/
-.temp*/
-*_unpacked/
-__pycache__/
-.venv/
-.DS_Store
 `;
 }
 
@@ -256,7 +223,7 @@ function reportConfigTemplate(slug: string, profile: ReportProfile): string {
 function referatTemplate(): string {
 	return String.raw`\sto_structural_heading{РЕФЕРАТ}
 
-Отчет содержит {{PAGES}} страниц, {{FIGURES}} рисунков, {{TABLES}} таблиц и {{SOURCES}} использованных источников.
+Пояснительная записка: {{PAGES}} с., {{FIGURES}}, {{TABLES}}, {{SOURCES}}.
 
 ПРЕДМЕТНАЯ ОБЛАСТЬ, МЕТОДИКА, ДАННЫЕ, РЕЗУЛЬТАТ, ВЫВОДЫ
 
@@ -286,9 +253,9 @@ function introTemplate(profile: ReportProfile): string {
 Для достижения цели необходимо выполнить следующие действия:
 
 ${TEX_BEGIN}{sto_enum}
-1. изучить исходные данные и постановку задачи;
-2. выполнить расчетную или программную часть;
-3. проанализировать полученные результаты.
+1. Изучить исходные данные и постановку задачи.
+2. Выполнить расчетную или программную часть.
+3. Проанализировать полученные результаты.
 ${TEX_END}{sto_enum}
 `;
 	}

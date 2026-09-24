@@ -36,12 +36,7 @@ export async function handleBlockMath(
 		}
 	}
 
-	let formulaMath: MathConversionResult;
-	try {
-		formulaMath = convertLatex2Math(formula);
-	} catch {
-		formulaMath = new TextRun({ text: formula, italics: true });
-	}
+	const formulaMath: MathConversionResult = convertLatex2Math(formula);
 
 	return new Table({
 		width: { size: 100, type: WidthType.PERCENTAGE },

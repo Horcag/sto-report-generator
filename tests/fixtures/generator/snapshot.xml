@@ -990,6 +990,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="4316"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1004,6 +1008,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2262"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1018,6 +1026,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2777"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1037,6 +1049,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="4316"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1051,6 +1067,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2262"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1065,6 +1085,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2777"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1084,6 +1108,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="4316"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1098,6 +1126,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2262"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1112,6 +1144,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2777"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1131,6 +1167,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="4316"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1145,6 +1185,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2262"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -1159,6 +1203,10 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2777"/>
+<w:tcMar>
+<w:left w:type="dxa" w:w="108"/>
+<w:right w:type="dxa" w:w="108"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>

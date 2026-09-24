@@ -24,6 +24,7 @@ import {
 	StoStylePreset,
 } from '@/shared/config';
 import { clearDirtyFieldFlags } from '@/shared/lib/docx-archive';
+import { FormulaConversionError } from '@/shared/lib/math-converter';
 import { createTitlePage, createTitlePageFooter } from '@/widgets/title-page';
 
 export interface BuildReportOptions {
@@ -60,6 +61,7 @@ export async function buildReport(
 
 	let finalContent = '';
 	let finalMetadata: Record<string, unknown> | null = null;
+	const sourceContents: Array<{ file: string; content: string }> = [];
 
 	const stats = fs.statSync(inputPath);
 	const sourceDir = stats.isDirectory() ? inputPath : path.dirname(inputPath);
@@ -89,6 +91,7 @@ export async function buildReport(
 			}
 
 			if (content) {
+				sourceContents.push({ file: filePath, content: fileContent });
 				finalContent += content + '\n\n';
 			}
 		}
@@ -98,6 +101,7 @@ export async function buildReport(
 		const { metadata, content } = parseFrontmatter(fileContent);
 		finalMetadata = metadata as unknown as Record<string, unknown>;
 		finalContent = content;
+		sourceContents.push({ file: inputPath, content: fileContent });
 	}
 
 	if (!finalMetadata) {
@@ -112,13 +116,31 @@ export async function buildReport(
 		getMetadataStylePreset(finalMetadata) ??
 		DEFAULT_STO_STYLE_PRESET;
 	const titlePage = createTitlePage(reportMetadata);
-	const documentBody = await parseMarkdownToDocx(
-		finalContent,
-		finalMetadata,
-		{
+	let documentBody: Awaited<ReturnType<typeof parseMarkdownToDocx>>;
+	try {
+		documentBody = await parseMarkdownToDocx(finalContent, finalMetadata, {
 			sourceDir,
-		},
-	);
+		});
+	} catch (error) {
+		if (!(error instanceof FormulaConversionError)) throw error;
+		const locations = sourceContents.flatMap(({ file, content }) => {
+			const matches: string[] = [];
+			let index = content.indexOf(error.latex);
+			while (index !== -1) {
+				const line = content.slice(0, index).split('\n').length;
+				matches.push(`${file}:${line}`);
+				index = content.indexOf(
+					error.latex,
+					index + error.latex.length,
+				);
+			}
+			return matches;
+		});
+		throw new Error(
+			`${error.message}${locations.length > 0 ? ` at ${locations.join(', ')}` : ''}`,
+			{ cause: error },
+		);
+	}
 
 	const doc = new Document({
 		styles: getStoStyles(stylePreset),

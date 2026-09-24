@@ -64,7 +64,7 @@ class MarkdownParser {
 
 	constructor(bibDb: BibItem[] = [], options: MarkdownParserOptions = {}) {
 		this.context = {
-			itemMap: new Map<string, number>(),
+			itemMap: new Map<string, string>(),
 			citations: [],
 			bibDb,
 			listInstanceCounter: 0,
@@ -98,7 +98,12 @@ class MarkdownParser {
 		const elements: DocxElement[] = [];
 		let activeStructuralHeading = currentContext.structuralHeading;
 		let pendingTableWidths: number[] | undefined;
-		for (const token of tokensToProcess) {
+		for (
+			let tokenIndex = 0;
+			tokenIndex < tokensToProcess.length;
+			tokenIndex++
+		) {
+			const token = tokensToProcess[tokenIndex];
 			const tokenContext: ProcessTokensContext = {
 				...currentContext,
 				structuralHeading: activeStructuralHeading,
@@ -137,15 +142,30 @@ class MarkdownParser {
 					}
 					break;
 				}
-				case 'stoFlag':
+				case 'stoFlag': {
+					const stoToken = token as unknown as StoFlagToken;
+					let headingIndex = tokenIndex + 1;
+					while (tokensToProcess[headingIndex]?.type === 'space')
+						headingIndex++;
+					const nextHeading = tokensToProcess[headingIndex];
+					const appendixTitle =
+						stoToken.flagType === 'structural_heading' &&
+						/^ПРИЛОЖЕНИЕ\s+[А-Я]$/i.test(
+							stoToken.text?.trim() ?? '',
+						) &&
+						nextHeading?.type === 'heading' &&
+						(nextHeading as Tokens.Heading).depth === 1
+							? (nextHeading as Tokens.Heading).text.trim()
+							: undefined;
 					elements.push(
 						...(await handleStoFlag(
-							token as unknown as StoFlagToken,
+							{ ...stoToken, appendixTitle },
 							this.context,
 							this.processTokens.bind(this),
 							tokenContext,
 						)),
 					);
+					if (appendixTitle) tokenIndex = headingIndex;
 					if (
 						(token as unknown as StoFlagToken).flagType ===
 						'structural_heading'
@@ -157,6 +177,7 @@ class MarkdownParser {
 							.toUpperCase();
 					}
 					break;
+				}
 				case 'heading': {
 					activeStructuralHeading = undefined;
 					const headingToken = token as Tokens.Heading;
@@ -235,22 +256,8 @@ class MarkdownParser {
 					break;
 				case 'code': {
 					const codeToken = token as Tokens.Code;
-					// Unescape HTML entities that marked might have escaped
-					let codeText = codeToken.text
-						.replace(/&amp;/g, '&')
-						.replace(/&lt;/g, '<')
-						.replace(/&gt;/g, '>')
-						.replace(/&quot;/g, '"')
-						.replace(/&#39;/g, "'");
-
-					// To prevent Word from automatically coloring URLs blue,
-					// insert a zero-width space after "http" and "https"
-					codeText = codeText
-						.replace(/https:\/\//g, 'https\u200B://')
-						.replace(/http:\/\//g, 'http\u200B://');
-
-					// Split code by newlines to insert breaks, and preserve spaces.
-					const lines = codeText.split('\n');
+					// Fenced code is literal text. DOCX escapes XML characters when packed.
+					const lines = codeToken.text.split('\n');
 					const runs = lines.map((line, index) => {
 						return new TextRun({
 							text: line,

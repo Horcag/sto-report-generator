@@ -1,0 +1,1169 @@
+{
+  "acceptedParagraphs": 132,
+  "acceptedContentEqual": true,
+  "generator": {
+    "sha256": "42b961a9c1f04d9ce413f5f3fa9125d2741d6698e85f7a70c8fda69fa8c8a8aa",
+    "usedStyles": {
+      "+Абзац с отступом 1-ой строки": {
+        "count": 16,
+        "styleIds": [
+          "1-"
+        ],
+        "sample": "Пояснительная записка: 8 с., 1 рисунок, 1 таблица, 1 источник.",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709",
+              "left": "0"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "pos": "1134",
+                "val": "left"
+              }
+            ]
+          },
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "after": "240",
+              "before": "360",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          },
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+ЗАГОЛОВОК по центру": {
+        "count": 3,
+        "styleIds": [
+          "ac"
+        ],
+        "sample": "Введение",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "after": "120",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+ЗаголРеферСодерж": {
+        "count": 2,
+        "styleIds": [
+          "ad"
+        ],
+        "sample": "Реферат",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "after": "240",
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Заголовок 1 уровня": {
+        "count": 1,
+        "styleIds": [
+          "1"
+        ],
+        "sample": "Первый уровень",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "after": "120",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Заголовок 2 уровня": {
+        "count": 1,
+        "styleIds": [
+          "2"
+        ],
+        "sample": "Второй уровень",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Заголовок 3 уровня": {
+        "count": 1,
+        "styleIds": [
+          "3"
+        ],
+        "sample": "Третий уровень",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Заголовок 4 уровня": {
+        "count": 1,
+        "styleIds": [
+          "4"
+        ],
+        "sample": "Четвёртый уровень",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Оглавление 1": {
+        "count": 1,
+        "styleIds": [
+          "12"
+        ],
+        "sample": "Контроль оглавления уровень 11",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+Оглавление 2": {
+        "count": 1,
+        "styleIds": [
+          "21"
+        ],
+        "sample": "Контроль оглавления уровень 22",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0",
+              "left": "284"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+Оглавление 3": {
+        "count": 1,
+        "styleIds": [
+          "31"
+        ],
+        "sample": "Контроль оглавления уровень 33",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0",
+              "left": "567"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+Оглавление 4": {
+        "count": 1,
+        "styleIds": [
+          "41"
+        ],
+        "sample": "Контроль оглавления уровень 44",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0",
+              "left": "851"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+Текст в таблице": {
+        "count": 62,
+        "styleIds": [
+          "af"
+        ],
+        "sample": "Номер",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Тит_Абзац по центру": {
+        "count": 19,
+        "styleIds": [
+          "ae"
+        ],
+        "sample": "Министерство науки и высшего образования Российской ФедерацииФедеральное государственное автономное ",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0",
+              "left": "5670"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "240",
+              "lineRule": "auto"
+            }
+          },
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "line": "240",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "pos": "1680",
+                "val": "left"
+              }
+            ]
+          },
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "line": "240",
+              "lineRule": "auto"
+            }
+          },
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            }
+          },
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "pos": "1701",
+                "val": "left"
+              },
+              {
+                "pos": "9638",
+                "val": "left"
+              }
+            ]
+          },
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "pos": "8190",
+                "val": "left"
+              }
+            ]
+          },
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "pos": "9638",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+№ - Название рисунка": {
+        "count": 1,
+        "styleIds": [
+          "-"
+        ],
+        "sample": "Рисунок 1 – Контрольная иллюстрация",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "after": "240",
+              "before": "120",
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+№ - Название таблицы": {
+        "count": 1,
+        "styleIds": [
+          "-0"
+        ],
+        "sample": "Таблица 1 – Контрольная длинная таблица",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "after": "120",
+              "before": "120",
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "heading 5": {
+        "count": 1,
+        "styleIds": [
+          "5"
+        ],
+        "sample": "Пятый уровень",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "heading 6": {
+        "count": 1,
+        "styleIds": [
+          "6"
+        ],
+        "sample": "Шестой уровень",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "toc 1": {
+        "count": 4,
+        "styleIds": [
+          "13"
+        ],
+        "sample": "Введение4",
+        "effectiveGeometryVariants": [
+          {
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "after": "100",
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9345",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "toc 2": {
+        "count": 1,
+        "styleIds": [
+          "22"
+        ],
+        "sample": "1.1 Второй уровень5",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "280"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "after": "100",
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9345",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "toc 3": {
+        "count": 1,
+        "styleIds": [
+          "32"
+        ],
+        "sample": "1.1.1 Третий уровень5",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "560"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "after": "100",
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9345",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "toc 4": {
+        "count": 1,
+        "styleIds": [
+          "42"
+        ],
+        "sample": "1.1.1.1 Четвёртый уровень5",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "840"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "after": "100",
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9345",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "tables": [
+      31
+    ]
+  },
+  "dotmReference": {
+    "sha256": "455df391f8e83e3268196d82e36406613bd6126ad9a4b2b37a99d7b49e82423a",
+    "usedStyles": {
+      "+Абзац с отступом 1-ой строки": {
+        "count": 14,
+        "styleIds": [
+          "1-0"
+        ],
+        "sample": "Пояснительная записка: 8 с., 1 рисунок, 1 таблица, 1 источник.",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+ЗАГОЛОВОК по центру": {
+        "count": 3,
+        "styleIds": [
+          "aff4"
+        ],
+        "sample": "Введение",
+        "effectiveGeometryVariants": [
+          {
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "after": "120",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+ЗаголРеферСодерж": {
+        "count": 2,
+        "styleIds": [
+          "aff8"
+        ],
+        "sample": "Реферат",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "after": "240",
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Заголовок 1 уровня": {
+        "count": 1,
+        "styleIds": [
+          "1"
+        ],
+        "sample": "Первый уровень",
+        "effectiveGeometryVariants": [
+          {
+            "spacing": {
+              "after": "120",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Заголовок 2 уровня": {
+        "count": 1,
+        "styleIds": [
+          "2"
+        ],
+        "sample": "Второй уровень",
+        "effectiveGeometryVariants": [
+          {
+            "spacing": {
+              "after": "0",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Заголовок 3 уровня": {
+        "count": 1,
+        "styleIds": [
+          "3"
+        ],
+        "sample": "Третий уровень",
+        "effectiveGeometryVariants": [
+          {
+            "spacing": {
+              "after": "0",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Заголовок 4 уровня": {
+        "count": 1,
+        "styleIds": [
+          "4"
+        ],
+        "sample": "Четвёртый уровень",
+        "effectiveGeometryVariants": [
+          {
+            "spacing": {
+              "after": "0",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+КлючСловаРеферат": {
+        "count": 1,
+        "styleIds": [
+          "affc"
+        ],
+        "sample": "ШАБЛОН, СТИЛЬ, ОТСТУП, ИНТЕРВАЛ, ТАБУЛЯЦИЯ, ТАБЛИЦА",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "after": "240",
+              "before": "360",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Оглавление 1": {
+        "count": 1,
+        "styleIds": [
+          "16"
+        ],
+        "sample": "Контроль оглавления уровень 11",
+        "effectiveGeometryVariants": [
+          {
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+Оглавление 2": {
+        "count": 1,
+        "styleIds": [
+          "25"
+        ],
+        "sample": "Контроль оглавления уровень 22",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "284"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+Оглавление 3": {
+        "count": 1,
+        "styleIds": [
+          "35"
+        ],
+        "sample": "Контроль оглавления уровень 33",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "567"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+Оглавление 4": {
+        "count": 1,
+        "styleIds": [
+          "45"
+        ],
+        "sample": "Контроль оглавления уровень 44",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "851"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "+Список использованных источников": {
+        "count": 1,
+        "styleIds": [
+          "a0"
+        ],
+        "sample": "Петров, П.П. Автоматизация документооборота в учебном процессе / П.П. Петров, С.С. Сидоров // Вестни",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709",
+              "left": "0"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "pos": "1134",
+                "val": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "+Текст в таблице": {
+        "count": 62,
+        "styleIds": [
+          "aff9"
+        ],
+        "sample": "Номер",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+Тит_Абзац по центру": {
+        "count": 19,
+        "styleIds": [
+          "afa"
+        ],
+        "sample": "Министерство науки и высшего образования Российской ФедерацииФедеральное государственное автономное ",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+№ - Название рисунка": {
+        "count": 1,
+        "styleIds": [
+          "-1"
+        ],
+        "sample": "Рисунок 1 – Контрольная иллюстрация",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "center"
+            },
+            "spacing": {
+              "after": "240",
+              "before": "120",
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "+№ - Название таблицы": {
+        "count": 1,
+        "styleIds": [
+          "-3"
+        ],
+        "sample": "Таблица 1 – Контрольная длинная таблица",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "0"
+            },
+            "jc": {
+              "val": "left"
+            },
+            "spacing": {
+              "after": "120",
+              "before": "120",
+              "line": "240",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "heading 5": {
+        "count": 1,
+        "styleIds": [
+          "5"
+        ],
+        "sample": "Пятый уровень",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "before": "200",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "heading 6": {
+        "count": 1,
+        "styleIds": [
+          "6"
+        ],
+        "sample": "Шестой уровень",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "firstLine": "709"
+            },
+            "jc": {
+              "val": "both"
+            },
+            "spacing": {
+              "before": "200",
+              "line": "360",
+              "lineRule": "auto"
+            }
+          }
+        ]
+      },
+      "toc 1": {
+        "count": 4,
+        "styleIds": [
+          "15"
+        ],
+        "sample": "Введение4",
+        "effectiveGeometryVariants": [
+          {
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "toc 2": {
+        "count": 1,
+        "styleIds": [
+          "24"
+        ],
+        "sample": "1.1 Второй уровень5",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "284"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "toc 3": {
+        "count": 1,
+        "styleIds": [
+          "34"
+        ],
+        "sample": "1.1.1 Третий уровень5",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "567"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "toc 4": {
+        "count": 1,
+        "styleIds": [
+          "44"
+        ],
+        "sample": "1.1.1.1 Четвёртый уровень5",
+        "effectiveGeometryVariants": [
+          {
+            "ind": {
+              "left": "851"
+            },
+            "spacing": {
+              "line": "360",
+              "lineRule": "auto"
+            },
+            "tabs": [
+              {
+                "leader": "dot",
+                "pos": "9356",
+                "val": "right"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "tables": [
+      31
+    ]
+  },
+  "pdfPages": {
+    "generator": 8,
+    "dotmReference": 8
+  }
+}

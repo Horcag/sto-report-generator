@@ -597,6 +597,81 @@ function getParagraphStyleId(paragraphXml: string): string | null {
 	return styleTag ? getXmlAttribute(styleTag, 'w:val') : null;
 }
 
+function hasInvalidDirectBodyFormatting(
+	docXml: string,
+	stylesXml: string,
+): boolean {
+	let inReferat = false;
+	return getBodyElements(docXml).some(paragraphXml => {
+		if (!isParagraphXml(paragraphXml) || !isVisibleParagraph(paragraphXml))
+			return false;
+		const text = extractWordText(paragraphXml).trim();
+		const headingText = text.toLocaleUpperCase('ru-RU');
+		if (headingText === 'РЕФЕРАТ') inReferat = true;
+		if (headingText === 'СОДЕРЖАНИЕ' || headingText === 'ВВЕДЕНИЕ')
+			inReferat = false;
+		const styleId = getParagraphStyleId(paragraphXml);
+		const runs = paragraphXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? [];
+		const isCodeBlock =
+			runs.length > 0 && runs.every(run => run.includes('Courier New'));
+		const styleName = styleId ? getStyleName(stylesXml, styleId) : null;
+		if (
+			styleId !== null &&
+			styleId !== 'Normal' &&
+			styleName !== 'Normal' &&
+			styleName !== '+Абзац с отступом 1-ой строки'
+		)
+			return false;
+		if (
+			paragraphXml.includes('<w:numPr') ||
+			paragraphXml.includes('<w:drawing') ||
+			isCodeBlock ||
+			(inReferat && paragraphXml.includes('<w:caps')) ||
+			/^где(?:\s|$)/iu.test(text)
+		)
+			return false;
+
+		const properties =
+			/<w:pPr\b[^>]*>([\s\S]*?)<\/w:pPr>/.exec(paragraphXml)?.[1] ?? '';
+		const indent = /<w:ind\b[^>]*\/>/.exec(properties)?.[0] ?? '';
+		const spacing = /<w:spacing\b[^>]*\/>/.exec(properties)?.[0] ?? '';
+		const runSpacing = [
+			...paragraphXml.matchAll(/<w:rPr\b[^>]*>([\s\S]*?)<\/w:rPr>/g),
+		]
+			.map(match => /<w:spacing\b[^>]*\/>/.exec(match[1])?.[0] ?? '')
+			.filter(Boolean);
+		const invalidAttribute = (
+			tag: string,
+			name: string,
+			expected: number,
+		): boolean => {
+			const value = getXmlAttribute(tag, `w:${name}`);
+			return value !== null && Number(value) !== expected;
+		};
+		return (
+			invalidAttribute(indent, 'left', 0) ||
+			invalidAttribute(indent, 'right', 0) ||
+			invalidAttribute(
+				indent,
+				'firstLine',
+				STO_RULES.typography.firstLineIndentDxa,
+			) ||
+			getXmlAttribute(indent, 'w:hanging') !== null ||
+			runSpacing.some(tag => invalidAttribute(tag, 'val', 0)) ||
+			invalidAttribute(spacing, 'before', 0) ||
+			invalidAttribute(spacing, 'after', 0) ||
+			invalidAttribute(
+				spacing,
+				'line',
+				STO_RULES.typography.normalLineSpacingDxa,
+			) ||
+			(spacing !== '' &&
+				getXmlAttribute(spacing, 'w:lineRule') !== null &&
+				getXmlAttribute(spacing, 'w:lineRule') !== 'auto')
+		);
+	});
+}
+
 function hasRunLevelTab(paragraphXml: string): boolean {
 	const runs = paragraphXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? [];
 	return runs.some(runXml => regexMatches(/<w:tab\b/, runXml));
@@ -720,6 +795,11 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 			'Normal Paragraph Indent & Alignment',
 			normalStyleIndentAndAlignment,
 			`Normal style must be justified and use first-line indent ${firstLineIndent} DXA.`,
+		),
+		resultFromFailure(
+			'Direct Body Paragraph Formatting',
+			hasInvalidDirectBodyFormatting(input.docXml, input.stylesXml),
+			'Body paragraph has a direct indent or spacing override outside STO values.',
 		),
 		resultFromPass(
 			'Page Margins',

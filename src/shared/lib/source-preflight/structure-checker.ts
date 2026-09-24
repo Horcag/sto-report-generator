@@ -134,6 +134,16 @@ function validateApplicationHeadings(
 			);
 			continue;
 		}
+		if (index === 0 && label !== 'А') {
+			issues.push(
+				issue(
+					'application-label-order',
+					'the first and only appendix must be А.',
+					application.file,
+					application.line,
+				),
+			);
+		}
 
 		if (seenLabels.has(label)) {
 			issues.push(
@@ -157,17 +167,17 @@ function validateApplicationHeadings(
 					`application label "${label}" should be a single allowed Russian uppercase letter.`,
 					application.file,
 					application.line,
-					'warning',
+					'error',
 				),
 			);
-		} else if (labelIndex <= previousLabelIndex) {
+		} else if (labelIndex !== previousLabelIndex + 1) {
 			issues.push(
 				issue(
 					'application-label-order',
 					'applications should follow Russian letter order without going backwards.',
 					application.file,
 					application.line,
-					'warning',
+					'error',
 				),
 			);
 		}
@@ -178,7 +188,7 @@ function validateApplicationHeadings(
 			application.sourceIndex,
 		);
 		if (
-			!new RegExp(`приложени[ея]\\s+${label}`, 'i').test(
+			!new RegExp(`приложени[еяи]\\s+${label}`, 'i').test(
 				sourceTextBeforeApplication,
 			)
 		) {
@@ -186,34 +196,6 @@ function validateApplicationHeadings(
 				issue(
 					'application-without-reference',
 					`application "${application.text}" should be referenced in text before the appendix.`,
-					application.file,
-					application.line,
-					'warning',
-				),
-			);
-		}
-
-		const nextApplication = applicationHeadings[index + 1];
-		const applicationBody = sourceText.slice(
-			application.sourceIndex,
-			nextApplication?.sourceIndex ?? sourceText.length,
-		);
-		if (/^(?:Рисунок|Таблица)\s+\d+\s+–/im.test(applicationBody)) {
-			issues.push(
-				issue(
-					'application-object-numbering',
-					`objects inside ${application.text} should be numbered with the application letter, for example "${label}.1".`,
-					application.file,
-					application.line,
-					'warning',
-				),
-			);
-		}
-		if (/\(@eq:[a-zA-Z0-9_-]+\)/.test(applicationBody)) {
-			issues.push(
-				issue(
-					'application-formula-numbering',
-					`formulas inside ${application.text} need application-local numbering such as "(${label}.1)"; verify numbering manually until appendix numbering is automated.`,
 					application.file,
 					application.line,
 					'warning',

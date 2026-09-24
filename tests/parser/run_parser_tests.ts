@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Document, Packer } from 'docx';
 
+import { buildReport } from '@/app/builder';
 import { parseMarkdownToDocx } from '@/features/markdown-parser';
 import { STO_NUMBERING, STO_STYLES } from '@/shared/config';
 import { readDocxEntry } from '@/shared/lib/docx-archive';
@@ -68,6 +69,50 @@ async function packAndReadXml(
 async function main(): Promise<void> {
 	fs.rmSync(tempRoot, { recursive: true, force: true });
 	fs.mkdirSync(tempRoot, { recursive: true });
+	await expectRejects(
+		'Ошибка $x=\\frac{1}{$ в строке.',
+		/Formula conversion failed/,
+	);
+	await expectRejects('$$x=\\frac{1}{$$', /Formula conversion failed/);
+	const invalidReportDir = path.join(tempRoot, 'invalid-formula-report');
+	fs.mkdirSync(invalidReportDir);
+	fs.copyFileSync(
+		path.join(process.cwd(), 'example', '00_metadata.md'),
+		path.join(invalidReportDir, '00_metadata.md'),
+	);
+	fs.writeFileSync(
+		path.join(invalidReportDir, '10_main.md'),
+		'Tекст.\n\n$$x=\\frac{1}{$$\n',
+	);
+	await assert.rejects(
+		() =>
+			buildReport(invalidReportDir, path.join(tempRoot, 'invalid.docx')),
+		/Formula conversion failed.*10_main\.md:3/,
+	);
+
+	const codeLines = [
+		'const escaped = "&amp; &lt; &#39;";',
+		'const url = "https://example.org/a?x=1&y=2";',
+		'\treturn escaped;  ',
+		'',
+		'    done();',
+	];
+	const codeElements = await parseMarkdownToDocx(
+		['```js', ...codeLines, '```'].join('\n'),
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: codeXml } = await packAndReadXml(
+		codeElements,
+		path.join(tempRoot, 'literal-code.docx'),
+	);
+	const codeParagraph = codeXml.match(/<w:p\b[\s\S]*?<\/w:p>/)?.[0];
+	assert.ok(codeParagraph);
+	const actualCodeLines = codeParagraph
+		.split(/<w:br\s*\/>/)
+		.map(line => getWordText(line));
+	assert.deepEqual(actualCodeLines, codeLines);
+	assert.doesNotMatch(codeParagraph, /\u200b/);
 
 	await parseMarkdownToDocx(
 		String.raw`\begin{sto_list}
@@ -339,6 +384,38 @@ async function main(): Promise<void> {
 		!getWordText(tabParagraph).includes('(1)'),
 		'Table caption must strip trailing anchor label without leaving (1).',
 	);
+
+	const appendixElements = await parseMarkdownToDocx(
+		String.raw`Рисунок 1 – Основная схема (@fig:main)
+
+\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+# Расчётные данные
+
+На рисунке @fig:a показаны данные, в таблице @tab:a приведены числа; формула @eq:a описывает итог.
+
+Рисунок 1 – Схема приложения (@fig:a)
+
+Таблица 1 – Числа приложения (@tab:a)
+
+$$x=1 (@eq:a)$$
+`,
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: appendixXml } = await packAndReadXml(
+		appendixElements,
+		path.join(tempRoot, 'appendix-numbering.docx'),
+	);
+	assert.match(getWordText(appendixXml), /Рисунок А\.1/);
+	assert.match(getWordText(appendixXml), /Таблица А\.1/);
+	assert.match(getWordText(appendixXml), /рисунке А\.1/);
+	assert.match(getWordText(appendixXml), /ПРИЛОЖЕНИЕ А/);
+	assert.match(
+		getWordText(paragraphContaining(appendixXml, 'ПРИЛОЖЕНИЕ А')),
+		/Расчётные данные/,
+	);
+	assert.match(getWordText(appendixXml), /\(А\.1\)/);
 
 	const russianListElements = await parseMarkdownToDocx(
 		String.raw`\begin{sto_list}

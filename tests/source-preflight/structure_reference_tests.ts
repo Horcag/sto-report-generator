@@ -1,0 +1,338 @@
+import assert from 'node:assert/strict';
+
+import { runSourcePreflight } from '@/shared/lib/source-preflight';
+
+type Files = Record<string, string>;
+
+interface TestHarness {
+	writeReport: (name: string, files: Files) => string;
+	validFiles: (overrides?: Files) => Files;
+	expectIssue: (name: string, files: Files, code: string) => void;
+	expectWarning: (name: string, files: Files, code: string) => void;
+	expectNoIssue: (name: string, files: Files, code: string) => void;
+}
+
+export function runStructureReferenceTests({
+	writeReport,
+	validFiles,
+	expectIssue,
+	expectWarning,
+	expectNoIssue,
+}: TestHarness): void {
+	expectWarning(
+		'bibliography-book-required-field',
+		validFiles({
+			'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+			'03_intro.md': `Текст с книгой [@book2026].
+`,
+			'references.bib': `@book{book2026,
+  author = {Иванов, И. И.},
+  title = {Книга},
+  year = {2026},
+  address = {Самара},
+  pages = {120}
+}
+`,
+		}),
+		'bibliography-required-field-missing',
+	);
+
+	expectWarning(
+		'bibliography-article-required-field',
+		validFiles({
+			'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+			'03_intro.md': `Текст со статьей [@article2026].
+`,
+			'references.bib': `@article{article2026,
+  author = {Иванов, И. И.},
+  title = {Статья},
+  journal = {Журнал},
+  year = {2026}
+}
+`,
+		}),
+		'bibliography-required-field-missing',
+	);
+
+	expectWarning(
+		'bibliography-inproceedings-required-field',
+		validFiles({
+			'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+			'03_intro.md': `Текст с материалами конференции [@conf2026].
+`,
+			'references.bib': `@inproceedings{conf2026,
+  author = {Иванов, И. И.},
+  title = {Доклад},
+  year = {2026},
+  pages = {10--12}
+}
+`,
+		}),
+		'bibliography-required-field-missing',
+	);
+
+	expectNoIssue(
+		'unused-broken-bibliography-entry',
+		validFiles({
+			'00_metadata.md': `---
+bibliography: "references.bib"
+---
+`,
+			'03_intro.md': `Текст с использованной статьей [@used2026].
+`,
+			'references.bib': `@article{used2026,
+  author = {Иванов, И. И.},
+  title = {Статья},
+  journal = {Журнал},
+  year = {2026},
+  pages = {10--12}
+}
+
+@book{unusedBroken2026,
+  title = {Сломанная книга}
+}
+`,
+		}),
+		'bibliography-required-field-missing',
+	);
+
+	expectWarning(
+		'application-without-reference',
+		validFiles({
+			'92_appendix.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+Материалы приложения.
+`,
+		}),
+		'application-without-reference',
+	);
+
+	expectIssue(
+		'application-object-numbering',
+		validFiles({
+			'03_intro.md': `Дополнительные данные приведены в приложении А. Неверный рисунок приложения показан на рисунке 1.
+`,
+			'92_appendix.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+Рисунок 1 – Неверная нумерация приложения
+`,
+		}),
+		'application-object-numbering',
+	);
+
+	expectIssue(
+		'application-label-duplicate',
+		validFiles({
+			'03_intro.md': `Дополнительные данные приведены в приложении А.
+`,
+			'92_appendix_a.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+Материалы приложения.
+`,
+			'93_appendix_a2.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+Материалы второго приложения.
+`,
+		}),
+		'application-label-duplicate',
+	);
+
+	const appendixReferences = runSourcePreflight(
+		writeReport(
+			'appendix-reference-order-valid',
+			validFiles({
+				'03_intro.md': `В приложении А показаны данные на рисунке А.1 и в таблице А.1; формула @eq:app вычисляет итог. Примечание 1 поясняет данные.\n`,
+				'92_appendix.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}\n\nРисунок А.1 – Схема (@fig:app)\n\nТаблица А.1 – Данные (@tab:app)\n\n$$x=1 (@eq:app)$$\n\nПримечание 1 – Пояснение.\n`,
+			}),
+		),
+	);
+	const sentenceEndReference = runSourcePreflight(
+		writeReport(
+			'scaffold-table-reference-with-period',
+			validFiles({
+				'03_intro.md': `Исходные данные приведены в таблице 1.\n\nТаблица 1 – Исходные данные (@tab:input)\n`,
+			}),
+		),
+	);
+	assert.ok(
+		!sentenceEndReference.issues.some(
+			item => item.code === 'table-before-reference',
+		),
+		'An ordinary scaffold sentence ending in "таблице 1." must count as the first reference.',
+	);
+	assert.equal(
+		appendixReferences.issues.filter(item => item.severity === 'error')
+			.length,
+		0,
+		appendixReferences.issues
+			.filter(item => item.severity === 'error')
+			.map(item => item.code)
+			.join(', '),
+	);
+
+	expectIssue(
+		'appendix-number-gap',
+		validFiles({
+			'03_intro.md': `Данные приведены в приложении А на рисунке А.2.\n`,
+			'92_appendix.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}\n\nРисунок А.2 – Схема (@fig:gap)\n`,
+		}),
+		'application-object-numbering',
+	);
+	expectIssue(
+		'unknown-complex-number',
+		validFiles({ '03_intro.md': `Данные на рисунке А.9 отсутствуют.\n` }),
+		'unknown-object-number',
+	);
+	expectIssue(
+		'figure-out-of-order',
+		validFiles({
+			'03_intro.md': `На рисунке 2 приведена схема.\n\nРисунок 2 – Схема (@fig:second)\n`,
+		}),
+		'object-number-sequence',
+	);
+	expectIssue(
+		'note-without-first-reference',
+		validFiles({ '03_intro.md': `Примечание 1 – Уточнение.\n` }),
+		'note-before-reference',
+	);
+	expectIssue(
+		'unknown-note-number',
+		validFiles({ '03_intro.md': `В примечании 2 данные отсутствуют.\n` }),
+		'unknown-object-number',
+	);
+	expectIssue(
+		'wrong-caption-label-kind',
+		validFiles({
+			'03_intro.md': `Рисунок 1 показывает схему.\n\nРисунок 1 – Схема (@tab:wrong)\n`,
+		}),
+		'object-label-kind',
+	);
+
+	expectIssue(
+		'structure-missing',
+		{
+			'00_metadata.md': `---
+title: Test
+---
+`,
+			'01_referat.md': `\\sto_structural_heading{РЕФЕРАТ}
+
+Отчет содержит {{PAGES}} страниц, {{FIGURES}} рисунков, {{TABLES}} таблиц и {{SOURCES}} источников.
+`,
+		},
+		'structural-heading-missing',
+	);
+
+	expectIssue(
+		'missing-image',
+		validFiles({
+			'03_intro.md': `Рисунок 1 показывает пример.
+
+![Нет файла](images/missing.png)
+
+Рисунок 1 – Нет файла (@fig:missing_image)
+`,
+		}),
+		'missing-image',
+	);
+
+	const imageDir = writeReport(
+		'relative-image',
+		validFiles({
+			'03_intro.md': `Рисунок 1 показывает пример.
+
+![Есть файл](images/ok.png)
+
+Рисунок 1 – Есть файл (@fig:ok)
+`,
+			'images/ok.png': 'not a real png but exists for source preflight',
+		}),
+	);
+	const imageResult = runSourcePreflight(imageDir);
+	assert.equal(
+		imageResult.passed,
+		true,
+		imageResult.issues
+			.map(item => `${item.code}:${item.file ?? ''}`)
+			.join(', '),
+	);
+
+	for (const [type, fields] of Object.entries({
+		patent: 'title = {Устройство}, country = {RU}, author = {Иванов, И. И.}, year = {2020}',
+		phdthesis:
+			'title = {Исследование}, author = {Иванов, И. И.}, type = {дис. канд. наук}, address = {Самара}, year = {2020}, pages = {100}',
+		standard: 'title = {Правила оформления}, year = {2020}',
+		inonline:
+			'title = {Раздел сайта}, year = {2020}, url = {https://example.org}, urldate = {2024-01-01}',
+	})) {
+		expectWarning(
+			`bibliography-${type}-required-field`,
+			validFiles({
+				'03_intro.md': `Использован источник [@special].\n`,
+				'references.bib': `@${type}{special,\n  ${fields.replaceAll(/, (?=[a-z]+ =)/g, ',\n  ')}\n}\n`,
+			}),
+			'bibliography-required-field-missing',
+		);
+	}
+
+	const completeSpecialBibliography = validFiles({
+		'03_intro.md': 'Источники: [@patent; @thesis; @standard; @sitePart].\n',
+		'references.bib': `@patent{patent,
+  title = {Устройство},
+  number = {123456},
+  country = {RU},
+  holder = {Университет},
+  year = {2020}
+}
+@phdthesis{thesis,
+  title = {Исследование},
+  author = {Иванов, И. И.},
+  type = {дис. канд. наук},
+  school = {Университет},
+  location = {Самара},
+  year = {2020},
+  numpages = {100}
+}
+@standard{standard,
+  number = {ГОСТ Р 123-2020},
+  title = {Правила оформления},
+  year = {2020}
+}
+@inonline{sitePart,
+  title = {Раздел сайта},
+  website = {Университет},
+  year = {2020},
+  url = {https://example.org},
+  urldate = {2024-01-01}
+}
+`,
+	});
+	expectNoIssue(
+		'bibliography-special-complete-fields',
+		completeSpecialBibliography,
+		'bibliography-required-field-missing',
+	);
+	expectNoIssue(
+		'bibliography-special-supported-types',
+		completeSpecialBibliography,
+		'bibliography-unsupported-type',
+	);
+
+	expectIssue(
+		'bibliography-unsupported-type',
+		validFiles({
+			'03_intro.md': 'Использован источник [@program].\n',
+			'references.bib': '@software{program, title = {Программа}}\n',
+		}),
+		'bibliography-unsupported-type',
+	);
+}
