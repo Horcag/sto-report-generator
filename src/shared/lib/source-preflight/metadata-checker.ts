@@ -22,6 +22,16 @@ const REQUIRED_METADATA_FIELDS = [
 	'year',
 ] as const;
 
+const VKR_ASSIGNMENT_FIELDS = [
+	'normControllerName',
+	'vkrApprovalName',
+	'vkrOrderDate',
+	'vkrOrderNumber',
+	'vkrInitialData',
+	'vkrQuestions',
+	'vkrAssignmentDate',
+] as const;
+
 const PLACEHOLDER_PATTERNS = [
 	/Фамилия Имя Отчество/i,
 	/Название темы/i,
@@ -51,6 +61,14 @@ const PROFILE_TITLE_PAGE_EXPECTATIONS: Record<
 		reportType: /лабораторн/i,
 		topicPrefix: /лабораторн/i,
 		degree: /дисциплин/i,
+	},
+	'vkr-bachelor': {
+		reportType: /(?:выпускн|ВКР)/i,
+		degree: /бакалавр/i,
+	},
+	'vkr-master': {
+		reportType: /(?:выпускн|ВКР)/i,
+		degree: /магистр/i,
 	},
 };
 
@@ -164,6 +182,19 @@ export function validateMetadata(
 					'warning',
 				),
 			);
+		}
+	}
+
+	if (config.profileExplicit && config.profile.startsWith('vkr-')) {
+		for (const field of VKR_ASSIGNMENT_FIELDS) {
+			if (!getStringField(metadata.data, field)) {
+				pushMetadataWarning(
+					issues,
+					'metadata-vkr-assignment-field-missing',
+					`metadata field "${field}" is required to complete the VKR assignment form.`,
+					metadata.file,
+				);
+			}
 		}
 	}
 

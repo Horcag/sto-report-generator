@@ -1,0 +1,239 @@
+import assert from 'node:assert/strict';
+
+import { runSyntheticLayoutTests } from './synthetic_layout_tests';
+
+interface ValidatorCheck {
+	passed: boolean;
+	error?: string;
+}
+
+export type WriteXmlFixture = (
+	name: string,
+	documentXml: string,
+	stylesXml: string,
+	extraFiles?: Record<string, string>,
+) => string;
+export type GetCheck = (unpackedDir: string, check: string) => ValidatorCheck;
+
+export function runSyntheticValidatorTests(
+	writeXmlFixture: WriteXmlFixture,
+	getCheck: GetCheck,
+): void {
+	const namespaces =
+		'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+	const bodyStyles = `<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>`;
+	const bodyParagraph =
+		'<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>Обычный текст</w:t></w:r><w:r><w:rPr><w:rFonts w:ascii="Courier New"/></w:rPr><w:t>код</w:t></w:r></w:p>';
+	const directFormattingCases = [
+		'<w:ind w:left="1" w:firstLine="709"/>',
+		'<w:ind w:right="1" w:firstLine="709"/>',
+		'<w:ind w:firstLine="708"/>',
+		'<w:spacing w:line="359" w:lineRule="auto"/>',
+		'<w:spacing w:after="1"/>',
+		'<w:ind w:left="567" w:firstLine="709"/>',
+		'<w:ind w:right="567" w:firstLine="709"/>',
+		'<w:ind w:firstLine="0"/>',
+		'<w:spacing w:line="240" w:lineRule="auto"/>',
+		'<w:spacing w:after="480"/>',
+	];
+	const normalFixture = writeXmlFixture(
+		'direct-formatting-baseline',
+		`<w:document ${namespaces}><w:body>${bodyParagraph}</w:body></w:document>`,
+		bodyStyles,
+	);
+	assert.equal(
+		getCheck(normalFixture, 'Direct Body Paragraph Formatting').passed,
+		true,
+	);
+	const implicitNormalFixture = writeXmlFixture(
+		'direct-formatting-implicit-normal',
+		`<w:document ${namespaces}><w:body>${bodyParagraph.replace('<w:pStyle w:val="Normal"/>', '').replace('</w:pPr>', '<w:ind w:firstLine="708"/></w:pPr>')}</w:body></w:document>`,
+		bodyStyles,
+	);
+	assert.equal(
+		getCheck(implicitNormalFixture, 'Direct Body Paragraph Formatting')
+			.passed,
+		false,
+	);
+	for (const [index, property] of directFormattingCases.entries()) {
+		const mutated = bodyParagraph.replace(
+			'</w:pPr>',
+			`${property}</w:pPr>`,
+		);
+		const fixture = writeXmlFixture(
+			`direct-formatting-${index}`,
+			`<w:document ${namespaces}><w:body>${mutated}</w:body></w:document>`,
+			bodyStyles,
+		);
+		assert.equal(
+			getCheck(fixture, 'Direct Body Paragraph Formatting').passed,
+			false,
+			property,
+		);
+	}
+	const wordStyleFixture = writeXmlFixture(
+		'word-normalized-body-style',
+		`<w:document ${namespaces}><w:body>${bodyParagraph.replace('w:val="Normal"', 'w:val="1-"').replace('</w:pPr>', '<w:ind w:firstLine="708"/></w:pPr>')}</w:body></w:document>`,
+		`<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="1-"><w:name w:val="+Абзац с отступом 1-ой строки"/><w:pPr><w:ind w:firstLine="709"/></w:pPr></w:style></w:styles>`,
+	);
+	assert.equal(
+		getCheck(wordStyleFixture, 'Direct Body Paragraph Formatting').passed,
+		false,
+	);
+	const exceptionFixture = writeXmlFixture(
+		'direct-formatting-exceptions',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:pPr><w:pStyle w:val="TitlePageText"/><w:ind w:left="567"/></w:pPr><w:r><w:t>Титул</w:t></w:r></w:p>
+			<w:p><w:pPr><w:pStyle w:val="Normal"/><w:numPr><w:numId w:val="1"/></w:numPr><w:ind w:left="567"/></w:pPr><w:r><w:t>Перечень</w:t></w:r></w:p>
+			<w:p><w:pPr><w:pStyle w:val="Normal"/><w:spacing w:line="240"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Courier New"/></w:rPr><w:t>код</w:t></w:r></w:p>
+			<w:p><w:pPr><w:pStyle w:val="Normal"/><w:ind w:firstLine="0"/></w:pPr><w:r><w:t>где x – переменная.</w:t></w:r></w:p>
+			<w:tbl><w:tr><w:tc><w:p><w:pPr><w:pStyle w:val="Normal"/><w:ind w:left="567"/></w:pPr><w:r><w:t>Ячейка</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
+		</w:body></w:document>`,
+		bodyStyles,
+	);
+	assert.equal(
+		getCheck(exceptionFixture, 'Direct Body Paragraph Formatting').passed,
+		true,
+	);
+	const runSpacingFixture = writeXmlFixture(
+		'direct-run-spacing',
+		`<w:document ${namespaces}><w:body><w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:rPr><w:spacing w:val="20"/></w:rPr><w:t>Текст</w:t></w:r></w:p></w:body></w:document>`,
+		bodyStyles,
+	);
+	assert.equal(
+		getCheck(runSpacingFixture, 'Direct Body Paragraph Formatting').passed,
+		false,
+	);
+	const layoutTabFixture = writeXmlFixture(
+		'layout-tabs',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:pPr><w:pStyle w:val="TitlePageText"/></w:pPr><w:r><w:tab/></w:r><w:r><w:t>Титульный лист</w:t></w:r></w:p>
+			<w:p><w:pPr><w:pStyle w:val="11"/></w:pPr><w:r><w:t>Введение</w:t></w:r><w:r><w:tab/></w:r><w:r><w:t>7</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}>
+			<w:style w:type="paragraph" w:styleId="TitlePageText"><w:name w:val="Title Page Text"/></w:style>
+			<w:style w:type="paragraph" w:styleId="11"><w:name w:val="toc 1"/></w:style>
+		</w:styles>`,
+	);
+	assert.equal(getCheck(layoutTabFixture, 'Tab Characters').passed, true);
+
+	const bodyTabFixture = writeXmlFixture(
+		'body-tabs',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>Текст</w:t></w:r><w:r><w:tab/></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>`,
+	);
+	assert.equal(getCheck(bodyTabFixture, 'Tab Characters').passed, false);
+
+	const inheritedPageBreakFixture = writeXmlFixture(
+		'inherited-page-breaks',
+		`<w:document ${namespaces}><w:body/></w:document>`,
+		`<w:styles ${namespaces}>
+			<w:style w:type="paragraph" w:styleId="STOHeading1"><w:name w:val="STO Heading 1"/><w:pPr><w:pageBreakBefore/></w:pPr></w:style>
+			<w:style w:type="paragraph" w:styleId="StructuralHeading"><w:name w:val="Structural Heading"/><w:basedOn w:val="STOHeading1"/></w:style>
+			<w:style w:type="paragraph" w:styleId="StructuralHeadingNoTOC"><w:name w:val="Structural Heading No TOC"/><w:pPr><w:pageBreakBefore/></w:pPr></w:style>
+		</w:styles>`,
+	);
+	assert.equal(
+		getCheck(inheritedPageBreakFixture, 'Heading 1 Page Break').passed,
+		true,
+	);
+	assert.equal(
+		getCheck(inheritedPageBreakFixture, 'Structural Heading Page Break')
+			.passed,
+		true,
+	);
+
+	const unresolvedCitationFixture = writeXmlFixture(
+		'unresolved-citation',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:r><w:t>Текст с [@smith2020]</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	assert.equal(
+		getCheck(unresolvedCitationFixture, 'Citation Formatting').passed,
+		false,
+	);
+
+	const denseCitationFixture = writeXmlFixture(
+		'dense-citations',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:r><w:t>Источник [1], затем [1, 2] и [3]</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	assert.equal(
+		getCheck(denseCitationFixture, 'Citation Number Sequence').passed,
+		true,
+	);
+
+	const sparseCitationFixture = writeXmlFixture(
+		'sparse-citations',
+		`<w:document ${namespaces}><w:body>
+			<w:p><w:r><w:t>Источник [1], затем [3]</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	const sparseCitationCheck = getCheck(
+		sparseCitationFixture,
+		'Citation Number Sequence',
+	);
+	assert.equal(sparseCitationCheck.passed, false);
+	assert.match(sparseCitationCheck.error ?? '', /2/);
+
+	const bibliographyTabNumberingFixture = writeXmlFixture(
+		'bibliography-tab-numbering',
+		`<w:document ${namespaces}><w:body/></w:document>`,
+		`<w:styles ${namespaces}/>`,
+		{
+			'word/numbering.xml': `<w:numbering ${namespaces}>
+				<w:abstractNum w:abstractNumId="0">
+					<w:lvl w:ilvl="0">
+						<w:numFmt w:val="decimal"/>
+						<w:lvlText w:val="%1"/>
+						<w:suff w:val="tab"/>
+						<w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr>
+					</w:lvl>
+				</w:abstractNum>
+			</w:numbering>`,
+		},
+	);
+	assert.equal(
+		getCheck(
+			bibliographyTabNumberingFixture,
+			'Bibliography Numbering Indent & Format',
+		).passed,
+		true,
+	);
+
+	const bibliographySpaceNumberingFixture = writeXmlFixture(
+		'bibliography-space-numbering',
+		`<w:document ${namespaces}><w:body/></w:document>`,
+		`<w:styles ${namespaces}/>`,
+		{
+			'word/numbering.xml': `<w:numbering ${namespaces}>
+				<w:abstractNum w:abstractNumId="0">
+					<w:lvl w:ilvl="0">
+						<w:numFmt w:val="decimal"/>
+						<w:lvlText w:val="%1"/>
+						<w:suff w:val="space"/>
+						<w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr>
+					</w:lvl>
+				</w:abstractNum>
+			</w:numbering>`,
+		},
+	);
+	assert.equal(
+		getCheck(
+			bibliographySpaceNumberingFixture,
+			'Bibliography Numbering Indent & Format',
+		).passed,
+		false,
+	);
+
+	runSyntheticLayoutTests(writeXmlFixture, getCheck, namespaces);
+
+	console.log('Synthetic validator regression tests passed.\n');
+}

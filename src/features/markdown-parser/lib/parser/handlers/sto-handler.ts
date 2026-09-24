@@ -58,8 +58,10 @@ export async function handleStoFlag(
 
 		// Convert to Sentence Case: first letter capitalized, rest lowercase
 		// This ensures they look correct in TOC, while StructuralHeading style handles caps in the document body
-		const sentenceCaseText =
-			text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+		const isAppendix = /^ПРИЛОЖЕНИЕ\s+[А-Я]$/i.test(text);
+		const sentenceCaseText = isAppendix
+			? upperText
+			: text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 
 		const useNoTocStyle =
 			STO_RULES.headings.structuralNoTocUppercase.includes(upperText);
@@ -75,7 +77,18 @@ export async function handleStoFlag(
 				style: useNoTocStyle
 					? STRUCTURAL_HEADING_NO_TOC_STYLE_ID
 					: STRUCTURAL_HEADING_STYLE_ID,
-				children: [new TextRun(sentenceCaseText)],
+				children: [
+					new TextRun(sentenceCaseText),
+					...(isAppendix && token.appendixTitle
+						? [
+								new TextRun({
+									text: token.appendixTitle,
+									break: 1,
+									allCaps: false,
+								}),
+							]
+						: []),
+				],
 			}),
 		];
 

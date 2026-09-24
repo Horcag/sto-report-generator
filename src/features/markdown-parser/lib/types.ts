@@ -25,7 +25,7 @@ export interface BibItem {
 }
 
 export interface ParserContext {
-	itemMap: Map<string, number>;
+	itemMap: Map<string, string>;
 	citations: string[];
 	bibDb: BibItem[];
 	listInstanceCounter: number;
@@ -37,6 +37,7 @@ export interface StoFlagToken {
 	raw: string;
 	flagType: 'structural_heading' | 'environment';
 	text?: string;
+	appendixTitle?: string;
 	envName?: string;
 	tokens: Token[];
 }

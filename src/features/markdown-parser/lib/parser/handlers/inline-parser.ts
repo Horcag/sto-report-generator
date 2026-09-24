@@ -99,22 +99,8 @@ export async function parseInline(
 					raw: string;
 					text: string;
 				};
-				try {
-					const mathEl = await convertLatex2Math(mathToken.text);
-					runs.push(mathEl as unknown as MathConversionResult);
-				} catch (e) {
-					console.warn(
-						`Math conversion failed for: ${mathToken.text}`,
-						e,
-					);
-					runs.push(
-						new TextRun({
-							text: mathToken.raw,
-							italics: true,
-							bold: options?.bold ? true : undefined,
-						}),
-					);
-				}
+				const mathEl = convertLatex2Math(mathToken.text);
+				runs.push(mathEl as unknown as MathConversionResult);
 				break;
 			}
 			case 'text': {

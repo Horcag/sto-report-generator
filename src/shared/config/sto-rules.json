@@ -240,6 +240,48 @@
 			],
 			"misc": [["title"], ["year"], ["url"]],
 			"online": [["title"], ["year"], ["url"]],
+			"inonline": [
+				["title"],
+				["website", "booktitle"],
+				["year"],
+				["url"]
+			],
+			"patent": [
+				["title"],
+				["number"],
+				["country"],
+				["author", "holder"],
+				["year", "date"]
+			],
+			"thesis": [
+				["title"],
+				["author"],
+				["type"],
+				["institution", "school"],
+				["address", "location"],
+				["year"],
+				["pages", "numpages"]
+			],
+			"phdthesis": [
+				["title"],
+				["author"],
+				["type"],
+				["institution", "school"],
+				["address", "location"],
+				["year"],
+				["pages", "numpages"]
+			],
+			"mastersthesis": [
+				["title"],
+				["author"],
+				["type"],
+				["institution", "school"],
+				["address", "location"],
+				["year"],
+				["pages", "numpages"]
+			],
+			"standard": [["number"], ["title"], ["year"]],
+			"norm": [["title"], ["year"]],
 			"techreport": [["title"], ["author", "institution"], ["year"]]
 		}
 	},

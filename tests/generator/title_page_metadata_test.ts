@@ -4,6 +4,7 @@ import path from 'node:path';
 import AdmZip from 'adm-zip';
 
 import { buildReport } from '@/app/builder';
+import { scaffoldReport } from '@/app/report-scaffold';
 import { readDocxEntry } from '@/shared/lib/docx-archive';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'title-page-test');
@@ -47,8 +48,6 @@ async function main(): Promise<void> {
 		.filter(entry => /^word\/footer\d+\.xml$/.test(entry.entryName))
 		.map(entry => entry.getData().toString('utf-8'))
 		.join('\n');
-	fs.rmSync(tempRoot, { recursive: true, force: true });
-
 	assert.ok(documentXml.includes('Проверил'));
 	assert.ok(documentXml.includes('Оценка ________________________'));
 	assert.ok(documentXml.includes('Тестовое министерство'));
@@ -61,6 +60,66 @@ async function main(): Promise<void> {
 	);
 	assert.ok(!documentXml.includes('Самара 2026'));
 	assert.ok(footerXml.includes('Самара 2026'));
+
+	const labDir = path.join(tempRoot, 'lab');
+	scaffoldReport({
+		slug: 'lab',
+		dir: labDir,
+		profile: 'lab',
+		initGit: false,
+	});
+	const labDocx = path.join(tempRoot, 'lab.docx');
+	await buildReport(labDir, labDocx);
+	const labXml = readDocxEntry(labDocx, 'word/document.xml');
+	assert.ok(labXml.includes('Отчёт по лабораторной работе'));
+	assert.ok(!labXml.includes('Научный руководитель'));
+	assert.ok(!labXml.includes('Проверил'));
+	assert.ok(!labXml.includes('(подпись)'));
+
+	const labMetadataPath = path.join(labDir, '00_metadata.md');
+	const labMetadata = fs.readFileSync(labMetadataPath, 'utf8');
+	fs.writeFileSync(
+		labMetadataPath,
+		labMetadata.replace(
+			'supervisorName: ""',
+			'supervisorName: "Иванова Ирина Ивановна"',
+		),
+	);
+	await buildReport(labDir, labDocx);
+	const reviewedLabXml = readDocxEntry(labDocx, 'word/document.xml');
+	assert.ok(reviewedLabXml.includes('Проверил Иванова Ирина Ивановна'));
+	assert.ok(!reviewedLabXml.includes('Научный руководитель'));
+	assert.ok(!reviewedLabXml.includes('(подпись)'));
+
+	for (const profile of ['vkr-bachelor', 'vkr-master'] as const) {
+		const vkrDir = path.join(tempRoot, profile);
+		scaffoldReport({
+			slug: profile,
+			dir: vkrDir,
+			profile,
+			initGit: false,
+		});
+		const vkrDocx = path.join(tempRoot, `${profile}.docx`);
+		await buildReport(vkrDir, vkrDocx);
+		const vkrXml = readDocxEntry(vkrDocx, 'word/document.xml');
+		assert.ok(vkrXml.includes('ВЫПУСКНАЯ КВАЛИФИКАЦИОННАЯ РАБОТА'));
+		assert.ok(
+			vkrXml.includes(
+				profile === 'vkr-master'
+					? 'уровень магистратуры'
+					: 'уровень бакалавриата',
+			),
+		);
+		assert.ok(vkrXml.includes('Нормоконтролёр'));
+		assert.ok(vkrXml.includes('Исходные данные:'));
+		assert.ok(
+			vkrXml.includes('Перечень вопросов, подлежащих разработке в ВКР:'),
+		);
+		assert.ok(vkrXml.includes('Задание принял к исполнению'));
+		assert.ok(vkrXml.includes('<w:pageBreakBefore/>'));
+		assert.ok(!vkrXml.includes('Семестр 6'));
+	}
+	fs.rmSync(tempRoot, { recursive: true, force: true });
 
 	console.log('Title page metadata test passed.');
 }

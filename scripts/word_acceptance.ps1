@@ -301,6 +301,62 @@ function Get-SavedDocumentPageCount($Document) {
     return $pageCount
 }
 
+function Replace-DocumentLiteral($Document, $OldText, $NewText) {
+    $range = $Document.Content
+    $range.Find.ClearFormatting()
+    $range.Find.Replacement.ClearFormatting()
+    $range.Find.Execute($OldText, $false, $false, $false, $false, $false, $true, 1, $false, $NewText, 2) | Out-Null
+}
+
+function Get-PageWord($Pages, $Forms) {
+    $lastTwo = [int]$Pages % 100
+    $lastDigit = [int]$Pages % 10
+    if ($lastTwo -gt 10 -and $lastTwo -lt 20) { return [string]$Forms[2] }
+    if ($lastDigit -eq 1) { return [string]$Forms[0] }
+    if ($lastDigit -gt 1 -and $lastDigit -lt 5) { return [string]$Forms[1] }
+    return [string]$Forms[2]
+}
+
+function Set-ReferatStatistics($Document, $Request) {
+    foreach ($property in $Request.statisticReplacements.PSObject.Properties) {
+        Replace-DocumentLiteral $Document ([string]$property.Name) ([string]$property.Value)
+    }
+    $pageParagraphs = @()
+    foreach ($paragraph in @($Document.Paragraphs)) {
+        $template = [string]$paragraph.Range.Text
+        if ($template.Contains('{{PAGES}}') -or $template.Contains('{{PAGES_WORD}}')) {
+            $pageParagraphs += [pscustomobject]@{
+                Paragraph = $paragraph
+                Template = $template.TrimEnd([char[]]@([char]13, [char]7))
+            }
+        }
+    }
+    if ($pageParagraphs.Count -gt 0) {
+        for ($attempt = 0; $attempt -lt 5; $attempt++) {
+            $Document.Repaginate()
+            $pages = Get-SavedDocumentPageCount $Document
+            foreach ($entry in $pageParagraphs) {
+                $text = $entry.Template
+                foreach ($property in $Request.statisticReplacements.PSObject.Properties) {
+                    $text = $text.Replace([string]$property.Name, [string]$property.Value)
+                }
+                $text = $text.Replace('{{PAGES}}', [string]$pages)
+                $text = $text.Replace('{{PAGES_WORD}}', (Get-PageWord $pages $Request.pageWordForms))
+                $text = $text.Replace(' ,', '').Replace(', ,', ',')
+                $range = $entry.Paragraph.Range
+                $range.End = [Math]::Max($range.Start, $range.End - 1)
+                $range.Text = $text
+            }
+            $Document.Repaginate()
+            if ((Get-SavedDocumentPageCount $Document) -eq $pages) { break }
+            if ($attempt -eq 4) { throw 'Referat page count did not stabilize.' }
+        }
+    }
+    if ($Document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES)\}\}') {
+        throw 'Referat statistic placeholders remain after Word replacement.'
+    }
+}
+
 function Test-StyleExists($Document, $DisplayName) {
     try {
         $style = $Document.Styles.Item([string]$DisplayName)
@@ -437,6 +493,7 @@ try {
     $document = $word.Documents.Open($stagedInputDocx, $false, $false)
     Write-Output "Word acceptance: staged DOCX opened."
     Update-DocumentForAcceptance $document
+    Set-ReferatStatistics $document $request
     Write-Output "Word acceptance: fields, TOC, and pagination updated."
     $document.Save()
     $pageCountBeforeReopen = Get-SavedDocumentPageCount $document
@@ -453,6 +510,9 @@ try {
     # Word's successful UI path reopens the saved file before publishing.
     $document = $word.Documents.Open($stagedAcceptedDocx, $false, $false)
     $pageCountAfterReopen = Get-SavedDocumentPageCount $document
+    if ($document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES)\}\}') {
+        throw 'Accepted DOCX still contains referat statistic placeholders.'
+    }
     Write-Output "Word acceptance: saved DOCX reopened with $pageCountAfterReopen pages before PDF export."
     # Pass real CLR values rather than PowerShell-adapted COM arguments.
     Add-Type -Path (Join-Path $PSScriptRoot "word_pdf_export.cs")
@@ -531,6 +591,13 @@ try {
         pageCountBeforeReopen = $pageCountBeforeReopen
         pageCountAfterReopen = $pageCountAfterReopen
         stablePageCount = $stable
+        referatStatistics = [ordered]@{
+            pages = $pageCountAfterReopen
+            figures = [int]$request.statisticCounts.figures
+            tables = [int]$request.statisticCounts.tables
+            sources = [int]$request.statisticCounts.sources
+            placeholdersCleared = $true
+        }
         requiredFont = [ordered]@{
             name = $request.requiredFont
             installed = $true

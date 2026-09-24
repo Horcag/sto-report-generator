@@ -31,6 +31,16 @@ type DocxMathChild =
 
 let mathJaxInstance: MathJaxApi | undefined;
 
+export class FormulaConversionError extends Error {
+	constructor(
+		public readonly latex: string,
+		reason: string,
+	) {
+		super(`Formula conversion failed for "${latex}": ${reason}`);
+		this.name = 'FormulaConversionError';
+	}
+}
+
 export function normalizeMathJaxImportSpecifier(file: string): string {
 	if (/^[a-zA-Z]:[\\/]/.test(file)) {
 		const url = new URL('file:///');
@@ -213,6 +223,26 @@ export function convertOmml2Math(ommlString: string): DocxMath {
 }
 
 export function convertMathMl2Math(mathMlString: string): DocxMath {
+	const mathMl = new JSDOM(mathMlString, { contentType: 'text/xml' }).window
+		.document;
+	const mathError = mathMl.getElementsByTagName('merror')[0];
+	if (mathError) {
+		throw new Error(
+			mathError.getAttribute('data-mjx-error') ??
+				mathError.textContent ??
+				'MathJax reported malformed TeX.',
+		);
+	}
+	const unknownCommand = [...mathMl.getElementsByTagName('mtext')].find(
+		element =>
+			element.getAttribute('mathcolor') === 'red' &&
+			element.getAttribute('data-latex')?.startsWith('\\'),
+	);
+	if (unknownCommand) {
+		throw new Error(
+			`Unknown TeX command ${unknownCommand.getAttribute('data-latex')}.`,
+		);
+	}
 	const ommlString = mml2omml(mathMlString, { disableDecode: true });
 	return convertOmml2Math(ommlString);
 }
@@ -223,5 +253,12 @@ export function convertLatex2Math(latexString: string): DocxMath {
 			'MathJax is not initialized. Call mathJaxReady() before converting formulas.',
 		);
 	}
-	return convertMathMl2Math(mathJaxInstance.tex2mml(latexString));
+	try {
+		return convertMathMl2Math(mathJaxInstance.tex2mml(latexString));
+	} catch (error) {
+		throw new FormulaConversionError(
+			latexString,
+			error instanceof Error ? error.message : String(error),
+		);
+	}
 }

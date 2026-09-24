@@ -9,7 +9,13 @@ import {
 	StoStylePreset,
 } from '@/shared/config';
 
-export const REPORT_PROFILE_NAMES = ['nir', 'coursework', 'lab'] as const;
+export const REPORT_PROFILE_NAMES = [
+	'nir',
+	'coursework',
+	'lab',
+	'vkr-bachelor',
+	'vkr-master',
+] as const;
 export const REPORT_RENDERERS = ['portable', 'word'] as const;
 
 export type ReportProfile = (typeof REPORT_PROFILE_NAMES)[number];
@@ -96,38 +102,32 @@ const KNOWN_STRUCTURAL_HEADINGS = new Set([
 	APPLICATION_HEADING,
 ]);
 
+const FULL_REPORT_DOCUMENT_CONFIG: ReportDocumentConfig = {
+	requiredStructuralHeadings: [
+		'РЕФЕРАТ',
+		'СОДЕРЖАНИЕ',
+		'ВВЕДЕНИЕ',
+		'ЗАКЛЮЧЕНИЕ',
+	],
+	optionalStructuralHeadings: [ABBREVIATIONS_HEADING, SOURCES_HEADING],
+	requireReferat: true,
+	requireSources: 'when-cited',
+};
+
 const BUILT_IN_PROFILE_DOCUMENT_CONFIGS: Record<
 	ReportProfile,
 	ReportDocumentConfig
 > = {
-	nir: {
-		requiredStructuralHeadings: [
-			'РЕФЕРАТ',
-			'СОДЕРЖАНИЕ',
-			'ВВЕДЕНИЕ',
-			'ЗАКЛЮЧЕНИЕ',
-		],
-		optionalStructuralHeadings: [ABBREVIATIONS_HEADING, SOURCES_HEADING],
-		requireReferat: true,
-		requireSources: 'when-cited',
-	},
-	coursework: {
-		requiredStructuralHeadings: [
-			'РЕФЕРАТ',
-			'СОДЕРЖАНИЕ',
-			'ВВЕДЕНИЕ',
-			'ЗАКЛЮЧЕНИЕ',
-		],
-		optionalStructuralHeadings: [ABBREVIATIONS_HEADING, SOURCES_HEADING],
-		requireReferat: true,
-		requireSources: 'when-cited',
-	},
+	nir: FULL_REPORT_DOCUMENT_CONFIG,
+	coursework: FULL_REPORT_DOCUMENT_CONFIG,
 	lab: {
 		requiredStructuralHeadings: ['ВВЕДЕНИЕ', 'ЗАКЛЮЧЕНИЕ'],
 		optionalStructuralHeadings: ['СОДЕРЖАНИЕ', SOURCES_HEADING],
 		requireReferat: false,
 		requireSources: 'when-cited',
 	},
+	'vkr-bachelor': FULL_REPORT_DOCUMENT_CONFIG,
+	'vkr-master': FULL_REPORT_DOCUMENT_CONFIG,
 };
 
 export function isReportProfile(value: unknown): value is ReportProfile {

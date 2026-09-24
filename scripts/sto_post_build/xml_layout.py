@@ -1,6 +1,4 @@
 import re
-import tempfile
-import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -8,7 +6,6 @@ from lxml import etree
 
 from .constants import MATH_NS, SPACING_AFTER_TABLE_TWIPS, WORD_NS
 from .docx_package import read_docx_part, rewrite_docx_part
-from .models import DocumentCounts
 
 WORD = f"{{{WORD_NS}}}"
 SIGNATURE_COLUMN_WIDTHS = ("4263", "2916", "1675")
@@ -420,48 +417,3 @@ def normalize_docx_xml_layout(docx_path: str | Path) -> int:
     )
     rewrite_docx_part(docx_path, "word/document.xml", updated_xml)
     return changes
-
-
-def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
-    """Count captions and used-source references from a generated DOCX."""
-    figures = 0
-    tables = 0
-    sources = 0
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with zipfile.ZipFile(docx_path, "r") as archive:
-            archive.extractall(temp_dir)
-
-        document_path = Path(temp_dir) / "word" / "document.xml"
-        if not document_path.exists():
-            return DocumentCounts(figures=0, tables=0, sources=0)
-
-        tree = etree.parse(str(document_path))
-        root = tree.getroot()
-        namespace = {"w": WORD_NS}
-
-        for paragraph in root.xpath(".//w:p", namespaces=namespace):
-            style_values = paragraph.xpath(".//w:pStyle/@w:val", namespaces=namespace)
-            if not style_values:
-                continue
-            style = style_values[0]
-            if style == "FigureCaption":
-                figures += 1
-            elif style == "TableCaption":
-                tables += 1
-
-        # The bibliography builder emits only cited sources and numbers them densely
-        # by first use, so the used-source count is the highest citation number.
-        max_source = 0
-        for text in root.xpath(".//w:t/text()", namespaces=namespace):
-            matches = re.findall(r"\[([\d,\s]+)\]", text)
-            for match in matches:
-                numbers = [
-                    int(value.strip()) for value in match.split(",") if value.strip().isdigit()
-                ]
-                if numbers:
-                    max_source = max(max_source, max(numbers))
-
-        sources = max_source
-
-    return DocumentCounts(figures=figures, tables=tables, sources=sources)

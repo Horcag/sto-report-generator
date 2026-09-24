@@ -1,16 +1,16 @@
 import os
 from pathlib import Path
 
-from .docx_package import clear_dirty_fields
+from .docx_package import assert_no_statistic_placeholders, clear_dirty_fields
 from .formula_replacement import replace_formulas_from_markdown
 from .models import PostBuildResult
+from .statistics import get_counts_from_docx
 from .word_automation import (
     export_docx_to_pdf,
     resync_docx_page_count_from_pdf,
     run_word_post_build,
 )
 from .xml_layout import (
-    get_counts_from_docx,
     normalize_docx_xml_layout,
     normalize_front_matter_table_geometry,
 )
@@ -79,6 +79,7 @@ def post_build(
         pdf_path,
         pdf_output_path,
     )
+    assert_no_statistic_placeholders(absolute_docx_path)
 
     return PostBuildResult(
         pages=final_pages,

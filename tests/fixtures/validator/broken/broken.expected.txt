@@ -17,3 +17,4 @@ Table Caption Style: TableCaption must be left-aligned, have no first-line inden
 Table Header Repeat: Detected 2 table(s) without repeated header rows.
 Table Text Style: TableText style must have no first-line indent and use single line spacing (240 DXA).
 Title Page Base Style: TitlePageText must keep the DOTM 14pt, single-line base style.
+Direct Body Paragraph Formatting: Body paragraph has a direct indent or spacing override outside STO values.

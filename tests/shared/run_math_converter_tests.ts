@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url';
 
 import {
 	convertLatex2Math,
+	FormulaConversionError,
 	mathJaxReady,
 	normalizeMathJaxImportSpecifier,
 } from '../../src/shared/lib/math-converter';
@@ -27,6 +28,14 @@ assert.equal(
 async function main(): Promise<void> {
 	await mathJaxReady();
 	assert.doesNotThrow(() => convertLatex2Math('\\frac{1}{x^2 - 1}'));
+	for (const invalid of ['x=\\frac{1}{', '\\left( x', '\\badcommand{x}']) {
+		assert.throws(
+			() => convertLatex2Math(invalid),
+			error =>
+				error instanceof FormulaConversionError &&
+				error.latex === invalid,
+		);
+	}
 
 	console.log('Math converter tests passed.');
 }

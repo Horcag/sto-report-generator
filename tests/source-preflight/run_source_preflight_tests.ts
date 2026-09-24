@@ -5,6 +5,8 @@ import path from 'node:path';
 import { resolveReportConfig } from '@/shared/lib/report-config';
 import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
+import { runStructureReferenceTests } from './structure_reference_tests';
+
 const tempRoot = path.join(
 	process.cwd(),
 	'.agent-work',
@@ -464,6 +466,16 @@ expectIssue(
 	'forbidden-list-letter-marker',
 );
 
+for (const letter of ['з', 'й', 'о', 'ч', 'ъ', 'ы', 'ь']) {
+	expectIssue(
+		`forbidden-list-letter-${letter}`,
+		validFiles({
+			'03_intro.md': `Перечень содержит:\n\\begin{sto_list}\n${letter}) недопустимый маркер.\n\\end{sto_list}\n`,
+		}),
+		'forbidden-list-letter-marker',
+	);
+}
+
 expectIssue(
 	'list-marker-extra-dot',
 	validFiles({
@@ -624,6 +636,46 @@ expectNoIssue(
 `,
 	}),
 	'list-item-uppercase-punctuation',
+);
+
+expectWarning(
+	'list-nested-final-item-period',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_list}
+- первый элемент;
+  а) вложенный элемент;
+- второй элемент.
+\\end{sto_list}
+`,
+	}),
+	'list-final-item-punctuation',
+);
+
+expectNoIssue(
+	'list-dotted-nonfinal-full-stop',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_enum}
+1. Первый элемент.
+2. Второй элемент.
+\\end{sto_enum}
+`,
+	}),
+	'list-item-lowercase-punctuation',
+);
+
+expectNoIssue(
+	'list-parenthesized-nonfinal-comma',
+	validFiles({
+		'03_intro.md': `Перечень содержит:
+\\begin{sto_enum}
+1) первый элемент,
+2) второй элемент.
+\\end{sto_enum}
+`,
+	}),
+	'list-item-lowercase-punctuation',
 );
 
 expectIssue(
@@ -945,6 +997,45 @@ $$
 );
 
 expectWarning(
+	'formula-parenthesis-cdot',
+	validFiles({
+		'03_intro.md': `Формула содержит лишнюю точку умножения.
+
+$$
+x = a \\cdot (b + c)
+$$
+`,
+	}),
+	'formula-redundant-cdot',
+);
+
+expectWarning(
+	'formula-vector-cdot',
+	validFiles({
+		'03_intro.md': `Формула содержит лишнюю точку умножения.
+
+$$
+x = a \\cdot \\vec{b}
+$$
+`,
+	}),
+	'formula-redundant-cdot',
+);
+
+expectNoIssue(
+	'formula-scalar-cdot',
+	validFiles({
+		'03_intro.md': `Формула содержит произведение величин.
+
+$$
+x = a \\cdot b
+$$
+`,
+	}),
+	'formula-redundant-cdot',
+);
+
+expectWarning(
 	'formula-period-before-where',
 	validFiles({
 		'03_intro.md': `Формула @eq:period_where.
@@ -1022,6 +1113,35 @@ $$
 );
 
 expectWarning(
+	'formula-break-operator-repeat',
+	validFiles({
+		'03_intro.md': [
+			'Формула содержит перенос.',
+			'',
+			'$$',
+			'x = a + ' + '\\\\',
+			'b',
+			'$$',
+		].join('\n'),
+	}),
+	'formula-line-break-operator-not-repeated',
+);
+
+expectIssue(
+	'formula-decimal-comma',
+	validFiles({
+		'03_intro.md': [
+			'Формула содержит десятичную дробь.',
+			'',
+			'$$',
+			'x = 1.5',
+			'$$',
+		].join('\n'),
+	}),
+	'formula-decimal-dot',
+);
+
+expectIssue(
 	'unused-equation-label',
 	validFiles({
 		'03_intro.md': `Нумерованная формула приведена без ссылки в тексте.
@@ -1275,180 +1395,12 @@ bibliography: "references.bib"
 	'bibliography-book-pages-range',
 );
 
-expectWarning(
-	'bibliography-book-required-field',
-	validFiles({
-		'00_metadata.md': `---
-bibliography: "references.bib"
----
-`,
-		'03_intro.md': `Текст с книгой [@book2026].
-`,
-		'references.bib': `@book{book2026,
-  author = {Иванов, И. И.},
-  title = {Книга},
-  year = {2026},
-  address = {Самара},
-  pages = {120}
-}
-`,
-	}),
-	'bibliography-required-field-missing',
-);
-
-expectWarning(
-	'bibliography-article-required-field',
-	validFiles({
-		'00_metadata.md': `---
-bibliography: "references.bib"
----
-`,
-		'03_intro.md': `Текст со статьей [@article2026].
-`,
-		'references.bib': `@article{article2026,
-  author = {Иванов, И. И.},
-  title = {Статья},
-  journal = {Журнал},
-  year = {2026}
-}
-`,
-	}),
-	'bibliography-required-field-missing',
-);
-
-expectWarning(
-	'bibliography-inproceedings-required-field',
-	validFiles({
-		'00_metadata.md': `---
-bibliography: "references.bib"
----
-`,
-		'03_intro.md': `Текст с материалами конференции [@conf2026].
-`,
-		'references.bib': `@inproceedings{conf2026,
-  author = {Иванов, И. И.},
-  title = {Доклад},
-  year = {2026},
-  pages = {10--12}
-}
-`,
-	}),
-	'bibliography-required-field-missing',
-);
-
-expectNoIssue(
-	'unused-broken-bibliography-entry',
-	validFiles({
-		'00_metadata.md': `---
-bibliography: "references.bib"
----
-`,
-		'03_intro.md': `Текст с использованной статьей [@used2026].
-`,
-		'references.bib': `@article{used2026,
-  author = {Иванов, И. И.},
-  title = {Статья},
-  journal = {Журнал},
-  year = {2026},
-  pages = {10--12}
-}
-
-@book{unusedBroken2026,
-  title = {Сломанная книга}
-}
-`,
-	}),
-	'bibliography-required-field-missing',
-);
-
-expectWarning(
-	'application-without-reference',
-	validFiles({
-		'92_appendix.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
-
-Материалы приложения.
-`,
-	}),
-	'application-without-reference',
-);
-
-expectWarning(
-	'application-object-numbering',
-	validFiles({
-		'03_intro.md': `Дополнительные данные приведены в приложении А. Неверный рисунок приложения показан на рисунке 1.
-`,
-		'92_appendix.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
-
-Рисунок 1 – Неверная нумерация приложения
-`,
-	}),
-	'application-object-numbering',
-);
-
-expectIssue(
-	'application-label-duplicate',
-	validFiles({
-		'03_intro.md': `Дополнительные данные приведены в приложении А.
-`,
-		'92_appendix_a.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
-
-Материалы приложения.
-`,
-		'93_appendix_a2.md': `\\sto_structural_heading{ПРИЛОЖЕНИЕ А}
-
-Материалы второго приложения.
-`,
-	}),
-	'application-label-duplicate',
-);
-
-expectIssue(
-	'structure-missing',
-	{
-		'00_metadata.md': `---
-title: Test
----
-`,
-		'01_referat.md': `\\sto_structural_heading{РЕФЕРАТ}
-
-Отчет содержит {{PAGES}} страниц, {{FIGURES}} рисунков, {{TABLES}} таблиц и {{SOURCES}} источников.
-`,
-	},
-	'structural-heading-missing',
-);
-
-expectIssue(
-	'missing-image',
-	validFiles({
-		'03_intro.md': `Рисунок 1 показывает пример.
-
-![Нет файла](images/missing.png)
-
-Рисунок 1 – Нет файла (@fig:missing_image)
-`,
-	}),
-	'missing-image',
-);
-
-const imageDir = writeReport(
-	'relative-image',
-	validFiles({
-		'03_intro.md': `Рисунок 1 показывает пример.
-
-![Есть файл](images/ok.png)
-
-Рисунок 1 – Есть файл (@fig:ok)
-`,
-		'images/ok.png': 'not a real png but exists for source preflight',
-	}),
-);
-const imageResult = runSourcePreflight(imageDir);
-assert.equal(
-	imageResult.passed,
-	true,
-	imageResult.issues
-		.map(item => `${item.code}:${item.file ?? ''}`)
-		.join(', '),
-);
+runStructureReferenceTests({
+	writeReport,
+	validFiles,
+	expectIssue,
+	expectWarning,
+	expectNoIssue,
+});
 
 console.log('Source preflight tests passed.');

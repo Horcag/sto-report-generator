@@ -1,3 +1,9 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+import { parseMarkdownToDocx } from '@/features/markdown-parser';
 import { BibItem } from '@/features/markdown-parser/lib/types';
 import { formatBibItem } from '@/features/markdown-parser/lib/utils/bib-formatter';
 
@@ -170,6 +176,71 @@ const tests: { input: BibItem; expected: string }[] = [
 		expected:
 			'Конституция Российской Федерации // Собрание законодательства РФ. – 2014. – № 31. – Ст. 4398.',
 	},
+	{
+		input: {
+			citationKey: 'patent',
+			entryType: 'patent',
+			entryTags: {
+				author: 'Иванов, И. И.',
+				title: 'Устройство обработки изображений',
+				country: 'RU',
+				number: '123456',
+				holder: 'Самарский университет',
+				year: '2020',
+				pages: '8',
+			},
+		},
+		expected:
+			'Иванов, И.И. Устройство обработки изображений : пат. RU 123456 / И.И. Иванов ; Самарский университет. – 2020. – 8 с.',
+	},
+	{
+		input: {
+			citationKey: 'thesis',
+			entryType: 'phdthesis',
+			entryTags: {
+				author: 'Петров, П. П.',
+				title: 'Методы анализа изображений',
+				type: 'дис. канд. техн. наук',
+				institution: 'Самарский университет',
+				address: 'Самара',
+				year: '2021',
+				pages: '150',
+			},
+		},
+		expected:
+			'Петров, П.П. Методы анализа изображений : дис. канд. техн. наук / П.П. Петров ; Самарский университет. – Самара, 2021. – 150 с.',
+	},
+	{
+		input: {
+			citationKey: 'standard',
+			entryType: 'standard',
+			entryTags: {
+				number: 'ГОСТ Р 7.0.100-2018',
+				title: 'Библиографическая запись. Библиографическое описание',
+				address: 'М.',
+				publisher: 'Стандартинформ',
+				year: '2018',
+				pages: '128',
+			},
+		},
+		expected:
+			'ГОСТ Р 7.0.100-2018. Библиографическая запись. Библиографическое описание. – М. : Стандартинформ, 2018. – 128 с.',
+	},
+	{
+		input: {
+			citationKey: 'sitePart',
+			entryType: 'inonline',
+			entryTags: {
+				title: 'Правила оформления отчётов',
+				website: 'Самарский университет',
+				year: '2022',
+				url: 'https://ssau.ru/rules',
+				urldate: '2024-03-12',
+			},
+		},
+		expected:
+			'Правила оформления отчётов // Самарский университет : сайт. – 2022. – URL: https://ssau.ru/rules (дата обращения: 12.03.2024).',
+	},
 ];
 
 let failed = 0;
@@ -185,8 +256,58 @@ for (const t of tests) {
 	}
 }
 
-if (failed > 0) {
-	process.exit(1);
-} else {
-	console.log('\nAll tests passed!');
+if (failed > 0) process.exit(1);
+
+assert.throws(
+	() =>
+		formatBibItem({
+			citationKey: 'unsupported',
+			entryType: 'software',
+			entryTags: { title: 'Program', url: 'https://example.org' },
+		}),
+	/Unsupported bibliography type "software" for @unsupported/,
+);
+
+async function testSpecialTypeCitations(): Promise<void> {
+	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sto-bib-special-'));
+	try {
+		const bibPath = path.join(tempDir, 'references.bib');
+		fs.writeFileSync(
+			bibPath,
+			tests
+				.slice(-4)
+				.map(({ input }) => {
+					const fields = Object.entries(input.entryTags)
+						.map(([key, value]) => `  ${key} = {${value}}`)
+						.join(',\n');
+					return `@${input.entryType}{${input.citationKey},\n${fields}\n}`;
+				})
+				.join('\n\n'),
+		);
+		const elements = await parseMarkdownToDocx(
+			String.raw`Патент [@patent], диссертация [@thesis], стандарт [@standard], часть сайта [@sitePart].
+
+\begin{sto_bibliography}
+\end{sto_bibliography}`,
+			{ bibliography: bibPath },
+			{ sourceDir: tempDir },
+		);
+		const actual = JSON.stringify(elements).replaceAll('\u200B', '');
+		assert.match(
+			actual,
+			/Патент \[1\], диссертация \[2\], стандарт \[3\], часть сайта \[4\]/,
+		);
+		for (const { expected } of tests.slice(-4)) {
+			assert.ok(actual.includes(expected), expected);
+		}
+	} finally {
+		fs.rmSync(tempDir, { recursive: true, force: true });
+	}
 }
+
+testSpecialTypeCitations()
+	.then(() => console.log('\nAll bibliography tests passed!'))
+	.catch(error => {
+		console.error(error);
+		process.exitCode = 1;
+	});

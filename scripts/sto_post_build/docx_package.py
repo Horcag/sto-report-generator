@@ -4,7 +4,22 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-from .constants import DIRTY_TRUE_RE
+from lxml import etree
+
+from .constants import DIRTY_TRUE_RE, WORD_NS
+
+STATISTIC_PLACEHOLDERS = ("{{PAGES}}", "{{PAGES_WORD}}", "{{FIGURES}}", "{{TABLES}}", "{{SOURCES}}")
+
+
+def assert_no_statistic_placeholders(docx_path: str | Path) -> None:
+    root = etree.fromstring(read_docx_part(docx_path, "word/document.xml"))
+    for paragraph in root.iter(f"{{{WORD_NS}}}p"):
+        text = "".join(paragraph.itertext())
+        remaining = [value for value in STATISTIC_PLACEHOLDERS if value in text]
+        if remaining:
+            raise RuntimeError(
+                f"Referat statistic placeholders remain in {docx_path}: {', '.join(remaining)}"
+            )
 
 
 def read_docx_part(docx_path: str | Path, part_name: str) -> bytes:

@@ -74,6 +74,10 @@ async function run(): Promise<void> {
 		docXml,
 		/<w:tblCellMar><w:top w:type="dxa" w:w="0"\/><w:left w:type="dxa" w:w="108"\/><w:bottom w:type="dxa" w:w="0"\/><w:right w:type="dxa" w:w="108"\/><\/w:tblCellMar>/,
 	);
+	assert.match(
+		docXml,
+		/<w:tcMar><w:left w:type="dxa" w:w="108"\/><w:right w:type="dxa" w:w="108"\/><\/w:tcMar>/,
+	);
 
 	const plainHeaderElements = await parseMarkdownToDocx(
 		'| Заголовок | Значение |\n| :--- | ---: |\n| Текст | 1 |',

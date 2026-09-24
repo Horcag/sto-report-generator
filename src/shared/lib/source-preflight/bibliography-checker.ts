@@ -5,6 +5,7 @@ import matter from 'gray-matter';
 import { STO_RULES } from '@/shared/config';
 import { ReportConfig } from '@/shared/lib/report-config';
 
+import { validateManualBibliographyContent } from './bibliography-content-checker';
 import { SourceFile, SourcePreflightIssue } from './types';
 import { issue, lineNumberAt } from './utils';
 
@@ -296,11 +297,23 @@ function validateRequiredBibFields(
 		const requiredGroups =
 			STO_RULES.bibliography.requiredFieldsByType[entry.entryType];
 		if (!requiredGroups) {
+			issues.push(
+				issue(
+					'bibliography-unsupported-type',
+					`cited @${entry.key} uses unsupported BibTeX type "${entry.entryType}". Choose a supported bibliography type.`,
+					path.basename(bibPath),
+					entry.line,
+				),
+			);
 			continue;
 		}
 
 		for (const tagNames of requiredGroups) {
-			if (hasAnyBibTag(entry.raw, tagNames)) {
+			if (
+				tagNames.some(tagName =>
+					Boolean(readBibTagValue(entry.raw, tagName)),
+				)
+			) {
 				continue;
 			}
 			issues.push(
@@ -408,28 +421,6 @@ function validateBibEntryQuality(
 					path.basename(bibPath),
 					entry.line,
 					'warning',
-				),
-			);
-		}
-	}
-}
-
-function validateManualBibliographyContent(
-	file: string,
-	content: string,
-	issues: SourcePreflightIssue[],
-): void {
-	for (const match of content.matchAll(
-		/\\begin\{sto_bibliography\}\s*([\s\S]*?)\s*\\end\{sto_bibliography\}/g,
-	)) {
-		const manualContent = match[1].trim();
-		if (manualContent.length > 0) {
-			issues.push(
-				issue(
-					'manual-bibliography-content',
-					'sto_bibliography must stay empty. The generator inserts only cited sources automatically.',
-					file,
-					lineNumberAt(content, match.index ?? 0),
 				),
 			);
 		}

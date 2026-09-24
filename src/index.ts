@@ -1,6 +1,6 @@
-import os from 'node:os';
-
 import { buildReport } from '@/app/builder';
+import { runDoctor } from '@/app/doctor';
+import { createLibreOfficePreview } from '@/app/libreoffice-preview';
 import { scaffoldReport } from '@/app/report-scaffold';
 import { generateReport, validateDocxFile } from '@/app/report-workflow';
 import { runWordAcceptance } from '@/app/word-acceptance';
@@ -8,6 +8,7 @@ import { isStoStylePreset, StoStylePreset } from '@/shared/config';
 import {
 	isReportProfile,
 	isReportRenderer,
+	REPORT_PROFILE_NAMES,
 	REPORT_RENDERERS,
 	ReportProfile,
 	ReportRenderer,
@@ -28,6 +29,7 @@ const COMMANDS = new Set([
 	'check',
 	'generate',
 	'audit',
+	'preview',
 	'accept-word',
 	'validate-docx',
 	'doctor',
@@ -93,7 +95,9 @@ function optionProfile(args: ParsedArgs): ReportProfile | undefined {
 		return undefined;
 	}
 	if (!isReportProfile(value)) {
-		throw new Error('Supported profiles: nir, coursework, lab.');
+		throw new Error(
+			`Supported profiles: ${REPORT_PROFILE_NAMES.join(', ')}.`,
+		);
 	}
 	return value;
 }
@@ -127,10 +131,11 @@ function printHelp(): void {
 
 Usage:
   npx tsx src/index.ts build <input.md|report_dir> <output.docx>
-  npx tsx src/index.ts new <slug> [--profile nir|coursework|lab] [--title "..."] [--dir reports/<slug>] [--no-git]
+  npx tsx src/index.ts new <slug> --profile nir|coursework|lab|vkr-bachelor|vkr-master [--title "..."] [--dir reports/<slug>] [--no-git]
   npx tsx src/index.ts check <report_dir> [--strict]
   npx tsx src/index.ts generate <report_dir> [--output build/report.docx] [--renderer portable|word] [--post-build] [--validate]
   npx tsx src/index.ts audit <report_dir> [--output build/report.docx] [--renderer portable|word]
+  npx tsx src/index.ts preview <input.docx> [--pdf preview.pdf] [--soffice /path/to/soffice]
   npx tsx src/index.ts accept-word <input.docx> [--accepted-docx accepted.docx] [--pdf accepted.pdf] [--manifest acceptance.json] [--style-preset samara-template-2022|default]
   npx tsx src/index.ts validate-docx <report.docx> [unpack_dir]
   npx tsx src/index.ts doctor
@@ -282,59 +287,19 @@ function runAcceptWord(args: ParsedArgs): void {
 	});
 }
 
-function currentPlatformLabel(): string {
-	const release = os.release().toLowerCase();
-	if (
-		process.platform === 'linux' &&
-		(release.includes('microsoft') || release.includes('wsl'))
-	) {
-		return 'Linux/WSL';
+function runPreview(args: ParsedArgs): void {
+	const inputDocx = args.positionals[1];
+	if (!inputDocx) {
+		throw new Error('preview command requires an input DOCX path.');
 	}
-	if (process.platform === 'win32') {
-		return 'Windows';
-	}
-	if (process.platform === 'darwin') {
-		return 'macOS';
-	}
-	return process.platform;
-}
-
-function runDoctor(): void {
-	const platform = currentPlatformLabel();
-	console.log('STO doctor');
-	console.log('Portable renderer: available');
+	const pdf = createLibreOfficePreview({
+		inputDocx,
+		outputPdf: optionString(args, 'pdf'),
+		soffice: optionString(args, 'soffice'),
+	});
+	console.log(`LibreOffice preview: ${pdf}`);
 	console.log(
-		'  Builds and validates DOCX with Node/OpenXML; PDF pagination is not authoritative.',
-	);
-	if (process.platform === 'win32') {
-		console.log('Word renderer: optional');
-		console.log(
-			'  Requires Microsoft Word and pywin32 at post-build runtime. Run --renderer word to verify COM access on a real document.',
-		);
-		console.log(
-			'Word acceptance: available when Microsoft Word is installed.',
-		);
-		return;
-	}
-	if (platform === 'Linux/WSL') {
-		console.log('Word renderer: unavailable');
-		console.log(
-			'  The legacy full post-build requires native Windows Python and pywin32.',
-		);
-		console.log(
-			'Word acceptance: available when Windows PowerShell and Microsoft Word are installed on the host.',
-		);
-		console.log(
-			'  Run npm run accept:word -- <docx> to create an accepted DOCX/PDF and JSON manifest from WSL.',
-		);
-		return;
-	}
-	console.log('Word renderer: unavailable');
-	console.log(
-		`  Current platform is ${platform}. Use --renderer portable here, or run --renderer word on native Windows with Microsoft Word and pywin32 installed.`,
-	);
-	console.log(
-		'Word acceptance: unavailable. Run accept-word from WSL connected to a Windows Word host or from native Windows.',
+		'Pagination is not authoritative; use accept-word for final Word/PDF acceptance.',
 	);
 }
 
@@ -391,6 +356,9 @@ async function main(): Promise<void> {
 			break;
 		case 'accept-word':
 			runAcceptWord(args);
+			break;
+		case 'preview':
+			runPreview(args);
 			break;
 		case 'validate-docx':
 			runValidateDocx(args);

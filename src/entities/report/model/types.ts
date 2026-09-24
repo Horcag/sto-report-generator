@@ -3,6 +3,8 @@ export interface ReportMetadata {
 	department: string;
 	subdepartment: string;
 	reportType: string;
+	reportProfile?:
+		'nir' | 'coursework' | 'lab' | 'vkr-bachelor' | 'vkr-master';
 	degree: string;
 	semester: number;
 	specialtyCode: string;
@@ -15,6 +17,14 @@ export interface ReportMetadata {
 	supervisorName: string;
 	supervisorTitle: string;
 	supervisorRole?: string;
+	normControllerName?: string;
+	normControllerTitle?: string;
+	vkrApprovalName?: string;
+	vkrOrderDate?: string;
+	vkrOrderNumber?: string;
+	vkrInitialData?: string;
+	vkrQuestions?: string;
+	vkrAssignmentDate?: string;
 	studentShortName?: string;
 	universitySupervisorShortName?: string;
 	organizationSupervisorName?: string;
