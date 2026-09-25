@@ -187,6 +187,9 @@ export function appendUrlArea(
 	if (!tags.url) {
 		return record;
 	}
+	if (/\s/.test(tags.url.trim())) {
+		throw new Error('Bibliography URL must not contain whitespace.');
+	}
 
 	const accessDate = formatAccessDate(tags.urldate);
 	const accessMode = cleanText(

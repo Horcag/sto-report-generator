@@ -268,6 +268,82 @@ assert.throws(
 	/Unsupported bibliography type "software" for @unsupported/,
 );
 
+assert.throws(
+	() =>
+		formatBibItem({
+			citationKey: 'untitled',
+			entryType: 'book',
+			entryTags: {},
+		}),
+	/Bibliography entry @untitled has no title/,
+);
+const noInventedPrintData = formatBibItem({
+	citationKey: 'print-unknown',
+	entryType: 'book',
+	entryTags: { title: 'Печатный источник', year: '2020' },
+});
+assert.doesNotMatch(
+	noInventedPrintData,
+	/Без названия|\[Б\. м\.\]|\[б\. и\.\]/,
+);
+assert.match(
+	formatBibItem({
+		citationKey: 'edited-book',
+		entryType: 'book',
+		entryTags: {
+			title: 'Сборник исследований',
+			editor: 'Иванов, И. И.',
+			address: 'Самара',
+			publisher: 'Издательство',
+			year: '2025',
+			pages: '200',
+		},
+	}),
+	/Сборник исследований \/ ред\. И\.И\. Иванов\. – Самара : Издательство, 2025\. – 200 с\./,
+);
+const undatedNetworkResource = formatBibItem({
+	citationKey: 'online-undated',
+	entryType: 'online',
+	entryTags: {
+		title: 'Сетевой ресурс',
+		url: 'https://example.org/item',
+		urldate: '2026-09-25',
+	},
+});
+assert.doesNotMatch(undatedNetworkResource, /\[Б\. м\.\]|\[б\. г\.\]/);
+assert.match(
+	undatedNetworkResource,
+	/URL: https:\/\/example\.org\/item \(дата обращения: 25\.09\.2026\)/,
+);
+assert.match(
+	formatBibItem({
+		citationKey: 'published-online',
+		entryType: 'online',
+		entryTags: {
+			title: 'Сетевой сборник',
+			publisher: 'Самарский университет',
+			year: '2025',
+			url: 'https://example.org/collection',
+			urldate: '2026-09-25',
+		},
+	}),
+	/Самарский университет, 2025\. – URL:/,
+);
+assert.match(
+	formatBibItem({
+		citationKey: 'online-article',
+		entryType: 'article',
+		entryTags: {
+			title: 'Сетевая статья',
+			journal: 'Журнал',
+			year: '2025',
+			url: 'https://example.org/article',
+			urldate: '2026-09-25',
+		},
+	}),
+	/URL: https:\/\/example\.org\/article \(дата обращения: 25\.09\.2026\)/,
+);
+
 async function testSpecialTypeCitations(): Promise<void> {
 	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sto-bib-special-'));
 	try {

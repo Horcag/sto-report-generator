@@ -5,6 +5,7 @@ import path from 'node:path';
 import { resolveReportConfig } from '@/shared/lib/report-config';
 import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
+import { runBibliographyRegressionTests } from './bibliography_regression_tests';
 import { runStructureReferenceTests } from './structure_reference_tests';
 
 const tempRoot = path.join(
@@ -295,25 +296,13 @@ expectIssue(
 	'structural-heading-missing',
 );
 
-expectIssue(
-	'unknown-bibtex-key',
-	validFiles({
-		'00_metadata.md': `---
-bibliography: "references.bib"
----
-`,
-		'03_intro.md': `Текст с неизвестным источником [@missing2020].
-`,
-		'references.bib': `@article{known2020,
-  author = {Smith, J.},
-  title = {Source},
-  journal = {Journal},
-  year = {2020}
-}
-`,
-	}),
-	'unknown-bibtex-key',
-);
+runBibliographyRegressionTests({
+	writeReport,
+	validFiles,
+	expectIssue,
+	expectWarning,
+	expectNoIssue,
+});
 
 expectIssue(
 	'manual-bibliography-content',

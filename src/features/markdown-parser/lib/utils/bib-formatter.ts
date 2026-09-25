@@ -35,7 +35,12 @@ export function formatBibItem(item: BibItem): string {
 	const entryType = (item.entryType || '').toLowerCase();
 	const isEng = isEnglish(tags.langid);
 	const authorBlock = parseAuthors(tags.author || '', isEng);
-	const title = cleanText(tags.title) || 'Без названия';
+	const title = cleanText(tags.title);
+	if (!title) {
+		throw new Error(
+			`Bibliography entry @${item.citationKey} has no title. Supply the source title or an editorial title in square brackets after checking the source.`,
+		);
+	}
 	const typeInfo = cleanText(tags.howpublished || tags.type);
 	const noteBlock = parseNote(tags.note || '');
 
@@ -76,14 +81,7 @@ export function formatBibItem(item: BibItem): string {
 			return formatTechReport(tags, title, typeInfo, authorBlock, isEng);
 		case 'misc':
 		case 'online':
-			return formatOnline(
-				tags,
-				title,
-				typeInfo,
-				authorBlock,
-				isEng,
-				noteBlock,
-			);
+			return formatOnline(tags, title, typeInfo, authorBlock, noteBlock);
 		default:
 			throw new Error(
 				`Unsupported bibliography type "${item.entryType}" for @${item.citationKey}.`,
@@ -201,7 +199,7 @@ function formatArticle(
 		formatVolumeIssue(tags.volume, tags.number || tags.issue, isEng),
 	);
 	record = appendArea(record, formatPages(tags.pages, isEng));
-	return normalizeRecord(record);
+	return normalizeRecord(appendUrlArea(record, tags));
 }
 
 function formatCollectionPart(
@@ -225,7 +223,7 @@ function formatCollectionPart(
 		),
 	);
 	record = appendArea(record, formatPages(tags.pages, isEng));
-	return normalizeRecord(record);
+	return normalizeRecord(appendUrlArea(record, tags));
 }
 
 function formatBook(
@@ -236,10 +234,20 @@ function formatBook(
 	isEng: boolean,
 	noteBlock: NoteBlock,
 ): string {
+	const editor = tags.editor
+		? parseAuthors(tags.editor, isEng).responsibility
+		: '';
+	const bookNote: NoteBlock = {
+		responsibility: [
+			...noteBlock.responsibility,
+			...(editor ? [`${isEng ? 'ed. by' : 'ред.'} ${editor}`] : []),
+		],
+		publication: noteBlock.publication,
+	};
 	let record = buildPrimaryDescription(
 		titleWithType(title, typeInfo),
 		authorBlock,
-		noteBlock,
+		bookNote,
 	);
 	record = appendArea(record, cleanText(tags.edition));
 	for (const publicationNote of noteBlock.publication) {
@@ -248,8 +256,8 @@ function formatBook(
 	record = appendArea(
 		record,
 		formatPlacePublisherYear(
-			tags.address || tags.location || '[Б. м.]',
-			tags.publisher || '[б. и.]',
+			tags.address || tags.location,
+			tags.publisher,
 			tags.year,
 		),
 	);
@@ -257,7 +265,7 @@ function formatBook(
 		record,
 		formatPageCount(tags.pages || tags.numpages, isEng),
 	);
-	return normalizeRecord(record);
+	return normalizeRecord(appendUrlArea(record, tags));
 }
 
 function formatNorm(tags: Record<string, string>, title: string): string {
@@ -271,7 +279,7 @@ function formatNorm(tags: Record<string, string>, title: string): string {
 		tags.number ? `№ ${cleanText(tags.number)}` : '',
 	);
 	record = appendArea(record, cleanText(tags.note));
-	return normalizeRecord(record);
+	return normalizeRecord(appendUrlArea(record, tags));
 }
 
 function formatTechReport(
@@ -305,15 +313,12 @@ function formatOnline(
 	title: string,
 	typeInfo: string,
 	authorBlock: AuthorBlock,
-	isEng: boolean,
 	noteBlock: NoteBlock,
 ): string {
 	const containerTitle = cleanText(
 		tags.journal || tags.booktitle || tags.website,
 	);
-	const titleBlock = containerTitle
-		? titleWithType(title, typeInfo)
-		: titleWithType(title, typeInfo || '[сайт]');
+	const titleBlock = titleWithType(title, typeInfo);
 	let record = buildPrimaryDescription(titleBlock, authorBlock, noteBlock);
 
 	if (tags.doi) {
@@ -328,9 +333,9 @@ function formatOnline(
 	record = appendArea(
 		record,
 		formatPlacePublisherYear(
-			tags.address || tags.location || '[Б. м.]',
-			'',
-			tags.year || (isEng ? '[s. a.]' : '[б. г.]'),
+			tags.address || tags.location,
+			tags.publisher,
+			tags.year,
 		),
 	);
 	record = appendUrlArea(record, tags);

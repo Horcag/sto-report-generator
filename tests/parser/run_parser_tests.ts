@@ -8,6 +8,8 @@ import { parseMarkdownToDocx } from '@/features/markdown-parser';
 import { STO_NUMBERING, STO_STYLES } from '@/shared/config';
 import { readDocxEntry } from '@/shared/lib/docx-archive';
 
+import { runCitationLocatorTests } from './citation_locator_tests';
+
 const tempRoot = path.join(process.cwd(), '.agent-work', 'parser-tests');
 
 async function expectRejects(
@@ -267,11 +269,16 @@ async function main(): Promise<void> {
 		{ sourceDir: tempRoot },
 	);
 	const orderedBibliographyJson = JSON.stringify(orderedBibliographyElements);
+	assert.match(
+		orderedBibliographyJson,
+		/Сначала второй источник \[1, 2\], потом повтор \[1\]/,
+	);
 	assert.ok(
 		orderedBibliographyJson.indexOf('Второй источник') <
 			orderedBibliographyJson.indexOf('Первый источник'),
 		'Bibliography must follow first citation order, not BibTeX order.',
 	);
+	await runCitationLocatorTests(bibPath, tempRoot);
 
 	fs.writeFileSync(bibPath, '', 'utf8');
 	await assert.rejects(

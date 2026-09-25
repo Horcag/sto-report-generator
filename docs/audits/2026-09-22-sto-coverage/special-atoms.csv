@@ -82,11 +82,11 @@ L30,list,12,LIST:133-160,lower/complex nonfinal item semicolon,partial,src/share
 L31,list,13,LIST:168-184,last item full stop,implemented,src/shared/lib/source-preflight/list-checker.ts:185-417,source tests
 L32,list,13,LIST:168-184,marker style not mixed at level,implemented,src/shared/lib/source-preflight/list-checker.ts:354-417,source tests
 L33,list,13,LIST:168-184,number sequence consecutive,implemented,src/shared/lib/source-preflight/list-checker.ts:354-417,source tests
-B01,bibliography,22,G100:5.2.3,book title required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:29;141-170,default Без названия masks missing data
+B01,bibliography,22,G100:5.2.3,book title required,partial,src/shared/lib/source-preflight/bibliography-checker.ts; src/features/markdown-parser/lib/utils/bib-formatter.ts,missing cited title is an error; editorial title still requires source review
 B02,bibliography,31,G100:5.2.6,book responsibility required category,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:270-305,no complete field validation
 B03,bibliography,38,G100:5.3.3,edition statement required when present,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:154,no source completeness validation
-B04,bibliography,46,G100:5.5.3,place required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:161,uses [Б. м.] fallback
-B05,bibliography,49,G100:5.5.4,publisher required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:162,uses [б. и.] fallback
+B04,bibliography,46,G100:5.5.3,place conditional on source data,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts; src/shared/lib/source-preflight/bibliography-checker.ts,no automatic [Б. м.] fallback; author must verify and supply editorial designation when justified
+B05,bibliography,49,G100:5.5.4,publisher conditional on source data,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts; src/shared/lib/source-preflight/bibliography-checker.ts,no automatic [б. и.] fallback; author must verify and supply editorial designation when justified
 B06,bibliography,52,G100:5.5.5,publication date required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:163,no required-year validation in formatter
 B07,bibliography,55,G100:5.6.3,book extent required,partial,src/features/markdown-parser/lib/utils/bib-formatter.ts:166-169,no source completeness validation
 B08,bibliography,26,G100:5.2.4,parallel title optional,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:354-356,no field route
@@ -122,7 +122,7 @@ B37,bibliography,16,G108:6.10,audiovisual reference,unsupported,src/features/mar
 B38,bibliography,18,G108:6.11,computer program reference,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no type
 B39,bibliography,18,G108:6.12,dataset reference,unsupported,src/features/markdown-parser/lib/utils/bib-formatter.ts:213-250,no type
 B40,bibliography,9,G005:7.4,end-reference numbering,implemented,src/shared/config/sto-styles.ts:333-350; src/features/markdown-parser/lib/parser/handlers/sto-handler.ts:100-144,visual template comparison manual
-B41,bibliography,7,G005:5,in-text reference,partial,citation parser,only numeric marker
+B41,bibliography,7,G005:5,in-text bibliographic description in parentheses,unsupported,citation parser,numeric [N] is an end-reference call under G005:7.4.1
 B42,bibliography,8,G005:6,footnote reference,unsupported,none,no footnote engine
 B43,bibliography,12,G005:8,repeated reference,unsupported,none,no repeat state
 B44,bibliography,23,G005:9,complex reference,unsupported,none,no combined reference model
