@@ -433,7 +433,8 @@ title: Test
 		inonline:
 			'title = {Раздел сайта}, year = {2020}, url = {https://example.org}, urldate = {2024-01-01}',
 	})) {
-		const expectMissing = type === 'phdthesis' ? expectWarning : expectIssue;
+		const expectMissing =
+			type === 'phdthesis' ? expectWarning : expectIssue;
 		expectMissing(
 			`bibliography-${type}-required-field`,
 			validFiles({
