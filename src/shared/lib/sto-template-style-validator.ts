@@ -4,6 +4,12 @@ import {
 	STRUCTURAL_HEADING_STYLE_ID,
 } from '../config';
 import type { ValidationResult } from './sto-validator';
+import {
+	getEffectiveParagraphAttribute,
+	getEffectiveRunAttribute,
+	hasEffectiveParagraphTag,
+	resolveWordStyleId,
+} from './word-style-properties';
 
 const REGEXP_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
 
@@ -26,20 +32,15 @@ function getBasedOnStyleId(styleXml: string): string | null {
 	);
 }
 
-function getWordNormalizedStyleId(styleId: string): string | null {
-	return styleId.startsWith('StoHeading')
-		? styleId.replace('StoHeading', 'STOHeading')
-		: null;
-}
-
-function expandStyleIds(styleIds: readonly string[]): string[] {
+function expandStyleIds(
+	stylesXml: string,
+	styleIds: readonly string[],
+): string[] {
 	return [
 		...new Set(
-			styleIds.flatMap(styleId =>
-				[styleId, getWordNormalizedStyleId(styleId)].filter(
-					(value): value is string => value !== null,
-				),
-			),
+			styleIds
+				.map(styleId => resolveWordStyleId(stylesXml, styleId))
+				.filter((value): value is string => value !== null),
 		),
 	];
 }
@@ -50,7 +51,7 @@ function hasStylePropertyOrInherited(
 	propertyPattern: RegExp,
 	visitedStyleIds = new Set<string>(),
 ): boolean {
-	return expandStyleIds(styleIds).some(styleId => {
+	return expandStyleIds(stylesXml, styleIds).some(styleId => {
 		if (visitedStyleIds.has(styleId)) {
 			return false;
 		}
@@ -81,7 +82,7 @@ function hasStyleProperty(
 	styleIds: readonly string[],
 	propertyPattern: RegExp,
 ): boolean {
-	return expandStyleIds(styleIds).some(styleId => {
+	return expandStyleIds(stylesXml, styleIds).some(styleId => {
 		const styleXml = findStyleXml(stylesXml, styleId);
 		return styleXml ? propertyPattern.test(styleXml) : false;
 	});
@@ -100,14 +101,18 @@ function hasSpacing(
 	styleIds: readonly string[],
 	attributes: Record<string, number>,
 ): boolean {
-	const assertions = Object.entries(attributes).map(
-		([attribute, value]) =>
-			`(?=[^>]*${escapeRegExp(attribute)}="${value}")`,
-	);
-	return hasStylePropertyOrInherited(
-		stylesXml,
-		styleIds,
-		new RegExp(`<w:spacing\\b${assertions.join('')}`),
+	return styleIds.some(
+		styleId =>
+			resolveWordStyleId(stylesXml, styleId) !== null &&
+			Object.entries(attributes).every(
+				([attribute, value]) =>
+					getEffectiveParagraphAttribute(
+						stylesXml,
+						styleId,
+						'spacing',
+						attribute.replace(/^w:/, ''),
+					) === String(value),
+			),
 	);
 }
 
@@ -120,12 +125,12 @@ function findHeadingNumberingLevel(
 		return null;
 	}
 
-	for (const styleId of expandStyleIds(styleIds)) {
+	for (const styleId of expandStyleIds(stylesXml, styleIds)) {
 		const styleXml = findStyleXml(stylesXml, styleId);
 		if (!styleXml) continue;
 		const numId = /<w:numId\b[^>]*\bw:val="([^"]+)"/.exec(styleXml)?.[1];
 		const level = /<w:ilvl\b[^>]*\bw:val="([^"]+)"/.exec(styleXml)?.[1];
-		if (numId === undefined || level === undefined) continue;
+		if (numId === undefined) continue;
 
 		const numXml = new RegExp(
 			`<w:num\\b(?=[^>]*\\bw:numId="${escapeRegExp(numId)}")[\\s\\S]*?<\\/w:num>`,
@@ -139,11 +144,17 @@ function findHeadingNumberingLevel(
 			`<w:abstractNum\\b(?=[^>]*\\bw:abstractNumId="${escapeRegExp(abstractNumId)}")[\\s\\S]*?<\\/w:abstractNum>`,
 		).exec(numberingXml)?.[0];
 		if (!abstractNumXml) continue;
-		return (
-			new RegExp(
-				`<w:lvl\\b(?=[^>]*\\bw:ilvl="${escapeRegExp(level)}")[\\s\\S]*?<\\/w:lvl>`,
-			).exec(abstractNumXml)?.[0] ?? null
+		const levels = abstractNumXml.match(/<w:lvl\b[\s\S]*?<\/w:lvl>/g) ?? [];
+		const matchedLevel = levels.find(levelXml =>
+			level !== undefined
+				? new RegExp(`\\bw:ilvl="${escapeRegExp(level)}"`).test(
+						levelXml,
+					)
+				: new RegExp(
+						`<w:pStyle\\b[^>]*\\bw:val="${escapeRegExp(styleId)}"`,
+					).test(levelXml),
 		);
+		if (matchedLevel) return matchedLevel;
 	}
 
 	return null;
@@ -173,20 +184,24 @@ export function validateTemplateStyleConformance(
 				'w:after': 120,
 				'w:line': STO_RULES.typography.normalLineSpacingDxa,
 			}) &&
-				hasStyleProperty(
-					stylesXml,
-					heading1StyleIds,
-					/<w:ind\b[^>]*w:firstLine="709"/,
-				) &&
-				hasStyleProperty(
-					stylesXml,
-					heading1StyleIds,
-					/<w:keepNext\b/,
-				) &&
-				hasStyleProperty(
-					stylesXml,
-					heading1StyleIds,
-					/<w:keepLines\b/,
+				heading1StyleIds.some(
+					styleId =>
+						getEffectiveParagraphAttribute(
+							stylesXml,
+							styleId,
+							'ind',
+							'firstLine',
+						) === '709' &&
+						hasEffectiveParagraphTag(
+							stylesXml,
+							styleId,
+							'keepNext',
+						) &&
+						hasEffectiveParagraphTag(
+							stylesXml,
+							styleId,
+							'keepLines',
+						),
 				) &&
 				hasStyleProperty(stylesXml, heading1StyleIds, /<w:numPr\b/),
 			'Heading 1 must preserve DOTM spacing, first-line indent, keep flags, and style-linked numbering.',
@@ -210,16 +225,15 @@ export function validateTemplateStyleConformance(
 		),
 		check(
 			'Structural Heading Alignment',
-			hasStyleProperty(
-				stylesXml,
-				[STRUCTURAL_HEADING_STYLE_ID],
-				/<w:jc\b[^>]*w:val="center"[^>]*\/>/,
-			) &&
-				hasStyleProperty(
-					stylesXml,
-					[STRUCTURAL_HEADING_NO_TOC_STYLE_ID],
-					/<w:jc\b[^>]*w:val="center"[^>]*\/>/,
-				),
+			structuralHeadingIds.every(
+				styleId =>
+					getEffectiveParagraphAttribute(
+						stylesXml,
+						styleId,
+						'jc',
+						'val',
+					) === 'center',
+			),
 			'Structural headings must be centered.',
 		),
 		check(
@@ -271,11 +285,12 @@ export function validateTemplateStyleConformance(
 				'w:after': 0,
 				'w:line': captionLine,
 			}) &&
-				hasStyleProperty(
+				getEffectiveRunAttribute(
 					stylesXml,
-					['TitlePageText'],
-					/<w:sz\b[^>]*w:val="28"/,
-				),
+					'TitlePageText',
+					'sz',
+					'val',
+				) === '28',
 			'TitlePageText must keep the DOTM 14pt, single-line base style.',
 		),
 		check(

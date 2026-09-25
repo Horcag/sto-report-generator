@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { runSyntheticLayoutTests } from './synthetic_layout_tests';
+import { runWordNormalizedStyleTests } from './synthetic_word_style_tests';
 
 interface ValidatorCheck {
 	passed: boolean;
@@ -234,6 +235,7 @@ export function runSyntheticValidatorTests(
 	);
 
 	runSyntheticLayoutTests(writeXmlFixture, getCheck, namespaces);
+	runWordNormalizedStyleTests(writeXmlFixture, getCheck, namespaces);
 
 	console.log('Synthetic validator regression tests passed.\n');
 }

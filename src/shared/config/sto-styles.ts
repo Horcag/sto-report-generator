@@ -64,7 +64,9 @@ export function isStoStylePreset(value: unknown): value is StoStylePreset {
 	);
 }
 
-function getSamaraTemplate2022StyleName(styleId: string): string | undefined {
+export function getSamaraTemplate2022StyleName(
+	styleId: string,
+): string | undefined {
 	return SAMARA_TEMPLATE_2022_STYLE_NAMES[styleId];
 }
 

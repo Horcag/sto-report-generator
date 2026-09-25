@@ -135,7 +135,7 @@ export function runSyntheticLayoutTests(
 			<w:p><w:pPr><w:pStyle w:val="TableCaption"/></w:pPr><w:r><w:t>Таблица 1 – Корректная</w:t></w:r></w:p>
 			<w:tbl><w:tr><w:tblHeader/><w:tc><w:p><w:r><w:t>Заголовок</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tc><w:p><w:r><w:t>Значение</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
 		</w:body></w:document>`,
-		`<w:styles ${namespaces}/>`,
+		`<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="TableCaption"><w:name w:val="Table Caption"/></w:style></w:styles>`,
 	);
 	assert.equal(
 		getCheck(tableCaptionAdjacencyFixture, 'Table Caption Adjacency')
@@ -195,7 +195,7 @@ export function runSyntheticLayoutTests(
 			<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing/></w:r></w:p>
 			<w:p><w:pPr><w:pStyle w:val="FigureCaption"/></w:pPr><w:r><w:t>Рисунок 1 – Корректный</w:t></w:r></w:p>
 		</w:body></w:document>`,
-		`<w:styles ${namespaces}/>`,
+		`<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="FigureCaption"><w:name w:val="Figure Caption"/></w:style></w:styles>`,
 	);
 	assert.equal(
 		getCheck(figureCaptionAdjacencyFixture, 'Figure Caption Adjacency')
