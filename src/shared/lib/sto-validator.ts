@@ -851,6 +851,11 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 			'Detected unparsed LaTeX math ($...$).',
 		),
 		resultFromFailure(
+			'Math XML Elements',
+			regexMatches(/<undefined(?:\s|>|\/)/, docXml),
+			'Detected invalid <undefined> element in generated math XML.',
+		),
+		resultFromFailure(
 			'Math Multiplication Sign',
 			regexMatches(/<m:t>[^<]*\*[^<]*<\/m:t>/, docXml),
 			'Detected asterisk (*) as multiplication sign in formula. Use LaTeX multiplication commands instead.',
