@@ -149,6 +149,24 @@
 	},
 	"formulas": {
 		"forbiddenSourceMultiplicationSigns": ["*", "·"],
+		"uprightAbbreviations": [
+			"MAE",
+			"RMSE",
+			"MSE",
+			"BA",
+			"TP",
+			"TN",
+			"FP",
+			"FN",
+			"CI",
+			"BCa",
+			"KW",
+			"BF",
+			"corr",
+			"boot",
+			"pred",
+			"train"
+		],
 		"uprightFunctions": [
 			"arctg",
 			"arcctg",

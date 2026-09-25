@@ -64,6 +64,18 @@ function findBareUprightFunction(formula: string): string | undefined {
 	return match?.[1];
 }
 
+function findBareUprightAbbreviation(formula: string): string | undefined {
+	// Braced text is already upright; commands are never bare identifiers.
+	const withoutUpright = formula
+		.replace(/\\(?:stoabbr|mathrm|operatorname|text)\{[^{}]*\}/g, '')
+		.replace(/\\[A-Za-z]+/g, '');
+	return STO_RULES.formulas.uprightAbbreviations.find(abbreviation =>
+		new RegExp(
+			String.raw`(^|[^A-Za-z])${escapeRegExp(abbreviation)}(?=$|[^A-Za-z])`,
+		).test(withoutUpright),
+	);
+}
+
 function lastConfiguredOperator(
 	value: string,
 	operators: readonly string[],
@@ -215,6 +227,18 @@ export function validateSourceFormulas(
 	}
 
 	for (const span of collectMathSpans(content)) {
+		const bareAbbreviation = findBareUprightAbbreviation(span.formula);
+		if (bareAbbreviation) {
+			issues.push(
+				issue(
+					'formula-bare-upright-abbreviation',
+					`formula contains italic abbreviation "${bareAbbreviation}". Use \\stoabbr{${bareAbbreviation}} for upright text.`,
+					file,
+					lineNumberAt(content, span.index),
+					'warning',
+				),
+			);
+		}
 		const bareFunction = findBareUprightFunction(span.formula);
 		if (bareFunction) {
 			issues.push(

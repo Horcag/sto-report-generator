@@ -48,7 +48,11 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
             if style == "FigureCaption" or style_name == "+№ - Название рисунка":
                 figures += 1
             elif style == "TableCaption" or style_name == "+№ - Название таблицы":
-                tables += 1
+                text = "".join(paragraph.xpath(".//w:t/text()", namespaces=namespace))
+                # Later page-sized segments reuse TableCaption but belong to the
+                # same numbered table in the referat statistics.
+                if re.match(r"\s*Таблица(?:\s|$)", text, re.IGNORECASE):
+                    tables += 1
             elif style == "AppendixHeading":
                 appendices += 1
             elif style == "StructuralHeading":

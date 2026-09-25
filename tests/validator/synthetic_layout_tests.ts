@@ -104,6 +104,99 @@ export function runSyntheticLayoutTests(
 		getCheck(tableHeaderPeriodFixture, 'Table Header Final Period').passed,
 		false,
 	);
+	const marginTable = (tableMargins: string, cellMargins = '') =>
+		`<w:tbl><w:tblPr><w:tblCellMar>${tableMargins}</w:tblCellMar></w:tblPr><w:tr><w:tc><w:tcPr>${cellMargins}</w:tcPr><w:p><w:r><w:t>Значение</w:t></w:r></w:p></w:tc></w:tr></w:tbl>`;
+	const side = (name: string, width: number) =>
+		`<w:${name} w:type="dxa" w:w="${width}"/>`;
+	const adequateMargins =
+		side('top', 57) +
+		side('left', 108) +
+		side('bottom', 57) +
+		side('right', 108);
+	const paddingFixture = (
+		name: string,
+		tableMargins: string,
+		cellMargins = '',
+	) =>
+		writeXmlFixture(
+			name,
+			`<w:document ${namespaces}><w:body>${marginTable(tableMargins, cellMargins)}</w:body></w:document>`,
+			tableStyles,
+		);
+	assert.equal(
+		getCheck(
+			paddingFixture('adequate-table-padding', adequateMargins),
+			'Table Cell Padding',
+		).passed,
+		true,
+	);
+	assert.equal(
+		getCheck(
+			paddingFixture(
+				'zero-vertical-table-padding',
+				adequateMargins.replaceAll('w:w="57"', 'w:w="0"'),
+			),
+			'Table Cell Padding',
+		).passed,
+		false,
+	);
+	assert.equal(
+		getCheck(
+			paddingFixture(
+				'cell-override-padding',
+				adequateMargins,
+				`<w:tcMar>${side('left', 10)}</w:tcMar>`,
+			),
+			'Table Cell Padding',
+		).passed,
+		false,
+	);
+	assert.equal(
+		getCheck(
+			paddingFixture(
+				'cell-override-adequate-padding',
+				'',
+				`<w:tcMar>${adequateMargins}</w:tcMar>`,
+			),
+			'Table Cell Padding',
+		).passed,
+		true,
+	);
+	const keywords = 'ПЕРВЫЙ, ВТОРОЙ, ТРЕТИЙ, ЧЕТВЕРТЫЙ, ПЯТЫЙ';
+	const keywordFixture = (
+		name: string,
+		directIndent: string,
+		normalIndent = 709,
+	) =>
+		writeXmlFixture(
+			name,
+			`<w:document ${namespaces}><w:body><w:p><w:r><w:t>РЕФЕРАТ</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="Normal"/>${directIndent}</w:pPr><w:r><w:t>${keywords}</w:t></w:r></w:p></w:body></w:document>`,
+			`<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/><w:pPr><w:ind w:firstLine="${normalIndent}"/></w:pPr></w:style></w:styles>`,
+		);
+	assert.equal(
+		getCheck(
+			keywordFixture('referat-keyword-inherited-indent', ''),
+			'Referat Keyword First-Line Indent',
+		).passed,
+		true,
+	);
+	assert.equal(
+		getCheck(
+			keywordFixture(
+				'referat-keyword-direct-zero-indent',
+				'<w:ind w:firstLine="0"/>',
+			),
+			'Referat Keyword First-Line Indent',
+		).passed,
+		false,
+	);
+	assert.equal(
+		getCheck(
+			keywordFixture('referat-keyword-missing-indent', '', 0),
+			'Referat Keyword First-Line Indent',
+		).passed,
+		false,
+	);
 
 	const pageNumberingFixture = writeXmlFixture(
 		'page-numbering',

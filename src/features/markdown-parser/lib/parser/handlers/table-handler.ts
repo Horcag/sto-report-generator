@@ -14,6 +14,8 @@ import { InlineDocxElement } from '../../types';
 
 const TOTAL_TABLE_WIDTH_DXA = 9355; // A4 (11906) - Left margin (1701) - Right margin (850)
 const TABLE_CELL_HORIZONTAL_MARGIN_DXA = 108; // Normal Table in the canonical DOTM
+const TABLE_CELL_VERTICAL_MARGIN_DXA = 57; // 1 mm keeps text clear of cell borders
+const TABLE_CODE_CHARACTER_WIDTH_DXA = 175; // Courier New 14 pt is about 168 DXA per character
 const MIN_COLUMN_WIDTH_DXA = 720;
 
 function visibleTextWidth(text: string): number {
@@ -104,11 +106,25 @@ export function computeTableColumnWidths(
 			),
 			0,
 		);
+		const longestCodeToken = Math.max(
+			...cellTexts.flatMap(text =>
+				[...text.matchAll(/`([^`]+)`/g)].flatMap(match =>
+					match[1]
+						.split(/\s+/u)
+						.map(token => Array.from(token).length),
+				),
+			),
+			0,
+		);
 		// TableText is 14 pt. Reserve space for the longest word or identifier
 		// before distributing the remaining width by typical cell content.
 		minimumWidths.push(
 			Math.ceil(
-				longestToken * 135 + 2 * TABLE_CELL_HORIZONTAL_MARGIN_DXA,
+				Math.max(
+					longestToken * 135,
+					longestCodeToken * TABLE_CODE_CHARACTER_WIDTH_DXA,
+				) +
+					2 * TABLE_CELL_HORIZONTAL_MARGIN_DXA,
 			),
 		);
 	}
@@ -155,6 +171,8 @@ export async function handleTable(
 				new TableCell({
 					width: { size: colWidth, type: WidthType.DXA },
 					margins: {
+						top: TABLE_CELL_VERTICAL_MARGIN_DXA,
+						bottom: TABLE_CELL_VERTICAL_MARGIN_DXA,
 						left: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
 						right: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
 					},
@@ -187,6 +205,8 @@ export async function handleTable(
 			new TableCell({
 				width: { size: colWidth, type: WidthType.DXA },
 				margins: {
+					top: TABLE_CELL_VERTICAL_MARGIN_DXA,
+					bottom: TABLE_CELL_VERTICAL_MARGIN_DXA,
 					left: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
 					right: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
 				},
@@ -216,8 +236,8 @@ export async function handleTable(
 		layout: TableLayoutType.FIXED,
 		columnWidths: columnWidths,
 		margins: {
-			top: 0,
-			bottom: 0,
+			top: TABLE_CELL_VERTICAL_MARGIN_DXA,
+			bottom: TABLE_CELL_VERTICAL_MARGIN_DXA,
 			left: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
 			right: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
 		},

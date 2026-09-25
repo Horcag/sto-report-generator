@@ -12,12 +12,16 @@ interface Scenario {
 	cleanupFails?: boolean;
 	malformedManifest?: boolean;
 	exportFails?: boolean;
+	hungAtStage?: string;
+	deterministicTableFailure?: boolean;
+	largeDocument?: boolean;
 }
 
 interface Invocation {
 	cleanup: boolean;
 	requestPath: string;
 	visible: boolean;
+	timeout?: number;
 }
 
 function withFakeWord(
@@ -46,7 +50,7 @@ function withFakeWord(
 		(
 			command: string,
 			args: string[],
-			options?: { env?: NodeJS.ProcessEnv },
+			options?: { env?: NodeJS.ProcessEnv; timeout?: number },
 		) => {
 			const result = {
 				pid: 0,
@@ -69,7 +73,7 @@ function withFakeWord(
 					...result,
 					stdout: JSON.stringify({
 						figures: 1,
-						tables: 1,
+						tables: scenario.largeDocument ? 14 : 1,
 						sources: 1,
 						appendices: 0,
 						replacements: {
@@ -91,13 +95,14 @@ function withFakeWord(
 				cleanup,
 				requestPath,
 				visible: options?.env?.WINDOWS_CONSOLE_VISIBLE === '1',
+				timeout: options?.timeout,
 			});
 			if (cleanup)
 				return { ...result, status: scenario.cleanupFails ? 1 : 0 };
 			const request = JSON.parse(fs.readFileSync(requestPath, 'utf8'));
 			assert.deepEqual(request.statisticCounts, {
 				figures: 1,
-				tables: 1,
+				tables: scenario.largeDocument ? 14 : 1,
 				sources: 1,
 				appendices: 0,
 			});
@@ -108,7 +113,12 @@ function withFakeWord(
 				return {
 					...result,
 					status: 1,
-					stderr: 'simulated export failure',
+					stdout: scenario.hungAtStage
+						? `Word acceptance stage: ${scenario.hungAtStage}.`
+						: '',
+					stderr: scenario.deterministicTableFailure
+						? "Word acceptance failed: Table 'Table 4' spans pages 12-14."
+						: 'simulated export failure',
 				};
 			}
 			fs.writeFileSync(
@@ -206,16 +216,42 @@ function testMalformedManifest(): void {
 }
 
 function testBothAttemptsFail(): void {
-	withFakeWord({ exportFails: true }, (inputDocx, calls) => {
+	withFakeWord(
+		{ exportFails: true, hungAtStage: 'update-toc' },
+		(inputDocx, calls) => {
+			assert.throws(
+				() => runWordAcceptance({ inputDocx }),
+				/failed in both background and interactive modes/,
+			);
+			assert.deepEqual(
+				calls.map(call => call.cleanup),
+				[false, true, false, true],
+			);
+			assert.equal(fs.existsSync(calls[0].requestPath), false);
+			const manifest = JSON.parse(
+				fs.readFileSync(
+					inputDocx.replace(/\.docx$/, '.acceptance.json'),
+					'utf8',
+				),
+			);
+			assert.equal(manifest.status, 'failed');
+			assert.equal(manifest.capabilityChecks.exportedPdf, false);
+			assert.equal(manifest.lastWordStage, 'update-toc');
+			assert.equal(manifest.failure.stage, 'update-toc');
+		},
+	);
+}
+
+function testDeterministicFailureDoesNotRetry(): void {
+	withFakeWord({ deterministicTableFailure: true }, (inputDocx, calls) => {
 		assert.throws(
 			() => runWordAcceptance({ inputDocx }),
-			/failed in both background and interactive modes/,
+			/rejected the document/,
 		);
 		assert.deepEqual(
 			calls.map(call => call.cleanup),
-			[false, true, false, true],
+			[false, true],
 		);
-		assert.equal(fs.existsSync(calls[0].requestPath), false);
 		const manifest = JSON.parse(
 			fs.readFileSync(
 				inputDocx.replace(/\.docx$/, '.acceptance.json'),
@@ -223,12 +259,29 @@ function testBothAttemptsFail(): void {
 			),
 		);
 		assert.equal(manifest.status, 'failed');
-		assert.equal(manifest.capabilityChecks.exportedPdf, false);
+		assert.deepEqual(manifest.execution.attemptedModes, ['background']);
+		assert.equal(manifest.failure.interactiveAttempt, null);
 	});
+}
+
+function testLargeDocumentGetsEnoughBackgroundTime(): void {
+	withFakeWord(
+		{ largeDocument: true, deterministicTableFailure: true },
+		(inputDocx, calls) => {
+			assert.throws(() => runWordAcceptance({ inputDocx }));
+			assert.equal(calls[0].timeout, 120_000);
+			assert.deepEqual(
+				calls.map(call => call.cleanup),
+				[false, true],
+			);
+		},
+	);
 }
 
 testSuccessfulAcceptance();
 testUnverifiedCleanup();
 testMalformedManifest();
 testBothAttemptsFail();
+testDeterministicFailureDoesNotRetry();
+testLargeDocumentGetsEnoughBackgroundTime();
 console.log('Word acceptance launcher tests passed.');

@@ -49,6 +49,47 @@ export function runSyntheticValidatorTests(
 		`<w:document ${namespaces}><w:body>${bodyParagraph}</w:body></w:document>`,
 		bodyStyles,
 	);
+	const mathNamespaces = `${namespaces} xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"`;
+	const mathFixture = (name: string, math: string) =>
+		writeXmlFixture(
+			name,
+			`<w:document ${mathNamespaces}><w:body><w:p><m:oMath>${math}</m:oMath></w:p></w:body></w:document>`,
+			bodyStyles,
+		);
+	const brokenBar = mathFixture(
+		'math-upper-limit-bar',
+		'<m:limUpp><m:e><m:r><m:t>R</m:t></m:r></m:e><m:lim><m:r><m:t>¯</m:t></m:r></m:lim></m:limUpp>',
+	);
+	assert.equal(getCheck(brokenBar, 'Math Accent Structure').passed, false);
+	const validBar = mathFixture(
+		'math-native-bar',
+		'<m:bar><m:barPr><m:pos m:val="top"/></m:barPr><m:e><m:r><m:t>R</m:t></m:r></m:e></m:bar>',
+	);
+	assert.equal(getCheck(validBar, 'Math Accent Structure').passed, true);
+	const italicMinimum = mathFixture(
+		'math-italic-minimum',
+		'<m:limLow><m:e><m:r><m:t>min</m:t></m:r></m:e><m:lim><m:r><m:t>i</m:t></m:r></m:lim></m:limLow>',
+	);
+	assert.equal(
+		getCheck(italicMinimum, 'Math Upright Limit Operators').passed,
+		false,
+	);
+	const uprightMinimum = mathFixture(
+		'math-upright-minimum',
+		'<m:limLow><m:e><m:r><m:rPr><m:nor/></m:rPr><m:t>min</m:t></m:r></m:e><m:lim><m:r><m:t>i</m:t></m:r></m:lim></m:limLow>',
+	);
+	assert.equal(
+		getCheck(uprightMinimum, 'Math Upright Limit Operators').passed,
+		true,
+	);
+	const unsupportedMath = mathFixture(
+		'math-placeholder',
+		'<m:r><m:t>口</m:t></m:r>',
+	);
+	assert.equal(
+		getCheck(unsupportedMath, 'Math Unsupported Placeholder').passed,
+		false,
+	);
 	assert.equal(
 		getCheck(normalFixture, 'Direct Body Paragraph Formatting').passed,
 		true,

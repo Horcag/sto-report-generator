@@ -23,6 +23,12 @@ import {
 	paragraphHasStyle,
 } from './sto-validator/body-xml';
 import {
+	countReferatKeywordsWithWrongIndent,
+	countTableCellsWithInsufficientPadding,
+	countTableHeaderFinalPeriods,
+} from './sto-validator/layout-xml';
+import { inspectMathStructures } from './sto-validator/math-xml';
+import {
 	getEffectiveBodyParagraphAttribute,
 	getEffectiveParagraphAttribute,
 	resolveWordStyleId,
@@ -529,29 +535,6 @@ function countEmptyTableCells(docXml: string): number {
 	return emptyCells;
 }
 
-function countTableHeaderFinalPeriods(docXml: string): number {
-	const tables = getReportTables(docXml);
-	let cellsWithFinalPeriod = 0;
-
-	for (const tableXml of tables) {
-		if (isMathLayoutTable(tableXml)) {
-			continue;
-		}
-
-		const firstRow = tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/)?.[0];
-		if (!firstRow) {
-			continue;
-		}
-
-		const cells = firstRow.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
-		cellsWithFinalPeriod += cells.filter(cellXml =>
-			/[.]$/.test(extractWordText(cellXml).trim()),
-		).length;
-	}
-
-	return cellsWithFinalPeriod;
-}
-
 function hasInvalidDirectBodyFormatting(
 	docXml: string,
 	stylesXml: string,
@@ -709,6 +692,8 @@ function validateHeadingText(input: ValidationInput): ValidationResult[] {
 
 function validateTypography(input: ValidationInput): ValidationResult[] {
 	const firstLineIndent = STO_RULES.typography.firstLineIndentDxa;
+	const referatKeywordsWithWrongIndent =
+		countReferatKeywordsWithWrongIndent(input);
 	const docDefaultsSpacing = regexMatches(
 		new RegExp(
 			String.raw`\x3Cw:pPrDefault>.*?\x3Cw:spacing [^>]*?w:line="${STO_RULES.typography.normalLineSpacingDxa}"`,
@@ -774,6 +759,11 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 			'Body paragraph has a direct alignment, indent, or spacing override outside STO values.',
 		),
 		resultFromPass(
+			'Referat Keyword First-Line Indent',
+			referatKeywordsWithWrongIndent === 0,
+			`Detected ${referatKeywordsWithWrongIndent} referat keyword paragraph(s) without effective ${firstLineIndent} DXA first-line indent.`,
+		),
+		resultFromPass(
 			'Page Margins',
 			hasExpectedPageMargins(input.docXml),
 			'Every section must use STO margins: left 30 mm, right 15 mm, top/bottom 20 mm.',
@@ -817,6 +807,7 @@ function validatePageNumbering(input: ValidationInput): ValidationResult[] {
 }
 
 function validateMathAndCitations(docXml: string): ValidationResult[] {
+	const mathStructures = inspectMathStructures(docXml);
 	const documentText = extractWordText(docXml);
 	const citationNumbers = extractCitationNumbers(documentText);
 	const missingCitationNumbers = getMissingCitationNumbers(citationNumbers);
@@ -851,6 +842,21 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 			'Detected unparsed LaTeX math ($...$).',
 		),
 		resultFromFailure(
+			'Math Accent Structure',
+			mathStructures.accentLimits > 0,
+			'Detected an accent or overbar encoded as an upper limit. Rebuild formulas with the current converter.',
+		),
+		resultFromFailure(
+			'Math Upright Limit Operators',
+			mathStructures.italicLimitOperators > 0,
+			'Detected min/max/lim operator without upright OMML formatting.',
+		),
+		resultFromFailure(
+			'Math Unsupported Placeholder',
+			regexMatches(/<m:t[^>]*>[^<]*口[^<]*<\/m:t>/, docXml),
+			'Detected a placeholder for an unsupported math construct.',
+		),
+		resultFromFailure(
 			'Math Multiplication Sign',
 			regexMatches(/<m:t>[^<]*\*[^<]*<\/m:t>/, docXml),
 			'Detected asterisk (*) as multiplication sign in formula. Use LaTeX multiplication commands instead.',
@@ -875,6 +881,8 @@ function validateFieldsTablesAndImages(
 	const notes = getNoteFailures(input.docXml);
 	const emptyTableCells = countEmptyTableCells(input.docXml);
 	const tableHeaderFinalPeriods = countTableHeaderFinalPeriods(input.docXml);
+	const tableCellsWithInsufficientPadding =
+		countTableCellsWithInsufficientPadding(input.docXml);
 	const tablesWithoutHeaderRepeat = countTablesWithoutHeaderRepeat(
 		input.docXml,
 	);
@@ -935,6 +943,11 @@ function validateFieldsTablesAndImages(
 			'Table Header Final Period',
 			tableHeaderFinalPeriods === 0,
 			`Detected ${tableHeaderFinalPeriods} table header cell(s) ending with a final dot.`,
+		),
+		resultFromPass(
+			'Table Cell Padding',
+			tableCellsWithInsufficientPadding === 0,
+			`Detected ${tableCellsWithInsufficientPadding} table cell(s) with effective padding below 57 DXA vertically or 108 DXA horizontally. Set table or cell margins before Word acceptance.`,
 		),
 		resultFromPass(
 			'Table Header Repeat',

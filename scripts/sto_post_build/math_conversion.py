@@ -8,6 +8,48 @@ from lxml import etree
 
 from .constants import MATH_NS, SMALL_TILDE
 
+ACCENT_CHARS = {
+    "~": "\u0303",  # combining tilde
+    SMALL_TILDE: "\u0303",
+    "^": "\u0302",  # combining circumflex
+    "→": "\u20d7",  # combining right arrow above
+    "˙": "\u0307",  # combining dot above
+    "¨": "\u0308",  # combining diaeresis
+}
+OVERBAR_CHARS = {"¯", "―"}
+MATHML_NS = "http://www.w3.org/1998/Math/MathML"
+UPRIGHT_OPERATOR_COMMANDS = {
+    r"\arccos",
+    r"\arcsin",
+    r"\arctan",
+    r"\cos",
+    r"\cosh",
+    r"\exp",
+    r"\lg",
+    r"\lim",
+    r"\ln",
+    r"\log",
+    r"\max",
+    r"\min",
+    r"\sin",
+    r"\sinh",
+    r"\sup",
+    r"\tan",
+    r"\tanh",
+}
+
+
+def normalize_mathml_operators(mathml: str) -> str:
+    """Keep named TeX functions upright before the OMML converter merges runs."""
+    root = etree.fromstring(mathml.encode("utf-8"))
+    changed = False
+    for identifier in root.iter(f"{{{MATHML_NS}}}mi"):
+        command = identifier.get("data-latex", "")
+        if command.startswith(r"\operatorname{") or command in UPRIGHT_OPERATOR_COMMANDS:
+            identifier.tag = f"{{{MATHML_NS}}}mtext"
+            changed = True
+    return etree.tostring(root, encoding="unicode") if changed else mathml
+
 
 def run_node_json_batch(
     node_script: str,
@@ -108,8 +150,9 @@ const result = mathmlValues.map((mathml) => {
 process.stdout.write(JSON.stringify(result));
 """
 
+    normalized_values = [normalize_mathml_operators(value) for value in mathml_values]
     results = run_node_json_batch(
-        node_script, mathml_values, repo_root, "MathML to OMML conversion"
+        node_script, normalized_values, repo_root, "MathML to OMML conversion"
     )
     failed = [item for item in results if not item.get("ok")]
     if failed:
@@ -122,23 +165,29 @@ process.stdout.write(JSON.stringify(result));
     return [item["omml"] for item in results]
 
 
-def fix_tilde_accents(root: Any) -> int:
+def normalize_accents(root: Any) -> int:
     namespace = {"m": MATH_NS}
     fixed = 0
 
     for lim_upp in root.xpath(".//m:limUpp", namespaces=namespace):
         accent_text = "".join(lim_upp.xpath("./m:lim//m:t/text()", namespaces=namespace)).strip()
-        if accent_text not in {"~", SMALL_TILDE}:
+        if accent_text not in ACCENT_CHARS and accent_text not in OVERBAR_CHARS:
             continue
 
         base = lim_upp.find(f"{{{MATH_NS}}}e")
         if base is None:
             continue
 
-        accent = etree.Element(f"{{{MATH_NS}}}acc")
-        accent_pr = etree.SubElement(accent, f"{{{MATH_NS}}}accPr")
-        accent_chr = etree.SubElement(accent_pr, f"{{{MATH_NS}}}chr")
-        accent_chr.set(f"{{{MATH_NS}}}val", SMALL_TILDE)
+        if accent_text in OVERBAR_CHARS:
+            accent = etree.Element(f"{{{MATH_NS}}}bar")
+            properties = etree.SubElement(accent, f"{{{MATH_NS}}}barPr")
+            position = etree.SubElement(properties, f"{{{MATH_NS}}}pos")
+            position.set(f"{{{MATH_NS}}}val", "top")
+        else:
+            accent = etree.Element(f"{{{MATH_NS}}}acc")
+            properties = etree.SubElement(accent, f"{{{MATH_NS}}}accPr")
+            character = etree.SubElement(properties, f"{{{MATH_NS}}}chr")
+            character.set(f"{{{MATH_NS}}}val", ACCENT_CHARS[accent_text])
         accent.append(etree.fromstring(etree.tostring(base)))
 
         parent = lim_upp.getparent()
@@ -147,6 +196,28 @@ def fix_tilde_accents(root: Any) -> int:
         parent.replace(lim_upp, accent)
         fixed += 1
 
+    return fixed
+
+
+def normalize_limit_operators(root: Any) -> int:
+    namespaces = {"m": MATH_NS}
+    fixed = 0
+    for run in root.xpath(".//m:limLow/m:e/m:r | .//m:limUpp/m:e/m:r", namespaces=namespaces):
+        if "".join(run.xpath("./m:t/text()", namespaces=namespaces)).strip() not in {
+            "min",
+            "max",
+            "lim",
+            "inf",
+            "sup",
+        }:
+            continue
+        properties = run.find(f"{{{MATH_NS}}}rPr")
+        if properties is None:
+            properties = etree.Element(f"{{{MATH_NS}}}rPr")
+            run.insert(0, properties)
+        if properties.find(f"{{{MATH_NS}}}nor") is None:
+            etree.SubElement(properties, f"{{{MATH_NS}}}nor")
+            fixed += 1
     return fixed
 
 
@@ -172,7 +243,8 @@ def convert_mathml_to_omath(mathml_values: Sequence[str], repo_root: Path) -> li
     for omml in omml_values:
         omath = parse_omath(omml, parser)
         omath_copy = etree.fromstring(etree.tostring(omath))
-        fix_tilde_accents(omath_copy)
+        normalize_accents(omath_copy)
+        normalize_limit_operators(omath_copy)
         omath_values.append(omath_copy)
 
     return omath_values

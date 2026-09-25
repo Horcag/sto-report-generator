@@ -79,6 +79,7 @@ export interface StoRules {
 	};
 	formulas: {
 		forbiddenSourceMultiplicationSigns: string[];
+		uprightAbbreviations: string[];
 		uprightFunctions: string[];
 		forbiddenRawTokens: string[];
 		lineBreakOperators: {

@@ -971,9 +971,9 @@
 </w:tblBorders>
 <w:tblLayout w:type="fixed"/>
 <w:tblCellMar>
-<w:top w:type="dxa" w:w="0"/>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
-<w:bottom w:type="dxa" w:w="0"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tblCellMar>
 </w:tblPr>
@@ -991,7 +991,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="4146"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1009,7 +1011,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2436"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1027,7 +1031,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2773"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1050,7 +1056,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="4146"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1068,7 +1076,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2436"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1086,7 +1096,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2773"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1109,7 +1121,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="4146"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1127,7 +1141,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2436"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1145,7 +1161,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2773"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1168,7 +1186,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="4146"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1186,7 +1206,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2436"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>
@@ -1204,7 +1226,9 @@
 <w:tcPr>
 <w:tcW w:type="dxa" w:w="2773"/>
 <w:tcMar>
+<w:top w:type="dxa" w:w="57"/>
 <w:left w:type="dxa" w:w="108"/>
+<w:bottom w:type="dxa" w:w="57"/>
 <w:right w:type="dxa" w:w="108"/>
 </w:tcMar>
 </w:tcPr>

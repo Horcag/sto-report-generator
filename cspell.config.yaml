@@ -16,6 +16,7 @@ words:
     - BibTeX
     - DOCX
     - DOTM
+    - Forsythe
     - Hablon
     - MathML
     - MyPy
@@ -29,8 +30,10 @@ words:
     - PowerShell
     - Poppler
     - Referat
+    - RMSE
     - Ruff
     - SSRN
+    - SGAU
     - Samara
     - SonarQube
     - Steiger
