@@ -105,6 +105,29 @@ async function main(): Promise<void> {
 		assert.equal(formula.getElementsByTagName('m:bar').length, 1);
 		assert.equal(formula.getElementsByTagName('m:limUpp').length, 0);
 	}
+	const singleBar = convertLatex2Math('\\bar{y}');
+	const singleBarDocx = await Packer.toBuffer(
+		new Document({
+			sections: [
+				{ children: [new Paragraph({ children: [singleBar] })] },
+			],
+		}),
+	);
+	const singleBarXml = new AdmZip(singleBarDocx)
+		.getEntry('word/document.xml')
+		?.getData()
+		.toString('utf8');
+	assert.ok(singleBarXml);
+	const singleBarElement = new JSDOM(singleBarXml, {
+		contentType: 'text/xml',
+	}).window.document.getElementsByTagName('m:bar')[0];
+	assert.ok(singleBarElement);
+	assert.equal(singleBarElement.getElementsByTagName('m:sSup').length, 0);
+	assert.equal(singleBarElement.getElementsByTagName('m:sSub').length, 0);
+	assert.equal(
+		singleBarElement.getElementsByTagName('m:e')[0]?.textContent,
+		'y',
+	);
 	for (const [formula, mark] of [
 		[math[7], '\u0303'],
 		[math[8], '\u0302'],
@@ -198,6 +221,48 @@ async function main(): Promise<void> {
 	);
 	assert.ok(medianArgument);
 	assert.equal(medianArgument.getElementsByTagName('m:nor').length, 0);
+	const spacingCases = [
+		[String.raw`a,\quad b`, '\u2003'],
+		[String.raw`a,\qquad b`, '\u2003\u2003'],
+		[String.raw`a\;b`, ' '],
+		[
+			String.raw`\bar{y}=\frac{1}{n}\sum_{i=1}^{n}y_i,\quad\tilde{y}=\operatorname{median}(y_1,\ldots,y_n)`,
+			'\u2003',
+		],
+	] as const;
+	const spacingDocx = await Packer.toBuffer(
+		new Document({
+			sections: [
+				{
+					children: spacingCases.map(
+						([latex]) =>
+							new Paragraph({
+								children: [convertLatex2Math(latex)],
+							}),
+					),
+				},
+			],
+		}),
+	);
+	const spacingXml = new AdmZip(spacingDocx)
+		.getEntry('word/document.xml')
+		?.getData()
+		.toString('utf8');
+	assert.ok(spacingXml);
+	const spacingMath = [
+		...new JSDOM(spacingXml, {
+			contentType: 'text/xml',
+		}).window.document.getElementsByTagName('m:oMath'),
+	];
+	const compositeBar = spacingMath[3].getElementsByTagName('m:bar')[0];
+	assert.ok(compositeBar);
+	assert.equal(compositeBar.getElementsByTagName('m:sSup').length, 0);
+	assert.equal(compositeBar.getElementsByTagName('m:sSub').length, 0);
+	assert.equal(compositeBar.getElementsByTagName('m:e')[0]?.textContent, 'y');
+	for (const [index, [, expectedSpace]] of spacingCases.entries()) {
+		assert.ok(spacingMath[index].textContent?.includes(expectedSpace));
+	}
+	assert.doesNotMatch(spacingXml, /[\uE000\uE001]/);
 	for (const invalid of ['x=\\frac{1}{', '\\left( x', '\\badcommand{x}']) {
 		assert.throws(
 			() => convertLatex2Math(invalid),

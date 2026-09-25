@@ -52,6 +52,10 @@ const UPRIGHT_OPERATOR_COMMANDS = new Set([
 	'\\tan',
 	'\\tanh',
 ]);
+const EXPLICIT_MATH_SPACES = new Map([
+	['\\quad', ['\uE000', '\u2003']],
+	['\\qquad', ['\uE001', '\u2003\u2003']],
+]);
 
 export class FormulaConversionError extends Error {
 	constructor(
@@ -321,6 +325,21 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 	// The OMML converter can merge a named mi operator with its argument into
 	// one italic run. Preserve the source role before that merge occurs.
 	let changedOperator = false;
+	// mathml2omml collapses MathML's 1em/2em mspace to an ordinary space.
+	// Carry explicit TeX spacing through its text merge, then restore it in OMML.
+	for (const space of [...mathMl.getElementsByTagName('mspace')]) {
+		const replacement = EXPLICIT_MATH_SPACES.get(
+			space.getAttribute('data-latex') ?? '',
+		);
+		if (!replacement) continue;
+		const marker = mathMl.createElementNS(
+			'http://www.w3.org/1998/Math/MathML',
+			'mi',
+		);
+		marker.textContent = replacement[0];
+		space.replaceWith(marker);
+		changedOperator = true;
+	}
 	for (const identifier of [...mathMl.getElementsByTagName('mi')]) {
 		const command = identifier.getAttribute('data-latex') ?? '';
 		if (
@@ -338,12 +357,15 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 		identifier.replaceWith(upright);
 		changedOperator = true;
 	}
-	const ommlString = mml2omml(
+	let ommlString = mml2omml(
 		changedOperator ? mathMl.documentElement.outerHTML : mathMlString,
 		{
 			disableDecode: true,
 		},
 	);
+	for (const [marker, value] of EXPLICIT_MATH_SPACES.values()) {
+		ommlString = ommlString.replaceAll(marker, value);
+	}
 	return convertOmml2Math(ommlString);
 }
 
