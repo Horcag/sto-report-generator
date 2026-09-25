@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 
 import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
+import { runTableReferatWarningTests } from './table_referat_warning_tests';
+
 type Files = Record<string, string>;
 
-interface TestHarness {
+export interface TestHarness {
 	writeReport: (name: string, files: Files) => string;
 	validFiles: (overrides?: Files) => Files;
 	expectIssue: (name: string, files: Files, code: string) => void;
@@ -19,6 +21,7 @@ export function runStructureReferenceTests({
 	expectWarning,
 	expectNoIssue,
 }: TestHarness): void {
+	runTableReferatWarningTests({ validFiles, expectNoIssue, expectWarning });
 	expectIssue(
 		'structural-heading-final-period',
 		validFiles({
@@ -443,7 +446,6 @@ title: Test
 			'bibliography-required-field-missing',
 		);
 	}
-
 	const completeSpecialBibliography = validFiles({
 		'03_intro.md': 'Источники: [@patent; @thesis; @standard; @sitePart].\n',
 		'references.bib': `@patent{patent,
@@ -486,7 +488,6 @@ title: Test
 		completeSpecialBibliography,
 		'bibliography-unsupported-type',
 	);
-
 	expectIssue(
 		'bibliography-unsupported-type',
 		validFiles({

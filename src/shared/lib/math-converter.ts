@@ -18,6 +18,8 @@ import {
 import { JSDOM } from 'jsdom';
 import mathjax, { MathJaxApi } from 'mathjax';
 
+import { normalizeOmmlMath } from './math/omml-normalizer';
+
 type DocxMathChild =
 	| MathFraction
 	| MathIntegral
@@ -31,6 +33,25 @@ type DocxMathChild =
 	| MathSuperScript;
 
 let mathJaxInstance: MathJaxApi | undefined;
+const UPRIGHT_OPERATOR_COMMANDS = new Set([
+	'\\arccos',
+	'\\arcsin',
+	'\\arctan',
+	'\\cos',
+	'\\cosh',
+	'\\exp',
+	'\\lg',
+	'\\lim',
+	'\\ln',
+	'\\log',
+	'\\max',
+	'\\min',
+	'\\sin',
+	'\\sinh',
+	'\\sup',
+	'\\tan',
+	'\\tanh',
+]);
 
 export class FormulaConversionError extends Error {
 	constructor(
@@ -93,6 +114,16 @@ function firstChildByTagName(element: Element, tagName: string): Element {
 	return child;
 }
 
+function directChildByTagName(element: Element, tagName: string): Element {
+	const child = [...element.children].find(
+		candidate => candidate.tagName === tagName,
+	);
+	if (!child) {
+		throw new Error(`Malformed OMML: direct ${tagName} child not found.`);
+	}
+	return child;
+}
+
 function convertItem(item: Element): DocxMathChild | undefined {
 	const tagName = item.tagName.toLowerCase();
 	if (tagName === 'm:f') {
@@ -122,7 +153,9 @@ function convertItem(item: Element): DocxMathChild | undefined {
 	if (tagName === 'm:nary') {
 		return buildNary(item);
 	}
-	return new MathRun('口');
+	// Preserve valid OMML constructs that docx-js has no dedicated math class for.
+	// Replacing them with a visible placeholder silently corrupts formulas.
+	return importMathProperty(item) as DocxMathChild;
 }
 
 function buildFraction(item: Element): MathFraction {
@@ -213,8 +246,8 @@ function buildRadical(item: Element): MathRadical {
 }
 
 function buildLimitUpper(item: Element): MathLimitUpper {
-	const element = firstChildByTagName(item, 'm:e');
-	const limit = firstChildByTagName(item, 'm:lim');
+	const element = directChildByTagName(item, 'm:e');
+	const limit = directChildByTagName(item, 'm:lim');
 	return new MathLimitUpper({
 		children: convertChildren(element.children),
 		limit: convertChildren(limit.children),
@@ -222,8 +255,8 @@ function buildLimitUpper(item: Element): MathLimitUpper {
 }
 
 function buildLimitLower(item: Element): MathLimitLower {
-	const element = firstChildByTagName(item, 'm:e');
-	const limit = firstChildByTagName(item, 'm:lim');
+	const element = directChildByTagName(item, 'm:e');
+	const limit = directChildByTagName(item, 'm:lim');
 	return new MathLimitLower({
 		children: convertChildren(element.children),
 		limit: convertChildren(limit.children),
@@ -233,9 +266,9 @@ function buildLimitLower(item: Element): MathLimitLower {
 function buildNary(item: Element): MathIntegral | MathSum | undefined {
 	const char = firstChildByTagName(item, 'm:chr');
 	const charValue = char.getAttribute('m:val');
-	const element = firstChildByTagName(item, 'm:e');
-	const subScript = firstChildByTagName(item, 'm:sub');
-	const superScript = firstChildByTagName(item, 'm:sup');
+	const element = directChildByTagName(item, 'm:e');
+	const subScript = directChildByTagName(item, 'm:sub');
+	const superScript = directChildByTagName(item, 'm:sup');
 	const options = {
 		children: convertChildren(element.children),
 		subScript: convertChildren(subScript.children),
@@ -258,6 +291,7 @@ export function convertOmml2Math(ommlString: string): DocxMath {
 	if (!mathElement) {
 		throw new Error('Malformed OMML: m:oMath not found.');
 	}
+	normalizeOmmlMath(mathElement);
 	return new DocxMath({
 		children: convertChildren(mathElement.children),
 	});
@@ -284,7 +318,32 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 			`Unknown TeX command ${unknownCommand.getAttribute('data-latex')}.`,
 		);
 	}
-	const ommlString = mml2omml(mathMlString, { disableDecode: true });
+	// The OMML converter can merge a named mi operator with its argument into
+	// one italic run. Preserve the source role before that merge occurs.
+	let changedOperator = false;
+	for (const identifier of [...mathMl.getElementsByTagName('mi')]) {
+		const command = identifier.getAttribute('data-latex') ?? '';
+		if (
+			!command.startsWith('\\operatorname{') &&
+			!UPRIGHT_OPERATOR_COMMANDS.has(command)
+		)
+			continue;
+		const upright = mathMl.createElementNS(
+			'http://www.w3.org/1998/Math/MathML',
+			'mtext',
+		);
+		for (const attribute of [...identifier.attributes])
+			upright.setAttribute(attribute.name, attribute.value);
+		upright.textContent = identifier.textContent;
+		identifier.replaceWith(upright);
+		changedOperator = true;
+	}
+	const ommlString = mml2omml(
+		changedOperator ? mathMl.documentElement.outerHTML : mathMlString,
+		{
+			disableDecode: true,
+		},
+	);
 	return convertOmml2Math(ommlString);
 }
 

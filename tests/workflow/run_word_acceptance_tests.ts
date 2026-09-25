@@ -199,6 +199,27 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 		/Copy-Item -LiteralPath \$stagedAcceptedDocx -Destination \$request\.acceptedDocx/,
 	);
 	assert.match(script, /\$document\.Save\(\)/);
+	for (const stage of [
+		'update-body-fields',
+		'update-header-footer-fields',
+		'update-toc',
+		'repaginate-after-fields',
+		'fit-tables',
+		'set-referat-statistics',
+		'verify-table-layout',
+	]) {
+		assert.ok(script.includes(`Word acceptance stage: ${stage}.`));
+	}
+	for (const phase of [
+		'startup-and-open',
+		'update-fields',
+		'fit-tables',
+		'set-referat-statistics',
+		'save-and-reopen',
+		'export-pdf',
+	]) {
+		assert.ok(script.includes(`Word acceptance duration: ${phase} ms=`));
+	}
 	assert.doesNotMatch(script, /Lock-DocumentFieldsForPdfExport/);
 	assert.doesNotMatch(script, /\$field\.Locked = \$true/);
 	assert.match(script, /Add-Type -Path.*word_pdf_export\.cs/);
@@ -213,6 +234,12 @@ function testPowerShellUsesShortWordStagingPaths(): void {
 		script.indexOf('[WordAcceptance.PdfExporter]::Export') <
 			script.indexOf('$styleChecks = Get-StyleChecks'),
 		'Word style COM lookups must happen after PDF export',
+	);
+	assert.ok(
+		script.indexOf(
+			'Copy-Item -LiteralPath $stagedPdf -Destination $request.pdf',
+		) < script.lastIndexOf('Assert-TableContinuationLayout $document'),
+		'failed layout validation must still leave an explicitly failed Word PDF preview',
 	);
 	assert.match(script, /"staging\.path"/);
 	assert.match(script, /"word-process\.json"/);
@@ -299,7 +326,6 @@ function main(): void {
 			requestJsonPath,
 		},
 	);
-
 	assert.equal(plan.hostKind, 'wsl');
 	assert.equal(plan.command, 'powershell.exe');
 	assert.equal(
@@ -354,7 +380,6 @@ function main(): void {
 		plan.request.manifest,
 		`WIN:${path.resolve(inputDocx).replace(/\.docx$/, '.acceptance.json')}`,
 	);
-
 	const expectedStyleMap = getStoStylePresetDisplayNames(
 		'samara-template-2022',
 	);
@@ -374,7 +399,6 @@ function main(): void {
 				style.displayName === expectedStyleMap.TableCaption,
 		),
 	);
-
 	const defaultPlan = createWordAcceptancePlan(
 		{
 			inputDocx,
@@ -401,7 +425,6 @@ function main(): void {
 		defaultPlan.request.acceptedDocx,
 		path.resolve('accepted/final.docx'),
 	);
-
 	assert.throws(
 		() =>
 			createWordAcceptancePlan(
@@ -417,7 +440,6 @@ function main(): void {
 			),
 		/separate accepted DOCX/,
 	);
-
 	if (process.platform !== 'win32' && !process.platform.startsWith('linux')) {
 		assert.throws(
 			() => detectWordAcceptanceHost(),
@@ -440,7 +462,13 @@ function main(): void {
 		/windowsHide: plan\.request\.interactionMode === 'background'/,
 	);
 	assert.match(launcher, /result\.stdout,[\s\S]*result\.stderr,/);
-	assert.match(launcher, /stop_word_acceptance\.ps1/);
+	assert.match(
+		readFileSync(
+			path.resolve('src', 'app', 'word-acceptance-cleanup.ts'),
+			'utf8',
+		),
+		/stop_word_acceptance\.ps1/,
+	);
 	assert.match(launcher, /writeWordAcceptanceFailureManifest/);
 	assert.match(launcher, /pageCountBeforeFailure/);
 	assert.match(launcher, /stage:[\s\S]*'exportPdf'/);
@@ -467,8 +495,6 @@ function main(): void {
 			cleanupScript.indexOf('runnerPidPath'),
 		'cleanup must stop the owned Word process before its PowerShell controller',
 	);
-
 	console.log('Word acceptance launcher tests passed.');
 }
-
 main();

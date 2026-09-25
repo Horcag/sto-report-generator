@@ -7,5 +7,6 @@ Numbered Heading Effective Indent: Heading 1 numbering must preserve the DOTM ef
 Numbered Heading Template Style: Heading 1 must preserve DOTM spacing, first-line indent, keep flags, and style-linked numbering.
 Page Margins: Every section must use STO margins: left 30 mm, right 15 mm, top/bottom 20 mm.
 Tab Characters: Detected body tab characters. Use paragraph indentation and styles instead of manual tabs.
+Table Cell Padding: Detected 71 table cell(s) with effective padding below 57 DXA vertically or 108 DXA horizontally. Set table or cell margins before Word acceptance.
 Table Header Repeat: Detected 2 table(s) without repeated header rows.
 Direct Body Paragraph Formatting: Body paragraph has a direct alignment, indent, or spacing override outside STO values.

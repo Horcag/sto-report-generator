@@ -264,6 +264,7 @@ function Restore-DefaultPrinter($StatePath) {
 }
 
 function Update-DocumentForAcceptance($Document) {
+    Write-Output "Word acceptance stage: update-body-fields."
     foreach ($field in @($Document.Fields)) {
         # A table of contents is also present in Document.Fields. Updating it
         # here and again through TablesOfContents can leave Word's fixed-format
@@ -272,6 +273,7 @@ function Update-DocumentForAcceptance($Document) {
             $field.Update() | Out-Null
         }
     }
+    Write-Output "Word acceptance stage: update-header-footer-fields."
     foreach ($section in @($Document.Sections)) {
         foreach ($header in @($section.Headers)) {
             foreach ($field in @($header.Range.Fields)) {
@@ -284,9 +286,11 @@ function Update-DocumentForAcceptance($Document) {
             }
         }
     }
+    Write-Output "Word acceptance stage: update-toc."
     foreach ($toc in @($Document.TablesOfContents)) {
         $toc.Update() | Out-Null
     }
+    Write-Output "Word acceptance stage: repaginate-after-fields."
     $Document.Repaginate()
 }
 
@@ -522,6 +526,10 @@ function Move-FittingTablesToNextPage($Document) {
         if ($null -eq $caption) { continue }
         $pages = @(Get-TablePageSpan $Document $table)
         if ($pages[0] -eq $pages[1]) { continue }
+        # A table already covering an entire intermediate page cannot fit on
+        # one page after moving its caption. Avoid two futile repaginations;
+        # the later split stage handles its page boundaries.
+        if ($pages[1] - $pages[0] -ge 2) { continue }
 
         $format = $caption.Range.ParagraphFormat
         $originalBreak = $format.PageBreakBefore
@@ -720,6 +728,7 @@ try {
     }
 
     $wordProcessIdsBefore = @(Get-Process WINWORD -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
+    $stageClock = [System.Diagnostics.Stopwatch]::StartNew()
     $word = New-Object -ComObject Word.Application
     $ownedWordPid = Get-WordProcessId $word $wordProcessIdsBefore
     if ($ownedWordPid -in $wordProcessIdsBefore) {
@@ -758,21 +767,27 @@ try {
     # the accepted artifacts to the caller's requested destinations.
     $document = $word.Documents.Open($stagedInputDocx, $false, $false)
     Write-Output "Word acceptance: staged DOCX opened."
-    $acceptanceStageClock = [System.Diagnostics.Stopwatch]::StartNew()
+    Write-Output "Word acceptance duration: startup-and-open ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
     Update-DocumentForAcceptance $document
-    Write-Output "Word acceptance: fields and TOC updated in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
-    $acceptanceStageClock.Restart()
+    Write-Output "Word acceptance duration: update-fields ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
+    Write-Output "Word acceptance stage: fit-tables."
     Move-FittingTablesToNextPage $document
-    Write-Output "Word acceptance: fitting tables positioned in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
-    $acceptanceStageClock.Restart()
+    Write-Output "Word acceptance duration: fit-tables ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
+    Write-Output "Word acceptance stage: set-referat-statistics."
     Set-ReferatStatistics $document $request
-    Write-Output "Word acceptance: referat statistics updated in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
-    $acceptanceStageClock.Restart()
+    Write-Output "Word acceptance duration: set-referat-statistics ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
+    Write-Output "Word acceptance stage: split-long-tables."
     $splitTables = Split-LongCaptionedTables $document
-    Write-Output "Word acceptance: $splitTables long table segment(s) created in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
-    $acceptanceStageClock.Restart()
+    Write-Output "Word acceptance: $splitTables long table segment(s) created."
+    Write-Output "Word acceptance duration: split-long-tables ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
     Assert-TableContinuationLayout $document
-    Write-Output "Word acceptance: table layout verified in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
+    Write-Output "Word acceptance duration: verify-table-layout ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
     Write-Output "Word acceptance: fields, TOC, and pagination updated."
     $document.Save()
     $pageCountBeforeReopen = Get-SavedDocumentPageCount $document
@@ -788,7 +803,6 @@ try {
     # leaves a large undo/layout transaction on the original object; desktop
     # Word's successful UI path reopens the saved file before publishing.
     $document = $word.Documents.Open($stagedAcceptedDocx, $false, $false)
-    Assert-TableContinuationLayout $document
     $pageCountAfterReopen = Get-SavedDocumentPageCount $document
     if ($document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES|APPENDICES)\}\}') {
         throw 'Accepted DOCX still contains referat statistic placeholders.'
@@ -796,11 +810,25 @@ try {
     Write-Output "Word acceptance: saved DOCX reopened with $pageCountAfterReopen pages before PDF export."
     # Pass real CLR values rather than PowerShell-adapted COM arguments.
     Add-Type -Path (Join-Path $PSScriptRoot "word_pdf_export.cs")
+    Write-Output "Word acceptance duration: save-and-reopen ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
+    Write-Output "Word acceptance stage: export-pdf."
     [WordAcceptance.PdfExporter]::Export($document, [string]$stagedPdf)
     Write-Output "Word acceptance: PDF exported."
+    Write-Output "Word acceptance duration: export-pdf ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
+    Copy-Item -LiteralPath $stagedPdf -Destination $request.pdf
+    Assert-OutputFile $request.pdf "PDF"
+    Write-Output "Word acceptance: PDF copied before layout validation."
+
+    # Keep a native Word preview available when a deterministic layout rule
+    # rejects the document. The launcher records status=failed in that case.
+    Write-Output "Word acceptance stage: verify-table-layout."
+    Assert-TableContinuationLayout $document
 
     # Querying Word styles creates additional COM proxies. Keep those lookups
     # after fixed-format export so they cannot interfere with Word's PDF path.
+    Write-Output "Word acceptance stage: verify-styles."
     $styleChecks = Get-StyleChecks $document $request.expectedStyles
     $missingStyles = @($styleChecks | Where-Object { -not $_.exists })
     if ($missingStyles.Count -gt 0) {
@@ -812,7 +840,6 @@ try {
     $document.Close($WdDoNotSaveChanges)
     $document = $null
 
-    Copy-Item -LiteralPath $stagedPdf -Destination $request.pdf
     Assert-OutputFile $request.acceptedDocx "DOCX"
     Assert-OutputFile $request.pdf "PDF"
     Write-Output "Word acceptance: accepted artifacts copied to requested paths."

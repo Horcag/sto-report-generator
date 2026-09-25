@@ -11,6 +11,7 @@ import {
 } from '@/shared/config';
 
 import { assertNoOrdinaryBodyBold } from './word-acceptance-bold';
+import { stopOwnedWordAcceptanceProcesses } from './word-acceptance-cleanup';
 import { getFileEvidence } from './word-acceptance-evidence';
 import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
 import {
@@ -22,6 +23,7 @@ const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
 export const WORD_ACCEPTANCE_TIMEOUT_MS = 600_000;
 export const WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS = 45_000;
+export const WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS = 120_000;
 export type WordAcceptanceInteractionMode = 'background' | 'interactive';
 
 export interface WordAcceptanceOptions {
@@ -246,6 +248,13 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		toHostPath: absolutePath => toHostPath(hostKind, absolutePath),
 	});
 	const statistics = readAcceptanceStatistics(options.inputDocx);
+	// Large table-heavy reports spend tens of seconds in native Word layout.
+	// Give a progressing background run time to finish instead of restarting the
+	// same work in visible Word at the small-document deadline.
+	const backgroundTimeout =
+		statistics.tables >= 10
+			? WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS
+			: WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS;
 	plan.request.statisticReplacements = statistics.replacements;
 	plan.request.statisticCounts = {
 		figures: statistics.figures,
@@ -260,12 +269,18 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		writeWordAcceptanceRequest(plan);
 		const backgroundFailure = runWordAcceptanceAttempt(
 			plan,
-			WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS,
+			backgroundTimeout,
 			() => {
 				cleanupVerified = true;
 			},
 		);
 		if (!backgroundFailure) return;
+		if (isDeterministicDocumentFailure(backgroundFailure)) {
+			writeWordAcceptanceFailureManifest(plan, backgroundFailure, null);
+			throw new Error(
+				`Word desktop acceptance rejected the document.\n${backgroundFailure}`,
+			);
+		}
 
 		console.warn(
 			`Background Word automation was not usable; retrying interactively.\n${backgroundFailure}`,
@@ -304,9 +319,21 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 function writeWordAcceptanceFailureManifest(
 	plan: WordAcceptancePlan,
 	backgroundFailure: string,
-	interactiveFailure: string,
+	interactiveFailure: string | null,
 ): void {
-	const evidence = `${backgroundFailure}\n${interactiveFailure}`;
+	const evidence = `${backgroundFailure}\n${interactiveFailure ?? ''}`;
+	const lastStage =
+		[
+			...(interactiveFailure ?? '').matchAll(
+				/Word acceptance stage: ([a-z-]+)\./g,
+			),
+		].at(-1)?.[1] ??
+		[
+			...backgroundFailure.matchAll(
+				/Word acceptance stage: ([a-z-]+)\./g,
+			),
+		].at(-1)?.[1] ??
+		null;
 	const pageMatches = [
 		...evidence.matchAll(/DOCX saved with (\d+) pages\./g),
 	];
@@ -348,13 +375,14 @@ function writeWordAcceptanceFailureManifest(
 			),
 		},
 		pageCountBeforeFailure: pageCount,
+		lastWordStage: lastStage,
 		acceptedDocx,
 		pdf,
 		failure: {
 			stage:
 				pageCount !== null && !pdf.exists
 					? 'exportPdf'
-					: 'wordDesktopAcceptance',
+					: (lastStage ?? 'wordDesktopAcceptance'),
 			backgroundAttempt: backgroundFailure,
 			interactiveAttempt: interactiveFailure,
 		},
@@ -364,6 +392,12 @@ function writeWordAcceptanceFailureManifest(
 		plan.localManifest,
 		`${JSON.stringify(manifest, null, 2)}\n`,
 		'utf8',
+	);
+}
+
+function isDeterministicDocumentFailure(evidence: string): boolean {
+	return /Word acceptance failed: (?:Table .+ spans pages \d+-\d+\.|Required Word styles are missing:)/s.test(
+		evidence,
 	);
 }
 
@@ -394,7 +428,7 @@ function runWordAcceptanceAttempt(
 
 	let cleanupDetails: string;
 	try {
-		cleanupDetails = stopOwnedWordAcceptanceProcesses(plan);
+		cleanupDetails = stopOwnedWordAcceptanceProcesses(plan, toHostPath);
 	} catch (error) {
 		throw new Error(
 			[
@@ -461,38 +495,4 @@ function runWordAcceptanceAttempt(
 	]
 		.filter(Boolean)
 		.join('\n');
-}
-
-function stopOwnedWordAcceptanceProcesses(plan: WordAcceptancePlan): string {
-	const cleanup = spawnSync(
-		plan.command,
-		[
-			'-NoProfile',
-			'-ExecutionPolicy',
-			'Bypass',
-			'-File',
-			toHostPath(
-				plan.hostKind,
-				path.join(PACKAGE_ROOT, 'scripts/stop_word_acceptance.ps1'),
-			),
-			'-RequestJson',
-			toHostPath(plan.hostKind, plan.requestJsonPath),
-		],
-		{
-			encoding: 'utf8',
-			shell: false,
-			timeout: 45_000,
-			windowsHide: true,
-		},
-	);
-	const details = [cleanup.stdout, cleanup.stderr]
-		.filter(Boolean)
-		.join('\n')
-		.trim();
-	if (cleanup.error || cleanup.status !== 0) {
-		throw new Error(
-			`Word acceptance cleanup could not prove that its owned processes exited.${details ? `\n${details}` : ''}`,
-		);
-	}
-	return details;
 }

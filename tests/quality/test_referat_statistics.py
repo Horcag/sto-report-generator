@@ -63,6 +63,8 @@ class ReferatStatisticReadinessTests(unittest.TestCase):
                     "<w:r><w:t>Рисунок 1</w:t></w:r></w:p>"
                     '<w:p><w:pPr><w:pStyle w:val="-3"/></w:pPr>'
                     "<w:r><w:t>Таблица 1</w:t></w:r></w:p>"
+                    '<w:p><w:pPr><w:pStyle w:val="-3"/></w:pPr>'
+                    "<w:r><w:t>Продолжение таблицы 1</w:t></w:r></w:p>"
                     "<w:p><w:r><w:t>Источник [1]</w:t></w:r></w:p>"
                     "</w:body></w:document>",
                 )

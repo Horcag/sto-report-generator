@@ -39,11 +39,19 @@ async function main(): Promise<void> {
 		'\\stoelem{Fe}',
 		'x_{\\stoabbr{max}}',
 	].map(convertLatex2Math);
+	const accentMath = [
+		'\\bar{R}_x',
+		'\\overline{AB}',
+		'\\tilde{y}',
+		'\\hat{x}',
+		'\\widehat{XY}',
+		'\\sum_{i=1}^{n}x_i',
+	].map(convertLatex2Math);
 	const docx = await Packer.toBuffer(
 		new Document({
 			sections: [
 				{
-					children: semanticMath.map(
+					children: [...semanticMath, ...accentMath].map(
 						math => new Paragraph({ children: [math] }),
 					),
 				},
@@ -59,7 +67,7 @@ async function main(): Promise<void> {
 		.document;
 	assert.equal(document.getElementsByTagName('undefined').length, 0);
 	const math = [...document.getElementsByTagName('m:oMath')];
-	assert.equal(math.length, 5);
+	assert.equal(math.length, 11);
 	const runs = (element: Element) => [...element.getElementsByTagName('m:r')];
 	const text = (element: Element) =>
 		element.getElementsByTagName('m:t')[0]?.textContent;
@@ -93,12 +101,103 @@ async function main(): Promise<void> {
 	).find(value => text(value) === 'max');
 	assert.ok(abbreviatedRun);
 	assert.equal(abbreviatedRun.getElementsByTagName('m:nor').length, 1);
+	for (const formula of math.slice(5, 7)) {
+		assert.equal(formula.getElementsByTagName('m:bar').length, 1);
+		assert.equal(formula.getElementsByTagName('m:limUpp').length, 0);
+	}
+	for (const [formula, mark] of [
+		[math[7], '\u0303'],
+		[math[8], '\u0302'],
+	] as const) {
+		assert.equal(
+			formula
+				.getElementsByTagName('m:acc')[0]
+				?.getElementsByTagName('m:chr')[0]
+				?.getAttribute('m:val'),
+			mark,
+		);
+	}
+	assert.equal(math[9].getElementsByTagName('m:groupChr').length, 1);
+	assert.equal(math[10].getElementsByTagName('m:limUpp').length, 1);
+	assert.equal(
+		math[10].getElementsByTagName('m:limLow')[0]?.textContent,
+		'∑i=1',
+	);
+	assert.equal(
+		math[10].getElementsByTagName('m:limUpp')[0]?.textContent,
+		'∑i=1n',
+	);
+	assert.equal(xml.includes('口'), false);
 	const issues: Parameters<typeof validateSourceFormulas>[2] = [];
 	validateSourceFormulas('formula.md', '$x_{\\stoabbr{max}}$', issues);
 	assert.equal(
 		issues.some(issue => issue.code === 'formula-bare-upright-function'),
 		false,
 	);
+	const abbreviationIssues: Parameters<typeof validateSourceFormulas>[2] = [];
+	validateSourceFormulas(
+		'formula.md',
+		'$MAE + RMSE + y_i^{pred} + \\stoabbr{BA} + R_{xi} + \\min_i x_i$',
+		abbreviationIssues,
+	);
+	assert.equal(
+		abbreviationIssues.filter(
+			issue => issue.code === 'formula-bare-upright-abbreviation',
+		).length,
+		1,
+	);
+	assert.match(abbreviationIssues[0]?.message ?? '', /MAE/);
+	const uprightMetric = convertLatex2Math(
+		'\\stoabbr{MAE}=x_i^{\\stoabbr{pred}}',
+	);
+	const uprightMinimum = convertLatex2Math('\\min_{k\\geq i}x_k');
+	const uprightMedian = convertLatex2Math('\\operatorname{median}(x)');
+	const metricDocx = await Packer.toBuffer(
+		new Document({
+			sections: [
+				{
+					children: [
+						new Paragraph({ children: [uprightMetric] }),
+						new Paragraph({ children: [uprightMinimum] }),
+						new Paragraph({ children: [uprightMedian] }),
+					],
+				},
+			],
+		}),
+	);
+	const metricXml = new AdmZip(metricDocx)
+		.getEntry('word/document.xml')
+		?.getData()
+		.toString('utf8');
+	assert.ok(metricXml);
+	assert.doesNotMatch(metricXml, /<undefined\b/);
+	const metricMath = new JSDOM(metricXml, {
+		contentType: 'text/xml',
+	}).window.document.getElementsByTagName('m:oMath')[0];
+	for (const name of ['MAE', 'pred']) {
+		const run = runs(metricMath).find(value => text(value) === name);
+		assert.ok(run);
+		assert.equal(run.getElementsByTagName('m:nor').length, 1);
+	}
+	const minimumMath = new JSDOM(metricXml, {
+		contentType: 'text/xml',
+	}).window.document.getElementsByTagName('m:oMath')[1];
+	const minimumRun = runs(minimumMath).find(value => text(value) === 'min');
+	assert.ok(minimumRun);
+	assert.equal(minimumRun.getElementsByTagName('m:nor').length, 1);
+	assert.equal(minimumRun.getElementsByTagName('m:rPr').length, 1);
+	assert.equal(minimumRun.children[0]?.tagName, 'm:rPr');
+	const medianMath = new JSDOM(metricXml, {
+		contentType: 'text/xml',
+	}).window.document.getElementsByTagName('m:oMath')[2];
+	const medianRun = runs(medianMath).find(value => text(value) === 'median');
+	assert.ok(medianRun);
+	assert.equal(medianRun.getElementsByTagName('m:nor').length, 1);
+	const medianArgument = runs(medianMath).find(value =>
+		text(value)?.includes('x'),
+	);
+	assert.ok(medianArgument);
+	assert.equal(medianArgument.getElementsByTagName('m:nor').length, 0);
 	for (const invalid of ['x=\\frac{1}{', '\\left( x', '\\badcommand{x}']) {
 		assert.throws(
 			() => convertLatex2Math(invalid),

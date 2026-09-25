@@ -1,0 +1,2021 @@
+{
+  "source_sha256": {
+    "reports/coursework_sad/02b_abbreviations.md": "d9187d783a6c208ce3d5e2a8ab9b677296a03f03c63d15e647e8f6de8f04599d",
+    "reports/coursework_sad/10_methodology.md": "49cc72a6105b5d179f5d143a5f6917cf9b3512d6de8295139b0683cf52f4d52f",
+    "reports/coursework_sad/30_results.md": "837b9fc38080e63838731227de191ddc0caf5ad8506d3230df4e0a68218adf27"
+  },
+  "count": 179,
+  "display_count": 39,
+  "inline_count": 140,
+  "unique_count": 141,
+  "occurrences": [
+    {
+      "id": "F001",
+      "source": "reports/coursework_sad/02b_abbreviations.md",
+      "line": 16,
+      "column": 3,
+      "kind": "inline",
+      "tex": "O_i",
+      "context": {
+        "line": "- ⟦формула⟧ – просроченная задолженность МСП по кредитам в территории i."
+      }
+    },
+    {
+      "id": "F002",
+      "source": "reports/coursework_sad/02b_abbreviations.md",
+      "line": 17,
+      "column": 3,
+      "kind": "inline",
+      "tex": "D_i",
+      "context": {
+        "line": "- ⟦формула⟧ – совокупная задолженность МСП по кредитам в территории i."
+      }
+    },
+    {
+      "id": "F003",
+      "source": "reports/coursework_sad/02b_abbreviations.md",
+      "line": 18,
+      "column": 3,
+      "kind": "inline",
+      "tex": "y_i",
+      "context": {
+        "line": "- ⟦формула⟧ – доля просроченной задолженности МСП в территории i."
+      }
+    },
+    {
+      "id": "F004",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 5,
+      "column": 220,
+      "kind": "inline",
+      "tex": "O_i",
+      "context": {
+        "line": "а определяется как отношение просроченной задолженности к совокупной задолженности. Обозначим через ⟦формула⟧ просроченную задолженность МСП по кредитам в территории i, а через $D_i$ – совокупную задолженность"
+      }
+    },
+    {
+      "id": "F005",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 5,
+      "column": 293,
+      "kind": "inline",
+      "tex": "D_i",
+      "context": {
+        "line": "лженности. Обозначим через $O_i$ просроченную задолженность МСП по кредитам в территории i, а через ⟦формула⟧ – совокупную задолженность МСП по кредитам в той же территории i:"
+      }
+    },
+    {
+      "id": "F006",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 7,
+      "column": 1,
+      "kind": "display",
+      "tex": "y_i = \\frac{O_i}{D_i}, \\quad 0 \\leq y_i \\leq 1,",
+      "context": {
+        "before": "Основной случайной величиной в работе является территориальная доля просроченной задолженности МСП. Для территории i она определяется как отношение просроченной задолженности к сов",
+        "after": "где $y_i$ – доля просроченной задолженности в i-й территории, $O_i$ – просроченная задолженность МСП по кредитам в i-й территории, $D_i$ – совокупная задолженность МСП по кредитам "
+      }
+    },
+    {
+      "id": "F007",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 9,
+      "column": 5,
+      "kind": "inline",
+      "tex": "y_i",
+      "context": {
+        "line": "где ⟦формула⟧ – доля просроченной задолженности в i-й территории, $O_i$ – просроченная задолженность МСП по креди"
+      }
+    },
+    {
+      "id": "F008",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 9,
+      "column": 63,
+      "kind": "inline",
+      "tex": "O_i",
+      "context": {
+        "line": "где $y_i$ – доля просроченной задолженности в i-й территории, ⟦формула⟧ – просроченная задолженность МСП по кредитам в i-й территории, $D_i$ – совокупная задолженность МСП"
+      }
+    },
+    {
+      "id": "F009",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 9,
+      "column": 132,
+      "kind": "inline",
+      "tex": "D_i",
+      "context": {
+        "line": "адолженности в i-й территории, $O_i$ – просроченная задолженность МСП по кредитам в i-й территории, ⟦формула⟧ – совокупная задолженность МСП по кредитам в той же территории."
+      }
+    },
+    {
+      "id": "F010",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 13,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\bar{y} = \\frac{1}{n}\\sum_{i=1}^{n} y_i, \\quad \\tilde{y} = \\operatorname{median}(y_1,\\ldots,y_n),",
+      "context": {
+        "before": "Выборочное среднее и медиана по территориям задаются следующим образом:",
+        "after": "где $\\bar{y}$ – средняя доля просрочки по территориям, $\\tilde{y}$ – медианная доля просрочки, $n$ – число территорий в панели."
+      }
+    },
+    {
+      "id": "F011",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 15,
+      "column": 5,
+      "kind": "inline",
+      "tex": "\\bar{y}",
+      "context": {
+        "line": "где ⟦формула⟧ – средняя доля просрочки по территориям, $\\tilde{y}$ – медианная доля просрочки, $n$ – число террит"
+      }
+    },
+    {
+      "id": "F012",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 15,
+      "column": 56,
+      "kind": "inline",
+      "tex": "\\tilde{y}",
+      "context": {
+        "line": "где $\\bar{y}$ – средняя доля просрочки по территориям, ⟦формула⟧ – медианная доля просрочки, $n$ – число территорий в панели."
+      }
+    },
+    {
+      "id": "F013",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 15,
+      "column": 96,
+      "kind": "inline",
+      "tex": "n",
+      "context": {
+        "line": "где $\\bar{y}$ – средняя доля просрочки по территориям, $\\tilde{y}$ – медианная доля просрочки, ⟦формула⟧ – число территорий в панели."
+      }
+    },
+    {
+      "id": "F014",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 19,
+      "column": 1,
+      "kind": "display",
+      "tex": "y_p = \\frac{\\sum_{i=1}^{n}O_i}{\\sum_{i=1}^{n}D_i},",
+      "context": {
+        "before": "Системная доля просрочки по совокупному объему долга рассчитывается как взвешенное отношение суммарной просроченной задолженности к суммарной задолженности:",
+        "after": "где $y_p$ – портфельная доля просрочки по всем территориям, а суммы в числителе и знаменателе берутся по всем территориям панели."
+      }
+    },
+    {
+      "id": "F015",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 21,
+      "column": 5,
+      "kind": "inline",
+      "tex": "y_p",
+      "context": {
+        "line": "где ⟦формула⟧ – портфельная доля просрочки по всем территориям, а суммы в числителе и знаменателе берутся по всем"
+      }
+    },
+    {
+      "id": "F016",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 49,
+      "column": 1,
+      "kind": "display",
+      "tex": "R_Q = Q_3 - Q_1, \\quad y_i < Q_1 - 1{,}5R_Q \\ \\text{или}\\ y_i > Q_3 + 1{,}5R_Q,",
+      "context": {
+        "before": "Выбросы в описательной части определяются по правилу межквартильного размаха:",
+        "after": "где $R_Q$ – межквартильный размах, $Q_1$ и $Q_3$ – первый и третий квартили распределения доли просрочки. Наблюдение считается выбросом, если оно лежит ниже нижней границы или выше"
+      }
+    },
+    {
+      "id": "F017",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 51,
+      "column": 5,
+      "kind": "inline",
+      "tex": "R_Q",
+      "context": {
+        "line": "где ⟦формула⟧ – межквартильный размах, $Q_1$ и $Q_3$ – первый и третий квартили распределения доли просрочки. Наб"
+      }
+    },
+    {
+      "id": "F018",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 51,
+      "column": 36,
+      "kind": "inline",
+      "tex": "Q_1",
+      "context": {
+        "line": "где $R_Q$ – межквартильный размах, ⟦формула⟧ и $Q_3$ – первый и третий квартили распределения доли просрочки. Наблюдение считается выбросом, есл"
+      }
+    },
+    {
+      "id": "F019",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 51,
+      "column": 44,
+      "kind": "inline",
+      "tex": "Q_3",
+      "context": {
+        "line": "где $R_Q$ – межквартильный размах, $Q_1$ и ⟦формула⟧ – первый и третий квартили распределения доли просрочки. Наблюдение считается выбросом, если оно ле"
+      }
+    },
+    {
+      "id": "F020",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 55,
+      "column": 1,
+      "kind": "display",
+      "tex": "H_0^{\\stoabbr{KW}}: F_1(y)=F_2(y)=F_3(y),",
+      "context": {
+        "before": "Для сравнения групп надежности ФНС проверяется нулевая гипотеза о совпадении распределений целевой переменной во всех группах:",
+        "after": "где $H_0^{\\stoabbr{KW}}$ – нулевая гипотеза критерия Краскела–Уоллиса, а $F_j(y)$ – функция распределения целевой переменной в j-й группе надежности."
+      }
+    },
+    {
+      "id": "F021",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 57,
+      "column": 5,
+      "kind": "inline",
+      "tex": "H_0^{\\stoabbr{KW}}",
+      "context": {
+        "line": "где ⟦формула⟧ – нулевая гипотеза критерия Краскела–Уоллиса, а $F_j(y)$ – функция распределения целевой переменной"
+      }
+    },
+    {
+      "id": "F022",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 57,
+      "column": 74,
+      "kind": "inline",
+      "tex": "F_j(y)",
+      "context": {
+        "line": "где $H_0^{\\stoabbr{KW}}$ – нулевая гипотеза критерия Краскела–Уоллиса, а ⟦формула⟧ – функция распределения целевой переменной в j-й группе надежности."
+      }
+    },
+    {
+      "id": "F023",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 61,
+      "column": 1,
+      "kind": "display",
+      "tex": "H_1^{\\stoabbr{KW}}: \\exists\\, j,k: F_j(y)\\neq F_k(y),",
+      "context": {
+        "before": "Альтернативная гипотеза состоит в том, что хотя бы одна группа имеет другое распределение:",
+        "after": "где $H_1^{\\stoabbr{KW}}$ – альтернативная гипотеза, а индексы $j$ и $k$ обозначают сравниваемые группы надежности."
+      }
+    },
+    {
+      "id": "F024",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 63,
+      "column": 5,
+      "kind": "inline",
+      "tex": "H_1^{\\stoabbr{KW}}",
+      "context": {
+        "line": "где ⟦формула⟧ – альтернативная гипотеза, а индексы $j$ и $k$ обозначают сравниваемые группы надежности."
+      }
+    },
+    {
+      "id": "F025",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 63,
+      "column": 63,
+      "kind": "inline",
+      "tex": "j",
+      "context": {
+        "line": "где $H_1^{\\stoabbr{KW}}$ – альтернативная гипотеза, а индексы ⟦формула⟧ и $k$ обозначают сравниваемые группы надежности."
+      }
+    },
+    {
+      "id": "F026",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 63,
+      "column": 69,
+      "kind": "inline",
+      "tex": "k",
+      "context": {
+        "line": "где $H_1^{\\stoabbr{KW}}$ – альтернативная гипотеза, а индексы $j$ и ⟦формула⟧ обозначают сравниваемые группы надежности."
+      }
+    },
+    {
+      "id": "F027",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 67,
+      "column": 1,
+      "kind": "display",
+      "tex": "H = \\frac{12}{N(N+1)}\\sum_{j=1}^{g} n_j(\\bar{R}_j-\\bar{R})^2,",
+      "context": {
+        "before": "Статистика критерия Краскела–Уоллиса вычисляется по средним рангам групп:",
+        "after": "где $N$ – общее число наблюдений, $g$ – число групп, $n_j$ – объем j-й группы, $\\bar{R}_j$ – средний ранг в j-й группе, $\\bar{R}$ – средний ранг по всей выборке."
+      }
+    },
+    {
+      "id": "F028",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 69,
+      "column": 5,
+      "kind": "inline",
+      "tex": "N",
+      "context": {
+        "line": "где ⟦формула⟧ – общее число наблюдений, $g$ – число групп, $n_j$ – объем j-й группы, $\\bar{R}_j$ – средний ранг в"
+      }
+    },
+    {
+      "id": "F029",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 69,
+      "column": 35,
+      "kind": "inline",
+      "tex": "g",
+      "context": {
+        "line": "где $N$ – общее число наблюдений, ⟦формула⟧ – число групп, $n_j$ – объем j-й группы, $\\bar{R}_j$ – средний ранг в j-й группе, $\\bar{R}$ – средн"
+      }
+    },
+    {
+      "id": "F030",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 69,
+      "column": 54,
+      "kind": "inline",
+      "tex": "n_j",
+      "context": {
+        "line": "где $N$ – общее число наблюдений, $g$ – число групп, ⟦формула⟧ – объем j-й группы, $\\bar{R}_j$ – средний ранг в j-й группе, $\\bar{R}$ – средний ранг по всей выбор"
+      }
+    },
+    {
+      "id": "F031",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 69,
+      "column": 80,
+      "kind": "inline",
+      "tex": "\\bar{R}_j",
+      "context": {
+        "line": "где $N$ – общее число наблюдений, $g$ – число групп, $n_j$ – объем j-й группы, ⟦формула⟧ – средний ранг в j-й группе, $\\bar{R}$ – средний ранг по всей выборке."
+      }
+    },
+    {
+      "id": "F032",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 69,
+      "column": 121,
+      "kind": "inline",
+      "tex": "\\bar{R}",
+      "context": {
+        "line": "о наблюдений, $g$ – число групп, $n_j$ – объем j-й группы, $\\bar{R}_j$ – средний ранг в j-й группе, ⟦формула⟧ – средний ранг по всей выборке."
+      }
+    },
+    {
+      "id": "F033",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 73,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\varepsilon^2 = \\frac{H-g+1}{N-g},",
+      "context": {
+        "before": "Для оценки силы группового эффекта используется эпсилон-квадрат:",
+        "after": "где $\\varepsilon^2$ – оценка силы группового эффекта, $H$ – статистика критерия Краскела–Уоллиса, $g$ – число групп, $N$ – общее число наблюдений."
+      }
+    },
+    {
+      "id": "F034",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 75,
+      "column": 5,
+      "kind": "inline",
+      "tex": "\\varepsilon^2",
+      "context": {
+        "line": "где ⟦формула⟧ – оценка силы группового эффекта, $H$ – статистика критерия Краскела–Уоллиса, $g$ – число групп, $N"
+      }
+    },
+    {
+      "id": "F035",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 75,
+      "column": 55,
+      "kind": "inline",
+      "tex": "H",
+      "context": {
+        "line": "где $\\varepsilon^2$ – оценка силы группового эффекта, ⟦формула⟧ – статистика критерия Краскела–Уоллиса, $g$ – число групп, $N$ – общее число наблюдений."
+      }
+    },
+    {
+      "id": "F036",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 75,
+      "column": 99,
+      "kind": "inline",
+      "tex": "g",
+      "context": {
+        "line": "где $\\varepsilon^2$ – оценка силы группового эффекта, $H$ – статистика критерия Краскела–Уоллиса, ⟦формула⟧ – число групп, $N$ – общее число наблюдений."
+      }
+    },
+    {
+      "id": "F037",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 75,
+      "column": 118,
+      "kind": "inline",
+      "tex": "N",
+      "context": {
+        "line": "2$ – оценка силы группового эффекта, $H$ – статистика критерия Краскела–Уоллиса, $g$ – число групп, ⟦формула⟧ – общее число наблюдений."
+      }
+    },
+    {
+      "id": "F038",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 79,
+      "column": 1,
+      "kind": "display",
+      "tex": "z_{ij}=|y_{ij}-\\tilde{y}_j|,",
+      "context": {
+        "before": "Проверка Брауна–Форсайта применяется для сравнения разброса целевой переменной в группах надежности ФНС. В отличие от классической проверки Левена со средним центром, здесь отклоне",
+        "after": "где $z_{ij}$ – абсолютное отклонение от медианы группы, $y_{ij}$ – значение доли просрочки для i-й территории в j-й группе, $\\tilde{y}_j$ – медиана целевой переменной в j-й группе."
+      }
+    },
+    {
+      "id": "F039",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 81,
+      "column": 5,
+      "kind": "inline",
+      "tex": "z_{ij}",
+      "context": {
+        "line": "где ⟦формула⟧ – абсолютное отклонение от медианы группы, $y_{ij}$ – значение доли просрочки для i-й территории в "
+      }
+    },
+    {
+      "id": "F040",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 81,
+      "column": 57,
+      "kind": "inline",
+      "tex": "y_{ij}",
+      "context": {
+        "line": "где $z_{ij}$ – абсолютное отклонение от медианы группы, ⟦формула⟧ – значение доли просрочки для i-й территории в j-й группе, $\\tilde{y}_j$ – медиана целевой переменн"
+      }
+    },
+    {
+      "id": "F041",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 81,
+      "column": 125,
+      "kind": "inline",
+      "tex": "\\tilde{y}_j",
+      "context": {
+        "line": "е отклонение от медианы группы, $y_{ij}$ – значение доли просрочки для i-й территории в j-й группе, ⟦формула⟧ – медиана целевой переменной в j-й группе."
+      }
+    },
+    {
+      "id": "F042",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 83,
+      "column": 19,
+      "kind": "inline",
+      "tex": "z_{ij}",
+      "context": {
+        "line": "Далее к величинам ⟦формула⟧ применяется обычная F-статистика однофакторного дисперсионного анализа:"
+      }
+    },
+    {
+      "id": "F043",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 85,
+      "column": 1,
+      "kind": "display",
+      "tex": "W_{\\stoabbr{BF}}=\\frac{N-g}{g-1}\\cdot\\frac{\\sum_{j=1}^{g} n_j(\\bar{z}_j-\\bar{z})^2}{\\sum_{j=1}^{g}\\sum_{i=1}^{n_j}(z_{ij}-\\bar{z}_j)^2},",
+      "context": {
+        "before": "Далее к величинам $z_{ij}$ применяется обычная F-статистика однофакторного дисперсионного анализа:",
+        "after": "где $W_{\\stoabbr{BF}}$ – статистика Брауна–Форсайта, $N$ – общее число наблюдений, $g$ – число групп, $n_j$ – объем j-й группы, $\\bar{z}_j$ – среднее значение абсолютных отклонений"
+      }
+    },
+    {
+      "id": "F044",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 87,
+      "column": 5,
+      "kind": "inline",
+      "tex": "W_{\\stoabbr{BF}}",
+      "context": {
+        "line": "где ⟦формула⟧ – статистика Брауна–Форсайта, $N$ – общее число наблюдений, $g$ – число групп, $n_j$ – объем j-й гр"
+      }
+    },
+    {
+      "id": "F045",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 87,
+      "column": 54,
+      "kind": "inline",
+      "tex": "N",
+      "context": {
+        "line": "где $W_{\\stoabbr{BF}}$ – статистика Брауна–Форсайта, ⟦формула⟧ – общее число наблюдений, $g$ – число групп, $n_j$ – объем j-й группы, $\\bar{z}_j$ – среднее значен"
+      }
+    },
+    {
+      "id": "F046",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 87,
+      "column": 84,
+      "kind": "inline",
+      "tex": "g",
+      "context": {
+        "line": "где $W_{\\stoabbr{BF}}$ – статистика Брауна–Форсайта, $N$ – общее число наблюдений, ⟦формула⟧ – число групп, $n_j$ – объем j-й группы, $\\bar{z}_j$ – среднее значение абсолютных отклонений в j-й"
+      }
+    },
+    {
+      "id": "F047",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 87,
+      "column": 103,
+      "kind": "inline",
+      "tex": "n_j",
+      "context": {
+        "line": "е $W_{\\stoabbr{BF}}$ – статистика Брауна–Форсайта, $N$ – общее число наблюдений, $g$ – число групп, ⟦формула⟧ – объем j-й группы, $\\bar{z}_j$ – среднее значение абсолютных отклонений в j-й группе, $\\bar{z}$ – "
+      }
+    },
+    {
+      "id": "F048",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 87,
+      "column": 129,
+      "kind": "inline",
+      "tex": "\\bar{z}_j",
+      "context": {
+        "line": "тистика Брауна–Форсайта, $N$ – общее число наблюдений, $g$ – число групп, $n_j$ – объем j-й группы, ⟦формула⟧ – среднее значение абсолютных отклонений в j-й группе, $\\bar{z}$ – среднее значение абсолютных откл"
+      }
+    },
+    {
+      "id": "F049",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 87,
+      "column": 196,
+      "kind": "inline",
+      "tex": "\\bar{z}",
+      "context": {
+        "line": "групп, $n_j$ – объем j-й группы, $\\bar{z}_j$ – среднее значение абсолютных отклонений в j-й группе, ⟦формула⟧ – среднее значение абсолютных отклонений по всем группам."
+      }
+    },
+    {
+      "id": "F050",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 89,
+      "column": 7,
+      "kind": "inline",
+      "tex": "Y_j",
+      "context": {
+        "line": "Пусть ⟦формула⟧ – случайное значение доли просрочки в j-й группе, а $\\delta_j=\\operatorname{E}|Y_j-\\operatorname{me"
+      }
+    },
+    {
+      "id": "F051",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 89,
+      "column": 65,
+      "kind": "inline",
+      "tex": "\\delta_j=\\operatorname{E}|Y_j-\\operatorname{median}(Y_j)|",
+      "context": {
+        "line": "Пусть $Y_j$ – случайное значение доли просрочки в j-й группе, а ⟦формула⟧ – среднее абсолютное отклонение от медианы этой группы. Нулевая гипотеза состоит в равенстве этих в"
+      }
+    },
+    {
+      "id": "F052",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 91,
+      "column": 1,
+      "kind": "display",
+      "tex": "H_0^{\\stoabbr{BF}}: \\delta_1=\\delta_2=\\ldots=\\delta_g,",
+      "context": {
+        "before": "Пусть $Y_j$ – случайное значение доли просрочки в j-й группе, а $\\delta_j=\\operatorname{E}|Y_j-\\operatorname{median}(Y_j)|$ – среднее абсолютное отклонение от медианы этой группы. ",
+        "after": "где $H_0^{\\stoabbr{BF}}$ – нулевая гипотеза проверки Брауна–Форсайта."
+      }
+    },
+    {
+      "id": "F053",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 93,
+      "column": 5,
+      "kind": "inline",
+      "tex": "H_0^{\\stoabbr{BF}}",
+      "context": {
+        "line": "где ⟦формула⟧ – нулевая гипотеза проверки Брауна–Форсайта."
+      }
+    },
+    {
+      "id": "F054",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 97,
+      "column": 1,
+      "kind": "display",
+      "tex": "H_1^{\\stoabbr{BF}}: \\exists\\, j,k: \\delta_j\\neq\\delta_k,",
+      "context": {
+        "before": "Альтернативная гипотеза состоит в том, что хотя бы одна группа отличается по разбросу:",
+        "after": "где $H_1^{\\stoabbr{BF}}$ – альтернативная гипотеза, а индексы $j$ и $k$ обозначают сравниваемые группы. Результат этой проверки относится к средним абсолютным отклонениям от медиан"
+      }
+    },
+    {
+      "id": "F055",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 99,
+      "column": 5,
+      "kind": "inline",
+      "tex": "H_1^{\\stoabbr{BF}}",
+      "context": {
+        "line": "где ⟦формула⟧ – альтернативная гипотеза, а индексы $j$ и $k$ обозначают сравниваемые группы. Результат этой прове"
+      }
+    },
+    {
+      "id": "F056",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 99,
+      "column": 63,
+      "kind": "inline",
+      "tex": "j",
+      "context": {
+        "line": "где $H_1^{\\stoabbr{BF}}$ – альтернативная гипотеза, а индексы ⟦формула⟧ и $k$ обозначают сравниваемые группы. Результат этой проверки относится к средним абсолютным отклон"
+      }
+    },
+    {
+      "id": "F057",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 99,
+      "column": 69,
+      "kind": "inline",
+      "tex": "k",
+      "context": {
+        "line": "где $H_1^{\\stoabbr{BF}}$ – альтернативная гипотеза, а индексы $j$ и ⟦формула⟧ обозначают сравниваемые группы. Результат этой проверки относится к средним абсолютным отклонениям "
+      }
+    },
+    {
+      "id": "F058",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 103,
+      "column": 97,
+      "kind": "inline",
+      "tex": "R_{xi}",
+      "context": {
+        "line": "Коэффициент Спирмена можно записать как корреляцию Пирсона между рангами двух переменных. Пусть ⟦формула⟧ и $R_{yi}$ – ранги i-го наблюдения по признаку и целевой переменной:"
+      }
+    },
+    {
+      "id": "F059",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 103,
+      "column": 108,
+      "kind": "inline",
+      "tex": "R_{yi}",
+      "context": {
+        "line": "иент Спирмена можно записать как корреляцию Пирсона между рангами двух переменных. Пусть $R_{xi}$ и ⟦формула⟧ – ранги i-го наблюдения по признаку и целевой переменной:"
+      }
+    },
+    {
+      "id": "F060",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 105,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\rho_S = \\frac{\\sum_{i=1}^{n}(R_{xi}-\\bar{R}_x)(R_{yi}-\\bar{R}_y)}{\\sqrt{\\sum_{i=1}^{n}(R_{xi}-\\bar{R}_x)^2}\\sqrt{\\sum_{i=1}^{n}(R_{yi}-\\bar{R}_y)^2}},",
+      "context": {
+        "before": "Коэффициент Спирмена можно записать как корреляцию Пирсона между рангами двух переменных. Пусть $R_{xi}$ и $R_{yi}$ – ранги i-го наблюдения по признаку и целевой переменной:",
+        "after": "где $\\rho_S$ – коэффициент Спирмена, $R_{xi}$ и $R_{yi}$ – ранги признака и целевой переменной для i-й территории, $\\bar{R}_x$ и $\\bar{R}_y$ – средние ранги."
+      }
+    },
+    {
+      "id": "F061",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 107,
+      "column": 5,
+      "kind": "inline",
+      "tex": "\\rho_S",
+      "context": {
+        "line": "где ⟦формула⟧ – коэффициент Спирмена, $R_{xi}$ и $R_{yi}$ – ранги признака и целевой переменной для i-й территори"
+      }
+    },
+    {
+      "id": "F062",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 107,
+      "column": 38,
+      "kind": "inline",
+      "tex": "R_{xi}",
+      "context": {
+        "line": "где $\\rho_S$ – коэффициент Спирмена, ⟦формула⟧ и $R_{yi}$ – ранги признака и целевой переменной для i-й территории, $\\bar{R}_x$ и $\\bar{R}_y$ – ср"
+      }
+    },
+    {
+      "id": "F063",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 107,
+      "column": 49,
+      "kind": "inline",
+      "tex": "R_{yi}",
+      "context": {
+        "line": "где $\\rho_S$ – коэффициент Спирмена, $R_{xi}$ и ⟦формула⟧ – ранги признака и целевой переменной для i-й территории, $\\bar{R}_x$ и $\\bar{R}_y$ – средние ранги"
+      }
+    },
+    {
+      "id": "F064",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 107,
+      "column": 116,
+      "kind": "inline",
+      "tex": "\\bar{R}_x",
+      "context": {
+        "line": "коэффициент Спирмена, $R_{xi}$ и $R_{yi}$ – ранги признака и целевой переменной для i-й территории, ⟦формула⟧ и $\\bar{R}_y$ – средние ранги."
+      }
+    },
+    {
+      "id": "F065",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 107,
+      "column": 130,
+      "kind": "inline",
+      "tex": "\\bar{R}_y",
+      "context": {
+        "line": "ирмена, $R_{xi}$ и $R_{yi}$ – ранги признака и целевой переменной для i-й территории, $\\bar{R}_x$ и ⟦формула⟧ – средние ранги."
+      }
+    },
+    {
+      "id": "F066",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 111,
+      "column": 1,
+      "kind": "display",
+      "tex": "H_0^{\\stoabbr{corr}}: \\rho_S = 0, \\quad H_1^{\\stoabbr{corr}}: \\rho_S \\neq 0,",
+      "context": {
+        "before": "Для каждого признака проверяется нулевая гипотеза об отсутствии монотонной связи с целевой переменной:",
+        "after": "где $H_0^{\\stoabbr{corr}}$ означает отсутствие монотонной связи между признаком и целевой переменной, а $H_1^{\\stoabbr{corr}}$ – наличие ненулевой монотонной связи."
+      }
+    },
+    {
+      "id": "F067",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 113,
+      "column": 5,
+      "kind": "inline",
+      "tex": "H_0^{\\stoabbr{corr}}",
+      "context": {
+        "line": "где ⟦формула⟧ означает отсутствие монотонной связи между признаком и целевой переменной, а $H_1^{\\stoabbr{corr}}$"
+      }
+    },
+    {
+      "id": "F068",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 113,
+      "column": 105,
+      "kind": "inline",
+      "tex": "H_1^{\\stoabbr{corr}}",
+      "context": {
+        "line": "$H_0^{\\stoabbr{corr}}$ означает отсутствие монотонной связи между признаком и целевой переменной, а ⟦формула⟧ – наличие ненулевой монотонной связи."
+      }
+    },
+    {
+      "id": "F069",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 115,
+      "column": 98,
+      "kind": "inline",
+      "tex": "r_{xi}",
+      "context": {
+        "line": "В анализе чувствительности дополнительно используется взвешенная ранговая корреляция. Для рангов ⟦формула⟧ и $r_{yi}$ с весами $w_i$ она рассчитывается как:"
+      }
+    },
+    {
+      "id": "F070",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 115,
+      "column": 109,
+      "kind": "inline",
+      "tex": "r_{yi}",
+      "context": {
+        "line": "е чувствительности дополнительно используется взвешенная ранговая корреляция. Для рангов $r_{xi}$ и ⟦формула⟧ с весами $w_i$ она рассчитывается как:"
+      }
+    },
+    {
+      "id": "F071",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 115,
+      "column": 127,
+      "kind": "inline",
+      "tex": "w_i",
+      "context": {
+        "line": " дополнительно используется взвешенная ранговая корреляция. Для рангов $r_{xi}$ и $r_{yi}$ с весами ⟦формула⟧ она рассчитывается как:"
+      }
+    },
+    {
+      "id": "F072",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 117,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\rho_w = \\frac{\\sum_{i=1}^{n} w_i(r_{xi}-\\bar{r}_{x,w})(r_{yi}-\\bar{r}_{y,w})}{\\sqrt{\\sum_{i=1}^{n} w_i(r_{xi}-\\bar{r}_{x,w})^2}\\sqrt{\\sum_{i=1}^{n} w_i(r_{yi}-\\bar{r}_{y,w})^2}},",
+      "context": {
+        "before": "В анализе чувствительности дополнительно используется взвешенная ранговая корреляция. Для рангов $r_{xi}$ и $r_{yi}$ с весами $w_i$ она рассчитывается как:",
+        "after": "где $\\rho_w$ – взвешенная ранговая корреляция, $w_i$ – вес i-й территории, $r_{xi}$ и $r_{yi}$ – ранги признака и целевой переменной, $\\bar{r}_{x,w}$ и $\\bar{r}_{y,w}$ – взвешенные"
+      }
+    },
+    {
+      "id": "F073",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 119,
+      "column": 5,
+      "kind": "inline",
+      "tex": "\\rho_w",
+      "context": {
+        "line": "где ⟦формула⟧ – взвешенная ранговая корреляция, $w_i$ – вес i-й территории, $r_{xi}$ и $r_{yi}$ – ранги признака "
+      }
+    },
+    {
+      "id": "F074",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 119,
+      "column": 48,
+      "kind": "inline",
+      "tex": "w_i",
+      "context": {
+        "line": "где $\\rho_w$ – взвешенная ранговая корреляция, ⟦формула⟧ – вес i-й территории, $r_{xi}$ и $r_{yi}$ – ранги признака и целевой переменной, $\\bar{r}_{x,w}$ и "
+      }
+    },
+    {
+      "id": "F075",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 119,
+      "column": 76,
+      "kind": "inline",
+      "tex": "r_{xi}",
+      "context": {
+        "line": "где $\\rho_w$ – взвешенная ранговая корреляция, $w_i$ – вес i-й территории, ⟦формула⟧ и $r_{yi}$ – ранги признака и целевой переменной, $\\bar{r}_{x,w}$ и $\\bar{r}_{y,w}$ – взвешенные ср"
+      }
+    },
+    {
+      "id": "F076",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 119,
+      "column": 87,
+      "kind": "inline",
+      "tex": "r_{yi}",
+      "context": {
+        "line": "где $\\rho_w$ – взвешенная ранговая корреляция, $w_i$ – вес i-й территории, $r_{xi}$ и ⟦формула⟧ – ранги признака и целевой переменной, $\\bar{r}_{x,w}$ и $\\bar{r}_{y,w}$ – взвешенные средние ранги"
+      }
+    },
+    {
+      "id": "F077",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 119,
+      "column": 135,
+      "kind": "inline",
+      "tex": "\\bar{r}_{x,w}",
+      "context": {
+        "line": " корреляция, $w_i$ – вес i-й территории, $r_{xi}$ и $r_{yi}$ – ранги признака и целевой переменной, ⟦формула⟧ и $\\bar{r}_{y,w}$ – взвешенные средние ранги."
+      }
+    },
+    {
+      "id": "F078",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 119,
+      "column": 153,
+      "kind": "inline",
+      "tex": "\\bar{r}_{y,w}",
+      "context": {
+        "line": " – вес i-й территории, $r_{xi}$ и $r_{yi}$ – ранги признака и целевой переменной, $\\bar{r}_{x,w}$ и ⟦формула⟧ – взвешенные средние ранги."
+      }
+    },
+    {
+      "id": "F079",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 125,
+      "column": 33,
+      "kind": "inline",
+      "tex": "p_{(1)} \\leq p_{(2)} \\leq \\ldots \\leq p_{(m)}",
+      "context": {
+        "line": "Если p-значения упорядочены как ⟦формула⟧, то скорректированное q-значение для i-й проверки определяется правилом:"
+      }
+    },
+    {
+      "id": "F080",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 127,
+      "column": 1,
+      "kind": "display",
+      "tex": "q_{(i)} = \\min_{k \\geq i}\\left(\\frac{m}{k}p_{(k)}\\right),",
+      "context": {
+        "before": "Если p-значения упорядочены как $p_{(1)} \\leq p_{(2)} \\leq \\ldots \\leq p_{(m)}$, то скорректированное q-значение для i-й проверки определяется правилом:",
+        "after": "где $q_{(i)}$ – скорректированное значение для i-й проверки, $m$ – общее число проверяемых гипотез, $p_{(k)}$ – k-е упорядоченное p-значение."
+      }
+    },
+    {
+      "id": "F081",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 129,
+      "column": 5,
+      "kind": "inline",
+      "tex": "q_{(i)}",
+      "context": {
+        "line": "где ⟦формула⟧ – скорректированное значение для i-й проверки, $m$ – общее число проверяемых гипотез, $p_{(k)}$ – k"
+      }
+    },
+    {
+      "id": "F082",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 129,
+      "column": 62,
+      "kind": "inline",
+      "tex": "m",
+      "context": {
+        "line": "где $q_{(i)}$ – скорректированное значение для i-й проверки, ⟦формула⟧ – общее число проверяемых гипотез, $p_{(k)}$ – k-е упорядоченное p-значение."
+      }
+    },
+    {
+      "id": "F083",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 129,
+      "column": 101,
+      "kind": "inline",
+      "tex": "p_{(k)}",
+      "context": {
+        "line": "где $q_{(i)}$ – скорректированное значение для i-й проверки, $m$ – общее число проверяемых гипотез, ⟦формула⟧ – k-е упорядоченное p-значение."
+      }
+    },
+    {
+      "id": "F084",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 131,
+      "column": 117,
+      "kind": "inline",
+      "tex": "y_i",
+      "context": {
+        "line": "ическое ограничение связано с признаками, которые содержат компоненты целевой переменной. Поскольку ⟦формула⟧ является отношением просроченной задолженности к совокупной задолженности, признаки, построенные на"
+      }
+    },
+    {
+      "id": "F085",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 144,
+      "column": 1,
+      "kind": "display",
+      "tex": "z_i = \\frac{a_i}{b_i},",
+      "context": {
+        "before": "Механическую зависимость отношения от знаменателя можно увидеть уже из общей формы:",
+        "after": "где $z_i$ – показатель-отношение, $a_i$ – числитель отношения, $b_i$ – знаменатель. Если объясняющий признак содержит $b_i$, связь с $z_i$ может возникать механически."
+      }
+    },
+    {
+      "id": "F086",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 146,
+      "column": 5,
+      "kind": "inline",
+      "tex": "z_i",
+      "context": {
+        "line": "где ⟦формула⟧ – показатель-отношение, $a_i$ – числитель отношения, $b_i$ – знаменатель. Если объясняющий признак "
+      }
+    },
+    {
+      "id": "F087",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 146,
+      "column": 35,
+      "kind": "inline",
+      "tex": "a_i",
+      "context": {
+        "line": "где $z_i$ – показатель-отношение, ⟦формула⟧ – числитель отношения, $b_i$ – знаменатель. Если объясняющий признак содержит $b_i$, связь с $z_i$ "
+      }
+    },
+    {
+      "id": "F088",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 146,
+      "column": 64,
+      "kind": "inline",
+      "tex": "b_i",
+      "context": {
+        "line": "где $z_i$ – показатель-отношение, $a_i$ – числитель отношения, ⟦формула⟧ – знаменатель. Если объясняющий признак содержит $b_i$, связь с $z_i$ может возникать механически."
+      }
+    },
+    {
+      "id": "F089",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 146,
+      "column": 119,
+      "kind": "inline",
+      "tex": "b_i",
+      "context": {
+        "line": "тель-отношение, $a_i$ – числитель отношения, $b_i$ – знаменатель. Если объясняющий признак содержит ⟦формула⟧, связь с $z_i$ может возникать механически."
+      }
+    },
+    {
+      "id": "F090",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 146,
+      "column": 134,
+      "kind": "inline",
+      "tex": "z_i",
+      "context": {
+        "line": " $a_i$ – числитель отношения, $b_i$ – знаменатель. Если объясняющий признак содержит $b_i$, связь с ⟦формула⟧ может возникать механически."
+      }
+    },
+    {
+      "id": "F091",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 148,
+      "column": 14,
+      "kind": "inline",
+      "tex": "x_i",
+      "context": {
+        "line": "Если признак ⟦формула⟧ сам содержит $b_i$ или тесно связан с $b_i$, то корреляция между $x_i$ и $z_i$ может возникать из-з"
+      }
+    },
+    {
+      "id": "F092",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 148,
+      "column": 33,
+      "kind": "inline",
+      "tex": "b_i",
+      "context": {
+        "line": "Если признак $x_i$ сам содержит ⟦формула⟧ или тесно связан с $b_i$, то корреляция между $x_i$ и $z_i$ может возникать из-за общей компоненты "
+      }
+    },
+    {
+      "id": "F093",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 148,
+      "column": 58,
+      "kind": "inline",
+      "tex": "b_i",
+      "context": {
+        "line": "Если признак $x_i$ сам содержит $b_i$ или тесно связан с ⟦формула⟧, то корреляция между $x_i$ и $z_i$ может возникать из-за общей компоненты $b_i$, а не из-за самосто"
+      }
+    },
+    {
+      "id": "F094",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 148,
+      "column": 85,
+      "kind": "inline",
+      "tex": "x_i",
+      "context": {
+        "line": "Если признак $x_i$ сам содержит $b_i$ или тесно связан с $b_i$, то корреляция между ⟦формула⟧ и $z_i$ может возникать из-за общей компоненты $b_i$, а не из-за самостоятельной экономической связ"
+      }
+    },
+    {
+      "id": "F095",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 148,
+      "column": 93,
+      "kind": "inline",
+      "tex": "z_i",
+      "context": {
+        "line": "Если признак $x_i$ сам содержит $b_i$ или тесно связан с $b_i$, то корреляция между $x_i$ и ⟦формула⟧ может возникать из-за общей компоненты $b_i$, а не из-за самостоятельной экономической связи. Поэто"
+      }
+    },
+    {
+      "id": "F096",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 148,
+      "column": 138,
+      "kind": "inline",
+      "tex": "b_i",
+      "context": {
+        "line": " или тесно связан с $b_i$, то корреляция между $x_i$ и $z_i$ может возникать из-за общей компоненты ⟦формула⟧, а не из-за самостоятельной экономической связи. Поэтому такие признаки используются как диагностич"
+      }
+    },
+    {
+      "id": "F097",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 154,
+      "column": 49,
+      "kind": "inline",
+      "tex": "s(\\cdot)",
+      "context": {
+        "line": "Обозначим любую из этих статистик через функцию ⟦формула⟧. Для исходной панели значение статистики равно:"
+      }
+    },
+    {
+      "id": "F098",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 156,
+      "column": 1,
+      "kind": "display",
+      "tex": "T_0=s(y_1,\\ldots,y_n),",
+      "context": {
+        "before": "Обозначим любую из этих статистик через функцию $s(\\cdot)$. Для исходной панели значение статистики равно:",
+        "after": "где $T_0$ – значение выбранной статистики на исходной панели, $s(\\cdot)$ – функция расчета статистики, $y_1,\\ldots,y_n$ – значения доли просрочки по территориям."
+      }
+    },
+    {
+      "id": "F099",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 158,
+      "column": 5,
+      "kind": "inline",
+      "tex": "T_0",
+      "context": {
+        "line": "где ⟦формула⟧ – значение выбранной статистики на исходной панели, $s(\\cdot)$ – функция расчета статистики, $y_1,\\"
+      }
+    },
+    {
+      "id": "F100",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 158,
+      "column": 63,
+      "kind": "inline",
+      "tex": "s(\\cdot)",
+      "context": {
+        "line": "где $T_0$ – значение выбранной статистики на исходной панели, ⟦формула⟧ – функция расчета статистики, $y_1,\\ldots,y_n$ – значения доли просрочки по территориям."
+      }
+    },
+    {
+      "id": "F101",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 158,
+      "column": 104,
+      "kind": "inline",
+      "tex": "y_1,\\ldots,y_n",
+      "context": {
+        "line": " $T_0$ – значение выбранной статистики на исходной панели, $s(\\cdot)$ – функция расчета статистики, ⟦формула⟧ – значения доли просрочки по территориям."
+      }
+    },
+    {
+      "id": "F102",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 162,
+      "column": 1,
+      "kind": "display",
+      "tex": "y_1^{\\stoabbr{boot},b},\\ldots,y_n^{\\stoabbr{boot},b} \\sim \\{y_1,\\ldots,y_n\\}, \\quad b=1,\\ldots,B,",
+      "context": {
+        "before": "Бутстрап-выборка строится как выборка с возвращением из исходных наблюдений:",
+        "after": "где $y_1^{\\stoabbr{boot},b},\\ldots,y_n^{\\stoabbr{boot},b}$ – значения целевой переменной в b-й бутстрап-выборке, $B$ – число бутстрап-повторов."
+      }
+    },
+    {
+      "id": "F103",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 164,
+      "column": 5,
+      "kind": "inline",
+      "tex": "y_1^{\\stoabbr{boot},b},\\ldots,y_n^{\\stoabbr{boot},b}",
+      "context": {
+        "line": "где ⟦формула⟧ – значения целевой переменной в b-й бутстрап-выборке, $B$ – число бутстрап-повторов."
+      }
+    },
+    {
+      "id": "F104",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 164,
+      "column": 114,
+      "kind": "inline",
+      "tex": "B",
+      "context": {
+        "line": "oabbr{boot},b},\\ldots,y_n^{\\stoabbr{boot},b}$ – значения целевой переменной в b-й бутстрап-выборке, ⟦формула⟧ – число бутстрап-повторов."
+      }
+    },
+    {
+      "id": "F105",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 168,
+      "column": 1,
+      "kind": "display",
+      "tex": "T_b^{\\stoabbr{boot}}=s(y_1^{\\stoabbr{boot},b},\\ldots,y_n^{\\stoabbr{boot},b}),",
+      "context": {
+        "before": "Для каждой повторной выборки рассчитывается бутстрап-значение статистики:",
+        "after": "где $T_b^{\\stoabbr{boot}}$ – значение выбранной статистики в b-й бутстрап-выборке."
+      }
+    },
+    {
+      "id": "F106",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 170,
+      "column": 5,
+      "kind": "inline",
+      "tex": "T_b^{\\stoabbr{boot}}",
+      "context": {
+        "line": "где ⟦формула⟧ – значение выбранной статистики в b-й бутстрап-выборке."
+      }
+    },
+    {
+      "id": "F107",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 174,
+      "column": 1,
+      "kind": "display",
+      "tex": "z_0=\\Phi^{-1}\\left(\\frac{\\#\\{T_b^{\\stoabbr{boot}}<T_0\\}}{B}\\right),",
+      "context": {
+        "before": "Поправка на смещение показывает, какая доля бутстрап-значений меньше исходной оценки:",
+        "after": "где $z_0$ – параметр смещения, $\\Phi^{-1}$ – обратная функция стандартного нормального распределения, $\\#\\{T_b^{\\stoabbr{boot}}<T_0\\}$ – число бутстрап-значений меньше исходной ста"
+      }
+    },
+    {
+      "id": "F108",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 176,
+      "column": 5,
+      "kind": "inline",
+      "tex": "z_0",
+      "context": {
+        "line": "где ⟦формула⟧ – параметр смещения, $\\Phi^{-1}$ – обратная функция стандартного нормального распределения, $\\#\\{T_"
+      }
+    },
+    {
+      "id": "F109",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 176,
+      "column": 32,
+      "kind": "inline",
+      "tex": "\\Phi^{-1}",
+      "context": {
+        "line": "где $z_0$ – параметр смещения, ⟦формула⟧ – обратная функция стандартного нормального распределения, $\\#\\{T_b^{\\stoabbr{boot}}<T_0\\}$ – число"
+      }
+    },
+    {
+      "id": "F110",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 176,
+      "column": 103,
+      "kind": "inline",
+      "tex": "\\#\\{T_b^{\\stoabbr{boot}}<T_0\\}",
+      "context": {
+        "line": "е $z_0$ – параметр смещения, $\\Phi^{-1}$ – обратная функция стандартного нормального распределения, ⟦формула⟧ – число бутстрап-значений меньше исходной статистики."
+      }
+    },
+    {
+      "id": "F111",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 180,
+      "column": 1,
+      "kind": "display",
+      "tex": "T_i^J=s(y_1,\\ldots,y_{i-1},y_{i+1},\\ldots,y_n),",
+      "context": {
+        "before": "Поправка на ускорение рассчитывается по jackknife-оценкам, то есть по значениям статистики после последовательного исключения одного наблюдения:",
+        "after": "где $T_i^J$ – значение статистики без i-го наблюдения."
+      }
+    },
+    {
+      "id": "F112",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 182,
+      "column": 5,
+      "kind": "inline",
+      "tex": "T_i^J",
+      "context": {
+        "line": "где ⟦формула⟧ – значение статистики без i-го наблюдения."
+      }
+    },
+    {
+      "id": "F113",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 186,
+      "column": 1,
+      "kind": "display",
+      "tex": "a=\\frac{\\sum_{i=1}^{n}(\\bar{T}^J-T_i^J)^3}{6\\left[\\sum_{i=1}^{n}(\\bar{T}^J-T_i^J)^2\\right]^{3/2}},",
+      "context": {
+        "before": "Параметр ускорения задается формулой:",
+        "after": "где $a$ – параметр ускорения, $\\bar{T}^J$ – среднее значение jackknife-оценок, $T_i^J$ – jackknife-оценка без i-го наблюдения."
+      }
+    },
+    {
+      "id": "F114",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 188,
+      "column": 5,
+      "kind": "inline",
+      "tex": "a",
+      "context": {
+        "line": "где ⟦формула⟧ – параметр ускорения, $\\bar{T}^J$ – среднее значение jackknife-оценок, $T_i^J$ – jackknife-оценка б"
+      }
+    },
+    {
+      "id": "F115",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 188,
+      "column": 31,
+      "kind": "inline",
+      "tex": "\\bar{T}^J",
+      "context": {
+        "line": "где $a$ – параметр ускорения, ⟦формула⟧ – среднее значение jackknife-оценок, $T_i^J$ – jackknife-оценка без i-го наблюдения."
+      }
+    },
+    {
+      "id": "F116",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 188,
+      "column": 80,
+      "kind": "inline",
+      "tex": "T_i^J",
+      "context": {
+        "line": "где $a$ – параметр ускорения, $\\bar{T}^J$ – среднее значение jackknife-оценок, ⟦формула⟧ – jackknife-оценка без i-го наблюдения."
+      }
+    },
+    {
+      "id": "F117",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 190,
+      "column": 23,
+      "kind": "inline",
+      "tex": "\\alpha",
+      "context": {
+        "line": "Для уровня значимости ⟦формула⟧ границы BCa-интервала берутся не по обычным процентилям $\\alpha/2$ и $1-\\alpha/2$, а по скорректиро"
+      }
+    },
+    {
+      "id": "F118",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 190,
+      "column": 88,
+      "kind": "inline",
+      "tex": "\\alpha/2",
+      "context": {
+        "line": "Для уровня значимости $\\alpha$ границы BCa-интервала берутся не по обычным процентилям ⟦формула⟧ и $1-\\alpha/2$, а по скорректированным уровням:"
+      }
+    },
+    {
+      "id": "F119",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 190,
+      "column": 101,
+      "kind": "inline",
+      "tex": "1-\\alpha/2",
+      "context": {
+        "line": "Для уровня значимости $\\alpha$ границы BCa-интервала берутся не по обычным процентилям $\\alpha/2$ и ⟦формула⟧, а по скорректированным уровням:"
+      }
+    },
+    {
+      "id": "F120",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 192,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\alpha_L=\\Phi\\left(z_0+\\frac{z_0+z_{\\alpha/2}}{1-a(z_0+z_{\\alpha/2})}\\right),",
+      "context": {
+        "before": "Для уровня значимости $\\alpha$ границы BCa-интервала берутся не по обычным процентилям $\\alpha/2$ и $1-\\alpha/2$, а по скорректированным уровням:",
+        "after": "$$\\alpha_U=\\Phi\\left(z_0+\\frac{z_0+z_{1-\\alpha/2}}{1-a(z_0+z_{1-\\alpha/2})}\\right),$$"
+      }
+    },
+    {
+      "id": "F121",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 194,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\alpha_U=\\Phi\\left(z_0+\\frac{z_0+z_{1-\\alpha/2}}{1-a(z_0+z_{1-\\alpha/2})}\\right),",
+      "context": {
+        "before": "$$\\alpha_L=\\Phi\\left(z_0+\\frac{z_0+z_{\\alpha/2}}{1-a(z_0+z_{\\alpha/2})}\\right),$$",
+        "after": "где $\\alpha_L$ и $\\alpha_U$ – скорректированные уровни нижней и верхней границы, $\\Phi$ – функция стандартного нормального распределения, $z_{\\alpha/2}$ и $z_{1-\\alpha/2}$ – соотве"
+      }
+    },
+    {
+      "id": "F122",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 196,
+      "column": 5,
+      "kind": "inline",
+      "tex": "\\alpha_L",
+      "context": {
+        "line": "где ⟦формула⟧ и $\\alpha_U$ – скорректированные уровни нижней и верхней границы, $\\Phi$ – функция стандартного нор"
+      }
+    },
+    {
+      "id": "F123",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 196,
+      "column": 18,
+      "kind": "inline",
+      "tex": "\\alpha_U",
+      "context": {
+        "line": "где $\\alpha_L$ и ⟦формула⟧ – скорректированные уровни нижней и верхней границы, $\\Phi$ – функция стандартного нормального расп"
+      }
+    },
+    {
+      "id": "F124",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 196,
+      "column": 82,
+      "kind": "inline",
+      "tex": "\\Phi",
+      "context": {
+        "line": "где $\\alpha_L$ и $\\alpha_U$ – скорректированные уровни нижней и верхней границы, ⟦формула⟧ – функция стандартного нормального распределения, $z_{\\alpha/2}$ и $z_{1-\\alpha/2}$ – соответствующ"
+      }
+    },
+    {
+      "id": "F125",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 196,
+      "column": 139,
+      "kind": "inline",
+      "tex": "z_{\\alpha/2}",
+      "context": {
+        "line": "ированные уровни нижней и верхней границы, $\\Phi$ – функция стандартного нормального распределения, ⟦формула⟧ и $z_{1-\\alpha/2}$ – соответствующие квантили стандартного нормального распределения."
+      }
+    },
+    {
+      "id": "F126",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 196,
+      "column": 156,
+      "kind": "inline",
+      "tex": "z_{1-\\alpha/2}",
+      "context": {
+        "line": "нижней и верхней границы, $\\Phi$ – функция стандартного нормального распределения, $z_{\\alpha/2}$ и ⟦формула⟧ – соответствующие квантили стандартного нормального распределения."
+      }
+    },
+    {
+      "id": "F127",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 200,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\stoabbr{CI}_{\\stoabbr{BCa}}=[Q_{\\alpha_L}(T^{\\stoabbr{boot}}), Q_{\\alpha_U}(T^{\\stoabbr{boot}})],",
+      "context": {
+        "before": "Итоговый доверительный интервал строится как интервал между квантилями бутстрап-распределения:",
+        "after": "где $\\stoabbr{CI}_{\\stoabbr{BCa}}$ – доверительный интервал с поправкой на смещение и ускорение, $Q_{\\alpha_L}(T^{\\stoabbr{boot}})$ и $Q_{\\alpha_U}(T^{\\stoabbr{boot}})$ – квантили "
+      }
+    },
+    {
+      "id": "F128",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 202,
+      "column": 5,
+      "kind": "inline",
+      "tex": "\\stoabbr{CI}_{\\stoabbr{BCa}}",
+      "context": {
+        "line": "где ⟦формула⟧ – доверительный интервал с поправкой на смещение и ускорение, $Q_{\\alpha_L}(T^{\\stoabbr{boot}})$ и "
+      }
+    },
+    {
+      "id": "F129",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 202,
+      "column": 98,
+      "kind": "inline",
+      "tex": "Q_{\\alpha_L}(T^{\\stoabbr{boot}})",
+      "context": {
+        "line": "где $\\stoabbr{CI}_{\\stoabbr{BCa}}$ – доверительный интервал с поправкой на смещение и ускорение, ⟦формула⟧ и $Q_{\\alpha_U}(T^{\\stoabbr{boot}})$ – квантили распределения бутстрап-значений $T_b^{\\stoabbr{boot"
+      }
+    },
+    {
+      "id": "F130",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 202,
+      "column": 135,
+      "kind": "inline",
+      "tex": "Q_{\\alpha_U}(T^{\\stoabbr{boot}})",
+      "context": {
+        "line": " – доверительный интервал с поправкой на смещение и ускорение, $Q_{\\alpha_L}(T^{\\stoabbr{boot}})$ и ⟦формула⟧ – квантили распределения бутстрап-значений $T_b^{\\stoabbr{boot}}$."
+      }
+    },
+    {
+      "id": "F131",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 202,
+      "column": 213,
+      "kind": "inline",
+      "tex": "T_b^{\\stoabbr{boot}}",
+      "context": {
+        "line": "^{\\stoabbr{boot}})$ и $Q_{\\alpha_U}(T^{\\stoabbr{boot}})$ – квантили распределения бутстрап-значений ⟦формула⟧."
+      }
+    },
+    {
+      "id": "F132",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 210,
+      "column": 1,
+      "kind": "display",
+      "tex": "y_i^{\\stoabbr{pred}} = f(x_i),",
+      "context": {
+        "before": "Для непрерывной цели используется прогноз доли просрочки:",
+        "after": "где $x_i$ – вектор признаков территории, а $y_i^{\\stoabbr{pred}}$ – прогноз доли просроченной задолженности. Рассматриваются следующие модели:"
+      }
+    },
+    {
+      "id": "F133",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 212,
+      "column": 5,
+      "kind": "inline",
+      "tex": "x_i",
+      "context": {
+        "line": "где ⟦формула⟧ – вектор признаков территории, а $y_i^{\\stoabbr{pred}}$ – прогноз доли просроченной задолженности. "
+      }
+    },
+    {
+      "id": "F134",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 212,
+      "column": 44,
+      "kind": "inline",
+      "tex": "y_i^{\\stoabbr{pred}}",
+      "context": {
+        "line": "где $x_i$ – вектор признаков территории, а ⟦формула⟧ – прогноз доли просроченной задолженности. Рассматриваются следующие модели:"
+      }
+    },
+    {
+      "id": "F135",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 214,
+      "column": 29,
+      "kind": "inline",
+      "tex": "y_i^{\\stoabbr{pred}}=\\tilde{y}_{\\stoabbr{train}}",
+      "context": {
+        "line": "- базовый прогноз медианой: ⟦формула⟧, где медиана рассчитывается только на обучающей части кросс-валидации;"
+      }
+    },
+    {
+      "id": "F136",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 222,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\min_{\\beta_0,\\beta}\\left(\\sum_{i=1}^{n}(y_i-\\beta_0-x_i^\\top\\beta)^2+\\lambda\\sum_{j=1}^{p}\\beta_j^2\\right),",
+      "context": {
+        "before": "Ridge-регрессия оценивает коэффициенты из задачи минимизации:",
+        "after": "где $\\beta_0$ – свободный член, $\\beta$ – вектор коэффициентов, $x_i$ – вектор признаков i-й территории, $\\lambda$ – сила L2-регуляризации, $p$ – число признаков."
+      }
+    },
+    {
+      "id": "F137",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 224,
+      "column": 5,
+      "kind": "inline",
+      "tex": "\\beta_0",
+      "context": {
+        "line": "где ⟦формула⟧ – свободный член, $\\beta$ – вектор коэффициентов, $x_i$ – вектор признаков i-й территории, $\\lambda"
+      }
+    },
+    {
+      "id": "F138",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 224,
+      "column": 33,
+      "kind": "inline",
+      "tex": "\\beta",
+      "context": {
+        "line": "где $\\beta_0$ – свободный член, ⟦формула⟧ – вектор коэффициентов, $x_i$ – вектор признаков i-й территории, $\\lambda$ – сила L2-регуляризации,"
+      }
+    },
+    {
+      "id": "F139",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 224,
+      "column": 65,
+      "kind": "inline",
+      "tex": "x_i",
+      "context": {
+        "line": "где $\\beta_0$ – свободный член, $\\beta$ – вектор коэффициентов, ⟦формула⟧ – вектор признаков i-й территории, $\\lambda$ – сила L2-регуляризации, $p$ – число признаков."
+      }
+    },
+    {
+      "id": "F140",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 224,
+      "column": 106,
+      "kind": "inline",
+      "tex": "\\lambda",
+      "context": {
+        "line": "\\beta_0$ – свободный член, $\\beta$ – вектор коэффициентов, $x_i$ – вектор признаков i-й территории, ⟦формула⟧ – сила L2-регуляризации, $p$ – число признаков."
+      }
+    },
+    {
+      "id": "F141",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 224,
+      "column": 141,
+      "kind": "inline",
+      "tex": "p",
+      "context": {
+        "line": "– вектор коэффициентов, $x_i$ – вектор признаков i-й территории, $\\lambda$ – сила L2-регуляризации, ⟦формула⟧ – число признаков."
+      }
+    },
+    {
+      "id": "F142",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 228,
+      "column": 1,
+      "kind": "display",
+      "tex": "L_{\\delta}(e)=\\frac{1}{2}e^2 \\quad \\text{при } |e|\\leq \\delta,",
+      "context": {
+        "before": "Huber-регрессия использует функцию потерь, которая является квадратичной для малых остатков и линейной для больших:",
+        "after": "$$L_{\\delta}(e)=\\delta(|e|-\\frac{1}{2}\\delta) \\quad \\text{при } |e|>\\delta,$$"
+      }
+    },
+    {
+      "id": "F143",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 230,
+      "column": 1,
+      "kind": "display",
+      "tex": "L_{\\delta}(e)=\\delta(|e|-\\frac{1}{2}\\delta) \\quad \\text{при } |e|>\\delta,",
+      "context": {
+        "before": "$$L_{\\delta}(e)=\\frac{1}{2}e^2 \\quad \\text{при } |e|\\leq \\delta,$$",
+        "after": "где $L_{\\delta}(e)$ – функция потерь Хьюбера, $e=y_i-y_i^{\\stoabbr{pred}}$ – ошибка прогноза, $\\delta$ – порог, после которого крупная ошибка штрафуется линейно, а не квадратично."
+      }
+    },
+    {
+      "id": "F144",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 232,
+      "column": 5,
+      "kind": "inline",
+      "tex": "L_{\\delta}(e)",
+      "context": {
+        "line": "где ⟦формула⟧ – функция потерь Хьюбера, $e=y_i-y_i^{\\stoabbr{pred}}$ – ошибка прогноза, $\\delta$ – порог, после к"
+      }
+    },
+    {
+      "id": "F145",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 232,
+      "column": 47,
+      "kind": "inline",
+      "tex": "e=y_i-y_i^{\\stoabbr{pred}}",
+      "context": {
+        "line": "где $L_{\\delta}(e)$ – функция потерь Хьюбера, ⟦формула⟧ – ошибка прогноза, $\\delta$ – порог, после которого крупная ошибка штрафуется линейно, а не квадрат"
+      }
+    },
+    {
+      "id": "F146",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 232,
+      "column": 95,
+      "kind": "inline",
+      "tex": "\\delta",
+      "context": {
+        "line": "где $L_{\\delta}(e)$ – функция потерь Хьюбера, $e=y_i-y_i^{\\stoabbr{pred}}$ – ошибка прогноза, ⟦формула⟧ – порог, после которого крупная ошибка штрафуется линейно, а не квадратично."
+      }
+    },
+    {
+      "id": "F147",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 236,
+      "column": 1,
+      "kind": "display",
+      "tex": "y_i^{\\stoabbr{pred}}=\\frac{1}{B}\\sum_{b=1}^{B}T_b(x_i),",
+      "context": {
+        "before": "Случайный лес для регрессии усредняет прогнозы B деревьев:",
+        "after": "где $B$ – число деревьев в лесу, $T_b(x_i)$ – прогноз $b$-го дерева для i-й территории."
+      }
+    },
+    {
+      "id": "F148",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 238,
+      "column": 5,
+      "kind": "inline",
+      "tex": "B",
+      "context": {
+        "line": "где ⟦формула⟧ – число деревьев в лесу, $T_b(x_i)$ – прогноз $b$-го дерева для i-й территории."
+      }
+    },
+    {
+      "id": "F149",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 238,
+      "column": 34,
+      "kind": "inline",
+      "tex": "T_b(x_i)",
+      "context": {
+        "line": "где $B$ – число деревьев в лесу, ⟦формула⟧ – прогноз $b$-го дерева для i-й территории."
+      }
+    },
+    {
+      "id": "F150",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 238,
+      "column": 55,
+      "kind": "inline",
+      "tex": "b",
+      "context": {
+        "line": "где $B$ – число деревьев в лесу, $T_b(x_i)$ – прогноз ⟦формула⟧-го дерева для i-й территории."
+      }
+    },
+    {
+      "id": "F151",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 242,
+      "column": 1,
+      "kind": "display",
+      "tex": "c_i=1 \\quad \\text{если } y_i \\geq Q_{0{,}75}(y),",
+      "context": {
+        "before": "Для производного класса верхнего квартиля риска вводится бинарная переменная:",
+        "after": "$$c_i=0 \\quad \\text{если } y_i < Q_{0{,}75}(y),$$"
+      }
+    },
+    {
+      "id": "F152",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 244,
+      "column": 1,
+      "kind": "display",
+      "tex": "c_i=0 \\quad \\text{если } y_i < Q_{0{,}75}(y),",
+      "context": {
+        "before": "$$c_i=1 \\quad \\text{если } y_i \\geq Q_{0{,}75}(y),$$",
+        "after": "где $c_i$ – бинарный класс территории, а $Q_{0{,}75}(y)$ – 75-й процентиль распределения доли просрочки по территориям."
+      }
+    },
+    {
+      "id": "F153",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 246,
+      "column": 5,
+      "kind": "inline",
+      "tex": "c_i",
+      "context": {
+        "line": "где ⟦формула⟧ – бинарный класс территории, а $Q_{0{,}75}(y)$ – 75-й процентиль распределения доли просрочки по те"
+      }
+    },
+    {
+      "id": "F154",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 246,
+      "column": 42,
+      "kind": "inline",
+      "tex": "Q_{0{,}75}(y)",
+      "context": {
+        "line": "где $c_i$ – бинарный класс территории, а ⟦формула⟧ – 75-й процентиль распределения доли просрочки по территориям."
+      }
+    },
+    {
+      "id": "F155",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 250,
+      "column": 1,
+      "kind": "display",
+      "tex": "P(c_i=1|x_i)=\\frac{1}{1+\\exp[-(\\beta_0+x_i^\\top\\beta)]},",
+      "context": {
+        "before": "Этот класс является расчетной разметкой по текущей выборке, а не наблюдаемым фактом дефолта. Для него сравниваются базовый прогноз частотой класса, логистическая регрессия и случай",
+        "after": "где $P(c_i=1|x_i)$ – вероятность отнесения территории к верхнему квартилю риска при заданных признаках, $\\beta_0$ и $\\beta$ – параметры логистической регрессии."
+      }
+    },
+    {
+      "id": "F156",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 252,
+      "column": 5,
+      "kind": "inline",
+      "tex": "P(c_i=1|x_i)",
+      "context": {
+        "line": "где ⟦формула⟧ – вероятность отнесения территории к верхнему квартилю риска при заданных признаках, $\\beta_0$ и $\\"
+      }
+    },
+    {
+      "id": "F157",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 252,
+      "column": 105,
+      "kind": "inline",
+      "tex": "\\beta_0",
+      "context": {
+        "line": "$P(c_i=1|x_i)$ – вероятность отнесения территории к верхнему квартилю риска при заданных признаках, ⟦формула⟧ и $\\beta$ – параметры логистической регрессии."
+      }
+    },
+    {
+      "id": "F158",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 252,
+      "column": 117,
+      "kind": "inline",
+      "tex": "\\beta",
+      "context": {
+        "line": ")$ – вероятность отнесения территории к верхнему квартилю риска при заданных признаках, $\\beta_0$ и ⟦формула⟧ – параметры логистической регрессии."
+      }
+    },
+    {
+      "id": "F159",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 256,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\stoabbr{MAE}=\\frac{1}{n}\\sum_{i=1}^{n}|y_i-y_i^{\\stoabbr{pred}}|,",
+      "context": {
+        "before": "Качество прогноза непрерывной цели оценивается по трем метрикам:",
+        "after": "$$\\stoabbr{RMSE}=\\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(y_i-y_i^{\\stoabbr{pred}})^2},$$"
+      }
+    },
+    {
+      "id": "F160",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 258,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\stoabbr{RMSE}=\\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(y_i-y_i^{\\stoabbr{pred}})^2},",
+      "context": {
+        "before": "$$\\stoabbr{MAE}=\\frac{1}{n}\\sum_{i=1}^{n}|y_i-y_i^{\\stoabbr{pred}}|,$$",
+        "after": "$$R^2=1-\\frac{\\sum_{i=1}^{n}(y_i-y_i^{\\stoabbr{pred}})^2}{\\sum_{i=1}^{n}(y_i-\\bar{y})^2},$$"
+      }
+    },
+    {
+      "id": "F161",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 260,
+      "column": 1,
+      "kind": "display",
+      "tex": "R^2=1-\\frac{\\sum_{i=1}^{n}(y_i-y_i^{\\stoabbr{pred}})^2}{\\sum_{i=1}^{n}(y_i-\\bar{y})^2},",
+      "context": {
+        "before": "$$\\stoabbr{RMSE}=\\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(y_i-y_i^{\\stoabbr{pred}})^2},$$",
+        "after": "где $y_i$ – фактическая доля просрочки, $y_i^{\\stoabbr{pred}}$ – прогноз модели, $\\bar{y}$ – среднее значение целевой переменной на проверочной части, $n$ – число наблюдений в пров"
+      }
+    },
+    {
+      "id": "F162",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 262,
+      "column": 5,
+      "kind": "inline",
+      "tex": "y_i",
+      "context": {
+        "line": "где ⟦формула⟧ – фактическая доля просрочки, $y_i^{\\stoabbr{pred}}$ – прогноз модели, $\\bar{y}$ – среднее значение"
+      }
+    },
+    {
+      "id": "F163",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 262,
+      "column": 41,
+      "kind": "inline",
+      "tex": "y_i^{\\stoabbr{pred}}",
+      "context": {
+        "line": "где $y_i$ – фактическая доля просрочки, ⟦формула⟧ – прогноз модели, $\\bar{y}$ – среднее значение целевой переменной на проверочной части, $n$ – число"
+      }
+    },
+    {
+      "id": "F164",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 262,
+      "column": 82,
+      "kind": "inline",
+      "tex": "\\bar{y}",
+      "context": {
+        "line": "где $y_i$ – фактическая доля просрочки, $y_i^{\\stoabbr{pred}}$ – прогноз модели, ⟦формула⟧ – среднее значение целевой переменной на проверочной части, $n$ – число наблюдений в проверочной ча"
+      }
+    },
+    {
+      "id": "F165",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 262,
+      "column": 152,
+      "kind": "inline",
+      "tex": "n",
+      "context": {
+        "line": "bbr{pred}}$ – прогноз модели, $\\bar{y}$ – среднее значение целевой переменной на проверочной части, ⟦формула⟧ – число наблюдений в проверочной части."
+      }
+    },
+    {
+      "id": "F166",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 264,
+      "column": 218,
+      "kind": "inline",
+      "tex": "R^2",
+      "context": {
+        "line": "т крупные ошибки, поэтому чувствительнее к территориям с экстремальной долей просрочки. Коэффициент ⟦формула⟧ сравнивает модель с прогнозом средним значением на проверочной части. Если $R^2<0$, модель ошибаетс"
+      }
+    },
+    {
+      "id": "F167",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 264,
+      "column": 299,
+      "kind": "inline",
+      "tex": "R^2<0",
+      "context": {
+        "line": "рочки. Коэффициент $R^2$ сравнивает модель с прогнозом средним значением на проверочной части. Если ⟦формула⟧, модель ошибается сильнее, чем простая модель, предсказывающая среднее значение проверочной выборки"
+      }
+    },
+    {
+      "id": "F168",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 268,
+      "column": 1,
+      "kind": "display",
+      "tex": "\\stoabbr{BA}=\\frac{1}{2}\\left(\\frac{\\stoabbr{TP}}{\\stoabbr{TP}+\\stoabbr{FN}}+\\frac{\\stoabbr{TN}}{\\stoabbr{TN}+\\stoabbr{FP}}\\right),",
+      "context": {
+        "before": "Качество классификации оценивается по ROC-AUC, площади под кривой точности-полноты и сбалансированной точности. ROC-AUC можно интерпретировать как вероятность того, что модель прис",
+        "after": "где $\\stoabbr{BA}$ – сбалансированная точность, $\\stoabbr{TP}$ – число верно найденных территорий верхнего квартиля, $\\stoabbr{FN}$ – число пропущенных территорий верхнего квартиля"
+      }
+    },
+    {
+      "id": "F169",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 270,
+      "column": 5,
+      "kind": "inline",
+      "tex": "\\stoabbr{BA}",
+      "context": {
+        "line": "где ⟦формула⟧ – сбалансированная точность, $\\stoabbr{TP}$ – число верно найденных территорий верхнего квартиля, $"
+      }
+    },
+    {
+      "id": "F170",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 270,
+      "column": 49,
+      "kind": "inline",
+      "tex": "\\stoabbr{TP}",
+      "context": {
+        "line": "где $\\stoabbr{BA}$ – сбалансированная точность, ⟦формула⟧ – число верно найденных территорий верхнего квартиля, $\\stoabbr{FN}$ – число пропущенных территорий"
+      }
+    },
+    {
+      "id": "F171",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 270,
+      "column": 118,
+      "kind": "inline",
+      "tex": "\\stoabbr{FN}",
+      "context": {
+        "line": "$ – сбалансированная точность, $\\stoabbr{TP}$ – число верно найденных территорий верхнего квартиля, ⟦формула⟧ – число пропущенных территорий верхнего квартиля, $\\stoabbr{TN}$ – число верно найденных территорий"
+      }
+    },
+    {
+      "id": "F172",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 270,
+      "column": 183,
+      "kind": "inline",
+      "tex": "\\stoabbr{TN}",
+      "context": {
+        "line": "нных территорий верхнего квартиля, $\\stoabbr{FN}$ – число пропущенных территорий верхнего квартиля, ⟦формула⟧ – число верно найденных территорий вне верхнего квартиля, $\\stoabbr{FP}$ – число ошибочно отнесенны"
+      }
+    },
+    {
+      "id": "F173",
+      "source": "reports/coursework_sad/10_methodology.md",
+      "line": 270,
+      "column": 256,
+      "kind": "inline",
+      "tex": "\\stoabbr{FP}",
+      "context": {
+        "line": "риторий верхнего квартиля, $\\stoabbr{TN}$ – число верно найденных территорий вне верхнего квартиля, ⟦формула⟧ – число ошибочно отнесенных к верхнему квартилю территорий."
+      }
+    },
+    {
+      "id": "F174",
+      "source": "reports/coursework_sad/30_results.md",
+      "line": 51,
+      "column": 230,
+      "kind": "inline",
+      "tex": "\\ln(1+x)",
+      "context": {
+        "line": "очки – объем рабочей выгрузки, пунктирные линии – медиану и 75-й процентиль цели; log1p(x) означает ⟦формула⟧"
+      }
+    },
+    {
+      "id": "F175",
+      "source": "reports/coursework_sad/30_results.md",
+      "line": 59,
+      "column": 1,
+      "kind": "display",
+      "tex": "H_0^{N}: y_i \\sim N(\\mu,\\sigma^2), \\quad H_1^{N}: y_i \\not\\sim N(\\mu,\\sigma^2),",
+      "context": {
+        "before": "Для критериев нормальности нулевая гипотеза состоит в том, что доля просроченной задолженности имеет нормальное распределение. Альтернативная гипотеза состоит в том, что распределе",
+        "after": "где $H_0^{N}$ – нулевая гипотеза о нормальности распределения, $H_1^{N}$ – альтернативная гипотеза о ненормальности, $\\mu$ – математическое ожидание, $\\sigma^2$ – дисперсия нормаль"
+      }
+    },
+    {
+      "id": "F176",
+      "source": "reports/coursework_sad/30_results.md",
+      "line": 61,
+      "column": 5,
+      "kind": "inline",
+      "tex": "H_0^{N}",
+      "context": {
+        "line": "где ⟦формула⟧ – нулевая гипотеза о нормальности распределения, $H_1^{N}$ – альтернативная гипотеза о ненормальнос"
+      }
+    },
+    {
+      "id": "F177",
+      "source": "reports/coursework_sad/30_results.md",
+      "line": 61,
+      "column": 64,
+      "kind": "inline",
+      "tex": "H_1^{N}",
+      "context": {
+        "line": "где $H_0^{N}$ – нулевая гипотеза о нормальности распределения, ⟦формула⟧ – альтернативная гипотеза о ненормальности, $\\mu$ – математическое ожидание, $\\sigma^2$ – дисперсия"
+      }
+    },
+    {
+      "id": "F178",
+      "source": "reports/coursework_sad/30_results.md",
+      "line": 61,
+      "column": 118,
+      "kind": "inline",
+      "tex": "\\mu",
+      "context": {
+        "line": "улевая гипотеза о нормальности распределения, $H_1^{N}$ – альтернативная гипотеза о ненормальности, ⟦формула⟧ – математическое ожидание, $\\sigma^2$ – дисперсия нормального распределения."
+      }
+    },
+    {
+      "id": "F179",
+      "source": "reports/coursework_sad/30_results.md",
+      "line": 61,
+      "column": 151,
+      "kind": "inline",
+      "tex": "\\sigma^2",
+      "context": {
+        "line": "спределения, $H_1^{N}$ – альтернативная гипотеза о ненормальности, $\\mu$ – математическое ожидание, ⟦формула⟧ – дисперсия нормального распределения."
+      }
+    }
+  ]
+}

@@ -81,6 +81,26 @@ async function run(): Promise<void> {
 		identifierWidths[1] >= 1700,
 		'Automatic width must reserve space for SQL types',
 	);
+	const codeToken = {
+		header: [{ text: 'Столбец' }, { text: 'Тип' }, { text: 'Расшифровка' }],
+		rows: [
+			[
+				{ text: '`monthly_to_debt_ratio`' },
+				{ text: 'число' },
+				{ text: 'Отношение выдач к задолженности' },
+			],
+		],
+		align: [null, null, null],
+	} as unknown as Tokens.Table;
+	const codeWidths = computeTableColumnWidths(codeToken);
+	assert.equal(
+		codeWidths.reduce((sum, width) => sum + width, 0),
+		9355,
+	);
+	assert.ok(
+		codeWidths[0] >= 21 * 175 + 2 * 108,
+		'Courier inline code must fit without splitting the identifier',
+	);
 
 	// 2. Integration test: Table with center/right alignment, bold cells, br tags, header markup
 	const markdown = `
@@ -105,11 +125,11 @@ async function run(): Promise<void> {
 	assert.match(docXml, /<w:br\/>/);
 	assert.match(
 		docXml,
-		/<w:tblCellMar><w:top w:type="dxa" w:w="0"\/><w:left w:type="dxa" w:w="108"\/><w:bottom w:type="dxa" w:w="0"\/><w:right w:type="dxa" w:w="108"\/><\/w:tblCellMar>/,
+		/<w:tblCellMar><w:top w:type="dxa" w:w="57"\/><w:left w:type="dxa" w:w="108"\/><w:bottom w:type="dxa" w:w="57"\/><w:right w:type="dxa" w:w="108"\/><\/w:tblCellMar>/,
 	);
 	assert.match(
 		docXml,
-		/<w:tcMar><w:left w:type="dxa" w:w="108"\/><w:right w:type="dxa" w:w="108"\/><\/w:tcMar>/,
+		/<w:tcMar><w:top w:type="dxa" w:w="57"\/><w:left w:type="dxa" w:w="108"\/><w:bottom w:type="dxa" w:w="57"\/><w:right w:type="dxa" w:w="108"\/><\/w:tcMar>/,
 	);
 
 	const plainHeaderElements = await parseMarkdownToDocx(

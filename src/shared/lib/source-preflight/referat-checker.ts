@@ -22,6 +22,23 @@ function findKeywordsLine(
 	return null;
 }
 
+function referatTextLength(content: string, keywordsLine: number): number {
+	return content
+		.split('\n')
+		.slice(keywordsLine)
+		.join(' ')
+		.replace(
+			/\\sto_referat_characteristics\{([^}]*)\}/g,
+			'Основные характеристики: $1',
+		)
+		.replace(
+			/\\sto_referat_application\{([^}]*)\}/g,
+			'Область применения: $1',
+		)
+		.replace(/\s+/g, ' ')
+		.trim().length;
+}
+
 export function validateReferat(
 	files: SourceFile[],
 	issues: SourcePreflightIssue[],
@@ -145,16 +162,17 @@ export function validateReferat(
 		}
 	}
 
-	if (referat.content.length > STO_RULES.referat.maxTextLengthChars) {
+	if (
+		keywords &&
+		referatTextLength(referat.content, keywords.number) >
+			STO_RULES.referat.maxTextLengthChars
+	) {
 		issues.push(
 			issue(
 				'referat-length-warning',
-				`referat source is longer than ${STO_RULES.referat.maxTextLengthChars} characters; STO recommends a concise abstract.`,
+				`referat text is longer than ${STO_RULES.referat.maxTextLengthChars} characters; STO recommends a concise abstract.`,
 				referat.file,
-				lineNumberAt(
-					referat.content,
-					STO_RULES.referat.maxTextLengthChars,
-				),
+				keywords.number + 1,
 				'warning',
 			),
 		);
