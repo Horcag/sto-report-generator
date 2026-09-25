@@ -1,6 +1,7 @@
 import { STO_RULES } from '@/shared/config';
 import { ReportConfig } from '@/shared/lib/report-config';
 
+import { createSourceTextContext } from './text-context';
 import { SourceFile, SourcePreflightIssue } from './types';
 import { issue, lineNumberAt } from './utils';
 
@@ -56,6 +57,21 @@ export function validateReferat(
 				),
 			);
 		}
+	}
+	const hasAppendix = files.some(({ content }) => {
+		const prose = createSourceTextContext(content).prose;
+		return /\\sto_appendix\{[^}]+\}\{[^}]*\}|\\sto_structural_heading\{ПРИЛОЖЕНИЕ\s+[А-ЯЁ]\}/i.test(
+			prose,
+		);
+	});
+	if (hasAppendix && !referat.content.includes('{{APPENDICES}}')) {
+		issues.push(
+			issue(
+				'referat-appendices-placeholder-missing',
+				'referat must state the number of appendices using {{APPENDICES}}.',
+				referat.file,
+			),
+		);
 	}
 
 	const keywords = findKeywordsLine(referat.content);

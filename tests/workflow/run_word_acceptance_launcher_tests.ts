@@ -71,10 +71,12 @@ function withFakeWord(
 						figures: 1,
 						tables: 1,
 						sources: 1,
+						appendices: 0,
 						replacements: {
 							'{{FIGURES}}': '1 рисунок',
 							'{{TABLES}}': '1 таблица',
 							'{{SOURCES}}': '1 источник',
+							'{{APPENDICES}}': '0 приложений',
 						},
 					}),
 				};
@@ -97,6 +99,7 @@ function withFakeWord(
 				figures: 1,
 				tables: 1,
 				sources: 1,
+				appendices: 0,
 			});
 			if (
 				request.interactionMode === 'background' ||

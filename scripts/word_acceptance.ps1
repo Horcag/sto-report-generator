@@ -352,7 +352,7 @@ function Set-ReferatStatistics($Document, $Request) {
             if ($attempt -eq 4) { throw 'Referat page count did not stabilize.' }
         }
     }
-    if ($Document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES)\}\}') {
+    if ($Document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES|APPENDICES)\}\}') {
         throw 'Referat statistic placeholders remain after Word replacement.'
     }
 }
@@ -510,7 +510,7 @@ try {
     # Word's successful UI path reopens the saved file before publishing.
     $document = $word.Documents.Open($stagedAcceptedDocx, $false, $false)
     $pageCountAfterReopen = Get-SavedDocumentPageCount $document
-    if ($document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES)\}\}') {
+    if ($document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES|APPENDICES)\}\}') {
         throw 'Accepted DOCX still contains referat statistic placeholders.'
     }
     Write-Output "Word acceptance: saved DOCX reopened with $pageCountAfterReopen pages before PDF export."
@@ -596,6 +596,7 @@ try {
             figures = [int]$request.statisticCounts.figures
             tables = [int]$request.statisticCounts.tables
             sources = [int]$request.statisticCounts.sources
+            appendices = [int]$request.statisticCounts.appendices
             placeholdersCleared = $true
         }
         requiredFont = [ordered]@{

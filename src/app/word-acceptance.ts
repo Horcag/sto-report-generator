@@ -12,13 +12,15 @@ import {
 
 import { getFileEvidence } from './word-acceptance-evidence';
 import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
-import { readAcceptanceStatistics } from './word-acceptance-statistics';
+import {
+	readAcceptanceStatistics,
+	StatisticCounts,
+} from './word-acceptance-statistics';
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
 export const WORD_ACCEPTANCE_TIMEOUT_MS = 180_000;
 export const WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS = 45_000;
-
 export type WordAcceptanceInteractionMode = 'background' | 'interactive';
 
 export interface WordAcceptanceOptions {
@@ -28,12 +30,10 @@ export interface WordAcceptanceOptions {
 	manifest?: string;
 	stylePreset?: StoStylePreset;
 }
-
 export interface WordAcceptanceExpectedStyle {
 	styleId: string;
 	displayName: string;
 }
-
 export interface WordAcceptanceRequest {
 	schemaVersion: 1;
 	inputDocx: string;
@@ -49,12 +49,10 @@ export interface WordAcceptanceRequest {
 	interactionMode: WordAcceptanceInteractionMode;
 	attemptedModes: WordAcceptanceInteractionMode[];
 	statisticReplacements: Record<string, string>;
-	statisticCounts: { figures: number; tables: number; sources: number };
+	statisticCounts: StatisticCounts;
 	pageWordForms: [string, string, string];
 }
-
 export type WordAcceptanceHostKind = 'windows' | 'wsl';
-
 export interface WordAcceptancePlan {
 	hostKind: WordAcceptanceHostKind;
 	command: string;
@@ -207,7 +205,7 @@ export function createWordAcceptancePlan(
 		interactionMode: 'background',
 		attemptedModes: ['background'],
 		statisticReplacements: {},
-		statisticCounts: { figures: 0, tables: 0, sources: 0 },
+		statisticCounts: { figures: 0, tables: 0, sources: 0, appendices: 0 },
 		pageWordForms: ['страницу', 'страницы', 'страниц'],
 	};
 	const command =
@@ -251,6 +249,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		figures: statistics.figures,
 		tables: statistics.tables,
 		sources: statistics.sources,
+		appendices: statistics.appendices,
 	};
 	fs.mkdirSync(path.dirname(plan.requestJsonPath), { recursive: true });
 	let cleanupVerified = false;

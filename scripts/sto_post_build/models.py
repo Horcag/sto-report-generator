@@ -6,6 +6,7 @@ class DocumentCounts:
     figures: int
     tables: int
     sources: int
+    appendices: int = 0
 
 
 @dataclass(frozen=True)

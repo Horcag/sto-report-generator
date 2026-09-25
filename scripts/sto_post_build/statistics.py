@@ -16,6 +16,7 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
     figures = 0
     tables = 0
     sources = 0
+    appendices = 0
 
     with tempfile.TemporaryDirectory() as temp_dir:
         with zipfile.ZipFile(docx_path, "r") as archive:
@@ -48,6 +49,12 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
                 figures += 1
             elif style == "TableCaption" or style_name == "+№ - Название таблицы":
                 tables += 1
+            elif style == "AppendixHeading":
+                appendices += 1
+            elif style == "StructuralHeading":
+                text = "".join(paragraph.xpath(".//w:t/text()", namespaces=namespace))
+                if re.fullmatch(r"\s*ПРИЛОЖЕНИЕ\s+[\u0410-\u042f\u0401]\s*", text, re.IGNORECASE):
+                    appendices += 1
 
         # The bibliography builder emits only cited sources and numbers them densely
         # by first use, so the used-source count is the highest citation number.
@@ -63,4 +70,4 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
 
         sources = max_source
 
-    return DocumentCounts(figures=figures, tables=tables, sources=sources)
+    return DocumentCounts(figures=figures, tables=tables, sources=sources, appendices=appendices)

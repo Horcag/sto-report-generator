@@ -13,11 +13,13 @@ interface AcceptanceManifest {
 		figures: number;
 		tables: number;
 		sources: number;
+		appendices: number;
 		placeholdersCleared: boolean;
 	};
 }
 
-const placeholders = /\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES)\}\}/;
+const placeholders =
+	/\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES|APPENDICES)\}\}/;
 
 function main(): void {
 	const [docxPath, pdfPath, manifestPath] = process.argv.slice(2);

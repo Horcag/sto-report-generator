@@ -6,6 +6,7 @@ import { resolveReportConfig } from '@/shared/lib/report-config';
 import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
 import { runBibliographyRegressionTests } from './bibliography_regression_tests';
+import { runHeadingSourceTests } from './heading_source_tests';
 import { runStructureReferenceTests } from './structure_reference_tests';
 
 const tempRoot = path.join(
@@ -36,7 +37,7 @@ title: Test
 `,
 		'01_referat.md': `\\sto_structural_heading{РЕФЕРАТ}
 
-Отчет содержит {{PAGES}} страниц, {{FIGURES}} рисунков, {{TABLES}} таблиц и {{SOURCES}} источников.
+Отчет содержит {{PAGES}} страниц, {{FIGURES}} рисунков, {{TABLES}} таблиц, {{SOURCES}} источников и {{APPENDICES}}.
 `,
 		'02_toc.md': `\\sto_structural_heading{СОДЕРЖАНИЕ}
 `,
@@ -212,6 +213,23 @@ expectPass(
 
 Отчет содержит {{PAGES}} страниц и {{SOURCES}} источников.
 `,
+	}),
+);
+expectIssue(
+	'referat-appendix-count-required',
+	validFiles({
+		'01_referat.md':
+			'\\sto_structural_heading{РЕФЕРАТ}\n\n{{PAGES}} страниц, {{SOURCES}} источников.\n',
+		'03_intro.md': 'См. \\sto_appendix_ref{А}.\n',
+		'92_appendix.md': '\\sto_appendix{А}{Данные}\n',
+	}),
+	'referat-appendices-placeholder-missing',
+);
+expectPass(
+	'referat-appendix-count-present',
+	validFiles({
+		'03_intro.md': 'См. \\sto_appendix_ref{А}.\n',
+		'92_appendix.md': '\\sto_appendix{А}{Данные}\n',
 	}),
 );
 expectPass('lab-without-referat-or-sources', labFiles());
@@ -1383,6 +1401,13 @@ bibliography: "references.bib"
 	}),
 	'bibliography-book-pages-range',
 );
+
+runHeadingSourceTests({
+	validFiles,
+	expectIssue,
+	expectWarning,
+	expectNoIssue,
+});
 
 runStructureReferenceTests({
 	writeReport,
