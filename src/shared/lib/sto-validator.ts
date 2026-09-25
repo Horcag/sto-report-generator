@@ -7,6 +7,10 @@ import {
 	STRUCTURAL_HEADING_STYLE_ID,
 } from '../config';
 import { validateTemplateStyleConformance } from './sto-template-style-validator';
+import {
+	getEffectiveParagraphAttribute,
+	resolveWordStyleId,
+} from './word-style-properties';
 
 /**
  * STO Validation Suite
@@ -282,8 +286,16 @@ function isVisibleParagraph(paragraphXml: string): boolean {
 	);
 }
 
-function paragraphHasStyle(paragraphXml: string, styleId: string): boolean {
-	return getParagraphStyleId(paragraphXml) === styleId;
+function paragraphHasStyle(
+	paragraphXml: string,
+	stylesXml: string,
+	styleId: string,
+): boolean {
+	const resolvedStyleId = resolveWordStyleId(stylesXml, styleId);
+	return (
+		resolvedStyleId !== null &&
+		getParagraphStyleId(paragraphXml) === resolvedStyleId
+	);
 }
 
 function findPreviousVisibleParagraph(
@@ -318,7 +330,10 @@ function findNextVisibleParagraph(
 	return null;
 }
 
-function countTablesWithoutAdjacentCaption(docXml: string): number {
+function countTablesWithoutAdjacentCaption(
+	docXml: string,
+	stylesXml: string,
+): number {
 	const elements = getReportBodyElements(docXml);
 	let count = 0;
 
@@ -332,7 +347,7 @@ function countTablesWithoutAdjacentCaption(docXml: string): number {
 		const previousText = previous ? extractWordText(previous).trim() : '';
 		if (
 			!previous ||
-			!paragraphHasStyle(previous, 'TableCaption') ||
+			!paragraphHasStyle(previous, stylesXml, 'TableCaption') ||
 			!/^Таблица\s+/i.test(previousText)
 		) {
 			count++;
@@ -342,7 +357,10 @@ function countTablesWithoutAdjacentCaption(docXml: string): number {
 	return count;
 }
 
-function countImagesWithoutFollowingCaption(docXml: string): number {
+function countImagesWithoutFollowingCaption(
+	docXml: string,
+	stylesXml: string,
+): number {
 	const elements = getReportBodyElements(docXml);
 	let count = 0;
 
@@ -356,7 +374,7 @@ function countImagesWithoutFollowingCaption(docXml: string): number {
 		const nextText = next ? extractWordText(next).trim() : '';
 		if (
 			!next ||
-			!paragraphHasStyle(next, 'FigureCaption') ||
+			!paragraphHasStyle(next, stylesXml, 'FigureCaption') ||
 			!/^Рисунок\s+/i.test(nextText)
 		) {
 			count++;
@@ -458,21 +476,15 @@ function getBasedOnStyleId(styleXml: string): string | null {
 	return basedOnTag ? getXmlAttribute(basedOnTag, 'w:val') : null;
 }
 
-function getWordNormalizedStyleId(styleId: string): string | null {
-	if (styleId.startsWith('StoHeading')) {
-		return styleId.replace('StoHeading', 'STOHeading');
-	}
-	return null;
-}
-
-function expandStyleIds(styleIds: readonly string[]): string[] {
+function expandStyleIds(
+	stylesXml: string,
+	styleIds: readonly string[],
+): string[] {
 	return [
 		...new Set(
-			styleIds.flatMap(styleId =>
-				[styleId, getWordNormalizedStyleId(styleId)].filter(
-					(value): value is string => value !== null,
-				),
-			),
+			styleIds
+				.map(styleId => resolveWordStyleId(stylesXml, styleId))
+				.filter((value): value is string => value !== null),
 		),
 	];
 }
@@ -482,7 +494,7 @@ function hasStyleProperty(
 	styleIds: readonly string[],
 	propertyPattern: RegExp,
 ): boolean {
-	return expandStyleIds(styleIds).some(styleId => {
+	return expandStyleIds(stylesXml, styleIds).some(styleId => {
 		const styleXml = findStyleXml(stylesXml, styleId);
 		return styleXml ? regexMatches(propertyPattern, styleXml) : false;
 	});
@@ -494,7 +506,7 @@ function hasStylePropertyOrInherited(
 	propertyPattern: RegExp,
 	visitedStyleIds = new Set<string>(),
 ): boolean {
-	return expandStyleIds(styleIds).some(styleId => {
+	return expandStyleIds(stylesXml, styleIds).some(styleId => {
 		if (visitedStyleIds.has(styleId)) {
 			return false;
 		}
@@ -754,11 +766,13 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 		/\x3Cw:pPrDefault>.*?\x3Cw:jc\b[^>]*w:val="both"/s,
 		input.stylesXml,
 	);
-	const normalStyleIndent = hasStylePropertyOrInheritedByIdOrName(
-		input.stylesXml,
-		['Normal'],
-		new RegExp(String.raw`<w:ind\b[^>]*w:firstLine="${firstLineIndent}"`),
-	);
+	const normalStyleIndent =
+		getEffectiveParagraphAttribute(
+			input.stylesXml,
+			'Normal',
+			'ind',
+			'firstLine',
+		) === String(firstLineIndent);
 	const normalStyleAlignment =
 		hasStylePropertyOrInheritedByIdOrName(
 			input.stylesXml,
@@ -906,9 +920,11 @@ function validateFieldsTablesAndImages(
 	);
 	const tablesWithoutAdjacentCaption = countTablesWithoutAdjacentCaption(
 		input.docXml,
+		input.stylesXml,
 	);
 	const imagesWithoutFollowingCaption = countImagesWithoutFollowingCaption(
 		input.docXml,
+		input.stylesXml,
 	);
 	const tablesWithDiagonalBorders = countTablesWithDiagonalBorders(
 		input.docXml,
@@ -1005,8 +1021,15 @@ function createValidationInput(
 	footerXmlByType: Partial<Record<string, string>>,
 ): ValidationInput {
 	const heading1StyleIds = [getNumberedHeadingStyleId(1), 'Heading1', '1'];
-	const heading1StyleRef = `<w:pStyle w:val="(?:${heading1StyleIds.map(escapeRegExp).join('|')})"/>`;
-	const structuralHeadingStyleRef = `<w:pStyle w:val="${escapeRegExp(STRUCTURAL_HEADING_STYLE_ID)}"/>`;
+	const resolvedHeading1StyleIds = heading1StyleIds
+		.map(styleId => resolveWordStyleId(stylesXml, styleId))
+		.filter((styleId): styleId is string => styleId !== null);
+	const heading1StyleRef = `<w:pStyle w:val="(?:${resolvedHeading1StyleIds.map(escapeRegExp).join('|')})"/>`;
+	const resolvedStructuralHeadingStyleId = resolveWordStyleId(
+		stylesXml,
+		STRUCTURAL_HEADING_STYLE_ID,
+	);
+	const structuralHeadingStyleRef = `<w:pStyle w:val="${escapeRegExp(resolvedStructuralHeadingStyleId ?? STRUCTURAL_HEADING_STYLE_ID)}"/>`;
 
 	return {
 		docXml,
