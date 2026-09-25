@@ -61,6 +61,12 @@ citations require them. `--type` changes title-page text only; it is not a profi
 
 - Inspect the target report directory and edit the smallest relevant `.md` modules. Do not rewrite a whole report in one
   file.
+- Before source preflight, review the connected Russian prose in the source `.md` modules. When the user explicitly asks
+  for text editing and `humanizer-ru` is available, apply its academic-genre rules to chatbot artifacts and formulaic
+  wording; for a review-only request, report findings without rewriting. Do not infer AI authorship from soft style
+  signals. Preserve scientific terminology, factual claims, numbers, citations, formulas, STO macros, YAML, and BibTeX;
+  inspect the source diff before building. This editorial step does not run inside `check`, `generate`, or CI and does not
+  add a build dependency. See `docs/report-authoring.md` for the author-facing procedure.
 - If figures come from a notebook, refresh or sync figures before building the DOCX. For report-specific figure scripts,
   install optional dependencies with `uv sync --group figures` if needed.
 - Run source preflight:
