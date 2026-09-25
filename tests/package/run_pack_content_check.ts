@@ -13,7 +13,6 @@ interface PackResult {
 const tsxCliPath = require.resolve('tsx/cli');
 
 const forbiddenPrefixes = [
-	'.agents/',
 	'.github/',
 	'.omx/',
 	'.venv/',
@@ -102,6 +101,8 @@ function runPortableExampleAudit(): void {
 
 function isForbiddenPath(filePath: string): boolean {
 	return (
+		(filePath.startsWith('.agents/') &&
+			!filePath.startsWith('.agents/skills/humanizer-ru/')) ||
 		forbiddenExactPaths.has(filePath) ||
 		forbiddenPrefixes.some(prefix => filePath.startsWith(prefix)) ||
 		filePath.startsWith('.temp') ||
@@ -115,6 +116,13 @@ function isForbiddenPath(filePath: string): boolean {
 function assertRequiredFiles(packedFiles: PackedFile[]): void {
 	const packedPaths = new Set(packedFiles.map(file => file.path));
 	const requiredPaths = [
+		'.agents/skills/humanizer-ru/SKILL.md',
+		'.agents/skills/humanizer-ru/LICENSE',
+		'.agents/skills/humanizer-ru/references/rewrite-guide.md',
+		'.agents/skills/humanizer-ru/knowledge/corrections.md',
+		'.agents/skills/humanizer-ru/scripts/check_all.py',
+		'.agents/skills/humanizer-ru/src/humanizer_ru/__init__.py',
+		'.agents/skills/humanizer-ru/tests/test_markers_cases.py',
 		'LICENSE',
 		'bin/sto-report-generator.cjs',
 		'scripts/check_word_license.ps1',

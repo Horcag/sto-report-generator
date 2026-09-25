@@ -42,6 +42,10 @@ for (const expectedFile of [
 assert.equal(result.gitInitialized, true);
 assert.ok(fs.existsSync(path.join(result.targetDir, '.git')));
 assert.match(
+	fs.readFileSync(path.join(result.targetDir, 'README.md'), 'utf8'),
+	/humanizer-ru из \.agents\/skills\/humanizer-ru\/SKILL\.md/,
+);
+assert.match(
 	fs.readFileSync(path.join(result.targetDir, '01_referat.md'), 'utf8'),
 	/Пояснительная записка: \{\{PAGES\}\} с\., \{\{FIGURES\}\}, \{\{TABLES\}\}, \{\{SOURCES\}\}, \{\{APPENDICES\}\}\./,
 );
