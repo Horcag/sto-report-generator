@@ -199,6 +199,16 @@ fs.rmSync(tempRoot, { recursive: true, force: true });
 fs.mkdirSync(tempRoot, { recursive: true });
 
 expectPass('valid-minimal', validFiles());
+expectIssue(
+	'referat-bold-markdown',
+	validFiles({
+		'01_referat.md': `\\sto_structural_heading{РЕФЕРАТ}
+
+Отчет содержит {{PAGES}} страниц, {{SOURCES}} источников. **Основные характеристики:** точность метода.
+`,
+	}),
+	'forbidden-bold-markdown',
+);
 runSemanticSourceTests({ validFiles, expectPass, expectIssue });
 expectPass(
 	'valid-style-preset',

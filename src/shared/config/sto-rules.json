@@ -288,7 +288,6 @@
 		]
 	},
 	"validation": {
-		"allowedBoldMarkdownFiles": ["01_referat.md"],
 		"forbiddenLiteralMarkers": [
 			"Источник не найден",
 			"Source not found",

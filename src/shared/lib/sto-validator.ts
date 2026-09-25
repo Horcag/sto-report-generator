@@ -22,6 +22,7 @@ import {
 	paragraphHasDrawing,
 	paragraphHasStyle,
 } from './sto-validator/body-xml';
+import { hasBoldOrdinaryBodyText } from './sto-validator/bold-formatting';
 import {
 	getEffectiveBodyParagraphAttribute,
 	getEffectiveParagraphAttribute,
@@ -772,6 +773,11 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 				input.numberingXml,
 			),
 			'Body paragraph has a direct alignment, indent, or spacing override outside STO values.',
+		),
+		resultFromFailure(
+			'Ordinary Body Bold Text',
+			hasBoldOrdinaryBodyText(input.docXml, input.stylesXml),
+			'Ordinary body text, including referat fields, must not be bold.',
 		),
 		resultFromPass(
 			'Page Margins',

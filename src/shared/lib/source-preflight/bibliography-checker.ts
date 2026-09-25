@@ -223,6 +223,18 @@ function validateRequiredBibFields(
 			) {
 				continue;
 			}
+			// Title-first books may credit a compiler or editor in the
+			// responsibility statement instead of naming an author.
+			if (
+				entry.entryType === 'book' &&
+				tagNames.includes('author') &&
+				tagNames.includes('editor') &&
+				/^(?:сост\.|под ред\.|ред\.)\s+\S/i.test(
+					getNormalizedTagValue(entry, 'note') ?? '',
+				)
+			) {
+				continue;
+			}
 			if (
 				tagNames.some(tagName =>
 					Boolean(getNormalizedTagValue(entry, tagName)),

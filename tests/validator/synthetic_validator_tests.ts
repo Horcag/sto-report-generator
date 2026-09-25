@@ -5,6 +5,7 @@ import AdmZip from 'adm-zip';
 
 import { unpackDocx } from '@/shared/lib/docx-archive';
 
+import { runSyntheticBoldTests } from './synthetic_bold_tests';
 import { runSyntheticLayoutTests } from './synthetic_layout_tests';
 import { runWordNormalizedStyleTests } from './synthetic_word_style_tests';
 
@@ -53,6 +54,7 @@ export function runSyntheticValidatorTests(
 		getCheck(normalFixture, 'Direct Body Paragraph Formatting').passed,
 		true,
 	);
+	runSyntheticBoldTests(writeXmlFixture, getCheck, namespaces, bodyStyles);
 	assert.equal(getCheck(normalFixture, 'Math XML Elements').passed, true);
 	const invalidMathFixture = writeXmlFixture(
 		'invalid-math-element',

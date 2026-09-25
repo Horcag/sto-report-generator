@@ -12,6 +12,7 @@ interface Scenario {
 	cleanupFails?: boolean;
 	malformedManifest?: boolean;
 	exportFails?: boolean;
+	boldInput?: boolean;
 }
 
 interface Invocation {
@@ -30,7 +31,13 @@ function withFakeWord(
 	fixture.addFile(
 		'word/document.xml',
 		Buffer.from(
-			'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Документ для проверки сохранения текста</w:t></w:r></w:p></w:body></w:document>',
+			`<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r>${scenario.boldInput ? '<w:rPr><w:b/></w:rPr>' : ''}<w:t>Документ для проверки сохранения текста</w:t></w:r></w:p></w:body></w:document>`,
+		),
+	);
+	fixture.addFile(
+		'word/styles.xml',
+		Buffer.from(
+			'<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>',
 		),
 	);
 	fixture.writeZip(input);
@@ -227,8 +234,19 @@ function testBothAttemptsFail(): void {
 	});
 }
 
+function testBoldInputRejectedBeforeWord(): void {
+	withFakeWord({ boldInput: true }, (inputDocx, calls) => {
+		assert.throws(
+			() => runWordAcceptance({ inputDocx }),
+			/Ordinary body text, including referat fields, must not be bold/,
+		);
+		assert.deepEqual(calls, []);
+	});
+}
+
 testSuccessfulAcceptance();
 testUnverifiedCleanup();
 testMalformedManifest();
 testBothAttemptsFail();
+testBoldInputRejectedBeforeWord();
 console.log('Word acceptance launcher tests passed.');

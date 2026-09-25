@@ -96,14 +96,11 @@ export function validateMicrotypography(
 		);
 	}
 
-	if (
-		!STO_RULES.validation.allowedBoldMarkdownFiles.includes(file) &&
-		/\*\*[^*]+\*\*/.test(content)
-	) {
+	if (/\*\*[^*]+\*\*/.test(content)) {
 		issues.push(
 			issue(
 				'forbidden-bold-markdown',
-				`contains bold markdown. Bold is allowed only in ${STO_RULES.validation.allowedBoldMarkdownFiles.join(', ')}.`,
+				'contains bold markdown. Bold is forbidden in ordinary report text.',
 				file,
 			),
 		);
