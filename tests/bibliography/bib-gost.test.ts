@@ -4,9 +4,10 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { parseMarkdownToDocx } from '@/features/markdown-parser';
-import { loadBibliography } from '@/features/markdown-parser/lib/parser/bibliography-loader';
 import { BibItem } from '@/features/markdown-parser/lib/types';
 import { formatBibItem } from '@/features/markdown-parser/lib/utils/bib-formatter';
+
+import { testBibliographyPathResolution } from './bib_path_resolution_tests';
 
 const tests: { input: BibItem; expected: string }[] = [
 	{
@@ -193,6 +194,23 @@ const tests: { input: BibItem; expected: string }[] = [
 		},
 		expected:
 			'Конституция Российской Федерации // Собрание законодательства РФ. – 2014. – № 31. – Ст. 4398.',
+	},
+	{
+		input: {
+			citationKey: 'bank-regulation',
+			entryType: 'norm',
+			entryTags: {
+				title: 'О порядке формирования резервов',
+				author: '{{Банк России}}',
+				howpublished: 'Положение Банка России от 28.06.2017 № 590-П',
+				journal: 'Вестник Банка России',
+				year: '2017',
+				number: '65--66',
+				langid: 'russian',
+			},
+		},
+		expected:
+			'О порядке формирования резервов : Положение Банка России от 28.06.2017 № 590-П / Банк России // Вестник Банка России. – 2017. – № 65–66.',
 	},
 	{
 		input: {
@@ -419,39 +437,6 @@ assert.equal(
 	}),
 	'Электронный документ. – Дата обновления: 25.02.2025. – Электронная версия печатного издания. – URL: https://example.org/document (дата обращения: 25.09.2026). – Дата публикации: 26.02.2025. – Режим доступа: по подписке.',
 );
-
-function testBibliographyPathResolution(): void {
-	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sto-bib-path-'));
-	try {
-		const sourceDir = path.join(tempDir, 'source');
-		const cwd = path.join(tempDir, 'cwd');
-		fs.mkdirSync(sourceDir);
-		fs.mkdirSync(cwd);
-		const metadata = { bibliography: 'references.bib' };
-		assert.throws(
-			() => loadBibliography(metadata, sourceDir, cwd),
-			/Bibliography file not found/,
-		);
-		fs.writeFileSync(
-			path.join(sourceDir, 'references.bib'),
-			'@book{source, title = {Source copy}}',
-		);
-		assert.equal(
-			loadBibliography(metadata, sourceDir, cwd)[0]?.citationKey,
-			'source',
-		);
-		fs.writeFileSync(
-			path.join(cwd, 'references.bib'),
-			'@book{cwd, title = {CWD copy}}',
-		);
-		assert.throws(
-			() => loadBibliography(metadata, sourceDir, cwd),
-			/ambiguous/i,
-		);
-	} finally {
-		fs.rmSync(tempDir, { recursive: true, force: true });
-	}
-}
 
 testBibliographyPathResolution();
 

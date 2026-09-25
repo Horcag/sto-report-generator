@@ -24,9 +24,15 @@ import {
 	ProcessTokensContext,
 	StoFlagToken,
 } from './types';
-import { mathExtension, stoExtension } from './utils/extensions';
+import {
+	mathExtension,
+	stoExtension,
+	stoInlineListExtension,
+} from './utils/extensions';
 
-marked.use({ extensions: [stoExtension, mathExtension] });
+marked.use({
+	extensions: [stoExtension, mathExtension, stoInlineListExtension],
+});
 
 function stripExpectedHeadingNumber(
 	tokens: Token[] | undefined,
@@ -124,7 +130,7 @@ class MarkdownParser {
 				// unless this content is a table caption paragraph ("Таблица X...")
 				const isTableCaption =
 					token.type === 'paragraph' &&
-					/^Таблица\s+\d+/i.test(
+					/^(?:Таблица|Продолжение таблицы)\s+(?:[А-Я]\.)?\d+/i.test(
 						((token as Tokens.Paragraph).text || '')
 							.replace(/[*_#]/g, '')
 							.trim(),
@@ -275,7 +281,13 @@ class MarkdownParser {
 						)),
 					);
 					break;
-				case 'table':
+				case 'table': {
+					const nextContent = tokensToProcess
+						.slice(tokenIndex + 1)
+						.find(
+							next =>
+								next.type !== 'space' && next.type !== 'html',
+						);
 					elements.push(
 						await handleTable(
 							token as Tokens.Table,
@@ -288,10 +300,17 @@ class MarkdownParser {
 									opts,
 								),
 							pendingTableWidths,
+							nextContent?.type === 'paragraph' &&
+								/^Продолжение таблицы\s+(?:[А-Я]\.)?\d+(?:\.\d+)?$/u.test(
+									(
+										nextContent as Tokens.Paragraph
+									).text.trim(),
+								),
 						),
 					);
 					pendingTableWidths = undefined;
 					break;
+				}
 				case 'space':
 					break;
 				case 'code': {

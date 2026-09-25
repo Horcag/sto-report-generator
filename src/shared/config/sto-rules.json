@@ -9,7 +9,12 @@
 	},
 	"markdown": {
 		"structuralHeadingCommand": "sto_structural_heading",
-		"supportedEnvironments": ["sto_bibliography", "sto_list", "sto_enum"],
+		"supportedEnvironments": [
+			"sto_bibliography",
+			"sto_list",
+			"sto_enum",
+			"sto_terms"
+		],
 		"listEnvironments": ["sto_list", "sto_enum"],
 		"bibliographyEnvironment": "sto_bibliography",
 		"sourcesStructuralHeading": "СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ"

@@ -7,6 +7,89 @@ export function runSyntheticLayoutTests(
 	getCheck: GetCheck,
 	namespaces: string,
 ): void {
+	const tableStyles = `<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="TableCaption"><w:name w:val="Table Caption"/></w:style></w:styles>`;
+	const caption = (value: string, alignment = '') =>
+		`<w:p><w:pPr><w:pStyle w:val="TableCaption"/>${alignment}</w:pPr><w:r><w:t>${value}</w:t></w:r></w:p>`;
+	const table = (border = '') =>
+		`<w:tbl><w:tblPr><w:tblBorders>${border}</w:tblBorders></w:tblPr><w:tr><w:trPr><w:tblHeader/></w:trPr><w:tc><w:p><w:r><w:t>Поле</w:t></w:r></w:p></w:tc></w:tr><w:tr><w:tc><w:p><w:r><w:t>Значение</w:t></w:r></w:p></w:tc></w:tr></w:tbl>`;
+	const continuationFixture = writeXmlFixture(
+		'table-continuation',
+		`<w:document ${namespaces}><w:body>${caption('Таблица 1 – Данные')}${table()}${caption('Продолжение таблицы 1')}${table()}</w:body></w:document>`,
+		tableStyles,
+	);
+	assert.equal(
+		getCheck(continuationFixture, 'Table Continuation Label').passed,
+		true,
+	);
+	assert.equal(
+		getCheck(continuationFixture, 'Table Continuation Bottom Border')
+			.passed,
+		true,
+	);
+	assert.equal(
+		getCheck(continuationFixture, 'Table Caption Adjacency').passed,
+		true,
+	);
+	const badContinuationFixture = writeXmlFixture(
+		'bad-table-continuation',
+		`<w:document ${namespaces}><w:body>${caption('Таблица 1 – Данные')}${table('<w:bottom w:val="single"/>')}${caption('Продолжение таблицы 2.', '<w:jc w:val="center"/>')}${table()}</w:body></w:document>`,
+		tableStyles,
+	);
+	assert.equal(
+		getCheck(badContinuationFixture, 'Table Continuation Label').passed,
+		false,
+	);
+	assert.equal(
+		getCheck(badContinuationFixture, 'Table Continuation Bottom Border')
+			.passed,
+		false,
+	);
+	const separatedContinuationFixture = writeXmlFixture(
+		'separated-table-continuation',
+		`<w:document ${namespaces}><w:body>${caption('Таблица 1 – Данные')}${table()}<w:p><w:r><w:t>Посторонний текст</w:t></w:r></w:p>${caption('Продолжение таблицы 1')}${table()}</w:body></w:document>`,
+		tableStyles,
+	);
+	assert.equal(
+		getCheck(separatedContinuationFixture, 'Table Continuation Label')
+			.passed,
+		false,
+	);
+
+	const noteFixture = writeXmlFixture(
+		'notes',
+		`<w:document ${namespaces}><w:body>
+		<w:p><w:r><w:t>Описание.</w:t></w:r></w:p>
+		<w:p><w:r><w:t>Примечание – уточнение.</w:t></w:r></w:p>
+		${table()}
+		<w:p><w:r><w:t>Примечания</w:t></w:r></w:p>
+		<w:p><w:r><w:t>1 Первый пункт.</w:t></w:r></w:p>
+		<w:p><w:r><w:t>2 Второй пункт.</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		tableStyles,
+	);
+	assert.equal(getCheck(noteFixture, 'Note Placement').passed, true);
+	assert.equal(getCheck(noteFixture, 'Note Form').passed, true);
+	assert.equal(getCheck(noteFixture, 'Table Note End').passed, true);
+	const badNoteFixture = writeXmlFixture(
+		'bad-notes',
+		`<w:document ${namespaces}><w:body>
+		<w:p><w:r><w:t>Примечание: неверно.</w:t></w:r></w:p>
+		<w:p><w:r><w:t>Примечания</w:t></w:r></w:p>
+		<w:p><w:r><w:t>2 Только второй пункт.</w:t></w:r></w:p>
+		</w:body></w:document>`,
+		tableStyles,
+	);
+	assert.equal(getCheck(badNoteFixture, 'Note Placement').passed, false);
+	assert.equal(getCheck(badNoteFixture, 'Note Form').passed, false);
+	const earlyTableNoteFixture = writeXmlFixture(
+		'early-table-note',
+		`<w:document ${namespaces}><w:body>${caption('Таблица 1 – Данные')}${table()}<w:p><w:r><w:t>Примечание – к таблице.</w:t></w:r></w:p>${caption('Продолжение таблицы 1')}${table()}</w:body></w:document>`,
+		tableStyles,
+	);
+	assert.equal(
+		getCheck(earlyTableNoteFixture, 'Table Note End').passed,
+		false,
+	);
 	const tableHeaderPeriodFixture = writeXmlFixture(
 		'table-header-period',
 		`<w:document ${namespaces}><w:body>

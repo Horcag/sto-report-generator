@@ -2,15 +2,20 @@ import {
 	AlignmentType,
 	Paragraph,
 	StyleLevel,
+	Table,
+	TableCell,
 	TableOfContents,
+	TableRow,
 	TabStopType,
 	TextRun,
 } from 'docx';
 import { Token } from 'marked';
 
 import {
+	compareStoTerms,
 	NUMBERED_HEADING_STYLE_IDS,
 	parseAppendixHeading,
+	parseStoTermLine,
 	STO_LIST_ENVIRONMENTS,
 	STO_RULES,
 	STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
@@ -49,8 +54,32 @@ export async function handleStoFlag(
 		tokens: Token[],
 		ctx: ProcessTokensContext,
 	) => Promise<DocxElement[]>,
-	_currentContext: ProcessTokensContext,
+	currentContext: ProcessTokensContext,
 ): Promise<DocxElement[]> {
+	if (token.flagType === 'referat_field') {
+		if (currentContext.structuralHeading !== 'РЕФЕРАТ') {
+			throw new Error(
+				'Referat semantic fields must appear under the РЕФЕРАТ heading.',
+			);
+		}
+		const value = token.text?.trim();
+		if (!value) throw new Error('Referat semantic field must be nonempty.');
+		return [
+			new Paragraph({
+				style: 'Normal',
+				children: [
+					new TextRun({
+						text:
+							token.referatField === 'characteristics'
+								? 'Основные характеристики: '
+								: 'Область применения: ',
+						bold: true,
+					}),
+					new TextRun(value),
+				],
+			}),
+		];
+	}
 	if (token.flagType === 'appendix') {
 		if (!token.appendix)
 			throw new Error('Appendix token is missing label and title.');
@@ -174,6 +203,55 @@ export async function handleStoFlag(
 				}
 			}
 			return bibElements;
+		}
+
+		if (envName === 'sto_terms') {
+			const lines = (token.content ?? '')
+				.split(/\r?\n/)
+				.map(line => line.trim())
+				.filter(Boolean);
+			const terms = lines.map(line => parseStoTermLine(line));
+			if (terms.length === 0 || terms.some(term => term === null)) {
+				throw new Error(
+					'sto_terms requires nonempty term | explanation | optional unit rows.',
+				);
+			}
+			const entries = terms as NonNullable<(typeof terms)[number]>[];
+			for (let index = 1; index < entries.length; index++) {
+				if (
+					compareStoTerms(
+						entries[index - 1].term,
+						entries[index].term,
+					) >= 0
+				) {
+					throw new Error(
+						'sto_terms must have unique terms in Russian alphabetical order.',
+					);
+				}
+			}
+			return [
+				new Table({
+					rows: entries.map(
+						entry =>
+							new TableRow({
+								children: [
+									new TableCell({
+										children: [
+											new Paragraph({ text: entry.term }),
+										],
+									}),
+									new TableCell({
+										children: [
+											new Paragraph({
+												text: `– ${entry.explanation}${entry.unit ? `, ${entry.unit}` : ''}`,
+											}),
+										],
+									}),
+								],
+							}),
+					),
+				}),
+			];
 		}
 
 		if (STO_LIST_ENVIRONMENTS.has(envName)) {

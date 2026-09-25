@@ -73,7 +73,7 @@ const TYPE_FIELDS: Record<string, string[]> = {
 		'editionresponsibility',
 		'editionaddition',
 	],
-	norm: ['journal', 'number', 'note'],
+	norm: [...AUTHOR_FIELDS, 'howpublished', 'journal', 'number', 'note'],
 	standard: ['number', ...PLACE_FIELDS, ...PHYSICAL_FIELDS],
 	patent: [
 		...AUTHOR_FIELDS,

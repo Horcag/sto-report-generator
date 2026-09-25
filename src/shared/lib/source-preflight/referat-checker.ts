@@ -43,6 +43,34 @@ export function validateReferat(
 		return;
 	}
 
+	for (const field of ['characteristics', 'application'] as const) {
+		const matches = [
+			...referat.content.matchAll(
+				new RegExp(String.raw`\\sto_referat_${field}\{([^}]*)\}`, 'g'),
+			),
+		];
+		if (matches.length === 0) {
+			issues.push(
+				issue(
+					`referat-${field}-missing`,
+					`referat should declare ${field} with \\sto_referat_${field}{...}.`,
+					referat.file,
+					undefined,
+					'warning',
+				),
+			);
+		} else if (matches.length > 1 || !matches[0][1].trim()) {
+			issues.push(
+				issue(
+					`referat-${field}-invalid`,
+					`referat ${field} must appear exactly once and contain text.`,
+					referat.file,
+					lineNumberAt(referat.content, matches[0].index ?? 0),
+				),
+			);
+		}
+	}
+
 	const requiredStatisticPlaceholders =
 		STO_RULES.referat.requiredStatisticPlaceholders ??
 		STO_RULES.referat.statisticPlaceholders;

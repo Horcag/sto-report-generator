@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url';
 import { mml2omml } from '@hungknguyen/mathml2omml';
 import {
 	Math as DocxMath,
+	ImportedXmlComponent,
 	MathFraction,
 	MathIntegral,
 	MathLimitLower,
@@ -63,6 +64,15 @@ export async function mathJaxReady(): Promise<boolean> {
 			loader: {
 				load: ['input/tex'],
 				require: importMathJaxComponent,
+			},
+			tex: {
+				macros: {
+					stovec: ['\\mathbf{#1}', 1],
+					stomat: ['\\mathbf{#1}', 1],
+					stotemp: ['\\text{#1}', 1],
+					stoelem: ['\\text{#1}', 1],
+					stoabbr: ['\\text{#1}', 1],
+				},
 			},
 		});
 	}
@@ -126,7 +136,22 @@ function buildFraction(item: Element): MathFraction {
 
 function buildMathRun(item: Element): MathRun {
 	const text = firstChildByTagName(item, 'm:t');
-	return new MathRun(text.textContent ?? '');
+	const run = new StyledMathRun(text.textContent ?? '');
+	run.addProperties(item);
+	return run;
+}
+
+class StyledMathRun extends MathRun {
+	addProperties(item: Element): void {
+		const properties = [...item.children].filter(
+			child => child.tagName === 'w:rPr' || child.tagName === 'm:rPr',
+		);
+		this.root.unshift(
+			...properties.map(child =>
+				ImportedXmlComponent.fromXmlString(child.outerHTML),
+			),
+		);
+	}
 }
 
 function buildSubScript(item: Element): MathSubScript {

@@ -27,6 +27,7 @@ words:
     - Oform
     - OpenXML
     - PowerShell
+    - Poppler
     - Referat
     - Ruff
     - SSRN
@@ -54,6 +55,16 @@ words:
     - techreport
     - tsconfig
     - tsx
+    - pdftoppm
+    - pdfs
+    - rasterizes
+    - backtest
+    - VARCHAR
+    - stovec
+    - stomat
+    - stotemp
+    - stoelem
+    - stoabbr
     - twips
     - urldate
     - venv

@@ -49,7 +49,16 @@ const fs = require('fs');
 (async () => {
   const mathjax = require('mathjax');
   const formulas = JSON.parse(fs.readFileSync(0, 'utf8'));
-  const MathJax = await mathjax.init({ loader: { load: ['input/tex'] } });
+  const MathJax = await mathjax.init({
+    loader: { load: ['input/tex'] },
+    tex: { macros: {
+      stovec: ['\\mathbf{#1}', 1],
+      stomat: ['\\mathbf{#1}', 1],
+      stotemp: ['\\text{#1}', 1],
+      stoelem: ['\\text{#1}', 1],
+      stoabbr: ['\\text{#1}', 1],
+    } },
+  });
   const result = formulas.map((formula) => {
     try {
       return { ok: true, mathml: MathJax.tex2mml(formula) };

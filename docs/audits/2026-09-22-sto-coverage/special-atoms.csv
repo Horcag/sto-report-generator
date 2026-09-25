@@ -4,7 +4,7 @@ F02,formula,1,FORM:9-16,select Math style,manual,src/shared/lib/math-converter.t
 F03,formula,1,FORM:9-16,select Function style,partial,src/shared/lib/source-preflight/formula-checker.ts:33-60,syntax only
 F04,formula,1,FORM:9-16,select Variable style,manual,src/shared/lib/math-converter.ts:117-120,no italic assertion
 F05,formula,1,FORM:9-16,select Greek-Symbol style,manual,src/shared/lib/math-converter.ts:117-120,no Greek style assertion
-F06,formula,1,FORM:9-16,select Vector-Matrix style,missing,src/shared/lib/math-converter.ts:76-200,no policy
+F06,formula,1,FORM:9-16,select Vector-Matrix style,partial,src/shared/lib/math-converter.ts; tests/shared/run_math_converter_tests.ts,Explicit stovec/stomat OMML runs verified; Word visual acceptance pending
 F07,formula,1,FORM:9-16,select Text style for text fragment,manual,src/features/markdown-parser/lib/parser/handlers/math-handler.ts:42-44,fallback is not semantic Text style
 F08,formula,1,FORM:20,digits upright,manual,src/shared/lib/math-converter.ts:117-120,no OMML run property test
 F09,formula,1,FORM:21-23,decimal separator comma,partial,src/shared/lib/source-preflight/formula-checker.ts:321-370,no decimal semantic test
@@ -12,13 +12,13 @@ F10,formula,1,FORM:24-26,Latin variable italic,manual,src/shared/lib/math-conver
 F11,formula,1,FORM:24-26,unit letter italic,manual,src/shared/lib/math-converter.ts:117-120,no style test
 F12,formula,1,FORM:27-28,uppercase Greek upright,manual,src/shared/lib/math-converter.ts:117-120,no style test
 F13,formula,1,FORM:28-29,lowercase Greek italic,manual,src/shared/lib/math-converter.ts:117-120,no style test
-F14,formula,1,FORM:32,lowercase vector upright bold,missing,src/shared/lib/math-converter.ts:76-200,no vector detection/style
-F15,formula,1,FORM:33,uppercase matrix upright bold,missing,src/shared/lib/math-converter.ts:76-200,no matrix detection/style
+F14,formula,1,FORM:32,lowercase vector upright bold,partial,src/shared/lib/math-converter.ts; tests/shared/run_math_converter_tests.ts,Explicit stovec OMML bold upright verified; Word visual acceptance pending
+F15,formula,1,FORM:33,uppercase matrix upright bold,partial,src/shared/lib/math-converter.ts; tests/shared/run_math_converter_tests.ts,Explicit stomat OMML bold upright verified; Word visual acceptance pending
 F16,formula,1,FORM:34,ordinary function upright,partial,src/shared/lib/source-preflight/formula-checker.ts:33-60,no output-style test
 F17,formula,1,FORM:35,trigonometric function upright,partial,src/shared/lib/source-preflight/formula-checker.ts:33-60,no output-style test
-F18,formula,1,FORM:36,temperature unit upright,missing,src/shared/lib/math-converter.ts:117-120,no unit policy
-F19,formula,1,FORM:37,chemical element upright,missing,src/shared/lib/math-converter.ts:117-120,no chemistry policy
-F20,formula,1,FORM:39-40,abbreviated subscript upright,missing,src/shared/lib/math-converter.ts:122-148,no classifier
+F18,formula,1,FORM:36,temperature unit upright,partial,src/shared/lib/math-converter.ts; tests/shared/run_math_converter_tests.ts,Explicit stotemp upright OMML verified; Word visual acceptance pending
+F19,formula,1,FORM:37,chemical element upright,partial,src/shared/lib/math-converter.ts; tests/shared/run_math_converter_tests.ts,Explicit stoelem upright OMML verified; Word visual acceptance pending
+F20,formula,1,FORM:39-40,abbreviated subscript upright,partial,src/shared/lib/math-converter.ts; tests/shared/run_math_converter_tests.ts,Explicit stoabbr upright OMML subscript verified; Word visual acceptance pending
 F21,formula,1,FORM:40-41,numeric subscript retained as index,manual,src/shared/lib/math-converter.ts:122-148,no fixture
 F22,formula,1,FORM:42-44,break first on relation sign,manual,src/shared/lib/source-preflight/formula-checker.ts:72-119,no layout test
 F23,formula,1,FORM:43-44,break second on ellipsis,manual,src/shared/lib/source-preflight/formula-checker.ts:72-119,no layout test
@@ -67,8 +67,8 @@ L15,list,4,LIST:49-54,lead-in generalizing word,manual,src/shared/lib/source-pre
 L16,list,4,LIST:55-61,move trailing preposition into first item,partial,src/shared/lib/source-preflight/list-checker.ts:133-183,fixed word set
 L17,list,5,LIST:69-73,colon after direct lead-in,partial,src/shared/lib/source-preflight/list-checker.ts:133-183,semantic relation absent
 L18,list,5,LIST:74-77,full stop allowed after weak lead-in,manual,src/shared/lib/source-preflight/list-checker.ts:133-183,semantic relation absent
-L19,list,8,LIST:example,inline list uses comma for simple items,missing,src/shared/lib/source-preflight/list-checker.ts:419-462,no model
-L20,list,8,LIST:example,inline list uses semicolon for complex items,missing,src/shared/lib/source-preflight/list-checker.ts:419-462,no model
+L19,list,8,LIST:example,inline list uses comma for simple items,partial,"src/shared/config/sto-inline-list.ts; src/features/markdown-parser/lib/parser/handlers/inline-parser.ts; src/shared/lib/source-preflight/inline-list-checker.ts","Explicit inline list mode tested in source preflight and generated DOCX; semantic classification remains author-reviewed."
+L20,list,8,LIST:example,inline list uses semicolon for complex items,partial,"src/shared/config/sto-inline-list.ts; src/features/markdown-parser/lib/parser/handlers/inline-parser.ts; src/shared/lib/source-preflight/inline-list-checker.ts","Explicit inline list mode tested in source preflight and generated DOCX; semantic classification remains author-reviewed."
 L21,list,11,LIST:122-132,uppercase-letter marker dot,unsupported,src/shared/config/sto-styles.ts:354-451,no level
 L22,list,11,LIST:122-132,Roman marker dot,unsupported,src/shared/config/sto-styles.ts:354-451,no level
 L23,list,11,LIST:122-132,decimal marker dot,partial,ordered-numbering.ts:404-419,no capitalization policy

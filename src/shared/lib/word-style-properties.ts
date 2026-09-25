@@ -82,6 +82,120 @@ function readAttribute(
 		: null;
 }
 
+function paragraphProperties(xml: string): string {
+	return /<w:pPr\b[^>]*>([\s\S]*?)<\/w:pPr>/.exec(xml)?.[1] ?? '';
+}
+
+/** Resolve one paragraph property in Word's direct, numbering, style, defaults order. */
+export function getEffectiveBodyParagraphAttribute(
+	paragraphXml: string,
+	stylesXml: string,
+	numberingXml: string | null,
+	styleId: string,
+	tagName: string,
+	attribute: string,
+): string | null {
+	const directProperties = paragraphProperties(paragraphXml);
+	const competingIndent =
+		attribute === 'firstLine'
+			? 'hanging'
+			: attribute === 'hanging'
+				? 'firstLine'
+				: null;
+	if (
+		tagName === 'ind' &&
+		competingIndent &&
+		readAttribute(directProperties, 'ind', competingIndent) !== null
+	)
+		return null;
+	const direct = readAttribute(directProperties, tagName, attribute);
+	if (direct !== null) return direct;
+
+	const numberProperty = (properties: string, name: string) =>
+		readAttribute(
+			/<w:numPr\b[^>]*>([\s\S]*?)<\/w:numPr>/.exec(properties)?.[1] ?? '',
+			name,
+			'val',
+		);
+	const styleNumber = visitStyleChain(stylesXml, styleId, styleXml =>
+		numberProperty(getParagraphProperties(styleXml), 'numId'),
+	);
+	const numId = numberProperty(directProperties, 'numId') ?? styleNumber;
+	if (numberingXml && numId && numId !== '0') {
+		const numXml = new RegExp(
+			String.raw`<w:num\b(?=[^>]*\bw:numId="${escapeRegExp(numId)}")[\s\S]*?<\/w:num>`,
+		).exec(numberingXml)?.[0];
+		const abstractId =
+			numXml && readAttribute(numXml, 'abstractNumId', 'val');
+		const abstractXml =
+			abstractId &&
+			new RegExp(
+				String.raw`<w:abstractNum\b(?=[^>]*\bw:abstractNumId="${escapeRegExp(abstractId)}")[\s\S]*?<\/w:abstractNum>`,
+			).exec(numberingXml)?.[0];
+		const level =
+			numberProperty(directProperties, 'ilvl') ??
+			visitStyleChain(stylesXml, styleId, styleXml =>
+				numberProperty(getParagraphProperties(styleXml), 'ilvl'),
+			) ??
+			'0';
+		const levelXml =
+			abstractXml &&
+			new RegExp(
+				String.raw`<w:lvl\b(?=[^>]*\bw:ilvl="${escapeRegExp(level)}")[\s\S]*?<\/w:lvl>`,
+			).exec(abstractXml)?.[0];
+		const overrideXml =
+			numXml &&
+			new RegExp(
+				String.raw`<w:lvlOverride\b(?=[^>]*\bw:ilvl="${escapeRegExp(level)}")[\s\S]*?<\/w:lvlOverride>`,
+			).exec(numXml)?.[0];
+		const overrideProperties = paragraphProperties(overrideXml ?? '');
+		const levelProperties = paragraphProperties(levelXml ?? '');
+		const overrideValue = readAttribute(
+			overrideProperties,
+			tagName,
+			attribute,
+		);
+		if (overrideValue !== null) return overrideValue;
+		if (
+			tagName === 'ind' &&
+			competingIndent &&
+			readAttribute(overrideProperties, 'ind', competingIndent) !== null
+		)
+			return null;
+		const levelValue = readAttribute(levelProperties, tagName, attribute);
+		if (levelValue !== null) return levelValue;
+		if (
+			tagName === 'ind' &&
+			competingIndent &&
+			readAttribute(levelProperties, 'ind', competingIndent) !== null
+		)
+			return null;
+	}
+	if (tagName === 'ind' && competingIndent) {
+		const fromStyle = visitStyleChain(stylesXml, styleId, styleXml => {
+			const properties = getParagraphProperties(styleXml);
+			return (
+				readAttribute(properties, 'ind', attribute) ??
+				(readAttribute(properties, 'ind', competingIndent) !== null
+					? ''
+					: null)
+			);
+		});
+		if (fromStyle !== null) return fromStyle || null;
+		const defaults =
+			/<w:pPrDefault\b[^>]*>([\s\S]*?)<\/w:pPrDefault>/.exec(
+				stylesXml,
+			)?.[1] ?? '';
+		return readAttribute(defaults, 'ind', attribute);
+	}
+	return getEffectiveParagraphAttribute(
+		stylesXml,
+		styleId,
+		tagName,
+		attribute,
+	);
+}
+
 function visitStyleChain(
 	stylesXml: string,
 	logicalStyleId: string,

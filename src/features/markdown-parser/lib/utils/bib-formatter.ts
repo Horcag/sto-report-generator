@@ -77,7 +77,7 @@ export function formatBibItem(item: BibItem): string {
 			);
 			break;
 		case 'norm':
-			record = formatNorm(tags, title);
+			record = formatNorm(tags, title, authorBlock);
 			break;
 		case 'standard':
 			record = formatStandard(tags, title);
@@ -292,15 +292,24 @@ function formatBook(
 	return normalizeRecord(appendUrlArea(record, tags));
 }
 
-function formatNorm(tags: Record<string, string>, title: string): string {
-	let record = title;
+function formatNorm(
+	tags: Record<string, string>,
+	title: string,
+	authorBlock: AuthorBlock,
+): string {
+	let record = buildPrimaryDescription(
+		titleWithType(title, cleanText(tags.howpublished)),
+		authorBlock,
+	);
 	if (tags.journal) {
 		record = `${record} // ${cleanText(tags.journal)}.`;
 	}
 	record = appendArea(record, cleanText(tags.year));
 	record = appendArea(
 		record,
-		tags.number ? `№ ${cleanText(tags.number)}` : '',
+		tags.number
+			? `№ ${cleanText(tags.number).replace(/(\d)--(\d)/g, '$1–$2')}`
+			: '',
 	);
 	record = appendArea(record, cleanText(tags.note));
 	return normalizeRecord(appendUrlArea(record, tags));

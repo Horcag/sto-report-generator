@@ -27,6 +27,17 @@ function fakeHostPath(absolutePath: string): string {
 	return `WIN:${absolutePath}`;
 }
 
+function testTablePaginationPowerShell(): void {
+	const probe = spawnSync('pwsh', ['-NoProfile', '-Command', 'exit 0']);
+	if (probe.error) return;
+	const result = spawnSync('pwsh', [
+		'-NoProfile',
+		'-File',
+		path.resolve('tests', 'workflow', 'word_table_pagination_test.ps1'),
+	]);
+	assert.equal(result.status, 0, String(result.stderr || result.stdout));
+}
+
 function testPowerShellLicenseStatusParsing(): void {
 	const executable = 'powershell.exe';
 	const availability = spawnSync(executable, [
@@ -414,6 +425,7 @@ function main(): void {
 		);
 	}
 	testPowerShellHashFallback();
+	testTablePaginationPowerShell();
 	testPowerShellLicenseStatusParsing();
 	testPowerShellUsesShortWordStagingPaths();
 	const launcher = readFileSync(

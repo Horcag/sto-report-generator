@@ -26,7 +26,6 @@ for (const [entryType, field] of [
 	['inproceedings', 'editor'],
 	['incollection', 'number'],
 	['book', 'journal'],
-	['norm', 'author'],
 	['standard', 'langid'],
 	['patent', 'publisher'],
 	['thesis', 'editor'],

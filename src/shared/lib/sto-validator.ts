@@ -8,6 +8,22 @@ import {
 } from '../config';
 import { validateTemplateStyleConformance } from './sto-template-style-validator';
 import {
+	decodeXmlText,
+	extractWordText,
+	getBodyElements,
+	getContinuationFailures,
+	getNoteFailures,
+	getParagraphStyleId,
+	getReportBodyElements,
+	getReportTables,
+	isParagraphXml,
+	isTableXml,
+	isVisibleParagraph,
+	paragraphHasDrawing,
+	paragraphHasStyle,
+} from './sto-validator/body-xml';
+import {
+	getEffectiveBodyParagraphAttribute,
 	getEffectiveParagraphAttribute,
 	resolveWordStyleId,
 } from './word-style-properties';
@@ -36,15 +52,6 @@ interface ValidationInput {
 const REGEXP_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
 const OMATH_TAG = '<m:' + 'o' + 'Math';
 const HANSI_ATTRIBUTE = 'w:h' + 'Ansi';
-
-function decodeXmlText(value: string): string {
-	return value
-		.replaceAll('&lt;', '<')
-		.replaceAll('&gt;', '>')
-		.replaceAll('&amp;', '&')
-		.replaceAll('&quot;', '"')
-		.replaceAll('&apos;', "'");
-}
 
 function escapeRegExp(value: string): string {
 	return value.replaceAll(REGEXP_SPECIAL_CHARS, String.raw`\$&`);
@@ -95,12 +102,6 @@ function readFooterXmlByType(
 	}
 
 	return footers;
-}
-
-function extractWordText(xml: string): string {
-	return [...xml.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g)]
-		.map(item => decodeXmlText(item[1]))
-		.join('');
 }
 
 function getXmlAttribute(tagXml: string, attributeName: string): string | null {
@@ -245,59 +246,6 @@ function hasExpectedPageMargins(docXml: string): boolean {
 	);
 }
 
-function getBodyElements(docXml: string): string[] {
-	const bodyXml = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/.exec(docXml)?.[1];
-	return (
-		bodyXml?.match(/<w:p\b[\s\S]*?<\/w:p>|<w:tbl\b[\s\S]*?<\/w:tbl>/g) ?? []
-	);
-}
-
-function getReportBodyElements(docXml: string): string[] {
-	const elements = getBodyElements(docXml);
-	const reportStartIndex = elements.findIndex(
-		elementXml =>
-			isParagraphXml(elementXml) &&
-			extractWordText(elementXml).trim().toLocaleUpperCase('ru-RU') ===
-				'РЕФЕРАТ',
-	);
-	return reportStartIndex >= 0 ? elements.slice(reportStartIndex) : elements;
-}
-
-function getReportTables(docXml: string): string[] {
-	return getReportBodyElements(docXml).filter(isTableXml);
-}
-
-function isParagraphXml(elementXml: string): boolean {
-	return elementXml.startsWith('<w:p');
-}
-
-function isTableXml(elementXml: string): boolean {
-	return elementXml.startsWith('<w:tbl');
-}
-
-function paragraphHasDrawing(paragraphXml: string): boolean {
-	return paragraphXml.includes('<w:drawing');
-}
-
-function isVisibleParagraph(paragraphXml: string): boolean {
-	return (
-		extractWordText(paragraphXml).trim().length > 0 ||
-		paragraphHasDrawing(paragraphXml)
-	);
-}
-
-function paragraphHasStyle(
-	paragraphXml: string,
-	stylesXml: string,
-	styleId: string,
-): boolean {
-	const resolvedStyleId = resolveWordStyleId(stylesXml, styleId);
-	return (
-		resolvedStyleId !== null &&
-		getParagraphStyleId(paragraphXml) === resolvedStyleId
-	);
-}
-
 function findPreviousVisibleParagraph(
 	elements: readonly string[],
 	index: number,
@@ -348,7 +296,7 @@ function countTablesWithoutAdjacentCaption(
 		if (
 			!previous ||
 			!paragraphHasStyle(previous, stylesXml, 'TableCaption') ||
-			!/^Таблица\s+/i.test(previousText)
+			!/^(?:Таблица|Продолжение таблицы)\s+/i.test(previousText)
 		) {
 			count++;
 		}
@@ -604,14 +552,10 @@ function countTableHeaderFinalPeriods(docXml: string): number {
 	return cellsWithFinalPeriod;
 }
 
-function getParagraphStyleId(paragraphXml: string): string | null {
-	const styleTag = /<w:pStyle\b[^>]*\/>/.exec(paragraphXml)?.[0];
-	return styleTag ? getXmlAttribute(styleTag, 'w:val') : null;
-}
-
 function hasInvalidDirectBodyFormatting(
 	docXml: string,
 	stylesXml: string,
+	numberingXml: string | null,
 ): boolean {
 	let inReferat = false;
 	return getBodyElements(docXml).some(paragraphXml => {
@@ -643,10 +587,15 @@ function hasInvalidDirectBodyFormatting(
 		)
 			return false;
 
-		const properties =
-			/<w:pPr\b[^>]*>([\s\S]*?)<\/w:pPr>/.exec(paragraphXml)?.[1] ?? '';
-		const indent = /<w:ind\b[^>]*\/>/.exec(properties)?.[0] ?? '';
-		const spacing = /<w:spacing\b[^>]*\/>/.exec(properties)?.[0] ?? '';
+		const effective = (tag: string, attribute: string) =>
+			getEffectiveBodyParagraphAttribute(
+				paragraphXml,
+				stylesXml,
+				numberingXml,
+				styleId ?? 'Normal',
+				tag,
+				attribute,
+			);
 		const runSpacing = [
 			...paragraphXml.matchAll(/<w:rPr\b[^>]*>([\s\S]*?)<\/w:rPr>/g),
 		]
@@ -656,30 +605,35 @@ function hasInvalidDirectBodyFormatting(
 			tag: string,
 			name: string,
 			expected: number,
-		): boolean => {
-			const value = getXmlAttribute(tag, `w:${name}`);
+		) => {
+			const value = effective(tag, name);
 			return value !== null && Number(value) !== expected;
 		};
 		return (
-			invalidAttribute(indent, 'left', 0) ||
-			invalidAttribute(indent, 'right', 0) ||
+			effective('jc', 'val') !== 'both' ||
+			invalidAttribute('ind', 'left', 0) ||
+			invalidAttribute('ind', 'right', 0) ||
 			invalidAttribute(
-				indent,
+				'ind',
 				'firstLine',
 				STO_RULES.typography.firstLineIndentDxa,
 			) ||
-			getXmlAttribute(indent, 'w:hanging') !== null ||
-			runSpacing.some(tag => invalidAttribute(tag, 'val', 0)) ||
-			invalidAttribute(spacing, 'before', 0) ||
-			invalidAttribute(spacing, 'after', 0) ||
+			effective('ind', 'firstLine') === null ||
+			effective('ind', 'hanging') !== null ||
+			runSpacing.some(tag => {
+				const value = getXmlAttribute(tag, 'w:val');
+				return value !== null && Number(value) !== 0;
+			}) ||
+			invalidAttribute('spacing', 'before', 0) ||
+			invalidAttribute('spacing', 'after', 0) ||
 			invalidAttribute(
-				spacing,
+				'spacing',
 				'line',
 				STO_RULES.typography.normalLineSpacingDxa,
 			) ||
-			(spacing !== '' &&
-				getXmlAttribute(spacing, 'w:lineRule') !== null &&
-				getXmlAttribute(spacing, 'w:lineRule') !== 'auto')
+			effective('spacing', 'line') === null ||
+			(effective('spacing', 'lineRule') !== null &&
+				effective('spacing', 'lineRule') !== 'auto')
 		);
 	});
 }
@@ -812,8 +766,12 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 		),
 		resultFromFailure(
 			'Direct Body Paragraph Formatting',
-			hasInvalidDirectBodyFormatting(input.docXml, input.stylesXml),
-			'Body paragraph has a direct indent or spacing override outside STO values.',
+			hasInvalidDirectBodyFormatting(
+				input.docXml,
+				input.stylesXml,
+				input.numberingXml,
+			),
+			'Body paragraph has a direct alignment, indent, or spacing override outside STO values.',
 		),
 		resultFromPass(
 			'Page Margins',
@@ -913,6 +871,8 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 function validateFieldsTablesAndImages(
 	input: ValidationInput,
 ): ValidationResult[] {
+	const continuation = getContinuationFailures(input.docXml, input.stylesXml);
+	const notes = getNoteFailures(input.docXml);
 	const emptyTableCells = countEmptyTableCells(input.docXml);
 	const tableHeaderFinalPeriods = countTableHeaderFinalPeriods(input.docXml);
 	const tablesWithoutHeaderRepeat = countTablesWithoutHeaderRepeat(
@@ -931,6 +891,31 @@ function validateFieldsTablesAndImages(
 	);
 
 	return [
+		resultFromPass(
+			'Table Continuation Label',
+			continuation.label === 0,
+			`Detected ${continuation.label} invalid table continuation label(s); use left-aligned "Продолжение таблицы N" immediately before the next segment.`,
+		),
+		resultFromPass(
+			'Table Continuation Bottom Border',
+			continuation.border === 0,
+			`Detected ${continuation.border} continued table segment(s) with a bottom border.`,
+		),
+		resultFromPass(
+			'Note Placement',
+			notes.placement === 0,
+			`Detected ${notes.placement} note(s) without preceding content.`,
+		),
+		resultFromPass(
+			'Note Form',
+			notes.form === 0,
+			`Detected ${notes.form} malformed note(s); use "Примечание – ..." or "Примечания" followed by numbered paragraphs.`,
+		),
+		resultFromPass(
+			'Table Note End',
+			notes.tableEnd === 0,
+			`Detected ${notes.tableEnd} table note(s) placed before another table segment.`,
+		),
 		resultFromFailure(
 			'Dirty Field Flags',
 			regexMatches(/<w:fldChar\b[^>]*w:dirty="(?:true|1)"/, input.docXml),
