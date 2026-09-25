@@ -65,6 +65,7 @@ async function main(): Promise<void> {
 	assert.ok(xml);
 	const document = new JSDOM(xml, { contentType: 'text/xml' }).window
 		.document;
+	assert.equal(document.getElementsByTagName('undefined').length, 0);
 	const math = [...document.getElementsByTagName('m:oMath')];
 	assert.equal(math.length, 11);
 	const runs = (element: Element) => [...element.getElementsByTagName('m:r')];
@@ -81,6 +82,7 @@ async function main(): Promise<void> {
 			'b',
 		);
 		assert.equal(run.getElementsByTagName('m:nor').length, 1);
+		assert.equal(run.getElementsByTagName('m:rPr')[0]?.parentElement, run);
 	}
 	for (const [index, symbol] of [
 		[2, 'K'],
@@ -89,6 +91,7 @@ async function main(): Promise<void> {
 		const run = runs(math[index]).find(value => text(value) === symbol);
 		assert.ok(run);
 		assert.equal(run.getElementsByTagName('m:nor').length, 1);
+		assert.equal(run.getElementsByTagName('m:rPr')[0]?.parentElement, run);
 		assert.equal(run.getElementsByTagName('w:b').length, 0);
 	}
 	const subscript = math[4].getElementsByTagName('m:sSub')[0];

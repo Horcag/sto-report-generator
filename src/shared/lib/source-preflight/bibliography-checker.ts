@@ -83,6 +83,23 @@ function formatRequiredFieldGroup(tagNames: readonly string[]): string {
 	return tagNames.join(' or ');
 }
 
+function isStructuralBibliographyField(
+	entry: BibEntrySource,
+	tagNames: readonly string[],
+): boolean {
+	const group = tagNames.join('|');
+	return (
+		group === 'title' ||
+		(entry.entryType === 'book' && ['publisher', 'year'].includes(group)) ||
+		(group === 'url' && requiresNetworkUrl(entry)) ||
+		(entry.entryType === 'article' && group === 'journal') ||
+		(['inproceedings', 'incollection'].includes(entry.entryType) &&
+			group === 'booktitle') ||
+		(entry.entryType === 'inonline' && group === 'website|booktitle') ||
+		(['patent', 'standard'].includes(entry.entryType) && group === 'number')
+	);
+}
+
 function isOnlineEntry(entry: BibEntrySource): boolean {
 	return (
 		requiresNetworkUrl(entry) ||
@@ -223,6 +240,19 @@ function validateRequiredBibFields(
 			) {
 				continue;
 			}
+			// Title-first books may credit a compiler or editor in the
+			// responsibility statement instead of naming an author.
+			if (
+				entry.entryType === 'book' &&
+				tagNames.includes('author') &&
+				tagNames.includes('editor') &&
+				tagNames.includes('compiler') &&
+				/^(?:сост\.|под ред\.|ред\.)\s+\S/i.test(
+					getNormalizedTagValue(entry, 'note') ?? '',
+				)
+			) {
+				continue;
+			}
 			if (
 				tagNames.some(tagName =>
 					Boolean(getNormalizedTagValue(entry, tagName)),
@@ -230,18 +260,14 @@ function validateRequiredBibFields(
 			) {
 				continue;
 			}
+			const structural = isStructuralBibliographyField(entry, tagNames);
 			issues.push(
 				issue(
 					'bibliography-required-field-missing',
-					`cited @${entry.key} (${entry.entryType}) should define ${formatRequiredFieldGroup(tagNames)} for STO bibliography formatting.`,
+					`cited @${entry.key} (${entry.entryType}) should define ${formatRequiredFieldGroup(tagNames)} for STO bibliography formatting.${structural ? ' This field identifies the cited work or its container.' : ' Check the source; if this element is absent or inapplicable, document the reason before accepting the incomplete description.'}`,
 					path.basename(bibPath),
 					entry.line,
-					(tagNames.length === 1 && tagNames[0] === 'title') ||
-						(tagNames.length === 1 &&
-							tagNames[0] === 'url' &&
-							requiresNetworkUrl(entry))
-						? 'error'
-						: 'warning',
+					structural ? 'error' : 'warning',
 				),
 			);
 		}

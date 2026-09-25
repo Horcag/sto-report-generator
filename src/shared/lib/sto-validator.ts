@@ -22,6 +22,7 @@ import {
 	paragraphHasDrawing,
 	paragraphHasStyle,
 } from './sto-validator/body-xml';
+import { hasBoldOrdinaryBodyText } from './sto-validator/bold-formatting';
 import {
 	countReferatKeywordsWithWrongIndent,
 	countTableCellsWithInsufficientPadding,
@@ -758,6 +759,11 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 			),
 			'Body paragraph has a direct alignment, indent, or spacing override outside STO values.',
 		),
+		resultFromFailure(
+			'Ordinary Body Bold Text',
+			hasBoldOrdinaryBodyText(input.docXml, input.stylesXml),
+			'Ordinary body text, including referat fields, must not be bold.',
+		),
 		resultFromPass(
 			'Referat Keyword First-Line Indent',
 			referatKeywordsWithWrongIndent === 0,
@@ -817,7 +823,6 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 		'[Электронный ресурс]',
 		'Электрон. дан.',
 	];
-
 	return [
 		resultFromFailure(
 			'Citation Formatting',
@@ -857,6 +862,11 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 			'Detected a placeholder for an unsupported math construct.',
 		),
 		resultFromFailure(
+			'Math XML Elements',
+			regexMatches(/<undefined(?:\s|>|\/)/, docXml),
+			'Detected invalid <undefined> element in generated math XML.',
+		),
+		resultFromFailure(
 			'Math Multiplication Sign',
 			regexMatches(/<m:t>[^<]*\*[^<]*<\/m:t>/, docXml),
 			'Detected asterisk (*) as multiplication sign in formula. Use LaTeX multiplication commands instead.',
@@ -873,7 +883,6 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 		),
 	];
 }
-
 function validateFieldsTablesAndImages(
 	input: ValidationInput,
 ): ValidationResult[] {
@@ -897,7 +906,6 @@ function validateFieldsTablesAndImages(
 	const tablesWithDiagonalBorders = countTablesWithDiagonalBorders(
 		input.docXml,
 	);
-
 	return [
 		resultFromPass(
 			'Table Continuation Label',
@@ -981,7 +989,6 @@ function validateFieldsTablesAndImages(
 		),
 	];
 }
-
 function validateNumbering(numberingXml: string | null): ValidationResult[] {
 	if (numberingXml === null) {
 		return [];

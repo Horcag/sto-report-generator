@@ -73,7 +73,6 @@ export async function handleStoFlag(
 							token.referatField === 'characteristics'
 								? 'Основные характеристики: '
 								: 'Область применения: ',
-						bold: true,
 					}),
 					new TextRun(value),
 				],

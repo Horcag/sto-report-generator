@@ -10,6 +10,7 @@ import {
 	StoStylePreset,
 } from '@/shared/config';
 
+import { assertNoOrdinaryBodyBold } from './word-acceptance-bold';
 import { stopOwnedWordAcceptanceProcesses } from './word-acceptance-cleanup';
 import { getFileEvidence } from './word-acceptance-evidence';
 import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
@@ -20,7 +21,7 @@ import {
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
-export const WORD_ACCEPTANCE_TIMEOUT_MS = 180_000;
+export const WORD_ACCEPTANCE_TIMEOUT_MS = 600_000;
 export const WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS = 45_000;
 export const WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS = 120_000;
 export type WordAcceptanceInteractionMode = 'background' | 'interactive';
@@ -240,6 +241,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 	if (!fs.existsSync(options.inputDocx)) {
 		throw new Error(`DOCX file not found: ${options.inputDocx}`);
 	}
+	assertNoOrdinaryBodyBold(options.inputDocx);
 	const hostKind = detectWordAcceptanceHost();
 	const plan = createWordAcceptancePlan(options, {
 		hostKind,
@@ -455,6 +457,7 @@ function runWordAcceptanceAttempt(
 			manifest,
 			onCleanupVerified,
 		);
+		assertNoOrdinaryBodyBold(plan.localAcceptedDocx);
 		manifest.status = 'accepted';
 		manifest.execution.processCleanupVerified = true;
 		const pendingPath = `${plan.localManifest}.pending`;

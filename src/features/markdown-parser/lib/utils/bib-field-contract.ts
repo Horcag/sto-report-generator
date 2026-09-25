@@ -61,6 +61,7 @@ const TYPE_FIELDS: Record<string, string[]> = {
 		...AUTHOR_FIELDS,
 		'note',
 		'editor',
+		'compiler',
 		'howpublished',
 		'type',
 		...PLACE_FIELDS,

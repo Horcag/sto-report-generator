@@ -5,6 +5,7 @@ import AdmZip from 'adm-zip';
 
 import { unpackDocx } from '@/shared/lib/docx-archive';
 
+import { runSyntheticBoldTests } from './synthetic_bold_tests';
 import { runSyntheticLayoutTests } from './synthetic_layout_tests';
 import { runWordNormalizedStyleTests } from './synthetic_word_style_tests';
 
@@ -93,6 +94,17 @@ export function runSyntheticValidatorTests(
 	assert.equal(
 		getCheck(normalFixture, 'Direct Body Paragraph Formatting').passed,
 		true,
+	);
+	runSyntheticBoldTests(writeXmlFixture, getCheck, namespaces, bodyStyles);
+	assert.equal(getCheck(normalFixture, 'Math XML Elements').passed, true);
+	const invalidMathFixture = writeXmlFixture(
+		'invalid-math-element',
+		`<w:document ${namespaces} xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><w:body><w:p><m:oMath><m:r><undefined><m:rPr><m:nor/></m:rPr></undefined><m:t>x</m:t></m:r></m:oMath></w:p></w:body></w:document>`,
+		bodyStyles,
+	);
+	assert.equal(
+		getCheck(invalidMathFixture, 'Math XML Elements').passed,
+		false,
 	);
 	const cascadeStyles = `<w:styles ${namespaces}><w:docDefaults><w:pPrDefault><w:pPr><w:spacing w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/><w:pPr><w:ind w:firstLine="709"/></w:pPr></w:style><w:style w:type="paragraph" w:styleId="Base"><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="0"/></w:pPr></w:style><w:style w:type="paragraph" w:styleId="Body"><w:name w:val="Normal"/><w:basedOn w:val="Base"/></w:style></w:styles>`;
 	const cascadeParagraph = bodyParagraph.replace(

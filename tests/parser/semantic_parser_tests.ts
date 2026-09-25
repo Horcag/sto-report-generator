@@ -41,6 +41,17 @@ export async function runSemanticParserTests({
 	);
 	assert.match(semanticXml, /Основные характеристики:/);
 	assert.match(semanticXml, /Область применения:/);
+	for (const label of ['Основные характеристики:', 'Область применения:']) {
+		const paragraph = semanticXml
+			.match(/<w:p\b[\s\S]*?<\/w:p>/g)
+			?.find(xml => getWordText(xml).includes(label));
+		assert.ok(paragraph);
+		const labelRun = paragraph
+			.match(/<w:r\b[\s\S]*?<\/w:r>/g)
+			?.find(xml => getWordText(xml).includes(label));
+		assert.ok(labelRun);
+		assert.doesNotMatch(labelRun, /<w:b\b/);
+	}
 	assert.match(
 		semanticXml,
 		/<w:tbl[\s\S]*Автоматический блок выбора[\s\S]*коэффициент, рад[\s\S]*<\/w:tbl>/,

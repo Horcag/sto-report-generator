@@ -38,7 +38,7 @@ export function runStructureReferenceTests({
 		'structural-heading-final-period',
 	);
 
-	expectWarning(
+	expectIssue(
 		'bibliography-book-required-field',
 		validFiles({
 			'00_metadata.md': `---
@@ -79,7 +79,7 @@ bibliography: "references.bib"
 		'bibliography-required-field-missing',
 	);
 
-	expectWarning(
+	expectIssue(
 		'bibliography-inproceedings-required-field',
 		validFiles({
 			'00_metadata.md': `---
@@ -436,7 +436,9 @@ title: Test
 		inonline:
 			'title = {Раздел сайта}, year = {2020}, url = {https://example.org}, urldate = {2024-01-01}',
 	})) {
-		expectWarning(
+		const expectMissing =
+			type === 'phdthesis' ? expectWarning : expectIssue;
+		expectMissing(
 			`bibliography-${type}-required-field`,
 			validFiles({
 				'03_intro.md': `Использован источник [@special].\n`,
@@ -445,7 +447,6 @@ title: Test
 			'bibliography-required-field-missing',
 		);
 	}
-
 	const completeSpecialBibliography = validFiles({
 		'03_intro.md': 'Источники: [@patent; @thesis; @standard; @sitePart].\n',
 		'references.bib': `@patent{patent,
@@ -488,7 +489,6 @@ title: Test
 		completeSpecialBibliography,
 		'bibliography-unsupported-type',
 	);
-
 	expectIssue(
 		'bibliography-unsupported-type',
 		validFiles({
