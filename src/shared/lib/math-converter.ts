@@ -146,12 +146,28 @@ class StyledMathRun extends MathRun {
 		const properties = [...item.children].filter(
 			child => child.tagName === 'w:rPr' || child.tagName === 'm:rPr',
 		);
-		this.root.unshift(
-			...properties.map(child =>
-				ImportedXmlComponent.fromXmlString(child.outerHTML),
-			),
-		);
+		this.root.unshift(...properties.map(importMathProperty));
 	}
+}
+
+function importMathProperty(element: Element): ImportedXmlComponent {
+	const component = new ImportedXmlComponent(
+		element.tagName,
+		Object.fromEntries(
+			[...element.attributes].map(attribute => [
+				attribute.name,
+				attribute.value,
+			]),
+		),
+	);
+	for (const child of element.childNodes) {
+		if (child.nodeType === 1) {
+			component.push(importMathProperty(child as Element));
+		} else if (child.nodeType === 3 && child.textContent) {
+			component.push(child.textContent);
+		}
+	}
+	return component;
 }
 
 function buildSubScript(item: Element): MathSubScript {

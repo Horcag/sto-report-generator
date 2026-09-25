@@ -292,25 +292,228 @@ function Update-DocumentForAcceptance($Document) {
 
 function Get-TablePageSpan($Document, $Table) {
     $start = [int]$Table.Range.Start
-    $end = [Math]::Max($start, [int]$Table.Range.End - 1)
+    # Word's final end-of-cell marker can be reported on the following page
+    # even when all visible table content ends on the previous page.
+    $end = [Math]::Max($start, [int]$Table.Range.End - 2)
     return @(
         [int]$Document.Range($start, $start).Information($WdActiveEndPageNumber),
         [int]$Document.Range($end, $end).Information($WdActiveEndPageNumber)
     )
 }
 
-function Get-TableCaptionBefore($Document, $Table) {
-    $previous = $null
-    foreach ($paragraph in @($Document.Paragraphs)) {
-        if ([int]$paragraph.Range.End -gt [int]$Table.Range.Start) { break }
-        $previous = $paragraph
+function Get-TableCaptionParagraphBefore($Document, $Table) {
+    $tableStart = [int]$Table.Range.Start
+    if ($tableStart -le 0) { return $null }
+    try {
+        $previous = $Document.Range($tableStart - 1, $tableStart - 1).Paragraphs.Item(1)
+    } catch {
+        return $null
     }
+    if ([int]$previous.Range.Tables.Count -gt 0) { return $null }
+    return $previous
+}
+
+function Get-TableCaptionBefore($Document, $Table) {
+    $previous = Get-TableCaptionParagraphBefore $Document $Table
     if ($null -eq $previous) { return $null }
     $caption = ([string]$previous.Range.Text).Trim()
     if ($caption -notmatch '^(?:\u0422\u0430\u0431\u043b\u0438\u0446\u0430|\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0435\u043d\u0438\u0435\s+\u0442\u0430\u0431\u043b\u0438\u0446\u044b)\s+(?:[\u0410-\u042f]\.)?\d+(?:\.\d+)?(?:\s|$)') {
         return $null
     }
     return $previous
+}
+
+function Get-TableCaptionNumber($Caption) {
+    $text = ([string]$Caption.Range.Text).Trim()
+    if ($text -notmatch '^(?:\u0422\u0430\u0431\u043b\u0438\u0446\u0430|\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0435\u043d\u0438\u0435\s+\u0442\u0430\u0431\u043b\u0438\u0446\u044b)\s+((?:[\u0410-\u042f]\.)?\d+(?:\.\d+)?)') {
+        return $null
+    }
+    return $Matches[1]
+}
+
+function Get-TableSplitRowAtPageBoundary($Document, $Table) {
+    if ([int]$Table.Rows.Count -lt 3) { return 0 }
+    $previousPage = [int]$Document.Range(
+        [int]$Table.Rows.Item(1).Range.Start,
+        [int]$Table.Rows.Item(1).Range.Start
+    ).Information($WdActiveEndPageNumber)
+    for ($rowIndex = 2; $rowIndex -le [int]$Table.Rows.Count; $rowIndex++) {
+        $row = $Table.Rows.Item($rowIndex)
+        $rowStart = [int]$row.Range.Start
+        $page = [int]$Document.Range($rowStart, $rowStart).Information($WdActiveEndPageNumber)
+        if ($page -gt $previousPage) { return $rowIndex }
+        $previousPage = $page
+    }
+    return 0
+}
+
+function Add-TableContinuationCaption($Document, $Table, [string]$Number, $CaptionStyle) {
+    # Table.Split inserts the paragraph that separates the two table segments.
+    # Reuse it so the label remains directly above the continuation table.
+    $captionStart = [int]$Table.Range.Start - 1
+    if ($captionStart -lt 0) { throw 'Word did not expose the inserted table continuation paragraph.' }
+    $paragraph = $Document.Range($captionStart, $captionStart).Paragraphs.Item(1)
+    $paragraphStart = [int]$paragraph.Range.Start
+    $paragraphEnd = [int]$paragraph.Range.End
+    if ([int]$paragraph.Range.Tables.Count -gt 0 -or
+        $paragraphEnd -gt [int]$Table.Range.Start -or
+        ([string]$paragraph.Range.Text).Trim().Length -gt 0) {
+        throw "Word did not expose the empty separator paragraph before the continuation table (paragraph $paragraphStart-$paragraphEnd; table starts $([int]$Table.Range.Start); containing tables $([int]$paragraph.Range.Tables.Count))."
+    }
+    # Insert before the existing paragraph mark. Replacing the whole paragraph
+    # text can remove Word's table separator and merge the two segments again.
+    $continuationLabel = -join @(
+        [char]0x041F, [char]0x0440, [char]0x043E, [char]0x0434,
+        [char]0x043E, [char]0x043B, [char]0x0436, [char]0x0435,
+        [char]0x043D, [char]0x0438, [char]0x0435, ' ',
+        [char]0x0442, [char]0x0430, [char]0x0431, [char]0x043B,
+        [char]0x0438, [char]0x0446, [char]0x044B, ' ', $Number
+    )
+    $paragraph.Range.InsertBefore($continuationLabel) | Out-Null
+    $paragraph.Range.Style = $CaptionStyle
+    $paragraph.Range.ParagraphFormat.Alignment = 0
+}
+
+function Copy-TableHeaderRow($SourceTable, $TargetTable) {
+    $sourceHeader = $SourceTable.Rows.Item(1)
+    $targetHeader = $TargetTable.Rows.Add($TargetTable.Rows.Item(1))
+    if ([int]$sourceHeader.Cells.Count -ne [int]$targetHeader.Cells.Count) {
+        throw 'Word changed the table column count while splitting a table.'
+    }
+    for ($cellIndex = 1; $cellIndex -le [int]$sourceHeader.Cells.Count; $cellIndex++) {
+        $sourceCell = $sourceHeader.Cells.Item($cellIndex)
+        $targetCell = $targetHeader.Cells.Item($cellIndex)
+        $sourceParagraphCount = [int]$sourceCell.Range.Paragraphs.Count
+        $sourceTableCount = [int]$sourceCell.Range.Tables.Count
+        if ($sourceTableCount -gt 1) {
+            throw "Cannot safely duplicate nested table in header cell $cellIndex (paragraphs=$sourceParagraphCount; tables=$sourceTableCount; text length=$(([string]$sourceCell.Range.Text).Length))."
+        }
+        # Copy the full cell contents to preserve intentional multi-paragraph
+        # headers and formatting, while excluding Word's final end-of-cell mark
+        # from the assignment so the target cell remains structurally intact.
+        $sourceContent = $sourceCell.Range.Duplicate
+        $sourceContent.End = [int]$sourceContent.End - 1
+        $targetContent = $targetCell.Range.Duplicate
+        $targetContent.End = [int]$targetContent.End - 1
+        $targetContent.FormattedText = $sourceContent.FormattedText
+    }
+    $targetHeader.HeadingFormat = -1
+}
+
+function Split-LongCaptionedTables($Document) {
+    $Document.Repaginate()
+    $tableIndex = 1
+    $splitCount = 0
+    while ($tableIndex -le [int]$Document.Tables.Count) {
+        $table = $Document.Tables.Item($tableIndex)
+        $caption = Get-TableCaptionBefore $Document $table
+        if ($null -eq $caption) {
+            $tableIndex++
+            continue
+        }
+        $pages = @(Get-TablePageSpan $Document $table)
+        if ($pages[0] -eq $pages[1]) {
+            $tableIndex++
+            continue
+        }
+
+        $number = Get-TableCaptionNumber $caption
+        if (-not $number) {
+            throw "Could not determine the number for the continuation of table '$(([string]$caption.Range.Text).Trim())'."
+        }
+        $splitRow = Get-TableSplitRowAtPageBoundary $Document $table
+        if ($splitRow -eq 2) {
+            # A header-only first page is not a useful segment. Try moving the
+            # original caption and table together before deciding whether Word
+            # has a safe boundary after at least one body row.
+            $captionFormat = $caption.Range.ParagraphFormat
+            $originalBreak = $captionFormat.PageBreakBefore
+            if (-not [bool]$originalBreak) {
+                try {
+                    $captionFormat.PageBreakBefore = $true
+                    $Document.Repaginate()
+                    $movedSplitRow = Get-TableSplitRowAtPageBoundary $Document $table
+                    if ($movedSplitRow -ge 3) {
+                        $splitRow = $movedSplitRow
+                    }
+                } finally {
+                    if ($splitRow -lt 3) {
+                        $captionFormat.PageBreakBefore = $originalBreak
+                        $Document.Repaginate()
+                    }
+                }
+            }
+        }
+        if ($splitRow -lt 3 -or $splitRow -gt [int]$table.Rows.Count) {
+            $captionText = ([string]$caption.Range.Text).Trim()
+            throw "Could not find a safe row boundary for captioned table '$captionText' spanning pages $($pages[0])-$($pages[1])."
+        }
+
+        $originalIndex = $tableIndex
+        $originalRowCount = [int]$table.Rows.Count
+        $originalTableCount = [int]$Document.Tables.Count
+        $secondSegment = $table.Split($table.Rows.Item($splitRow))
+        $Document.Repaginate()
+        if ([int]$Document.Tables.Count -ne ($originalTableCount + 1)) {
+            throw 'Word did not create a second table segment after SplitTable.'
+        }
+        $firstSegment = $Document.Tables.Item($originalIndex)
+        if ([int]$secondSegment.Range.Start -le [int]$firstSegment.Range.Start) {
+            throw 'Word returned an invalid table segment order after SplitTable.'
+        }
+        if ([int]$firstSegment.Rows.Count -ne ($splitRow - 1) -or
+            [int]$secondSegment.Rows.Count -ne ($originalRowCount - $splitRow + 1)) {
+            throw 'Word split the table at an unexpected row boundary; refusing to publish changed table content.'
+        }
+        Copy-TableHeaderRow $firstSegment $secondSegment
+        $Document.Repaginate()
+        $expectedSecondRows = $originalRowCount - $splitRow + 2
+        if ([int]$Document.Tables.Count -ne ($originalTableCount + 1) -or
+            [int]$firstSegment.Rows.Count -ne ($splitRow - 1) -or
+            [int]$secondSegment.Rows.Count -ne $expectedSecondRows) {
+            throw "Table $number changed structure while copying its header (tables=$([int]$Document.Tables.Count); first rows=$([int]$firstSegment.Rows.Count); continuation rows=$([int]$secondSegment.Rows.Count))."
+        }
+        Add-TableContinuationCaption $Document $secondSegment $number $caption.Range.Style
+        $Document.Repaginate()
+        if ([int]$Document.Tables.Count -ne ($originalTableCount + 1) -or
+            [int]$firstSegment.Rows.Count -ne ($splitRow - 1) -or
+            [int]$secondSegment.Rows.Count -ne $expectedSecondRows) {
+            throw "Table $number changed structure while adding its continuation caption (tables=$([int]$Document.Tables.Count); first rows=$([int]$firstSegment.Rows.Count); continuation rows=$([int]$secondSegment.Rows.Count))."
+        }
+        $continuationCaption = Get-TableCaptionBefore $Document $secondSegment
+        if ($null -eq $continuationCaption) {
+            $candidate = Get-TableCaptionParagraphBefore $Document $secondSegment
+            if ($null -eq $candidate) {
+                throw "Could not resolve the paragraph before continuation table $number (table start=$([int]$secondSegment.Range.Start))."
+            }
+            $candidateText = ([string]$candidate.Range.Text).Replace("`r", '<CR>').Replace("`n", '<LF>')
+            throw "Continuation caption before table $number has unexpected text '$candidateText' (paragraph $([int]$candidate.Range.Start)-$([int]$candidate.Range.End))."
+        }
+        $firstSegment.Borders.Item(-3).LineStyle = 0
+        $firstPages = @(Get-TablePageSpan $Document $firstSegment)
+        if ($firstPages[0] -ne $firstPages[1]) {
+            $lastRow = $firstSegment.Rows.Item([int]$firstSegment.Rows.Count)
+            $lastCell = $lastRow.Cells.Item([int]$lastRow.Cells.Count)
+            $lastTextEnd = [Math]::Max(
+                [int]$lastCell.Range.Start,
+                [int]$lastCell.Range.End - 2
+            )
+            $lastTextPage = [int]$Document.Range($lastTextEnd, $lastTextEnd).Information($WdActiveEndPageNumber)
+            $tableMarkerPage = [int]$Document.Range(
+                [int]$firstSegment.Range.End - 1,
+                [int]$firstSegment.Range.End - 1
+            ).Information($WdActiveEndPageNumber)
+            throw "First segment of table $number still spans visible pages $($firstPages[0])-$($firstPages[1]) after splitting at row $splitRow (last row text page $lastTextPage; end marker page $tableMarkerPage)."
+        }
+        $splitCount++
+        if ($splitCount -gt 100) {
+            throw 'Stopped after 100 table splits; Word pagination did not converge.'
+        }
+        # Revisit the continuation segment: its new caption and repeated header
+        # can move later rows and therefore change the next measured boundary.
+        $tableIndex = $originalIndex + 1
+    }
+    return $splitCount
 }
 
 function Move-FittingTablesToNextPage($Document) {
@@ -555,10 +758,21 @@ try {
     # the accepted artifacts to the caller's requested destinations.
     $document = $word.Documents.Open($stagedInputDocx, $false, $false)
     Write-Output "Word acceptance: staged DOCX opened."
+    $acceptanceStageClock = [System.Diagnostics.Stopwatch]::StartNew()
     Update-DocumentForAcceptance $document
+    Write-Output "Word acceptance: fields and TOC updated in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
+    $acceptanceStageClock.Restart()
     Move-FittingTablesToNextPage $document
+    Write-Output "Word acceptance: fitting tables positioned in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
+    $acceptanceStageClock.Restart()
     Set-ReferatStatistics $document $request
+    Write-Output "Word acceptance: referat statistics updated in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
+    $acceptanceStageClock.Restart()
+    $splitTables = Split-LongCaptionedTables $document
+    Write-Output "Word acceptance: $splitTables long table segment(s) created in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
+    $acceptanceStageClock.Restart()
     Assert-TableContinuationLayout $document
+    Write-Output "Word acceptance: table layout verified in $([Math]::Round($acceptanceStageClock.Elapsed.TotalSeconds, 1)) seconds."
     Write-Output "Word acceptance: fields, TOC, and pagination updated."
     $document.Save()
     $pageCountBeforeReopen = Get-SavedDocumentPageCount $document

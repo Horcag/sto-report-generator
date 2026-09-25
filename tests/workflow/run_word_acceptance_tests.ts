@@ -318,7 +318,7 @@ function main(): void {
 	);
 	assert.equal(plan.request.requiredFont, 'Times New Roman');
 	assert.equal(plan.request.stylePreset, 'samara-template-2022');
-	assert.equal(WORD_ACCEPTANCE_TIMEOUT_MS, 180_000);
+	assert.equal(WORD_ACCEPTANCE_TIMEOUT_MS, 600_000);
 	assert.equal(WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS, 45_000);
 	assert.equal(plan.request.interactionMode, 'background');
 	assert.deepEqual(plan.request.attemptedModes, ['background']);
