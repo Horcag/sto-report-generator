@@ -138,6 +138,46 @@ bibliography: "references.bib"
 		}),
 		'bibliography-required-field-missing',
 	);
+	expectIssue(
+		'bibliography-trivial-responsibility-absence',
+		validFiles({
+			'00_metadata.md': bibliographyMetadata,
+			'03_intro.md': 'Источник [@uncreditedBook].\n',
+			'references.bib': `@book{uncreditedBook,
+  title = {Анонимное издание}, responsibilityabsence = {x},
+  address = {Самара}, publisher = {Самарский университет},
+  year = {2020}, pages = {20}
+}\n`,
+		}),
+		'bibliography-required-field-missing',
+	);
+	expectIssue(
+		'bibliography-missing-extent-without-reason',
+		validFiles({
+			'00_metadata.md': bibliographyMetadata,
+			'03_intro.md': 'Источник [@noExtent].\n',
+			'references.bib': `@book{noExtent,
+  title = {Непагинированное издание},
+  author = {Иванов, И. И.},
+  address = {Самара}, publisher = {Самарский университет}, year = {2020}
+}\n`,
+		}),
+		'bibliography-required-field-missing',
+	);
+	expectNoIssue(
+		'bibliography-missing-extent-with-source-reason',
+		validFiles({
+			'00_metadata.md': bibliographyMetadata,
+			'03_intro.md': 'Источник [@noExtent].\n',
+			'references.bib': `@book{noExtent,
+  title = {Непагинированное издание},
+  author = {Иванов, И. И.},
+  address = {Самара}, publisher = {Самарский университет}, year = {2020},
+  omissionreasons = {pages: Источник не содержит нумерации страниц}
+}\n`,
+		}),
+		'bibliography-required-field-missing',
+	);
 
 	{
 		const reportDir = writeReport(

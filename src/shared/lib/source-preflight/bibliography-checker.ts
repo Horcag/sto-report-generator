@@ -83,6 +83,20 @@ function formatRequiredFieldGroup(tagNames: readonly string[]): string {
 	return tagNames.join(' or ');
 }
 
+function parseOmissionReasons(raw: string): Map<string, string> {
+	const reasons = new Map<string, string>();
+	for (const part of raw.split(';')) {
+		const separator = part.indexOf(':');
+		if (separator < 0) continue;
+		const field = part.slice(0, separator).trim().toLowerCase();
+		const reason = part.slice(separator + 1).trim();
+		if (field && reason.length >= 10 && !reasons.has(field)) {
+			reasons.set(field, reason);
+		}
+	}
+	return reasons;
+}
+
 function isStructuralBibliographyField(
 	entry: BibEntrySource,
 	tagNames: readonly string[],
@@ -104,6 +118,9 @@ function isStructuralBibliographyField(
 				'patent',
 			].includes(entry.entryType)) ||
 		(entry.entryType === 'book' && ['publisher', 'year'].includes(group)) ||
+		(group === 'year' &&
+			!['misc', 'online', 'inonline'].includes(entry.entryType)) ||
+		(entry.entryType === 'patent' && group === 'year|date') ||
 		(group === 'url' && requiresNetworkUrl(entry)) ||
 		(entry.entryType === 'article' && group === 'journal') ||
 		(['inproceedings', 'incollection'].includes(entry.entryType) &&
@@ -242,6 +259,9 @@ function validateRequiredBibFields(
 			);
 			continue;
 		}
+		const omissionReasons = parseOmissionReasons(
+			getNormalizedTagValue(entry, 'omissionreasons') ?? '',
+		);
 
 		for (const tagNames of requiredGroups) {
 			// A generic misc record may describe a print work; URL is conditional.
@@ -277,18 +297,26 @@ function validateRequiredBibFields(
 			// is checked against the source and explained explicitly.
 			if (
 				tagNames.includes('author') &&
-				getNormalizedTagValue(entry, 'responsibilityabsence')
+				(getNormalizedTagValue(entry, 'responsibilityabsence')
+					?.length ?? 0) >= 10
 			) {
 				continue;
 			}
 			const structural = isStructuralBibliographyField(entry, tagNames);
+			const explained = !structural && omissionReasons.has(tagNames[0]);
+			if (explained) continue;
+			const guidance = tagNames.includes('author')
+				? ' If the source is anonymous, explain the checked absence in responsibilityabsence (at least 10 characters).'
+				: structural
+					? ' This field is mandatory for this source type.'
+					: ` If absent or inapplicable, record a source-based explanation as omissionreasons = {${tagNames[0]}: reason of at least 10 characters}.`;
 			issues.push(
 				issue(
 					'bibliography-required-field-missing',
-					`cited @${entry.key} (${entry.entryType}) should define ${formatRequiredFieldGroup(tagNames)} for STO bibliography formatting.${structural ? ' This field identifies the cited work or its container.' : ' Check the source; if this element is absent or inapplicable, document the reason before accepting the incomplete description.'}`,
+					`cited @${entry.key} (${entry.entryType}) should define ${formatRequiredFieldGroup(tagNames)} for STO bibliography formatting.${guidance}`,
 					path.basename(bibPath),
 					entry.line,
-					structural ? 'error' : 'warning',
+					'error',
 				),
 			);
 		}
