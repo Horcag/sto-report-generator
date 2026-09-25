@@ -78,6 +78,7 @@ export function formatBibItem(item: BibItem): string {
 		case 'inonline':
 			return formatSitePart(tags, title, authorBlock, isEng);
 		case 'techreport':
+		case 'report':
 			return formatTechReport(tags, title, typeInfo, authorBlock, isEng);
 		case 'misc':
 		case 'online':
@@ -289,9 +290,10 @@ function formatTechReport(
 	authorBlock: AuthorBlock,
 	isEng: boolean,
 ): string {
+	const institution = cleanText(tags.institution);
 	const responsibility = [
 		authorBlock.responsibility,
-		cleanText(tags.institution),
+		institution !== authorBlock.responsibility ? institution : '',
 	]
 		.filter(Boolean)
 		.join(' ; ');

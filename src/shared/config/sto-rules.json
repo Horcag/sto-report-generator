@@ -277,7 +277,8 @@
 			],
 			"standard": [["number"], ["title"], ["year"]],
 			"norm": [["title"], ["year"]],
-			"techreport": [["title"], ["author", "institution"], ["year"]]
+			"techreport": [["title"], ["author", "institution"], ["year"]],
+			"report": [["title"], ["author", "institution"], ["year"]]
 		}
 	},
 	"documentStructure": {

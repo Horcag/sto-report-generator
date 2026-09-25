@@ -163,6 +163,23 @@ const tests: { input: BibItem; expected: string }[] = [
 	},
 	{
 		input: {
+			citationKey: 'cbr2024',
+			entryType: 'report',
+			entryTags: {
+				title: 'Аналитический обзор рынка кредитования',
+				author: '{Банк России}',
+				institution: 'Банк России',
+				type: 'информационно-аналитические материалы',
+				year: '2024',
+				url: 'https://example.org/report.pdf',
+				urldate: '2025-07-01',
+			},
+		},
+		expected:
+			'Аналитический обзор рынка кредитования : информационно-аналитические материалы / Банк России. – 2024. – URL: https://example.org/report.pdf (дата обращения: 01.07.2025).',
+	},
+	{
+		input: {
 			citationKey: 'constitution',
 			entryType: 'norm',
 			entryTags: {
