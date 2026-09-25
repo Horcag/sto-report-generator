@@ -21,6 +21,7 @@ const COMMON_FIELDS = [
 	'contenttype',
 	'mediatype',
 	'responsibilityabsence',
+	'omissionreasons',
 ];
 const PHYSICAL_FIELDS = [
 	'pages',
