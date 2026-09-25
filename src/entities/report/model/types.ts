@@ -5,6 +5,7 @@ export interface ReportMetadata {
 	reportType: string;
 	reportProfile?:
 		'nir' | 'coursework' | 'lab' | 'vkr-bachelor' | 'vkr-master';
+	titlePageVariant?: 'ssau-course-project-v1.1';
 	degree: string;
 	semester: number;
 	specialtyCode: string;
