@@ -223,7 +223,7 @@ function reportConfigTemplate(slug: string, profile: ReportProfile): string {
 function referatTemplate(): string {
 	return String.raw`\sto_structural_heading{РЕФЕРАТ}
 
-Пояснительная записка: {{PAGES}} с., {{FIGURES}}, {{TABLES}}, {{SOURCES}}.
+Пояснительная записка: {{PAGES}} с., {{FIGURES}}, {{TABLES}}, {{SOURCES}}, {{APPENDICES}}.
 
 ПРЕДМЕТНАЯ ОБЛАСТЬ, МЕТОДИКА, ДАННЫЕ, РЕЗУЛЬТАТ, ВЫВОДЫ
 

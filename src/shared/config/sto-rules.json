@@ -64,7 +64,8 @@
 			"{{PAGES}}",
 			"{{FIGURES}}",
 			"{{TABLES}}",
-			"{{SOURCES}}"
+			"{{SOURCES}}",
+			"{{APPENDICES}}"
 		],
 		"requiredStatisticPlaceholders": ["{{PAGES}}", "{{SOURCES}}"],
 		"keywordCount": {

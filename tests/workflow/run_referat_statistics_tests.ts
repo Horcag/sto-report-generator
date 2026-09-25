@@ -37,10 +37,12 @@ async function main(): Promise<void> {
 		figures: 1,
 		tables: 1,
 		sources: 1,
+		appendices: 0,
 		replacements: {
 			'{{FIGURES}}': '1 рисунок',
 			'{{TABLES}}': '1 таблица',
 			'{{SOURCES}}': '1 источник',
+			'{{APPENDICES}}': '0 приложений',
 		},
 	});
 
@@ -56,10 +58,12 @@ async function main(): Promise<void> {
 		figures: 0,
 		tables: 0,
 		sources: 0,
+		appendices: 0,
 		replacements: {
 			'{{FIGURES}}': '',
 			'{{TABLES}}': '',
 			'{{SOURCES}}': '',
+			'{{APPENDICES}}': '0 приложений',
 		},
 	});
 	console.log('Referat statistics contract tests passed.');

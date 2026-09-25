@@ -43,7 +43,7 @@ assert.equal(result.gitInitialized, true);
 assert.ok(fs.existsSync(path.join(result.targetDir, '.git')));
 assert.match(
 	fs.readFileSync(path.join(result.targetDir, '01_referat.md'), 'utf8'),
-	/Пояснительная записка: \{\{PAGES\}\} с\., \{\{FIGURES\}\}, \{\{TABLES\}\}, \{\{SOURCES\}\}\./,
+	/Пояснительная записка: \{\{PAGES\}\} с\., \{\{FIGURES\}\}, \{\{TABLES\}\}, \{\{SOURCES\}\}, \{\{APPENDICES\}\}\./,
 );
 const scaffoldPreflight = runSourcePreflight(result.targetDir);
 assert.equal(

@@ -316,6 +316,7 @@ function main(): void {
 		figures: 0,
 		tables: 0,
 		sources: 0,
+		appendices: 0,
 	});
 	assert.equal(
 		plan.request.runnerPidPath,

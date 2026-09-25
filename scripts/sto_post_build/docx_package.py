@@ -8,7 +8,14 @@ from lxml import etree
 
 from .constants import DIRTY_TRUE_RE, WORD_NS
 
-STATISTIC_PLACEHOLDERS = ("{{PAGES}}", "{{PAGES_WORD}}", "{{FIGURES}}", "{{TABLES}}", "{{SOURCES}}")
+STATISTIC_PLACEHOLDERS = (
+    "{{PAGES}}",
+    "{{PAGES_WORD}}",
+    "{{FIGURES}}",
+    "{{TABLES}}",
+    "{{SOURCES}}",
+    "{{APPENDICES}}",
+)
 
 
 def assert_no_statistic_placeholders(docx_path: str | Path) -> None:

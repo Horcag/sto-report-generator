@@ -123,8 +123,17 @@ export function validateObjectReferences(
 	issues: SourcePreflightIssue[],
 ): void {
 	const main = { fig: 0, tab: 0, eq: 0, note: 0 };
+	const sectionCounters = new Map<number, { fig: number; tab: number }>();
+	const mainNumbering = new Map<'fig' | 'tab', 'continuous' | 'section'>();
+	const mainCaptions: Array<{
+		kind: 'fig' | 'tab';
+		number: string;
+		file: string;
+		line: number;
+	}> = [];
 	const appendixCounters = new Map<string, typeof main>();
 	let appendix: string | undefined;
+	let section: number | undefined;
 	let precedingText = '';
 	const allText = files.map(({ content }) => content).join('\n');
 	const knownNumbers = new Set<string>();
@@ -134,6 +143,9 @@ export function validateObjectReferences(
 		let inMathBlock = false;
 		for (let index = 0; index < lines.length; index++) {
 			const line = lines[index].trim();
+			const sectionHeading = /^#\s+(\d+)\s+\S/.exec(line);
+			if (!appendix && sectionHeading)
+				section = Number(sectionHeading[1]);
 			const heading =
 				/^\\sto_structural_heading\{ПРИЛОЖЕНИЕ\s+([А-Я])\}/i.exec(line);
 			const explicitAppendix =
@@ -151,12 +163,21 @@ export function validateObjectReferences(
 			if (appendix) appendixCounters.set(appendix, counters);
 
 			const caption =
-				/^(Рисунок|Рис\.|Таблица)\s+([А-Я]\.\d+|\d+)\s+–\s+/i.exec(
+				/^(Рисунок|Рис\.|Таблица)\s+([А-Я]\.\d+|\d+\.\d+|\d+)(?:\s+–\s+|$)/i.exec(
 					line,
 				);
 			if (caption) {
 				const label = /\(@(fig|tab):([a-zA-Z0-9_-]+)\)\s*$/.exec(line);
-				const kind = /^Таблица/i.test(caption[1]) ? 'tab' : 'fig';
+				const kind: 'fig' | 'tab' = /^Таблица/i.test(caption[1])
+					? 'tab'
+					: 'fig';
+				if (!appendix)
+					mainCaptions.push({
+						kind,
+						number: caption[2],
+						file,
+						line: index + 1,
+					});
 				if (label && kind !== label[1]) {
 					issues.push(
 						issue(
@@ -168,9 +189,28 @@ export function validateObjectReferences(
 					);
 				} else {
 					counters[kind]++;
-					const expected = appendix
-						? `${appendix}.${counters[kind]}`
-						: String(counters[kind]);
+					let expected: string;
+					if (appendix) {
+						expected = `${appendix}.${counters[kind]}`;
+					} else {
+						const mode =
+							mainNumbering.get(kind) ??
+							(/\d+\.\d+/.test(caption[2])
+								? 'section'
+								: 'continuous');
+						mainNumbering.set(kind, mode);
+						if (mode === 'section' && section !== undefined) {
+							const local = sectionCounters.get(section) ?? {
+								fig: 0,
+								tab: 0,
+							};
+							local[kind]++;
+							sectionCounters.set(section, local);
+							expected = `${section}.${local[kind]}`;
+						} else {
+							expected = String(counters[kind]);
+						}
+					}
 					if (caption[2] !== expected) {
 						issues.push(
 							issue(
@@ -178,6 +218,20 @@ export function validateObjectReferences(
 									? 'application-object-numbering'
 									: 'object-number-sequence',
 								`expected ${caption[1]} ${expected}, found ${caption[2]}.`,
+								file,
+								index + 1,
+							),
+						);
+					}
+					if (
+						!appendix &&
+						mainNumbering.get(kind) === 'section' &&
+						section === undefined
+					) {
+						issues.push(
+							issue(
+								'object-number-section-missing',
+								`${caption[1]} ${caption[2]} uses section numbering before a numbered level-one heading.`,
 								file,
 								index + 1,
 							),
@@ -274,9 +328,23 @@ export function validateObjectReferences(
 			precedingText += `${line}\n`;
 		}
 	}
+	for (const kind of ['fig', 'tab'] as const) {
+		const captions = mainCaptions.filter(caption => caption.kind === kind);
+		if (captions.length === 1 && captions[0].number !== '1') {
+			const only = captions[0];
+			issues.push(
+				issue(
+					'single-object-number',
+					`the only ${kind === 'fig' ? 'figure' : 'table'} in the main text must be numbered 1, found ${only.number}.`,
+					only.file,
+					only.line,
+				),
+			);
+		}
+	}
 
 	for (const match of allText.matchAll(
-		/(?:рисун(?:ок|к[а-я]*)|рис\.|таблиц[а-я]*|формул[а-я]*|примечани[а-я]*)\s+([А-Я]\.\d+|\d+)(?!\d|\.\d)/gi,
+		/(?:рисун(?:ок|к[а-я]*)|рис\.|таблиц[а-я]*|формул[а-я]*|примечани[а-я]*)\s+([А-Я]\.\d+|\d+(?:\.\d+)?)(?!\d|\.\d)/gi,
 	)) {
 		const before = allText.slice(0, match.index).split('\n').at(-1) ?? '';
 		if (/^(?:Рисунок|Рис\.|Таблица|Примечание)\s+/i.test(before)) continue;

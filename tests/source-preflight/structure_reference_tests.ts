@@ -27,6 +27,14 @@ export function runStructureReferenceTests({
 		'structural-heading-final-period',
 	);
 
+	expectNoIssue(
+		'structural-heading-internal-period',
+		validFiles({
+			'03_intro.md': '\\sto_structural_heading{ВВЕДЕНИЕ. ЦЕЛЬ РАБОТЫ}\n',
+		}),
+		'structural-heading-final-period',
+	);
+
 	expectWarning(
 		'bibliography-book-required-field',
 		validFiles({
@@ -269,11 +277,86 @@ bibliography: "references.bib"
 		'unknown-object-number',
 	);
 	expectIssue(
+		'unknown-section-local-number',
+		validFiles({ '03_intro.md': `Данные на рисунке 2.9 отсутствуют.\n` }),
+		'unknown-object-number',
+	);
+	expectIssue(
 		'figure-out-of-order',
 		validFiles({
 			'03_intro.md': `На рисунке 2 приведена схема.\n\nРисунок 2 – Схема (@fig:second)\n`,
 		}),
 		'object-number-sequence',
+	);
+	const sectionLocal = runSourcePreflight(
+		writeReport(
+			'section-local-figure-and-table-numbering',
+			validFiles({
+				'04_sections.md': `# 1 Первый раздел\n\nНа рисунке 1.1 и в таблице 1.1 показаны данные.\n\nРисунок 1.1 – Схема (@fig:first)\n\nТаблица 1.1 – Данные (@tab:first)\n\n# 2 Второй раздел\n\nНа рисунке 2.1 и в таблице 2.1 показаны новые данные.\n\nРисунок 2.1 – Другая схема (@fig:second)\n\nТаблица 2.1 – Другие данные (@tab:second)\n`,
+			}),
+		),
+	);
+	assert.deepEqual(
+		sectionLocal.issues
+			.filter(item => item.severity === 'error')
+			.map(item => item.code),
+		[],
+	);
+	const continuous = runSourcePreflight(
+		writeReport(
+			'continuous-figure-and-table-numbering',
+			validFiles({
+				'04_sections.md': `# 1 Первый раздел\n\nНа рисунке 1 и в таблице 1 показаны данные.\n\nРисунок 1 – Схема (@fig:first)\n\nТаблица 1 – Данные (@tab:first)\n\n# 2 Второй раздел\n\nНа рисунке 2 и в таблице 2 показаны новые данные.\n\nРисунок 2 – Другая схема (@fig:second)\n\nТаблица 2 – Другие данные (@tab:second)\n`,
+			}),
+		),
+	);
+	assert.deepEqual(
+		continuous.issues
+			.filter(item => item.severity === 'error')
+			.map(item => item.code),
+		[],
+	);
+	expectIssue(
+		'section-local-figure-gap',
+		validFiles({
+			'04_sections.md': `# 1 Первый раздел\n\nНа рисунке 1.1 показана схема.\n\nРисунок 1.1 – Схема (@fig:first)\n\n# 2 Второй раздел\n\nНа рисунке 2.2 показана новая схема.\n\nРисунок 2.2 – Новая схема (@fig:second)\n`,
+		}),
+		'object-number-sequence',
+	);
+	expectIssue(
+		'mixed-table-numbering-schemes',
+		validFiles({
+			'04_sections.md': `# 1 Первый раздел\n\nВ таблице 1 приведены данные.\n\nТаблица 1 – Данные (@tab:first)\n\nВ таблице 1.2 приведены новые данные.\n\nТаблица 1.2 – Новые данные (@tab:second)\n`,
+		}),
+		'object-number-sequence',
+	);
+	expectIssue(
+		'continuous-table-gap-across-sections',
+		validFiles({
+			'04_sections.md': `# 1 Первый раздел\n\nВ таблице 1 приведены данные.\n\nТаблица 1 – Данные (@tab:first)\n\n# 2 Второй раздел\n\nВ таблице 3 приведены новые данные.\n\nТаблица 3 – Новые данные (@tab:third)\n`,
+		}),
+		'object-number-sequence',
+	);
+	expectIssue(
+		'single-section-numbered-figure',
+		validFiles({
+			'04_sections.md': `# 1 Раздел\n\nНа рисунке 1.1 показана схема.\n\nРисунок 1.1 – Схема (@fig:only)\n`,
+		}),
+		'single-object-number',
+	);
+	expectIssue(
+		'single-section-numbered-table',
+		validFiles({
+			'04_sections.md': `# 1 Раздел\n\nВ таблице 1.1 приведены данные.\n\nТаблица 1.1 – Данные (@tab:only)\n`,
+		}),
+		'single-object-number',
+	);
+	expectNoIssue(
+		'single-main-table-and-figure-without-titles',
+		validFiles({
+			'03_intro.md': `Схема приведена на рисунке 1, а значения в таблице 1.\n\nРисунок 1\n\nТаблица 1\n`,
+		}),
+		'single-object-number',
 	);
 	expectIssue(
 		'note-without-first-reference',

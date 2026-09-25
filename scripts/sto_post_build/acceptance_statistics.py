@@ -20,7 +20,10 @@ def main() -> int:
                 "figures": counts.figures,
                 "tables": counts.tables,
                 "sources": counts.sources,
-                "replacements": create_replacements(counts.figures, counts.tables, counts.sources),
+                "appendices": counts.appendices,
+                "replacements": create_replacements(
+                    counts.figures, counts.tables, counts.sources, counts.appendices
+                ),
             },
             ensure_ascii=True,
         )

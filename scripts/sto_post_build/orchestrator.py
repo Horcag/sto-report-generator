@@ -37,11 +37,16 @@ def count_text(count: int, form1: str, form2: str, form5: str) -> str:
     return f"{count} {pluralize_ru(count, form1, form2, form5)}" if count > 0 else ""
 
 
-def create_replacements(figures: int, tables: int, sources: int) -> dict[str, str]:
+def create_replacements(
+    figures: int, tables: int, sources: int, appendices: int = 0
+) -> dict[str, str]:
     return {
         "{{FIGURES}}": count_text(figures, "рисунок", "рисунка", "рисунков"),
         "{{TABLES}}": count_text(tables, "таблица", "таблицы", "таблиц"),
         "{{SOURCES}}": count_text(sources, "источник", "источника", "источников"),
+        "{{APPENDICES}}": (
+            f"{appendices} {pluralize_ru(appendices, 'приложение', 'приложения', 'приложений')}"
+        ),
     }
 
 
@@ -65,7 +70,7 @@ def post_build(
 
     word_result = run_word_post_build(
         absolute_docx_path,
-        create_replacements(counts.figures, counts.tables, counts.sources),
+        create_replacements(counts.figures, counts.tables, counts.sources, counts.appendices),
         pdf_output_path,
     )
 

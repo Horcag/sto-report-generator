@@ -1,64 +1,11 @@
 import { STO_RULES } from '@/shared/config';
 
-import { SourceFile, SourcePreflightIssue } from './types';
+import { SourcePreflightIssue } from './types';
 import {
 	isMarkdownTableSeparator,
 	issue,
 	splitMarkdownTableRow,
 } from './utils';
-
-export function validateTableAndFigureOrder(
-	files: SourceFile[],
-	issues: SourcePreflightIssue[],
-): void {
-	let textSoFar = '';
-
-	for (const { file, content } of files) {
-		const lines = content.split('\n');
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i].trim();
-			const tableMatch = /^Таблица\s+(\d+)\s+–/i.exec(line);
-			if (tableMatch) {
-				const tableNum = tableMatch[1];
-				const refRegex = new RegExp(
-					`(?:таблиц[а-я]{1,3}|таблица)\\s+${tableNum}`,
-					'i',
-				);
-				if (!refRegex.test(textSoFar)) {
-					issues.push(
-						issue(
-							'table-before-reference',
-							`Table ${tableNum} appears before being referenced in text. Found: "${line}"`,
-							file,
-							i + 1,
-						),
-					);
-				}
-			}
-
-			const figMatch = /^Рисунок\s+(\d+)\s+–/i.exec(line);
-			if (figMatch) {
-				const figNum = figMatch[1];
-				const refRegex = new RegExp(
-					`(?:рисунк[а-я]{1,3}|рисунок)\\s+${figNum}`,
-					'i',
-				);
-				if (!refRegex.test(textSoFar)) {
-					issues.push(
-						issue(
-							'figure-before-reference',
-							`Figure ${figNum} appears before being referenced in text. Found: "${line}"`,
-							file,
-							i + 1,
-						),
-					);
-				}
-			}
-
-			textSoFar += `${line}\n`;
-		}
-	}
-}
 
 export function validateMarkdownTables(
 	file: string,

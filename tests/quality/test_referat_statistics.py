@@ -11,11 +11,12 @@ from scripts.sto_post_build.statistics import get_counts_from_docx
 class ReferatStatisticReadinessTests(unittest.TestCase):
     def test_uses_post_build_count_forms(self) -> None:
         self.assertEqual(
-            create_replacements(2, 3, 5),
+            create_replacements(2, 3, 5, 2),
             {
                 "{{FIGURES}}": "2 рисунка",
                 "{{TABLES}}": "3 таблицы",
                 "{{SOURCES}}": "5 источников",
+                "{{APPENDICES}}": "2 приложения",
             },
         )
 
@@ -67,6 +68,23 @@ class ReferatStatisticReadinessTests(unittest.TestCase):
                 )
             counts = get_counts_from_docx(docx_path)
             self.assertEqual((counts.figures, counts.tables, counts.sources), (1, 1, 1))
+
+    def test_counts_semantic_appendix_headings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docx_path = Path(directory) / "report.docx"
+            with zipfile.ZipFile(docx_path, "w") as archive:
+                archive.writestr(
+                    "word/document.xml",
+                    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+                    '<w:body><w:p><w:pPr><w:pStyle w:val="AppendixHeading"/></w:pPr>'
+                    "<w:r><w:t>ПРИЛОЖЕНИЕ \u0410</w:t></w:r></w:p>"
+                    '<w:p><w:pPr><w:pStyle w:val="AppendixHeading"/></w:pPr>'
+                    "<w:r><w:t>ПРИЛОЖЕНИЕ Б</w:t></w:r></w:p>"
+                    '<w:p><w:pPr><w:pStyle w:val="StructuralHeading"/></w:pPr>'
+                    "<w:r><w:t>ПРИЛОЖЕНИЕ \u0412</w:t></w:r></w:p>"
+                    "</w:body></w:document>",
+                )
+            self.assertEqual(get_counts_from_docx(docx_path).appendices, 3)
 
 
 if __name__ == "__main__":

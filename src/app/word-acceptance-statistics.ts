@@ -1,12 +1,15 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
-interface AcceptanceStatistics {
+export interface AcceptanceStatistics {
 	figures: number;
 	tables: number;
 	sources: number;
+	appendices: number;
 	replacements: Record<string, string>;
 }
+
+export type StatisticCounts = Omit<AcceptanceStatistics, 'replacements'>;
 
 export function readAcceptanceStatistics(
 	inputDocx: string,
