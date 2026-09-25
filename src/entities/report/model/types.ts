@@ -32,6 +32,7 @@ export interface ReportMetadata {
 	organizationSupervisorRole?: string;
 	practiceKind?: string;
 	practiceType?: string;
+	educationLevel?: string;
 	practiceStartDate?: string;
 	practiceEndDate?: string;
 	submissionDate?: string;

@@ -28,7 +28,3 @@ export function isFutureDate(value: string): boolean {
 	);
 	return parsed.getTime() > today.getTime();
 }
-
-export function yearFromIsoDate(value: string): string | undefined {
-	return parseIsoDate(value)?.getUTCFullYear().toString();
-}

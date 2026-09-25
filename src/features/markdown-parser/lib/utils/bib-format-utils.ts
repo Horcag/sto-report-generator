@@ -196,11 +196,29 @@ export function appendUrlArea(
 		tags.access || tags.accessmode || tags.availability,
 	);
 	const url = cleanText(tags.url);
-	let result = `${ensureFinalDot(record)} – URL: ${url}`;
+	// ГОСТ Р 7.0.108-2022, 5.3.5: explicit update/republication notes
+	// precede the address; publication date and access mode follow it.
+	let result = record;
+	if (tags.updated) {
+		result = appendArea(
+			result,
+			`Дата обновления: ${cleanText(tags.updated)}`,
+		);
+	}
+	if (tags.republication) {
+		result = appendArea(result, tags.republication);
+	}
+	result = `${ensureFinalDot(result)} – URL: ${url}`;
 	if (accessDate) {
 		result += ` (дата обращения: ${accessDate}).`;
 	} else {
 		result = ensureFinalDot(result);
+	}
+	if (tags.publicationdate) {
+		result = appendArea(
+			result,
+			`Дата публикации: ${cleanText(tags.publicationdate)}`,
+		);
 	}
 	if (accessMode) {
 		result = appendArea(result, `Режим доступа: ${accessMode}`);

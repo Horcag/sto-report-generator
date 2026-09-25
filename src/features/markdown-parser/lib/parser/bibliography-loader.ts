@@ -1,21 +1,26 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import * as bibtexParse from '@orcid/bibtex-parse-js';
+
+import { resolveBibliographyPath } from '@/shared/lib/bibliography-path';
 
 import { BibItem } from '../types';
 
 export function loadBibliography(
 	metadata: Record<string, unknown>,
+	sourceDir: string = process.cwd(),
 	cwd: string = process.cwd(),
 ): BibItem[] {
 	if (!metadata.bibliography) {
 		return [];
 	}
 
-	const bibPath = path.resolve(cwd, String(metadata.bibliography));
+	const bibPath = resolveBibliographyPath(
+		String(metadata.bibliography),
+		sourceDir,
+		cwd,
+	);
 	if (!fs.existsSync(bibPath)) {
-		console.warn(`Bibliography file not found: ${bibPath}`);
-		return [];
+		throw new Error(`Bibliography file not found: ${bibPath}`);
 	}
 
 	const bibContent = fs.readFileSync(bibPath, 'utf-8');

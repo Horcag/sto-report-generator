@@ -3,15 +3,12 @@ import path from 'node:path';
 import matter from 'gray-matter';
 
 import { STO_RULES } from '@/shared/config';
+import { resolveBibliographyPath } from '@/shared/lib/bibliography-path';
 import { parseCitationReferences } from '@/shared/lib/citation-syntax';
 import { ReportConfig } from '@/shared/lib/report-config';
 
 import { validateManualBibliographyContent } from './bibliography-content-checker';
-import {
-	isFutureDate,
-	parseIsoDate,
-	yearFromIsoDate,
-} from './bibliography-date';
+import { isFutureDate, parseIsoDate } from './bibliography-date';
 import {
 	BibEntrySource,
 	getNormalizedTagValue,
@@ -66,7 +63,7 @@ function readMetadata(files: SourceFile[]): Record<string, unknown> {
 	return {};
 }
 
-function resolveBibliographyPath(
+function bibliographyPathFromMetadata(
 	files: SourceFile[],
 	sourceDir: string,
 	cwd: string,
@@ -76,26 +73,11 @@ function resolveBibliographyPath(
 		typeof metadata.bibliography === 'string'
 			? metadata.bibliography
 			: 'references.bib';
-	const cwdRelative = path.resolve(cwd, rawPath);
-	if (fs.existsSync(cwdRelative)) {
-		return cwdRelative;
-	}
-	return path.resolve(sourceDir, rawPath);
+	return resolveBibliographyPath(rawPath, sourceDir, cwd);
 }
 
 const ONLINE_ENTRY_TYPES = new Set(['online', 'inonline']);
-const ELECTRONIC_TYPE_PATTERN =
-	/\b(?:online|web(?:site)?|electronic|digital)\b|(?:электронн\w*|сетев\w*|сайт)/i;
-const PUBLICATION_DATE_DETAIL_TAGS = [
-	'date',
-	'month',
-	'day',
-	'published',
-	'publicationdate',
-	'updated',
-	'lastmodified',
-	'last-modified',
-] as const;
+const ONLINE_SUBTYPES = new Set(['online', 'electronic']);
 
 function formatRequiredFieldGroup(tagNames: readonly string[]): string {
 	return tagNames.join(' or ');
@@ -103,31 +85,19 @@ function formatRequiredFieldGroup(tagNames: readonly string[]): string {
 
 function isOnlineEntry(entry: BibEntrySource): boolean {
 	return (
-		ONLINE_ENTRY_TYPES.has(entry.entryType) ||
-		hasAnyBibTag(entry, ['url', 'urldate', 'website']) ||
-		['type', 'howpublished'].some(field =>
-			ELECTRONIC_TYPE_PATTERN.test(readBibTagValue(entry, field) ?? ''),
-		)
+		requiresNetworkUrl(entry) ||
+		hasAnyBibTag(entry, ['url', 'urldate', 'website'])
 	);
 }
 
-function hasPublicationDateDetail(entry: BibEntrySource): boolean {
-	return hasAnyBibTag(entry, PUBLICATION_DATE_DETAIL_TAGS);
-}
-
-function isMostlyLatinText(value: string): boolean {
-	const latinCount = [...value.matchAll(/[A-Za-z]/g)].length;
-	const cyrillicCount = [...value.matchAll(/[А-Яа-яЁё]/g)].length;
-	return latinCount >= 5 && latinCount > cyrillicCount * 2;
-}
-
-function hasLatinLanguageMetadata(entry: BibEntrySource): boolean {
-	const langid = getNormalizedTagValue(entry, 'langid')?.toLowerCase();
-	const language = getNormalizedTagValue(entry, 'language')?.toLowerCase();
-	return [langid, language].some(
-		value =>
-			value !== undefined &&
-			STO_RULES.bibliography.latinLangidValues.includes(value),
+function requiresNetworkUrl(entry: BibEntrySource): boolean {
+	return (
+		ONLINE_ENTRY_TYPES.has(entry.entryType) ||
+		(entry.entryType === 'misc' &&
+			ONLINE_SUBTYPES.has(
+				getNormalizedTagValue(entry, 'entrysubtype')?.toLowerCase() ??
+					'',
+			))
 	);
 }
 
@@ -214,24 +184,6 @@ function validateUrlAccessDates(
 				),
 			);
 		}
-
-		const publicationYear = getNormalizedTagValue(entry, 'year');
-		if (
-			publicationYear &&
-			publicationYear === yearFromIsoDate(urldate) &&
-			isOnlineEntry(entry) &&
-			!hasPublicationDateDetail(entry)
-		) {
-			issues.push(
-				issue(
-					'bibliography-url-year-matches-urldate',
-					`cited electronic resource @${entry.key} uses year "${publicationYear}", matching urldate. Verify that year is the page publication/update year, not copied from the access date.`,
-					path.basename(bibPath),
-					entry.line,
-					'warning',
-				),
-			);
-		}
 	}
 }
 
@@ -284,7 +236,10 @@ function validateRequiredBibFields(
 					`cited @${entry.key} (${entry.entryType}) should define ${formatRequiredFieldGroup(tagNames)} for STO bibliography formatting.`,
 					path.basename(bibPath),
 					entry.line,
-					tagNames.length === 1 && tagNames[0] === 'title'
+					(tagNames.length === 1 && tagNames[0] === 'title') ||
+						(tagNames.length === 1 &&
+							tagNames[0] === 'url' &&
+							requiresNetworkUrl(entry))
 						? 'error'
 						: 'warning',
 				),
@@ -335,42 +290,6 @@ function validateBibEntryQuality(
 			}
 		}
 
-		const title = getNormalizedTagValue(entry, 'title') ?? '';
-		const author = getNormalizedTagValue(entry, 'author') ?? '';
-		const journal = getNormalizedTagValue(entry, 'journal') ?? '';
-		const searchableJournal = journal.toLowerCase();
-		if (
-			entry.entryType === 'article' &&
-			STO_RULES.bibliography.articlePreprintJournalPatterns.some(
-				pattern => searchableJournal.includes(pattern),
-			)
-		) {
-			issues.push(
-				issue(
-					'bibliography-article-preprint-type',
-					`cited @${entry.key} is an article, but journal looks like a working paper/preprint series. Use techreport or misc/online if it is not a journal article.`,
-					path.basename(bibPath),
-					entry.line,
-					'warning',
-				),
-			);
-		}
-
-		if (
-			!hasLatinLanguageMetadata(entry) &&
-			isMostlyLatinText(`${author} ${title} ${journal}`)
-		) {
-			issues.push(
-				issue(
-					'bibliography-latin-entry-missing-langid',
-					`cited @${entry.key} looks like a Latin-script source. Add langid = {english} when the source is in English.`,
-					path.basename(bibPath),
-					entry.line,
-					'warning',
-				),
-			);
-		}
-
 		const pages =
 			getNormalizedTagValue(entry, 'pages') ??
 			getNormalizedTagValue(entry, 'numpages');
@@ -412,7 +331,13 @@ export function validateBibliography(
 		return;
 	}
 
-	const bibliographyPath = resolveBibliographyPath(files, sourceDir, cwd);
+	let bibliographyPath: string;
+	try {
+		bibliographyPath = bibliographyPathFromMetadata(files, sourceDir, cwd);
+	} catch (error) {
+		issues.push(issue('bibliography-path-ambiguous', String(error)));
+		return;
+	}
 	if (!fs.existsSync(bibliographyPath)) {
 		issues.push(
 			issue(

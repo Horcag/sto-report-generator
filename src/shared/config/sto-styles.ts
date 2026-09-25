@@ -6,6 +6,7 @@ import {
 	TabStopType,
 } from 'docx';
 
+import { APPENDIX_STYLES } from './sto-appendix-styles';
 import {
 	createNumberedHeadingStyle,
 	HEADING_NUMBERING_REFERENCE,
@@ -41,6 +42,8 @@ const SAMARA_TEMPLATE_2022_STYLE_NAMES: Record<string, string> = {
 	Normal: '+Абзац с отступом 1-ой строки',
 	[STRUCTURAL_HEADING_STYLE_ID]: '+ЗАГОЛОВОК по центру',
 	[STRUCTURAL_HEADING_NO_TOC_STYLE_ID]: '+ЗаголРеферСодерж',
+	AppendixHeading: '+Заголовок приложения',
+	AppendixSectionHeading: '+Раздел приложения',
 	FigureCaption: '+№ - Название рисунка',
 	TableCaption: '+№ - Название таблицы',
 	TableText: '+Текст в таблице',
@@ -138,6 +141,7 @@ export const STO_STYLES: IStylesOptions = {
 			},
 		},
 		createNumberedHeadingStyle(1),
+		...APPENDIX_STYLES,
 		{
 			id: STRUCTURAL_HEADING_STYLE_ID,
 			name: 'Structural Heading',

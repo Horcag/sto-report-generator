@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
+import { resolveBibliographyPath } from '@/shared/lib/bibliography-path';
 import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
 type Files = Record<string, string>;
@@ -19,6 +23,29 @@ export function runBibliographyRegressionTests({
 	expectWarning,
 	expectNoIssue,
 }: TestHarness): void {
+	const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sto-bib-path-'));
+	try {
+		const sourceDir = path.join(root, 'report');
+		fs.mkdirSync(sourceDir);
+		const sourceBib = path.join(sourceDir, 'references.bib');
+		const workspaceBib = path.join(root, 'references.bib');
+		fs.writeFileSync(sourceBib, '@book{source, title={Source}}');
+		assert.equal(
+			resolveBibliographyPath('references.bib', sourceDir, root),
+			sourceBib,
+		);
+		fs.writeFileSync(workspaceBib, '@book{workspace, title={Workspace}}');
+		assert.throws(
+			() => resolveBibliographyPath('references.bib', sourceDir, root),
+			/ambiguous/,
+		);
+		assert.equal(
+			resolveBibliographyPath('report/references.bib', sourceDir, root),
+			sourceBib,
+		);
+	} finally {
+		fs.rmSync(root, { recursive: true, force: true });
+	}
 	expectIssue(
 		'unknown-bibtex-key',
 		validFiles({
@@ -172,19 +199,37 @@ bibliography: "references.bib"
 		'bibliography-required-field-missing',
 	);
 
-	expectWarning(
-		'bibliography-electronic-misc-needs-url',
-		validFiles({
-			'00_metadata.md': bibliographyMetadata,
-			'03_intro.md': 'Сетевой источник [@networkMisc].\n',
-			'references.bib': `@misc{networkMisc,
+	for (const entrysubtype of ['online', 'electronic']) {
+		expectIssue(
+			`bibliography-${entrysubtype}-misc-needs-url`,
+			validFiles({
+				'00_metadata.md': bibliographyMetadata,
+				'03_intro.md': 'Сетевой источник [@networkMisc].\n',
+				'references.bib': `@misc{networkMisc,
   title = {Сетевой материал},
-  howpublished = {сайт организации}
+  entrysubtype = {${entrysubtype}}
 }
 `,
-		}),
-		'bibliography-required-field-missing',
-	);
+			}),
+			'bibliography-required-field-missing',
+		);
+	}
+
+	for (const entryType of ['online', 'inonline']) {
+		expectIssue(
+			`bibliography-${entryType}-needs-url`,
+			validFiles({
+				'00_metadata.md': bibliographyMetadata,
+				'03_intro.md': 'Сетевой источник [@network].\n',
+				'references.bib': `@${entryType}{network,
+  title = {Сетевой материал},
+  website = {Сайт организации}
+}
+`,
+			}),
+			'bibliography-required-field-missing',
+		);
+	}
 
 	for (const entryType of ['misc', 'online', 'inonline']) {
 		expectNoIssue(

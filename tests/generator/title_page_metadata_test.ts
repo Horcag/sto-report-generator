@@ -61,6 +61,30 @@ async function main(): Promise<void> {
 	assert.ok(!documentXml.includes('Самара 2026'));
 	assert.ok(footerXml.includes('Самара 2026'));
 
+	const practiceMd = path.join(tempRoot, 'practice.md');
+	const practiceDocx = path.join(tempRoot, 'practice.docx');
+	fs.writeFileSync(
+		practiceMd,
+		testMarkdown
+			.replace('Отчёт по курсовой работе', 'Отчет по практике')
+			.replace(
+				'supervisorRole: "Проверил"',
+				'supervisorRole: "Руководитель практики от университета"\norganizationSupervisorRole: "Руководитель практики от организации"\norganizationSupervisorName: "Сидорова С. С."\norganizationSupervisorTitle: "начальник отдела"\npracticeKind: "учебная"\npracticeType: "ознакомительная"\neducationLevel: "бакалавриата"',
+			),
+		'utf8',
+	);
+	await buildReport(practiceMd, practiceDocx);
+	const practiceXml = readDocxEntry(practiceDocx, 'word/document.xml');
+	assert.ok(practiceXml.includes('Руководитель практики от организации'));
+	assert.ok(practiceXml.includes('начальник отдела'));
+	assert.ok(practiceXml.includes('по программе бакалавриата'));
+	assert.ok(practiceXml.includes('учебная'));
+	assert.ok(practiceXml.includes('ознакомительная'));
+	assert.ok(practiceXml.includes('Дата сдачи ____________ г.'));
+	assert.ok(!practiceXml.includes('ВСО СК России'));
+	assert.ok(!practiceXml.includes('01.07.2026'));
+	assert.ok(!practiceXml.includes('15.06.2026'));
+
 	const labDir = path.join(tempRoot, 'lab');
 	scaffoldReport({
 		slug: 'lab',

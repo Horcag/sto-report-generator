@@ -189,6 +189,14 @@ function createPracticeTitlePage(
 		makeShortName(metadata.supervisorName);
 	const organizationSupervisorName =
 		metadata.organizationSupervisorName || '__________________';
+	const universitySupervisorRole =
+		metadata.supervisorRole || 'Руководитель практики от университета';
+	const organizationSupervisorRole =
+		metadata.organizationSupervisorRole ||
+		'Руководитель практики от организации';
+	const programLine = metadata.educationLevel
+		? `по программе ${metadata.educationLevel} по направлению подготовки`
+		: 'по направлению подготовки';
 
 	return [
 		p({
@@ -242,9 +250,7 @@ function createPracticeTitlePage(
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 240, lineRule: 'auto' },
 			children: [
-				t({
-					text: `по программе бакалавриата по направлению подготовки`,
-				}),
+				t({ text: programLine }),
 				br(),
 				t({
 					text: `${metadata.specialtyCode} ${metadata.specialtyName},`,
@@ -263,12 +269,12 @@ function createPracticeTitlePage(
 			children: [
 				t({ text: 'Сроки прохождения практики: с ' }),
 				t({
-					text: metadata.practiceStartDate || '15.06.2026',
+					text: metadata.practiceStartDate || '____________',
 					italics: true,
 				}),
 				t({ text: ' г. по ' }),
 				t({
-					text: metadata.practiceEndDate || '02.07.2026',
+					text: metadata.practiceEndDate || '____________',
 					italics: true,
 				}),
 				t({ text: ' г.' }),
@@ -284,18 +290,16 @@ function createPracticeTitlePage(
 				},
 				{
 					labelLines: [
-						'Руководитель практики',
-						'от университета, доцент кафедры',
-						'технической кибернетики, к.т.н.',
+						universitySupervisorRole,
+						metadata.supervisorTitle,
 					],
 					name: universitySupervisorShortName,
 				},
 				{
 					labelLines: [
-						'Руководитель практики',
-						'от ВСО СК России по Самарскому',
-						'гарнизону, руководитель отдела',
-					],
+						organizationSupervisorRole,
+						metadata.organizationSupervisorTitle ?? '',
+					].filter(Boolean),
 					name: organizationSupervisorName,
 				},
 			],
@@ -306,11 +310,11 @@ function createPracticeTitlePage(
 			spacing: { line: 240, lineRule: 'auto' },
 			children: [
 				t({
-					text: `Дата сдачи ${metadata.submissionDate || '01.07.2026'} г.`,
+					text: `Дата сдачи ${metadata.submissionDate || '____________'} г.`,
 				}),
 				br(),
 				t({
-					text: `Дата защиты ${metadata.defenseDate || '02.07.2026'} г.`,
+					text: `Дата защиты ${metadata.defenseDate || '____________'} г.`,
 				}),
 			],
 		}),

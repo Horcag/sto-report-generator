@@ -1,12 +1,18 @@
 import { BibItem } from '../types';
 import {
+	appendFinalAreas,
+	appendSeriesArea,
+	formatEditionArea,
+	formatPhysicalArea,
+	formatTitleArea,
+	validateDescriptionAreas,
+} from './bib-description-areas';
+import {
 	appendArea,
 	appendUrlArea,
 	buildPrimaryDescription,
-	cleanDoi,
 	cleanText,
 	ensureFinalDot,
-	formatPageCount,
 	formatPages,
 	formatPlacePublisherYear,
 	formatVolumeIssue,
@@ -20,10 +26,9 @@ import {
 } from './bib-format-utils';
 
 /**
- * GOST R 7.0.100-2018 formatter for Russian academic source lists.
- *
- * ГОСТ Р 7.0.5-2008 describes bibliographic references/citations; the final
- * source list itself is formatted as a bibliographic record by ГОСТ Р 7.0.100.
+ * Formatter for independent source-list descriptions using selected
+ * ГОСТ Р 7.0.100-2018 fields. A ГОСТ Р 7.0.5-2008 behind-text reference
+ * has different semantics and must not be inferred from the numbered list.
  */
 export function formatBibItem(item: BibItem): string {
 	const rawTags = item.entryTags;
@@ -33,31 +38,36 @@ export function formatBibItem(item: BibItem): string {
 	}
 
 	const entryType = (item.entryType || '').toLowerCase();
+	validateDescriptionAreas(entryType, tags, item.citationKey);
 	const isEng = isEnglish(tags.langid);
 	const authorBlock = parseAuthors(tags.author || '', isEng);
-	const title = cleanText(tags.title);
-	if (!title) {
+	const mainTitle = cleanText(tags.title);
+	if (!mainTitle) {
 		throw new Error(
 			`Bibliography entry @${item.citationKey} has no title. Supply the source title or an editorial title in square brackets after checking the source.`,
 		);
 	}
+	const title = formatTitleArea(mainTitle, tags);
 	const typeInfo = cleanText(tags.howpublished || tags.type);
 	const noteBlock = parseNote(tags.note || '');
 
+	let record: string;
 	switch (entryType) {
 		case 'article':
-			return formatArticle(tags, title, authorBlock, isEng, noteBlock);
+			record = formatArticle(tags, title, authorBlock, isEng, noteBlock);
+			break;
 		case 'inproceedings':
 		case 'incollection':
-			return formatCollectionPart(
+			record = formatCollectionPart(
 				tags,
 				title,
 				authorBlock,
 				isEng,
 				noteBlock,
 			);
+			break;
 		case 'book':
-			return formatBook(
+			record = formatBook(
 				tags,
 				title,
 				typeInfo,
@@ -65,29 +75,50 @@ export function formatBibItem(item: BibItem): string {
 				isEng,
 				noteBlock,
 			);
+			break;
 		case 'norm':
-			return formatNorm(tags, title);
+			record = formatNorm(tags, title);
+			break;
 		case 'standard':
-			return formatStandard(tags, title);
+			record = formatStandard(tags, title);
+			break;
 		case 'patent':
-			return formatPatent(tags, title, authorBlock, isEng);
+			record = formatPatent(tags, title, authorBlock, isEng);
+			break;
 		case 'thesis':
 		case 'phdthesis':
 		case 'mastersthesis':
-			return formatThesis(tags, title, typeInfo, authorBlock, isEng);
+			record = formatThesis(tags, title, typeInfo, authorBlock, isEng);
+			break;
 		case 'inonline':
-			return formatSitePart(tags, title, authorBlock, isEng);
+			record = formatSitePart(tags, title, authorBlock, isEng);
+			break;
 		case 'techreport':
 		case 'report':
-			return formatTechReport(tags, title, typeInfo, authorBlock, isEng);
+			record = formatTechReport(
+				tags,
+				title,
+				typeInfo,
+				authorBlock,
+				isEng,
+			);
+			break;
 		case 'misc':
 		case 'online':
-			return formatOnline(tags, title, typeInfo, authorBlock, noteBlock);
+			record = formatOnline(
+				tags,
+				title,
+				typeInfo,
+				authorBlock,
+				noteBlock,
+			);
+			break;
 		default:
 			throw new Error(
 				`Unsupported bibliography type "${item.entryType}" for @${item.citationKey}.`,
 			);
 	}
+	return normalizeRecord(appendFinalAreas(record, tags));
 }
 
 function formatPatent(
@@ -108,10 +139,7 @@ function formatPatent(
 		{ heading: authorBlock.heading, responsibility },
 	);
 	record = appendArea(record, cleanText(tags.date || tags.year));
-	record = appendArea(
-		record,
-		formatPageCount(tags.pages || tags.numpages, isEng),
-	);
+	record = appendArea(record, formatPhysicalArea(tags, isEng));
 	record = appendUrlArea(record, tags);
 	return normalizeRecord(record);
 }
@@ -137,10 +165,7 @@ function formatThesis(
 		record,
 		formatPlacePublisherYear(tags.address || tags.location, '', tags.year),
 	);
-	record = appendArea(
-		record,
-		formatPageCount(tags.pages || tags.numpages, isEng),
-	);
+	record = appendArea(record, formatPhysicalArea(tags, isEng));
 	record = appendUrlArea(record, tags);
 	return normalizeRecord(record);
 }
@@ -156,10 +181,7 @@ function formatStandard(tags: Record<string, string>, title: string): string {
 			tags.year,
 		),
 	);
-	record = appendArea(
-		record,
-		formatPageCount(tags.pages || tags.numpages, false),
-	);
+	record = appendArea(record, formatPhysicalArea(tags, false));
 	record = appendUrlArea(record, tags);
 	return normalizeRecord(record);
 }
@@ -185,9 +207,6 @@ function formatArticle(
 	noteBlock: NoteBlock,
 ): string {
 	let record = buildPrimaryDescription(title, authorBlock, noteBlock);
-	if (tags.doi) {
-		record = `${ensureFinalDot(record)} – DOI: ${cleanDoi(tags.doi)}`;
-	}
 	if (tags.journal) {
 		record = `${record} // ${cleanText(tags.journal)}.`;
 	} else {
@@ -200,6 +219,9 @@ function formatArticle(
 		formatVolumeIssue(tags.volume, tags.number || tags.issue, isEng),
 	);
 	record = appendArea(record, formatPages(tags.pages, isEng));
+	for (const publicationNote of noteBlock.publication) {
+		record = appendArea(record, publicationNote);
+	}
 	return normalizeRecord(appendUrlArea(record, tags));
 }
 
@@ -224,6 +246,9 @@ function formatCollectionPart(
 		),
 	);
 	record = appendArea(record, formatPages(tags.pages, isEng));
+	for (const publicationNote of noteBlock.publication) {
+		record = appendArea(record, publicationNote);
+	}
 	return normalizeRecord(appendUrlArea(record, tags));
 }
 
@@ -250,7 +275,7 @@ function formatBook(
 		authorBlock,
 		bookNote,
 	);
-	record = appendArea(record, cleanText(tags.edition));
+	record = appendArea(record, formatEditionArea(tags));
 	for (const publicationNote of noteBlock.publication) {
 		record = appendArea(record, publicationNote);
 	}
@@ -262,10 +287,8 @@ function formatBook(
 			tags.year,
 		),
 	);
-	record = appendArea(
-		record,
-		formatPageCount(tags.pages || tags.numpages, isEng),
-	);
+	record = appendArea(record, formatPhysicalArea(tags, isEng));
+	record = appendSeriesArea(record, tags);
 	return normalizeRecord(appendUrlArea(record, tags));
 }
 
@@ -306,6 +329,7 @@ function formatTechReport(
 		tags.number ? `${isEng ? 'No.' : '№'} ${cleanText(tags.number)}` : '',
 	);
 	record = appendArea(record, cleanText(tags.year));
+	record = appendArea(record, formatPhysicalArea(tags, isEng));
 	record = appendUrlArea(record, tags);
 	return normalizeRecord(record);
 }
@@ -323,9 +347,6 @@ function formatOnline(
 	const titleBlock = titleWithType(title, typeInfo);
 	let record = buildPrimaryDescription(titleBlock, authorBlock, noteBlock);
 
-	if (tags.doi) {
-		record = `${ensureFinalDot(record)} – DOI: ${cleanDoi(tags.doi)}`;
-	}
 	if (containerTitle) {
 		record = `${record} // ${containerTitle}.`;
 	} else {

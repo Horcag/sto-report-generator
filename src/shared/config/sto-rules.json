@@ -75,7 +75,6 @@
 			"spacingBeforeDxa": 360,
 			"spacingAfterDxa": 240
 		},
-		"semanticMarkers": ["Объект", "Цель", "результат"],
 		"maxTextLengthChars": 850
 	},
 	"lists": {
@@ -191,14 +190,6 @@
 		},
 		"urlProtocols": ["http", "https", "ftp"],
 		"urldatePattern": "^\\d{4}-\\d{2}-\\d{2}$",
-		"latinLangidValues": ["english", "en"],
-		"articlePreprintJournalPatterns": [
-			"working paper",
-			"preprint",
-			"nber",
-			"ssrn",
-			"arxiv"
-		],
 		"doiUrlPrefixes": [
 			"https://doi.org/",
 			"http://doi.org/",

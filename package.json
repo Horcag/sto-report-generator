@@ -49,7 +49,7 @@
 		"test:scaffold": "npx tsx tests/scaffold/run_scaffold_tests.ts",
 		"test:generator": "npx tsx tests/generator/run_generator_snapshot_test.ts",
 		"test:toc": "npx tsx tests/generator/toc_regression.ts",
-		"test:bib": "npx tsx tests/bibliography/bib-gost.test.ts",
+		"test:bib": "npx tsx tests/bibliography/bib-gost.test.ts && npx tsx tests/bibliography/bib-areas.test.ts",
 		"test:coverage": "npx tsx scripts/quality/run_coverage.ts",
 		"test:quality-policy": "uv run python -m unittest discover -s scripts/quality/tests -p \"test_*.py\" && uv run python -m unittest discover -s tests/quality -p \"test_*.py\"",
 		"check:pack": "npx tsx tests/package/run_pack_content_check.ts",

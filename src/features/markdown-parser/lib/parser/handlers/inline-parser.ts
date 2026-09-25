@@ -69,7 +69,7 @@ export async function parseInline(
 			case 'codespan':
 				runs.push(
 					new TextRun({
-						text: replaceRefs((token as Tokens.Codespan).text),
+						text: (token as Tokens.Codespan).text,
 						font: 'Courier New',
 						bold: options?.bold ? true : undefined,
 					}),

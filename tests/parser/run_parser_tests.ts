@@ -8,6 +8,7 @@ import { parseMarkdownToDocx } from '@/features/markdown-parser';
 import { STO_NUMBERING, STO_STYLES } from '@/shared/config';
 import { readDocxEntry } from '@/shared/lib/docx-archive';
 
+import { runAppendixParserTests } from './appendix_parser_tests';
 import { runCitationLocatorTests } from './citation_locator_tests';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'parser-tests');
@@ -392,37 +393,7 @@ async function main(): Promise<void> {
 		'Table caption must strip trailing anchor label without leaving (1).',
 	);
 
-	const appendixElements = await parseMarkdownToDocx(
-		String.raw`Рисунок 1 – Основная схема (@fig:main)
-
-\sto_structural_heading{ПРИЛОЖЕНИЕ А}
-
-# Расчётные данные
-
-На рисунке @fig:a показаны данные, в таблице @tab:a приведены числа; формула @eq:a описывает итог.
-
-Рисунок 1 – Схема приложения (@fig:a)
-
-Таблица 1 – Числа приложения (@tab:a)
-
-$$x=1 (@eq:a)$$
-`,
-		{},
-		{ sourceDir: tempRoot },
-	);
-	const { documentXml: appendixXml } = await packAndReadXml(
-		appendixElements,
-		path.join(tempRoot, 'appendix-numbering.docx'),
-	);
-	assert.match(getWordText(appendixXml), /Рисунок А\.1/);
-	assert.match(getWordText(appendixXml), /Таблица А\.1/);
-	assert.match(getWordText(appendixXml), /рисунке А\.1/);
-	assert.match(getWordText(appendixXml), /ПРИЛОЖЕНИЕ А/);
-	assert.match(
-		getWordText(paragraphContaining(appendixXml, 'ПРИЛОЖЕНИЕ А')),
-		/Расчётные данные/,
-	);
-	assert.match(getWordText(appendixXml), /\(А\.1\)/);
+	await runAppendixParserTests(tempRoot);
 
 	const russianListElements = await parseMarkdownToDocx(
 		String.raw`\begin{sto_list}
