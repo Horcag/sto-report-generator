@@ -20,6 +20,7 @@ const COMMON_FIELDS = [
 	'doi',
 	'contenttype',
 	'mediatype',
+	'responsibilityabsence',
 ];
 const PHYSICAL_FIELDS = [
 	'pages',

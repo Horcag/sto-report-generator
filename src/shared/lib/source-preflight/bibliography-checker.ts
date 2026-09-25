@@ -90,6 +90,19 @@ function isStructuralBibliographyField(
 	const group = tagNames.join('|');
 	return (
 		group === 'title' ||
+		(tagNames.includes('author') &&
+			[
+				'book',
+				'article',
+				'inproceedings',
+				'incollection',
+				'thesis',
+				'phdthesis',
+				'mastersthesis',
+				'report',
+				'techreport',
+				'patent',
+			].includes(entry.entryType)) ||
 		(entry.entryType === 'book' && ['publisher', 'year'].includes(group)) ||
 		(group === 'url' && requiresNetworkUrl(entry)) ||
 		(entry.entryType === 'article' && group === 'journal') ||
@@ -257,6 +270,14 @@ function validateRequiredBibFields(
 				tagNames.some(tagName =>
 					Boolean(getNormalizedTagValue(entry, tagName)),
 				)
+			) {
+				continue;
+			}
+			// An anonymous or unattributed source is valid when the absence
+			// is checked against the source and explained explicitly.
+			if (
+				tagNames.includes('author') &&
+				getNormalizedTagValue(entry, 'responsibilityabsence')
 			) {
 				continue;
 			}

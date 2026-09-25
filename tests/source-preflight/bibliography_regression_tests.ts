@@ -105,7 +105,7 @@ bibliography: "references.bib"
 		}),
 		'bibliography-required-field-missing',
 	);
-	expectWarning(
+	expectIssue(
 		'bibliography-book-without-responsibility',
 		validFiles({
 			'00_metadata.md': bibliographyMetadata,
@@ -119,6 +119,22 @@ bibliography: "references.bib"
   pages = {20}
 }
 `,
+		}),
+		'bibliography-required-field-missing',
+	);
+	expectNoIssue(
+		'bibliography-anonymous-book-with-explained-absence',
+		validFiles({
+			'00_metadata.md': bibliographyMetadata,
+			'03_intro.md': 'Анонимный источник [@anonymousBook].\n',
+			'references.bib': `@book{anonymousBook,
+  title = {Анонимное издание},
+  responsibilityabsence = {На титульном листе и обороте сведения об ответственности отсутствуют},
+  address = {Самара},
+  publisher = {Самарский университет},
+  year = {2020},
+  pages = {20}
+}\n`,
 		}),
 		'bibliography-required-field-missing',
 	);
