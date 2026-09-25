@@ -206,7 +206,7 @@
 		"requiredFieldsByType": {
 			"book": [
 				["title"],
-				["author", "editor"],
+				["author", "editor", "compiler"],
 				["year"],
 				["address", "location"],
 				["publisher"],

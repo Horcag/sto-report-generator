@@ -263,8 +263,14 @@ function formatBook(
 	const editor = tags.editor
 		? parseAuthors(tags.editor, isEng).responsibility
 		: '';
+	const compiler = tags.compiler
+		? parseAuthors(tags.compiler, isEng).responsibility
+		: '';
 	const bookNote: NoteBlock = {
 		responsibility: [
+			...(compiler
+				? [`${isEng ? 'compiled by' : 'сост.'} ${compiler}`]
+				: []),
 			...noteBlock.responsibility,
 			...(editor ? [`${isEng ? 'ed. by' : 'ред.'} ${editor}`] : []),
 		],

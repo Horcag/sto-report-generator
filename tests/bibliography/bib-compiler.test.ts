@@ -11,7 +11,7 @@ assert.equal(
 			title: 'Внешнее описание программных комплексов',
 			howpublished:
 				'методические указания к лабораторной работе № 1 по курсу «Проектирование программных комплексов»',
-			note: 'сост. А. В. Куприянов, Д. В. Кирш',
+			compiler: 'Куприянов, А. В. and Кирш, Д. В.',
 			address: 'Самара',
 			publisher: 'Самарский университет',
 			year: '2020',
@@ -19,4 +19,32 @@ assert.equal(
 		},
 	}),
 	'Внешнее описание программных комплексов : методические указания к лабораторной работе № 1 по курсу «Проектирование программных комплексов» / сост. А.В. Куприянов, Д.В. Кирш. – Самара : Самарский университет, 2020. – 20 с.',
+);
+
+assert.throws(
+	() =>
+		formatBibItem({
+			citationKey: 'duplicate-compiler',
+			entryType: 'book',
+			entryTags: {
+				title: 'Методические указания',
+				compiler: 'Куприянов, А. В.',
+				note: 'сост. А. В. Куприянов',
+			},
+		}),
+	/credits compilers in both compiler and note/,
+);
+
+assert.throws(
+	() =>
+		formatBibItem({
+			citationKey: 'article-compiler',
+			entryType: 'article',
+			entryTags: {
+				title: 'Статья',
+				journal: 'Журнал',
+				compiler: 'Куприянов, А. В.',
+			},
+		}),
+	/cannot render fields: compiler/,
 );
