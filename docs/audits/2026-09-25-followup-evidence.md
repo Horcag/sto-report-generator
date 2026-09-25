@@ -30,14 +30,16 @@ page 6. Table text on pages 6–7 keeps `users.password_hash`, `VARCHAR(254)`, a
 `route_places.position` intact. This verifies the new image `keepNext` and table
 width allocation in this report with the current Word and printer settings.
 
-The same PDF shows a remaining issue: Word splits Table 1 across pages 6–7 and
-repeats its header, but page 7 has no `Продолжение таблицы 1` label. STO §6.2.12
-requires that label above subsequent table parts. The Word acceptance path now
-tries moving a captioned table to the next page and retains the move only when
-the whole table fits; otherwise it rejects the unlabeled split and calls for
-authored continuation parts. Portable PowerShell and launcher tests pass. A
-fresh native Word acceptance of this new path remains pending because the
-earlier failed coursework run left a Word window whose ownership is unclear.
+The earlier PDF split Table 1 across pages 6–7 and repeated its header without
+the `Продолжение таблицы 1` label required by STO §6.2.12. The Word acceptance
+path now tries moving a captioned table to the next page and retains the move
+only when the whole table fits; otherwise it rejects the unlabeled split and
+calls for authored continuation parts. Portable PowerShell and launcher tests
+pass. A fresh native Word acceptance of this path passed at 9 pages: Figure 1
+and its caption remain on page 6, and the complete Table 1 with its caption is
+on page 7. The Word process was absent after the run. The fail-closed path for a
+table too long to fit one page remains covered by the PowerShell test rather
+than a native long-table sample.
 
 ## Conditional forms and visual comparison
 
