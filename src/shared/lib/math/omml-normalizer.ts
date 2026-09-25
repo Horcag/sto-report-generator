@@ -84,7 +84,33 @@ function normalizeAccents(mathElement: Element): void {
 	}
 }
 
+function normalizeEmptyAccentScripts(mathElement: Element): void {
+	// Word measures an invisible empty script when sizing an accent above it.
+	for (const accent of [
+		...mathElement.getElementsByTagName('m:bar'),
+		...mathElement.getElementsByTagName('m:acc'),
+	]) {
+		const base = [...accent.children].find(
+			child => child.tagName === 'm:e',
+		);
+		if (!base || base.children.length !== 1) continue;
+		const script = base.children[0];
+		if (script.tagName !== 'm:sSup' && script.tagName !== 'm:sSub')
+			continue;
+		const argument = [...script.children].find(
+			child => child.tagName === 'm:e',
+		);
+		const index = [...script.children].find(
+			child => child.tagName === 'm:sup' || child.tagName === 'm:sub',
+		);
+		if (argument && index && index.children.length === 0) {
+			script.replaceWith(...[...argument.children]);
+		}
+	}
+}
+
 export function normalizeOmmlMath(mathElement: Element): void {
 	normalizeAccents(mathElement);
+	normalizeEmptyAccentScripts(mathElement);
 	normalizeLimitOperators(mathElement);
 }

@@ -29,6 +29,10 @@ class MathSemanticPostBuildTests(unittest.TestCase):
                 element.xpath(".//m:bar/m:barPr/m:pos/@m:val", namespaces=namespaces),
                 ["top"],
             )
+            self.assertEqual(
+                element.xpath(".//m:bar/m:e/m:sSup | .//m:bar/m:e/m:sSub", namespaces=namespaces),
+                [],
+            )
         for element, character in zip(omath[2:5], ("\u0303", "\u0302", "\u20d7"), strict=True):
             self.assertEqual(
                 element.xpath(".//m:acc/m:accPr/m:chr/@m:val", namespaces=namespaces),
@@ -45,6 +49,18 @@ class MathSemanticPostBuildTests(unittest.TestCase):
             omath[5].xpath(".//m:limUpp/m:lim//m:t/text()", namespaces=namespaces),
             ["n"],
         )
+
+    def test_composite_formula_overbar_has_no_empty_script(self) -> None:
+        repo_root = Path(__file__).resolve().parents[2]
+        formula = r"\bar{y}=\frac{1}{n}\sum_{i=1}^{n}y_i,\quad\tilde{y}=\operatorname{median}(y_1,\ldots,y_n)"
+        mathml = latex_to_mathml_batch([formula], repo_root)
+        omath = convert_mathml_to_omath(mathml, repo_root)[0]
+        namespaces = {"m": MATH_NS}
+        self.assertEqual(
+            omath.xpath(".//m:bar/m:e/m:sSup | .//m:bar/m:e/m:sSub", namespaces=namespaces),
+            [],
+        )
+        self.assertEqual(omath.xpath(".//m:bar/m:e/m:r/m:t/text()", namespaces=namespaces), ["y"])
 
     def test_explicit_roles_survive_formula_replacement_conversion(self) -> None:
         formulas = [

@@ -196,6 +196,30 @@ def normalize_accents(root: Any) -> int:
         parent.replace(lim_upp, accent)
         fixed += 1
 
+    # The converter may produce m:bar directly, so normalize after both paths.
+    for accent in root.xpath(".//m:bar | .//m:acc", namespaces=namespace):
+        base = accent.find(f"{{{MATH_NS}}}e")
+        if (
+            base is None
+            or len(base) != 1
+            or base[0].tag
+            not in {
+                f"{{{MATH_NS}}}sSup",
+                f"{{{MATH_NS}}}sSub",
+            }
+        ):
+            continue
+        script = base[0]
+        argument = script.find(f"{{{MATH_NS}}}e")
+        index = script.find(f"{{{MATH_NS}}}sup")
+        if index is None:
+            index = script.find(f"{{{MATH_NS}}}sub")
+        if argument is not None and index is not None and len(index) == 0:
+            base.remove(script)
+            for child in list(argument):
+                argument.remove(child)
+                base.append(child)
+
     return fixed
 
 
