@@ -668,15 +668,15 @@ export function getStructuralHeadingOrder(
 		]),
 	];
 	const standardOrder = [
-		...STO_RULES.documentStructure.requiredOrder,
+		...STO_RULES.documentStructure.requiredOrder.slice(0, 2),
 		ABBREVIATIONS_HEADING,
+		...STO_RULES.documentStructure.requiredOrder.slice(2),
 		APPLICATION_HEADING,
 	];
+	const normalized = configured.map(normalizeHeading);
 	const ordered = standardOrder.filter(heading =>
-		configured.map(normalizeHeading).includes(heading),
+		normalized.includes(heading),
 	);
-	const remaining = configured
-		.map(normalizeHeading)
-		.filter(heading => !ordered.includes(heading));
+	const remaining = normalized.filter(heading => !ordered.includes(heading));
 	return [...ordered, ...remaining];
 }

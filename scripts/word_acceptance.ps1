@@ -11,6 +11,7 @@ $WdFieldTOC = 13
 $WdAlertsNone = 0
 $WdAlertsAll = -1
 $WdExportFormatPdf = 17
+$WdActiveEndPageNumber = 3
 
 function Read-Utf8Json($Path) {
     $text = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
@@ -289,6 +290,68 @@ function Update-DocumentForAcceptance($Document) {
     $Document.Repaginate()
 }
 
+function Get-TablePageSpan($Document, $Table) {
+    $start = [int]$Table.Range.Start
+    $end = [Math]::Max($start, [int]$Table.Range.End - 1)
+    return @(
+        [int]$Document.Range($start, $start).Information($WdActiveEndPageNumber),
+        [int]$Document.Range($end, $end).Information($WdActiveEndPageNumber)
+    )
+}
+
+function Get-TableCaptionBefore($Document, $Table) {
+    $previous = $null
+    foreach ($paragraph in @($Document.Paragraphs)) {
+        if ([int]$paragraph.Range.End -gt [int]$Table.Range.Start) { break }
+        $previous = $paragraph
+    }
+    if ($null -eq $previous) { return $null }
+    $caption = ([string]$previous.Range.Text).Trim()
+    if ($caption -notmatch '^(?:\u0422\u0430\u0431\u043b\u0438\u0446\u0430|\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0435\u043d\u0438\u0435\s+\u0442\u0430\u0431\u043b\u0438\u0446\u044b)\s+(?:[\u0410-\u042f]\.)?\d+(?:\.\d+)?(?:\s|$)') {
+        return $null
+    }
+    return $previous
+}
+
+function Move-FittingTablesToNextPage($Document) {
+    foreach ($table in @($Document.Tables)) {
+        $caption = Get-TableCaptionBefore $Document $table
+        if ($null -eq $caption) { continue }
+        $pages = @(Get-TablePageSpan $Document $table)
+        if ($pages[0] -eq $pages[1]) { continue }
+
+        $format = $caption.Range.ParagraphFormat
+        $originalBreak = $format.PageBreakBefore
+        if ([bool]$originalBreak) { continue }
+
+        $fits = $false
+        try {
+            $format.PageBreakBefore = $true
+            $Document.Repaginate()
+            $movedPages = @(Get-TablePageSpan $Document $table)
+            $fits = $movedPages[0] -eq $movedPages[1]
+        } finally {
+            if (-not $fits) {
+                $format.PageBreakBefore = $originalBreak
+                $Document.Repaginate()
+            }
+        }
+    }
+}
+
+function Assert-TableContinuationLayout($Document) {
+    $Document.Repaginate()
+    foreach ($table in @($Document.Tables)) {
+        $caption = Get-TableCaptionBefore $Document $table
+        if ($null -eq $caption) { continue }
+        $pages = @(Get-TablePageSpan $Document $table)
+        if ($pages[0] -ne $pages[1]) {
+            $captionText = ([string]$caption.Range.Text).Trim()
+            throw "Table '$captionText' spans pages $($pages[0])-$($pages[1]). Split it into page-sized segments and add a numbered continuation caption above each later part."
+        }
+    }
+}
+
 function Get-SavedDocumentPageCount($Document) {
     # Repaginate has already refreshed Word's layout. Reading the built-in
     # window Pages collection validates the rendered result without invoking a second
@@ -493,7 +556,9 @@ try {
     $document = $word.Documents.Open($stagedInputDocx, $false, $false)
     Write-Output "Word acceptance: staged DOCX opened."
     Update-DocumentForAcceptance $document
+    Move-FittingTablesToNextPage $document
     Set-ReferatStatistics $document $request
+    Assert-TableContinuationLayout $document
     Write-Output "Word acceptance: fields, TOC, and pagination updated."
     $document.Save()
     $pageCountBeforeReopen = Get-SavedDocumentPageCount $document
@@ -509,6 +574,7 @@ try {
     # leaves a large undo/layout transaction on the original object; desktop
     # Word's successful UI path reopens the saved file before publishing.
     $document = $word.Documents.Open($stagedAcceptedDocx, $false, $false)
+    Assert-TableContinuationLayout $document
     $pageCountAfterReopen = Get-SavedDocumentPageCount $document
     if ($document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES|APPENDICES)\}\}') {
         throw 'Accepted DOCX still contains referat statistic placeholders.'

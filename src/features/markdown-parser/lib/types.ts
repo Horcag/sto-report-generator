@@ -37,10 +37,13 @@ export interface ParserContext {
 export interface StoFlagToken {
 	type: 'stoFlag';
 	raw: string;
-	flagType: 'structural_heading' | 'appendix' | 'environment';
+	flagType:
+		'structural_heading' | 'appendix' | 'environment' | 'referat_field';
 	text?: string;
+	referatField?: 'characteristics' | 'application';
 	appendix?: AppendixHeading;
 	envName?: string;
+	content?: string;
 	tokens: Token[];
 }
 

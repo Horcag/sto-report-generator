@@ -48,6 +48,39 @@ async function run(): Promise<void> {
 
 	const explicitWidths = computeTableColumnWidths(delimToken, [1, 3]);
 	assert.ok(explicitWidths[1] > explicitWidths[0] * 2);
+	const identifierToken = {
+		header: [
+			{ text: 'Таблица и поле' },
+			{ text: 'Тип PostgreSQL' },
+			{ text: 'Ограничение и назначение' },
+		],
+		rows: [
+			[
+				{ text: 'route_places.position' },
+				{ text: 'INTEGER' },
+				{ text: 'Обязательный положительный порядковый номер' },
+			],
+			[
+				{ text: 'users.password_hash' },
+				{ text: 'VARCHAR(254)' },
+				{ text: 'Обязательный хеш пароля' },
+			],
+		],
+		align: [null, null, null],
+	} as unknown as Tokens.Table;
+	const identifierWidths = computeTableColumnWidths(identifierToken);
+	assert.equal(
+		identifierWidths.reduce((sum, width) => sum + width, 0),
+		9355,
+	);
+	assert.ok(
+		identifierWidths[0] >= 3000,
+		'Automatic width must reserve space for long field identifiers',
+	);
+	assert.ok(
+		identifierWidths[1] >= 1700,
+		'Automatic width must reserve space for SQL types',
+	);
 
 	// 2. Integration test: Table with center/right alignment, bold cells, br tags, header markup
 	const markdown = `
@@ -118,6 +151,26 @@ async function run(): Promise<void> {
 		path.join(tempRoot, 'table_wide.docx'),
 	);
 	assert.match(wideDocXml, /w:tblLayout w:type="fixed"/);
+
+	const png = Buffer.from(
+		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z7fsAAAAASUVORK5CYII=',
+		'base64',
+	);
+	fs.writeFileSync(path.join(tempRoot, 'figure.png'), png);
+	const figureElements = await parseMarkdownToDocx(
+		'![Схема](figure.png)\n\nРисунок 1 – Подпись схемы',
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const figureXml = await packAndReadXml(
+		figureElements,
+		path.join(tempRoot, 'figure-caption.docx'),
+	);
+	assert.match(
+		figureXml,
+		/<w:pPr>[^<]*<w:pStyle w:val="Normal"\/>[\s\S]*?<w:keepNext\/>[\s\S]*?<\/w:pPr>[\s\S]*?<w:drawing\b/,
+		'Figure paragraph must keep with its following caption',
+	);
 
 	console.log('Table layout and coverage tests passed.');
 }

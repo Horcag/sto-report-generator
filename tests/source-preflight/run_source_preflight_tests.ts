@@ -7,6 +7,7 @@ import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
 import { runBibliographyRegressionTests } from './bibliography_regression_tests';
 import { runHeadingSourceTests } from './heading_source_tests';
+import { runSemanticSourceTests } from './semantic_source_tests';
 import { runStructureReferenceTests } from './structure_reference_tests';
 
 const tempRoot = path.join(
@@ -198,6 +199,7 @@ fs.rmSync(tempRoot, { recursive: true, force: true });
 fs.mkdirSync(tempRoot, { recursive: true });
 
 expectPass('valid-minimal', validFiles());
+runSemanticSourceTests({ validFiles, expectPass, expectIssue });
 expectPass(
 	'valid-style-preset',
 	validFiles({

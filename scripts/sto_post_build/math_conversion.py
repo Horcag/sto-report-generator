@@ -45,11 +45,25 @@ def latex_to_mathml_batch(formulas: Sequence[str], repo_root: Path) -> list[str]
 
     node_script = r"""
 const fs = require('fs');
+const path = require('path');
+const { pathToFileURL } = require('url');
 
 (async () => {
   const mathjax = require('mathjax');
   const formulas = JSON.parse(fs.readFileSync(0, 'utf8'));
-  const MathJax = await mathjax.init({ loader: { load: ['input/tex'] } });
+  const MathJax = await mathjax.init({
+    loader: {
+      load: ['input/tex'],
+      require: (file) => import(path.isAbsolute(file) ? pathToFileURL(file).href : file),
+    },
+    tex: { macros: {
+      stovec: ['\\mathbf{#1}', 1],
+      stomat: ['\\mathbf{#1}', 1],
+      stotemp: ['\\text{#1}', 1],
+      stoelem: ['\\text{#1}', 1],
+      stoabbr: ['\\text{#1}', 1],
+    } },
+  });
   const result = formulas.map((formula) => {
     try {
       return { ok: true, mathml: MathJax.tex2mml(formula) };

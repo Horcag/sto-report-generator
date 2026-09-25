@@ -1,4 +1,9 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import AdmZip from 'adm-zip';
+
+import { unpackDocx } from '@/shared/lib/docx-archive';
 
 import { runSyntheticLayoutTests } from './synthetic_layout_tests';
 import { runWordNormalizedStyleTests } from './synthetic_word_style_tests';
@@ -22,10 +27,12 @@ export function runSyntheticValidatorTests(
 ): void {
 	const namespaces =
 		'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
-	const bodyStyles = `<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>`;
+	const bodyStyles = `<w:styles ${namespaces}><w:docDefaults><w:pPrDefault><w:pPr><w:spacing w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/><w:pPr><w:ind w:firstLine="709"/></w:pPr></w:style></w:styles>`;
 	const bodyParagraph =
 		'<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>Обычный текст</w:t></w:r><w:r><w:rPr><w:rFonts w:ascii="Courier New"/></w:rPr><w:t>код</w:t></w:r></w:p>';
 	const directFormattingCases = [
+		'<w:jc w:val="left"/>',
+		'<w:jc w:val="center"/>',
 		'<w:ind w:left="1" w:firstLine="709"/>',
 		'<w:ind w:right="1" w:firstLine="709"/>',
 		'<w:ind w:firstLine="708"/>',
@@ -46,6 +53,179 @@ export function runSyntheticValidatorTests(
 		getCheck(normalFixture, 'Direct Body Paragraph Formatting').passed,
 		true,
 	);
+	const cascadeStyles = `<w:styles ${namespaces}><w:docDefaults><w:pPrDefault><w:pPr><w:spacing w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/><w:pPr><w:ind w:firstLine="709"/></w:pPr></w:style><w:style w:type="paragraph" w:styleId="Base"><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="0"/></w:pPr></w:style><w:style w:type="paragraph" w:styleId="Body"><w:name w:val="Normal"/><w:basedOn w:val="Base"/></w:style></w:styles>`;
+	const cascadeParagraph = bodyParagraph.replace(
+		'w:val="Normal"',
+		'w:val="Body"',
+	);
+	const cascadeCase = (
+		name: string,
+		paragraph: string,
+		styles: string,
+		expected: boolean,
+		numbering?: string,
+	) => {
+		const fixture = writeXmlFixture(
+			name,
+			`<w:document ${namespaces}><w:body>${paragraph}</w:body></w:document>`,
+			styles,
+			numbering ? { 'word/numbering.xml': numbering } : undefined,
+		);
+		assert.equal(
+			getCheck(fixture, 'Direct Body Paragraph Formatting').passed,
+			expected,
+			name,
+		);
+	};
+	cascadeCase(
+		'cascade-valid-style-chain',
+		cascadeParagraph,
+		cascadeStyles,
+		true,
+	);
+	cascadeCase(
+		'cascade-bad-default',
+		cascadeParagraph,
+		cascadeStyles.replace('w:line="360"', 'w:line="240"'),
+		false,
+	);
+	cascadeCase(
+		'cascade-bad-base-style',
+		cascadeParagraph,
+		cascadeStyles.replace('w:after="0"', 'w:after="120"'),
+		false,
+	);
+	cascadeCase(
+		'cascade-bad-body-style',
+		cascadeParagraph,
+		cascadeStyles.replace(
+			'<w:style w:type="paragraph" w:styleId="Body"><w:name w:val="Normal"/><w:basedOn w:val="Base"/>',
+			'<w:style w:type="paragraph" w:styleId="Body"><w:name w:val="Normal"/><w:basedOn w:val="Base"/><w:pPr><w:jc w:val="center"/></w:pPr>',
+		),
+		false,
+	);
+	cascadeCase(
+		'cascade-direct-restores-style',
+		cascadeParagraph.replace(
+			'</w:pPr>',
+			'<w:spacing w:after="0"/></w:pPr>',
+		),
+		cascadeStyles.replace('w:after="0"', 'w:after="120"'),
+		true,
+	);
+	cascadeCase(
+		'cascade-direct-first-line-cancels-hanging',
+		cascadeParagraph.replace(
+			'</w:pPr>',
+			'<w:ind w:firstLine="709"/></w:pPr>',
+		),
+		cascadeStyles.replace('w:firstLine="709"', 'w:hanging="360"'),
+		true,
+	);
+	cascadeCase(
+		'cascade-inherited-hanging',
+		cascadeParagraph,
+		cascadeStyles.replace('w:firstLine="709"', 'w:hanging="360"'),
+		false,
+	);
+	cascadeCase(
+		'cascade-child-hanging-overrides-base-first-line',
+		cascadeParagraph,
+		cascadeStyles.replace(
+			'<w:style w:type="paragraph" w:styleId="Body"><w:name w:val="Normal"/><w:basedOn w:val="Base"/>',
+			'<w:style w:type="paragraph" w:styleId="Body"><w:name w:val="Normal"/><w:basedOn w:val="Base"/><w:pPr><w:ind w:hanging="360"/></w:pPr>',
+		),
+		false,
+	);
+	const numberedStyles = cascadeStyles.replace(
+		'<w:basedOn w:val="Base"/></w:style>',
+		'<w:basedOn w:val="Base"/><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="7"/></w:numPr></w:pPr></w:style>',
+	);
+	const numbering = `<w:numbering ${namespaces}><w:abstractNum w:abstractNumId="2"><w:lvl w:ilvl="0"><w:pPr><w:spacing w:after="120"/></w:pPr></w:lvl></w:abstractNum><w:num w:numId="7"><w:abstractNumId w:val="2"/></w:num></w:numbering>`;
+	cascadeCase(
+		'cascade-bad-numbering',
+		cascadeParagraph,
+		numberedStyles,
+		false,
+		numbering,
+	);
+	cascadeCase(
+		'cascade-direct-restores-numbering',
+		cascadeParagraph.replace(
+			'</w:pPr>',
+			'<w:spacing w:after="0"/></w:pPr>',
+		),
+		numberedStyles,
+		true,
+		numbering,
+	);
+	cascadeCase(
+		'cascade-bad-numbering-override',
+		cascadeParagraph,
+		numberedStyles,
+		false,
+		numbering
+			.replace(
+				'<w:abstractNumId w:val="2"/>',
+				'<w:abstractNumId w:val="2"/><w:lvlOverride w:ilvl="0"><w:lvl w:ilvl="0"><w:pPr><w:jc w:val="center"/></w:pPr></w:lvl></w:lvlOverride>',
+			)
+			.replace('<w:spacing w:after="120"/>', '<w:spacing w:after="0"/>'),
+	);
+	const archiveDir = path.join(
+		process.cwd(),
+		'.agent-work',
+		'validator-ppr-docx',
+	);
+	fs.mkdirSync(archiveDir, { recursive: true });
+	const baseArchive = new AdmZip();
+	baseArchive.addFile(
+		'[Content_Types].xml',
+		Buffer.from(
+			'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>',
+		),
+	);
+	baseArchive.addFile(
+		'word/document.xml',
+		Buffer.from(
+			`<w:document ${namespaces}><w:body>${cascadeParagraph}</w:body></w:document>`,
+		),
+	);
+	baseArchive.addFile('word/styles.xml', Buffer.from(cascadeStyles));
+	for (const [name, entry, from, to, expected] of [
+		['baseline', '', '', '', true],
+		[
+			'direct-override',
+			'word/document.xml',
+			'<w:pStyle w:val="Body"/>',
+			'<w:pStyle w:val="Body"/><w:jc w:val="left"/>',
+			false,
+		],
+		[
+			'inherited-override',
+			'word/styles.xml',
+			'<w:spacing w:after="0"/>',
+			'<w:spacing w:after="120"/>',
+			false,
+		],
+	] as const) {
+		const archive = new AdmZip(baseArchive.toBuffer());
+		if (entry) {
+			const archiveEntry = archive.getEntry(entry);
+			assert.ok(archiveEntry);
+			const source = archiveEntry.getData().toString('utf8');
+			assert.ok(source.includes(from));
+			archive.updateFile(entry, Buffer.from(source.replace(from, to)));
+		}
+		const docxPath = path.join(archiveDir, `${name}.docx`);
+		archive.writeZip(docxPath);
+		const unpacked = path.join(archiveDir, `${name}-unpacked`);
+		unpackDocx(docxPath, unpacked);
+		assert.equal(
+			getCheck(unpacked, 'Direct Body Paragraph Formatting').passed,
+			expected,
+			`DOCX mutation: ${name}`,
+		);
+	}
 	const implicitNormalFixture = writeXmlFixture(
 		'direct-formatting-implicit-normal',
 		`<w:document ${namespaces}><w:body>${bodyParagraph.replace('<w:pStyle w:val="Normal"/>', '').replace('</w:pPr>', '<w:ind w:firstLine="708"/></w:pPr>')}</w:body></w:document>`,
@@ -75,7 +255,9 @@ export function runSyntheticValidatorTests(
 	const wordStyleFixture = writeXmlFixture(
 		'word-normalized-body-style',
 		`<w:document ${namespaces}><w:body>${bodyParagraph.replace('w:val="Normal"', 'w:val="1-"').replace('</w:pPr>', '<w:ind w:firstLine="708"/></w:pPr>')}</w:body></w:document>`,
-		`<w:styles ${namespaces}><w:style w:type="paragraph" w:styleId="1-"><w:name w:val="+Абзац с отступом 1-ой строки"/><w:pPr><w:ind w:firstLine="709"/></w:pPr></w:style></w:styles>`,
+		bodyStyles
+			.replace('w:styleId="Normal"', 'w:styleId="1-"')
+			.replace('w:val="Normal"', 'w:val="+Абзац с отступом 1-ой строки"'),
 	);
 	assert.equal(
 		getCheck(wordStyleFixture, 'Direct Body Paragraph Formatting').passed,

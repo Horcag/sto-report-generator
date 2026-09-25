@@ -38,6 +38,10 @@ function stripAcceptedUprightFunctionNotation(formula: string): string {
 		result = result
 			.replace(new RegExp(String.raw`\\${escapedName}\b`, 'g'), '')
 			.replace(
+				new RegExp(String.raw`\\stoabbr\{\s*${escapedName}\s*\}`, 'g'),
+				'',
+			)
+			.replace(
 				new RegExp(
 					String.raw`\\(?:operatorname|mathrm|text)\{\s*${escapedName}\s*\}`,
 					'g',

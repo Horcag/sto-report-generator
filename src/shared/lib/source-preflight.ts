@@ -11,6 +11,7 @@ import { validateBibliography } from './source-preflight/bibliography-checker';
 import { validateStoEnvironments } from './source-preflight/environment-checker';
 import { validateSourceFormulas } from './source-preflight/formula-checker';
 import { validateMarkdownHeadings } from './source-preflight/heading-checker';
+import { validateInlineLists } from './source-preflight/inline-list-checker';
 import { validateLists } from './source-preflight/list-checker';
 import { validateMetadata } from './source-preflight/metadata-checker';
 import { validateMicrotypography } from './source-preflight/microtypography-checker';
@@ -25,6 +26,7 @@ import {
 import { validateSoftTextRules } from './source-preflight/soft-text-checker';
 import { validateDocumentStructure } from './source-preflight/structure-checker';
 import { validateMarkdownTables } from './source-preflight/table-figure-checker';
+import { validateTerms } from './source-preflight/terms-checker';
 import {
 	LabelDefinitions,
 	SourceFile,
@@ -164,6 +166,7 @@ export function runSourcePreflight(
 
 	for (const { file, content } of files) {
 		validateMicrotypography(file, content, issues);
+		validateInlineLists(file, content, issues);
 		validateSoftTextRules(file, content, config, issues);
 		validateLists(file, content, issues);
 		validateSourceFormulas(file, content, issues);
@@ -177,6 +180,7 @@ export function runSourcePreflight(
 	validateBibliography(files, absoluteSourceDir, cwd, config, issues);
 	validateReferat(files, issues, config);
 	validateDocumentStructure(files, issues, config);
+	validateTerms(files, issues);
 	validateObjectReferences(files, issues);
 
 	return {

@@ -1,6 +1,7 @@
 import { TextRun } from 'docx';
 import { Token, Tokens } from 'marked';
 
+import { formatStoInlineList, parseStoInlineListItems } from '@/shared/config';
 import { parseCitationReferences } from '@/shared/lib/citation-syntax';
 import { convertLatex2Math } from '@/shared/lib/math-converter';
 
@@ -30,6 +31,41 @@ export async function parseInline(
 
 	for (const token of inlineTokens) {
 		switch (token.type) {
+			case 'stoInlineList': {
+				const inlineList = token as Token & {
+					kind: string;
+					value: string;
+				};
+				const items = parseStoInlineListItems(inlineList.value);
+				if (
+					inlineList.kind !== 'simple' &&
+					inlineList.kind !== 'complex'
+				) {
+					throw new Error(
+						'sto_inline_list kind must be simple or complex.',
+					);
+				}
+				if (!items)
+					throw new Error(
+						'sto_inline_list requires at least two nonempty items without trailing punctuation.',
+					);
+				if (
+					inlineList.kind === 'simple' &&
+					items.some(item => /[,;]/.test(item))
+				) {
+					throw new Error(
+						'sto_inline_list simple items must not contain commas or semicolons.',
+					);
+				}
+				runs.push(
+					new TextRun(
+						replaceRefs(
+							formatStoInlineList(inlineList.kind, items),
+						),
+					),
+				);
+				break;
+			}
 			case 'strong': {
 				if (options?.allowBold || options?.bold) {
 					const strongToken = token as Tokens.Strong;

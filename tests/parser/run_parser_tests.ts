@@ -10,6 +10,7 @@ import { readDocxEntry } from '@/shared/lib/docx-archive';
 
 import { runAppendixParserTests } from './appendix_parser_tests';
 import { runCitationLocatorTests } from './citation_locator_tests';
+import { runSemanticParserTests } from './semantic_parser_tests';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'parser-tests');
 
@@ -125,7 +126,12 @@ async function main(): Promise<void> {
 		{},
 		{ sourceDir: tempRoot },
 	);
-
+	await runSemanticParserTests({
+		tempRoot,
+		packAndReadXml,
+		expectRejects,
+		getWordText,
+	});
 	await expectRejects(
 		String.raw`\begin{itemize}
 - bad
@@ -343,6 +349,24 @@ async function main(): Promise<void> {
 		/w:w="3742"/,
 		'Explicit widths before a table caption must be preserved',
 	);
+	const continuationElements = await parseMarkdownToDocx(
+		'Таблица 1 – Данные\n\n| Поле | Значение |\n| --- | --- |\n| A | B |\n\nПродолжение таблицы 1\n\n| Поле | Значение |\n| --- | --- |\n| C | D |',
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: continuationXml } = await packAndReadXml(
+		continuationElements,
+		path.join(tempRoot, 'table-continuation-test.docx'),
+	);
+	assert.match(
+		paragraphContaining(continuationXml, 'Продолжение таблицы 1'),
+		/<w:pStyle w:val="TableCaption"\/>/,
+	);
+	const firstContinuedTable = continuationXml.match(
+		/<w:tbl\b[\s\S]*?<\/w:tbl>/,
+	)?.[0];
+	assert.ok(firstContinuedTable);
+	assert.match(firstContinuedTable, /<w:bottom w:val="none"/);
 
 	const headingElements = await parseMarkdownToDocx(
 		'# 1 Основной раздел\n\n## 1.1 Подраздел\n\n# 2026 год\n\n# 12 причин',

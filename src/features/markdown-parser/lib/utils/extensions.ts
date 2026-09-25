@@ -71,7 +71,7 @@ export const stoExtension = {
 	level: 'block' as const,
 	start(src: string) {
 		return src.match(
-			/\\sto_structural_heading\{|\\sto_appendix\{|\\begin\{/,
+			/\\sto_structural_heading\{|\\sto_appendix\{|\\sto_referat_(?:characteristics|application)\{|\\begin\{/,
 		)?.index;
 	},
 	tokenizer(this: TokenizerThis, src: string, _tokens: Token[]) {
@@ -93,6 +93,19 @@ export const stoExtension = {
 				raw: match[0],
 				flagType: 'appendix',
 				appendix: { label: match[1], title: match[2] },
+			};
+		}
+
+		match = /^\\sto_referat_(characteristics|application)\{([^}]*)\}/.exec(
+			src,
+		);
+		if (match) {
+			return {
+				type: 'stoFlag',
+				raw: match[0],
+				flagType: 'referat_field',
+				referatField: match[1],
+				text: match[2],
 			};
 		}
 
@@ -125,6 +138,7 @@ export const stoExtension = {
 				raw: match[0],
 				flagType: 'environment',
 				envName,
+				content,
 				tokens: blockTokens,
 			};
 		}
@@ -154,5 +168,24 @@ export const mathExtension = {
 				text: match[1].trim(),
 			};
 		}
+	},
+};
+
+export const stoInlineListExtension = {
+	name: 'stoInlineList',
+	level: 'inline' as const,
+	start(src: string) {
+		const index = src.indexOf('\\sto_inline_list{');
+		return index < 0 ? undefined : index;
+	},
+	tokenizer(src: string) {
+		const match = /^\\sto_inline_list\{([^}]*)\}\{([^}]*)\}/.exec(src);
+		if (!match) return undefined;
+		return {
+			type: 'stoInlineList',
+			raw: match[0],
+			kind: match[1],
+			value: match[2],
+		};
 	},
 };
