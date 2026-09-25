@@ -46,6 +46,34 @@ bibliography: "references.bib"
 
 	{
 		const reportDir = writeReport(
+			'bibliography-report-entry',
+			validFiles({
+				'00_metadata.md': bibliographyMetadata,
+				'03_intro.md': 'Аналитический отчёт [@bankReport].\n',
+				'references.bib': `@report{bankReport,
+  title = {Аналитический обзор},
+  author = {{Банк России}},
+  institution = {Банк России},
+  type = {информационно-аналитические материалы},
+  year = {2024},
+  url = {https://example.org/report.pdf},
+  urldate = {2025-07-01}
+}
+`,
+			}),
+		);
+		const result = runSourcePreflight(reportDir);
+		assert.equal(
+			result.passed,
+			true,
+			result.issues
+				.map(item => `${item.code}: ${item.message}`)
+				.join('\n'),
+		);
+	}
+
+	{
+		const reportDir = writeReport(
 			'bibliography-missing-title-is-error',
 			validFiles({
 				'00_metadata.md': bibliographyMetadata,
