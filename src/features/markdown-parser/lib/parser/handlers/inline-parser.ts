@@ -1,6 +1,7 @@
 import { TextRun } from 'docx';
 import { Token, Tokens } from 'marked';
 
+import { parseCitationReferences } from '@/shared/lib/citation-syntax';
 import { convertLatex2Math } from '@/shared/lib/math-converter';
 
 import {
@@ -166,11 +167,14 @@ async function handleText(
 		.replace(/&quot;/g, '"')
 		.replace(/&#39;/g, "'");
 
-	// Process citations [@key] or [@key1; @key2]
-	text = text.replace(/\[@([^\]]+)\]/g, (_: string, keysRaw: string) => {
-		const keys = keysRaw.split(/[;,]/).map(k => k.trim().replace(/^@/, ''));
-		const nums = keys.map(k => getCitationNum(k));
-		return `[${nums.join(', ')}]`;
+	// Numbered end-reference calls, optionally with a page locator.
+	text = text.replace(/\[@([^\]]*)\]/g, (_: string, keysRaw: string) => {
+		const references = parseCitationReferences(keysRaw);
+		const calls = references.map(
+			({ key, page }) =>
+				`${getCitationNum(key)}${page ? `, ${page}` : ''}`,
+		);
+		return `[${calls.join(references.some(ref => ref.page) ? '; ' : ', ')}]`;
 	});
 
 	// Replace references @fig:key, etc.

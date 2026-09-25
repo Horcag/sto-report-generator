@@ -3,29 +3,55 @@ import path from 'node:path';
 import matter from 'gray-matter';
 
 import { STO_RULES } from '@/shared/config';
+import { parseCitationReferences } from '@/shared/lib/citation-syntax';
 import { ReportConfig } from '@/shared/lib/report-config';
 
 import { validateManualBibliographyContent } from './bibliography-content-checker';
+import {
+	isFutureDate,
+	parseIsoDate,
+	yearFromIsoDate,
+} from './bibliography-date';
+import {
+	BibEntrySource,
+	getNormalizedTagValue,
+	hasAnyBibTag,
+	readBibEntrySources,
+	readBibTagValue,
+} from './bibtex-source';
 import { SourceFile, SourcePreflightIssue } from './types';
 import { issue, lineNumberAt } from './utils';
 
-function collectCitationKeys(content: string): string[] {
+function collectCitationKeys(
+	content: string,
+	onInvalid?: (message: string, line: number) => void,
+): string[] {
 	const keys = new Set<string>();
-	for (const match of content.matchAll(/\[@([^\]]+)]/g)) {
-		for (const key of match[1].split(/[;,]/)) {
-			const normalized = key.trim().replace(/^@/, '');
-			if (normalized) {
-				keys.add(normalized);
+	for (const match of content.matchAll(/\[@([^\]]*)]/g)) {
+		try {
+			for (const { key } of parseCitationReferences(match[1])) {
+				keys.add(key);
 			}
+		} catch (error) {
+			onInvalid?.(String(error), lineNumberAt(content, match.index ?? 0));
 		}
 	}
 	return [...keys];
 }
 
-function collectAllCitationKeys(files: SourceFile[]): string[] {
+function collectAllCitationKeys(
+	files: SourceFile[],
+	issues?: SourcePreflightIssue[],
+): string[] {
 	return [
 		...new Set(
-			files.flatMap(({ content }) => collectCitationKeys(content)),
+			files.flatMap(({ file, content }) =>
+				collectCitationKeys(content, (message, line) => {
+					issues?.push(
+						issue('citation-invalid-syntax', message, file, line),
+					);
+				}),
+			),
 		),
 	];
 }
@@ -57,23 +83,9 @@ function resolveBibliographyPath(
 	return path.resolve(sourceDir, rawPath);
 }
 
-function readBibKeys(bibPath: string): Set<string> {
-	const content = fs.readFileSync(bibPath, 'utf8');
-	return new Set(
-		[...content.matchAll(/@\w+\s*\{\s*([^,\s]+)\s*,/g)].map(match =>
-			match[1].trim(),
-		),
-	);
-}
-
-interface BibEntrySource {
-	entryType: string;
-	key: string;
-	raw: string;
-	line: number;
-}
-
-const ONLINE_ENTRY_TYPES = new Set(['misc', 'online']);
+const ONLINE_ENTRY_TYPES = new Set(['online', 'inonline']);
+const ELECTRONIC_TYPE_PATTERN =
+	/\b(?:online|web(?:site)?|electronic|digital)\b|(?:электронн\w*|сетев\w*|сайт)/i;
 const PUBLICATION_DATE_DETAIL_TAGS = [
 	'date',
 	'month',
@@ -85,87 +97,22 @@ const PUBLICATION_DATE_DETAIL_TAGS = [
 	'last-modified',
 ] as const;
 
-function readBibEntrySources(bibPath: string): BibEntrySource[] {
-	const content = fs.readFileSync(bibPath, 'utf8');
-	return [
-		...content.matchAll(
-			/@(\w+)\s*\{\s*([^,\s]+)\s*,[\s\S]*?(?=\n@\w+\s*\{|\s*$)/g,
-		),
-	].map(match => ({
-		entryType: match[1].trim().toLowerCase(),
-		key: match[2].trim(),
-		line: lineNumberAt(content, match.index ?? 0),
-		raw: match[0],
-	}));
-}
-
-function hasBibTag(rawEntry: string, tagName: string): boolean {
-	return new RegExp(String.raw`^\s*${tagName}\s*=`, 'im').test(rawEntry);
-}
-
-function readBibTagValue(
-	rawEntry: string,
-	tagName: string,
-): string | undefined {
-	const match = new RegExp(
-		String.raw`^\s*${tagName}\s*=\s*(?:\{([^}\r\n]+)\}|"([^"\r\n]+)")`,
-		'im',
-	).exec(rawEntry);
-	return match?.[1]?.trim() ?? match?.[2]?.trim();
-}
-
-function hasAnyBibTag(rawEntry: string, tagNames: readonly string[]): boolean {
-	return tagNames.some(tagName => hasBibTag(rawEntry, tagName));
-}
-
 function formatRequiredFieldGroup(tagNames: readonly string[]): string {
 	return tagNames.join(' or ');
-}
-
-function parseIsoDate(value: string): Date | undefined {
-	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-	if (!match) {
-		return undefined;
-	}
-	const year = Number(match[1]);
-	const month = Number(match[2]);
-	const day = Number(match[3]);
-	const parsed = new Date(Date.UTC(year, month - 1, day));
-	if (
-		parsed.getUTCFullYear() !== year ||
-		parsed.getUTCMonth() !== month - 1 ||
-		parsed.getUTCDate() !== day
-	) {
-		return undefined;
-	}
-	return parsed;
-}
-
-function isFutureDate(value: string): boolean {
-	const parsed = parseIsoDate(value);
-	if (!parsed) {
-		return false;
-	}
-	const now = new Date();
-	const today = new Date(
-		Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
-	);
-	return parsed.getTime() > today.getTime();
-}
-
-function yearFromIsoDate(value: string): string | undefined {
-	return parseIsoDate(value)?.getUTCFullYear().toString();
 }
 
 function isOnlineEntry(entry: BibEntrySource): boolean {
 	return (
 		ONLINE_ENTRY_TYPES.has(entry.entryType) ||
-		hasBibTag(entry.raw, 'website')
+		hasAnyBibTag(entry, ['url', 'urldate', 'website']) ||
+		['type', 'howpublished'].some(field =>
+			ELECTRONIC_TYPE_PATTERN.test(readBibTagValue(entry, field) ?? ''),
+		)
 	);
 }
 
-function hasPublicationDateDetail(rawEntry: string): boolean {
-	return hasAnyBibTag(rawEntry, PUBLICATION_DATE_DETAIL_TAGS);
+function hasPublicationDateDetail(entry: BibEntrySource): boolean {
+	return hasAnyBibTag(entry, PUBLICATION_DATE_DETAIL_TAGS);
 }
 
 function isMostlyLatinText(value: string): boolean {
@@ -174,16 +121,9 @@ function isMostlyLatinText(value: string): boolean {
 	return latinCount >= 5 && latinCount > cyrillicCount * 2;
 }
 
-function getNormalizedTagValue(
-	rawEntry: string,
-	tagName: string,
-): string | undefined {
-	return readBibTagValue(rawEntry, tagName)?.replace(/[{}]/g, '').trim();
-}
-
-function hasLatinLanguageMetadata(rawEntry: string): boolean {
-	const langid = getNormalizedTagValue(rawEntry, 'langid')?.toLowerCase();
-	const language = getNormalizedTagValue(rawEntry, 'language')?.toLowerCase();
+function hasLatinLanguageMetadata(entry: BibEntrySource): boolean {
+	const langid = getNormalizedTagValue(entry, 'langid')?.toLowerCase();
+	const language = getNormalizedTagValue(entry, 'language')?.toLowerCase();
 	return [langid, language].some(
 		value =>
 			value !== undefined &&
@@ -194,17 +134,29 @@ function hasLatinLanguageMetadata(rawEntry: string): boolean {
 function validateUrlAccessDates(
 	bibPath: string,
 	citationKeys: readonly string[],
+	entries: readonly BibEntrySource[],
 	issues: SourcePreflightIssue[],
 ): void {
 	const citedKeys = new Set(citationKeys);
 	const urldatePattern = new RegExp(STO_RULES.bibliography.urldatePattern);
-	for (const entry of readBibEntrySources(bibPath)) {
+	for (const entry of entries) {
 		if (!citedKeys.has(entry.key)) {
 			continue;
 		}
 
-		const url = readBibTagValue(entry.raw, 'url');
+		const url = readBibTagValue(entry, 'url');
 		if (!url) {
+			continue;
+		}
+		if (/\s/.test(url)) {
+			issues.push(
+				issue(
+					'bibliography-url-contains-whitespace',
+					`cited electronic resource @${entry.key} has whitespace in URL. Enter the exact address without spaces or line breaks.`,
+					path.basename(bibPath),
+					entry.line,
+				),
+			);
 			continue;
 		}
 
@@ -224,7 +176,7 @@ function validateUrlAccessDates(
 			);
 		}
 
-		const urldate = readBibTagValue(entry.raw, 'urldate');
+		const urldate = readBibTagValue(entry, 'urldate');
 		if (!urldate) {
 			issues.push(
 				issue(
@@ -238,7 +190,7 @@ function validateUrlAccessDates(
 			continue;
 		}
 
-		if (!urldatePattern.test(urldate)) {
+		if (!urldatePattern.test(urldate) || !parseIsoDate(urldate)) {
 			issues.push(
 				issue(
 					'bibliography-urldate-invalid-format',
@@ -263,12 +215,12 @@ function validateUrlAccessDates(
 			);
 		}
 
-		const publicationYear = getNormalizedTagValue(entry.raw, 'year');
+		const publicationYear = getNormalizedTagValue(entry, 'year');
 		if (
 			publicationYear &&
 			publicationYear === yearFromIsoDate(urldate) &&
 			isOnlineEntry(entry) &&
-			!hasPublicationDateDetail(entry.raw)
+			!hasPublicationDateDetail(entry)
 		) {
 			issues.push(
 				issue(
@@ -286,10 +238,11 @@ function validateUrlAccessDates(
 function validateRequiredBibFields(
 	bibPath: string,
 	citationKeys: readonly string[],
+	entries: readonly BibEntrySource[],
 	issues: SourcePreflightIssue[],
 ): void {
 	const citedKeys = new Set(citationKeys);
-	for (const entry of readBibEntrySources(bibPath)) {
+	for (const entry of entries) {
 		if (!citedKeys.has(entry.key)) {
 			continue;
 		}
@@ -309,9 +262,18 @@ function validateRequiredBibFields(
 		}
 
 		for (const tagNames of requiredGroups) {
+			// A generic misc record may describe a print work; URL is conditional.
+			if (
+				entry.entryType === 'misc' &&
+				tagNames.length === 1 &&
+				tagNames[0] === 'url' &&
+				!isOnlineEntry(entry)
+			) {
+				continue;
+			}
 			if (
 				tagNames.some(tagName =>
-					Boolean(readBibTagValue(entry.raw, tagName)),
+					Boolean(getNormalizedTagValue(entry, tagName)),
 				)
 			) {
 				continue;
@@ -322,7 +284,9 @@ function validateRequiredBibFields(
 					`cited @${entry.key} (${entry.entryType}) should define ${formatRequiredFieldGroup(tagNames)} for STO bibliography formatting.`,
 					path.basename(bibPath),
 					entry.line,
-					'warning',
+					tagNames.length === 1 && tagNames[0] === 'title'
+						? 'error'
+						: 'warning',
 				),
 			);
 		}
@@ -332,15 +296,16 @@ function validateRequiredBibFields(
 function validateBibEntryQuality(
 	bibPath: string,
 	citationKeys: readonly string[],
+	entries: readonly BibEntrySource[],
 	issues: SourcePreflightIssue[],
 ): void {
 	const citedKeys = new Set(citationKeys);
-	for (const entry of readBibEntrySources(bibPath)) {
+	for (const entry of entries) {
 		if (!citedKeys.has(entry.key)) {
 			continue;
 		}
 
-		const doi = getNormalizedTagValue(entry.raw, 'doi');
+		const doi = getNormalizedTagValue(entry, 'doi');
 		if (doi) {
 			const lowerDoi = doi.toLowerCase();
 			if (
@@ -370,9 +335,9 @@ function validateBibEntryQuality(
 			}
 		}
 
-		const title = getNormalizedTagValue(entry.raw, 'title') ?? '';
-		const author = getNormalizedTagValue(entry.raw, 'author') ?? '';
-		const journal = getNormalizedTagValue(entry.raw, 'journal') ?? '';
+		const title = getNormalizedTagValue(entry, 'title') ?? '';
+		const author = getNormalizedTagValue(entry, 'author') ?? '';
+		const journal = getNormalizedTagValue(entry, 'journal') ?? '';
 		const searchableJournal = journal.toLowerCase();
 		if (
 			entry.entryType === 'article' &&
@@ -392,7 +357,7 @@ function validateBibEntryQuality(
 		}
 
 		if (
-			!hasLatinLanguageMetadata(entry.raw) &&
+			!hasLatinLanguageMetadata(entry) &&
 			isMostlyLatinText(`${author} ${title} ${journal}`)
 		) {
 			issues.push(
@@ -407,8 +372,8 @@ function validateBibEntryQuality(
 		}
 
 		const pages =
-			getNormalizedTagValue(entry.raw, 'pages') ??
-			getNormalizedTagValue(entry.raw, 'numpages');
+			getNormalizedTagValue(entry, 'pages') ??
+			getNormalizedTagValue(entry, 'numpages');
 		if (
 			entry.entryType === 'book' &&
 			pages &&
@@ -442,7 +407,7 @@ export function validateBibliography(
 		validateManualBibliographyContent(file, content, issues);
 	}
 
-	const citationKeys = collectAllCitationKeys(files);
+	const citationKeys = collectAllCitationKeys(files, issues);
 	if (citationKeys.length === 0) {
 		return;
 	}
@@ -458,7 +423,20 @@ export function validateBibliography(
 		return;
 	}
 
-	const bibKeys = readBibKeys(bibliographyPath);
+	let entries: BibEntrySource[];
+	try {
+		entries = readBibEntrySources(bibliographyPath);
+	} catch (error) {
+		issues.push(
+			issue(
+				'bibliography-parse-error',
+				`bibliography file could not be parsed as BibTeX: ${String(error)}`,
+				path.basename(bibliographyPath),
+			),
+		);
+		return;
+	}
+	const bibKeys = new Set(entries.map(entry => entry.key));
 	if (bibKeys.size === 0) {
 		issues.push(
 			issue(
@@ -467,6 +445,21 @@ export function validateBibliography(
 			),
 		);
 		return;
+	}
+
+	const seenKeys = new Set<string>();
+	for (const entry of entries) {
+		if (seenKeys.has(entry.key)) {
+			issues.push(
+				issue(
+					'bibliography-duplicate-key',
+					`BibTeX key @${entry.key} is defined more than once.`,
+					path.basename(bibliographyPath),
+					entry.line,
+				),
+			);
+		}
+		seenKeys.add(entry.key);
 	}
 
 	for (const key of citationKeys) {
@@ -479,9 +472,9 @@ export function validateBibliography(
 			);
 		}
 	}
-	validateUrlAccessDates(bibliographyPath, citationKeys, issues);
-	validateRequiredBibFields(bibliographyPath, citationKeys, issues);
-	validateBibEntryQuality(bibliographyPath, citationKeys, issues);
+	validateUrlAccessDates(bibliographyPath, citationKeys, entries, issues);
+	validateRequiredBibFields(bibliographyPath, citationKeys, entries, issues);
+	validateBibEntryQuality(bibliographyPath, citationKeys, entries, issues);
 
 	if (config.document.requireSources === false && citationKeys.length > 0) {
 		issues.push(

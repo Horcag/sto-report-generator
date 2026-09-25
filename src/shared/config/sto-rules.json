@@ -238,14 +238,9 @@
 				["year"],
 				["pages"]
 			],
-			"misc": [["title"], ["year"], ["url"]],
-			"online": [["title"], ["year"], ["url"]],
-			"inonline": [
-				["title"],
-				["website", "booktitle"],
-				["year"],
-				["url"]
-			],
+			"misc": [["title"], ["url"]],
+			"online": [["title"], ["url"]],
+			"inonline": [["title"], ["website", "booktitle"], ["url"]],
 			"patent": [
 				["title"],
 				["number"],
