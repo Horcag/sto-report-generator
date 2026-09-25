@@ -101,7 +101,6 @@ export interface StoRules {
 		requiredOrder: string[];
 	};
 	validation: {
-		allowedBoldMarkdownFiles: string[];
 		forbiddenLiteralMarkers: string[];
 		figureCaptionPrefix: string;
 		tableCaptionPrefix: string;

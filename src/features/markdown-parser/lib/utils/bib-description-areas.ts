@@ -40,6 +40,15 @@ export function validateDescriptionAreas(
 	citationKey: string,
 ): void {
 	validateCompetingAliases(entryType, tags, citationKey);
+	if (
+		entryType === 'book' &&
+		cleanText(tags.compiler) &&
+		/^сост\./i.test(cleanText(tags.note))
+	) {
+		throw new Error(
+			`Bibliography entry @${citationKey} credits compilers in both compiler and note. Use compiler for the role and reserve note for other source information.`,
+		);
+	}
 	const hasUrl = Boolean(cleanText(tags.url));
 	const entrySubtype = cleanText(tags.entrysubtype).toLowerCase();
 	if (entryType === 'misc' && entrySubtype) {

@@ -10,6 +10,7 @@ import {
 	StoStylePreset,
 } from '@/shared/config';
 
+import { assertNoOrdinaryBodyBold } from './word-acceptance-bold';
 import { getFileEvidence } from './word-acceptance-evidence';
 import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
 import {
@@ -238,6 +239,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 	if (!fs.existsSync(options.inputDocx)) {
 		throw new Error(`DOCX file not found: ${options.inputDocx}`);
 	}
+	assertNoOrdinaryBodyBold(options.inputDocx);
 	const hostKind = detectWordAcceptanceHost();
 	const plan = createWordAcceptancePlan(options, {
 		hostKind,
@@ -421,6 +423,7 @@ function runWordAcceptanceAttempt(
 			manifest,
 			onCleanupVerified,
 		);
+		assertNoOrdinaryBodyBold(plan.localAcceptedDocx);
 		manifest.status = 'accepted';
 		manifest.execution.processCleanupVerified = true;
 		const pendingPath = `${plan.localManifest}.pending`;
@@ -460,10 +463,6 @@ function runWordAcceptanceAttempt(
 		.join('\n');
 }
 
-function environmentHostPath(plan: WordAcceptancePlan): string {
-	return toHostPath(plan.hostKind, plan.requestJsonPath);
-}
-
 function stopOwnedWordAcceptanceProcesses(plan: WordAcceptancePlan): string {
 	const cleanup = spawnSync(
 		plan.command,
@@ -477,7 +476,7 @@ function stopOwnedWordAcceptanceProcesses(plan: WordAcceptancePlan): string {
 				path.join(PACKAGE_ROOT, 'scripts/stop_word_acceptance.ps1'),
 			),
 			'-RequestJson',
-			environmentHostPath(plan),
+			toHostPath(plan.hostKind, plan.requestJsonPath),
 		],
 		{
 			encoding: 'utf8',

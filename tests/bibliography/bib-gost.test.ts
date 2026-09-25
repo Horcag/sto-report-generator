@@ -9,6 +9,8 @@ import { formatBibItem } from '@/features/markdown-parser/lib/utils/bib-formatte
 
 import { testBibliographyPathResolution } from './bib_path_resolution_tests';
 
+import './bib-compiler.test';
+
 const tests: { input: BibItem; expected: string }[] = [
 	{
 		input: {

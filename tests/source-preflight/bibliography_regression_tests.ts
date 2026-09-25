@@ -71,6 +71,58 @@ bibliography: "references.bib"
 ---
 `;
 
+	expectNoIssue(
+		'bibliography-compiled-book-responsibility',
+		validFiles({
+			'00_metadata.md': bibliographyMetadata,
+			'03_intro.md': 'Методические указания [@compiledGuide].\n',
+			'references.bib': `@book{compiledGuide,
+  title = {Внешнее описание программных комплексов},
+  note = {сост. А. В. Куприянов, Д. В. Кирш},
+  address = {Самара},
+  publisher = {Самарский университет},
+  year = {2020},
+  pages = {20}
+}
+`,
+		}),
+		'bibliography-required-field-missing',
+	);
+	expectNoIssue(
+		'bibliography-typed-compiler',
+		validFiles({
+			'00_metadata.md': bibliographyMetadata,
+			'03_intro.md': 'Методические указания [@typedCompiler].\n',
+			'references.bib': `@book{typedCompiler,
+  title = {Внешнее описание программных комплексов},
+  compiler = {Куприянов, А. В. and Кирш, Д. В.},
+  address = {Самара},
+  publisher = {Самарский университет},
+  year = {2020},
+  pages = {20}
+}
+`,
+		}),
+		'bibliography-required-field-missing',
+	);
+	expectWarning(
+		'bibliography-book-without-responsibility',
+		validFiles({
+			'00_metadata.md': bibliographyMetadata,
+			'03_intro.md': 'Источник [@uncreditedBook].\n',
+			'references.bib': `@book{uncreditedBook,
+  title = {Методические указания},
+  note = {Библиогр.: с. 19},
+  address = {Самара},
+  publisher = {Самарский университет},
+  year = {2020},
+  pages = {20}
+}
+`,
+		}),
+		'bibliography-required-field-missing',
+	);
+
 	{
 		const reportDir = writeReport(
 			'bibliography-report-entry',
