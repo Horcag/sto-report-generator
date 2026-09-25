@@ -209,6 +209,9 @@ function runCheck(args: ParsedArgs): void {
 			? `Source preflight passed with ${warnings.length} warning(s).`
 			: 'Source preflight passed.',
 	);
+	console.log(
+		'Editorial step: review Russian prose with humanizer-ru before final build (docs/report-authoring.md).',
+	);
 }
 
 async function runGenerate(args: ParsedArgs): Promise<void> {
@@ -241,6 +244,9 @@ async function runGenerate(args: ParsedArgs): Promise<void> {
 	if (result.validation) {
 		console.log('DOCX validation passed.');
 	}
+	console.log(
+		'Editorial step: review Russian prose with humanizer-ru before submission (docs/report-authoring.md).',
+	);
 }
 
 async function runAudit(args: ParsedArgs): Promise<void> {
