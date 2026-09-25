@@ -1,8 +1,12 @@
 import { Token, Tokens } from 'marked';
 
+import { APPENDIX_LABELS } from '@/shared/config';
+
 const APPENDIX = /^ПРИЛОЖЕНИЕ\s+([А-Я])$/i;
 
 export class ReferenceRegistry {
+	private readonly appendixLabels = new Set<string>();
+
 	public constructor(private readonly itemMap: Map<string, string>) {}
 
 	public assignNumbers(tokens: Token[]): void {
@@ -34,12 +38,17 @@ export class ReferenceRegistry {
 					const heading = token as Token & {
 						flagType: string;
 						text?: string;
+						appendix?: { label: string };
 						tokens?: Token[];
 					};
-					if (heading.flagType === 'structural_heading') {
+					if (heading.flagType === 'appendix') {
+						appendix = heading.appendix?.label.trim().toUpperCase();
+						if (appendix) this.appendixLabels.add(appendix);
+					} else if (heading.flagType === 'structural_heading') {
 						appendix = APPENDIX.exec(
 							heading.text?.trim() ?? '',
 						)?.[1]?.toUpperCase();
+						if (appendix) this.appendixLabels.add(appendix);
 					} else if (heading.tokens) walk(heading.tokens);
 					continue;
 				}
@@ -91,7 +100,24 @@ export class ReferenceRegistry {
 	}
 
 	public replaceRefs(text: string): string {
-		return text.replace(
+		const appendixText = text.replace(
+			/\\sto_appendix_ref\{([^}]*)\}/g,
+			(_match, rawLabel: string) => {
+				const label = rawLabel.trim().toUpperCase();
+				if (
+					!APPENDIX_LABELS.includes(
+						label as (typeof APPENDIX_LABELS)[number],
+					) ||
+					!this.appendixLabels.has(label)
+				) {
+					throw new Error(
+						`Unknown appendix reference: ${rawLabel}. Declare the appendix before generating the report.`,
+					);
+				}
+				return `приложении ${label}`;
+			},
+		);
+		return appendixText.replace(
 			/@(fig|tab|eq):([a-zA-Z0-9_-]+)/g,
 			match => this.itemMap.get(match) ?? `[${match} NOT FOUND]`,
 		);

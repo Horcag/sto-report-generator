@@ -1,7 +1,10 @@
 import { AlignmentType, Paragraph, TextRun } from 'docx';
 import { marked, Token, Tokens } from 'marked';
 
-import { getNumberedHeadingStyleId } from '@/shared/config';
+import {
+	getNumberedHeadingStyleId,
+	parseAppendixHeading,
+} from '@/shared/config';
 import { mathJaxReady } from '@/shared/lib/math-converter';
 
 import { loadBibliography } from './parser/bibliography-loader';
@@ -61,6 +64,11 @@ class MarkdownParser {
 	private context: ParserContext;
 	private references: ReferenceRegistry;
 	private readonly headingCounters = Array.from({ length: 6 }, () => 0);
+	private appendix: string | undefined;
+	private readonly appendixHeadingCounters = Array.from(
+		{ length: 6 },
+		() => 0,
+	);
 
 	constructor(bibDb: BibItem[] = [], options: MarkdownParserOptions = {}) {
 		this.context = {
@@ -86,9 +94,12 @@ class MarkdownParser {
 
 	private getExpectedHeadingNumber(depth: number): string {
 		const index = Math.max(0, Math.min(depth - 1, 5));
-		this.headingCounters[index] += 1;
-		this.headingCounters.fill(0, index + 1);
-		return this.headingCounters.slice(0, index + 1).join('.');
+		const counters = this.appendix
+			? this.appendixHeadingCounters
+			: this.headingCounters;
+		counters[index] += 1;
+		counters.fill(0, index + 1);
+		return `${this.appendix ? `${this.appendix}.` : ''}${counters.slice(0, index + 1).join('.')}`;
 	}
 
 	private async processTokens(
@@ -148,7 +159,7 @@ class MarkdownParser {
 					while (tokensToProcess[headingIndex]?.type === 'space')
 						headingIndex++;
 					const nextHeading = tokensToProcess[headingIndex];
-					const appendixTitle =
+					const legacyAppendixTitle =
 						stoToken.flagType === 'structural_heading' &&
 						/^ПРИЛОЖЕНИЕ\s+[А-Я]$/i.test(
 							stoToken.text?.trim() ?? '',
@@ -157,15 +168,38 @@ class MarkdownParser {
 						(nextHeading as Tokens.Heading).depth === 1
 							? (nextHeading as Tokens.Heading).text.trim()
 							: undefined;
+					const appendix =
+						stoToken.flagType === 'appendix'
+							? stoToken.appendix &&
+								parseAppendixHeading(
+									stoToken.appendix.label,
+									stoToken.appendix.title,
+								)
+							: legacyAppendixTitle
+								? parseAppendixHeading(
+										stoToken.text!.trim().split(/\s+/)[1],
+										legacyAppendixTitle,
+									)
+								: undefined;
+					if (appendix) {
+						this.appendix = appendix.label;
+						this.appendixHeadingCounters.fill(0);
+					}
 					elements.push(
 						...(await handleStoFlag(
-							{ ...stoToken, appendixTitle },
+							appendix
+								? {
+										...stoToken,
+										flagType: 'appendix',
+										appendix,
+									}
+								: stoToken,
 							this.context,
 							this.processTokens.bind(this),
 							tokenContext,
 						)),
 					);
-					if (appendixTitle) tokenIndex = headingIndex;
+					if (legacyAppendixTitle) tokenIndex = headingIndex;
 					if (
 						(token as unknown as StoFlagToken).flagType ===
 						'structural_heading'
@@ -175,6 +209,7 @@ class MarkdownParser {
 						)
 							.trim()
 							.toUpperCase();
+						if (!appendix) this.appendix = undefined;
 					}
 					break;
 				}
@@ -186,18 +221,23 @@ class MarkdownParser {
 					);
 					elements.push(
 						new Paragraph({
-							style: getNumberedHeadingStyleId(
-								headingToken.depth,
-							),
-							children: await parseInline(
-								stripExpectedHeadingNumber(
-									headingToken.tokens,
-									expectedNumber,
-								),
-								this.context,
-								this.getCitationNum,
-								this.replaceRefs,
-							),
+							style: this.appendix
+								? 'AppendixSectionHeading'
+								: getNumberedHeadingStyleId(headingToken.depth),
+							children: [
+								...(this.appendix
+									? [new TextRun(`${expectedNumber} `)]
+									: []),
+								...(await parseInline(
+									stripExpectedHeadingNumber(
+										headingToken.tokens,
+										expectedNumber,
+									),
+									this.context,
+									this.getCitationNum,
+									this.replaceRefs,
+								)),
+							],
 						}),
 					);
 					break;
@@ -298,7 +338,7 @@ export async function parseMarkdownToDocx(
 ): Promise<DocxElement[]> {
 	await mathJaxReady();
 
-	const bibDb = loadBibliography(metadata);
+	const bibDb = loadBibliography(metadata, options.sourceDir);
 	const normalizedText = markdownText.replace(/—/g, '–');
 	const tokens = marked.lexer(normalizedText);
 

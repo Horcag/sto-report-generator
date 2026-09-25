@@ -8,6 +8,8 @@ import {
 } from 'docx';
 import { Token } from 'marked';
 
+import { AppendixHeading } from '@/shared/config';
+
 export type DocxElement = Paragraph | Table | TableOfContents;
 
 /**
@@ -35,9 +37,9 @@ export interface ParserContext {
 export interface StoFlagToken {
 	type: 'stoFlag';
 	raw: string;
-	flagType: 'structural_heading' | 'environment';
+	flagType: 'structural_heading' | 'appendix' | 'environment';
 	text?: string;
-	appendixTitle?: string;
+	appendix?: AppendixHeading;
 	envName?: string;
 	tokens: Token[];
 }

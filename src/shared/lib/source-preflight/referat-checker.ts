@@ -101,20 +101,6 @@ export function validateReferat(
 		}
 	}
 
-	for (const marker of STO_RULES.referat.semanticMarkers) {
-		if (!new RegExp(marker, 'i').test(referat.content)) {
-			issues.push(
-				issue(
-					'referat-semantic-marker-missing',
-					`referat does not contain an expected semantic marker: ${marker}.`,
-					referat.file,
-					undefined,
-					'warning',
-				),
-			);
-		}
-	}
-
 	if (referat.content.length > STO_RULES.referat.maxTextLengthChars) {
 		issues.push(
 			issue(

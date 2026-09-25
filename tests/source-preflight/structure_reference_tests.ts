@@ -19,6 +19,14 @@ export function runStructureReferenceTests({
 	expectWarning,
 	expectNoIssue,
 }: TestHarness): void {
+	expectIssue(
+		'structural-heading-final-period',
+		validFiles({
+			'03_intro.md': '\\sto_structural_heading{ВВЕДЕНИЕ.}\n',
+		}),
+		'structural-heading-final-period',
+	);
+
 	expectWarning(
 		'bibliography-book-required-field',
 		validFiles({
@@ -115,6 +123,44 @@ bibliography: "references.bib"
 		}),
 		'application-without-reference',
 	);
+	expectIssue(
+		'explicit-appendix-without-reference',
+		validFiles({
+			'92_appendix.md': `\\sto_appendix{А}{Расчётные данные}\n`,
+		}),
+		'application-without-reference',
+	);
+	expectIssue(
+		'appendix-reference-in-code-is-ignored',
+		validFiles({
+			'03_intro.md': '```tex\n\\sto_appendix_ref{А}\n```\n',
+			'92_appendix.md': `\\sto_appendix{А}{Расчётные данные}\n`,
+		}),
+		'application-without-reference',
+	);
+	expectIssue(
+		'explicit-appendix-reference-unknown',
+		validFiles({
+			'03_intro.md': `Данные приведены в \\sto_appendix_ref{Б}.\n`,
+			'92_appendix.md': `\\sto_appendix{А}{Расчётные данные}\n`,
+		}),
+		'application-reference-unknown',
+	);
+	expectIssue(
+		'explicit-appendix-reference-after-heading',
+		validFiles({
+			'92_appendix.md': `\\sto_appendix{А}{Расчётные данные}\n\nДанные приведены в \\sto_appendix_ref{А}.\n`,
+		}),
+		'application-reference-after-heading',
+	);
+	expectIssue(
+		'only-appendix-must-be-a',
+		validFiles({
+			'03_intro.md': `Данные приведены в \\sto_appendix_ref{Б}.\n`,
+			'92_appendix.md': `\\sto_appendix{Б}{Расчётные данные}\n`,
+		}),
+		'application-label-order',
+	);
 
 	expectIssue(
 		'application-object-numbering',
@@ -144,6 +190,36 @@ bibliography: "references.bib"
 `,
 		}),
 		'application-label-duplicate',
+	);
+
+	expectIssue(
+		'application-title-period',
+		validFiles({
+			'03_intro.md': `Дополнительные данные приведены в приложении А.\n`,
+			'92_appendix.md': `\\sto_appendix{А}{Расчётные данные.}\n`,
+		}),
+		'application-title-format',
+	);
+	const explicitAppendix = runSourcePreflight(
+		writeReport(
+			'explicit-appendix-valid',
+			validFiles({
+				'03_intro.md': `Дополнительные данные приведены в \\sto_appendix_ref{А} на рисунке А.1.\n`,
+				'92_appendix.md': `\\sto_appendix{А}{Расчётные данные}\n\nРисунок А.1 – Схема (@fig:app)\n`,
+			}),
+		),
+	);
+	assert.ok(
+		!explicitAppendix.issues.some(item => item.severity === 'error'),
+		explicitAppendix.issues
+			.filter(item => item.severity === 'error')
+			.map(item => item.code)
+			.join(', '),
+	);
+	assert.ok(
+		!explicitAppendix.issues.some(
+			item => item.code === 'application-without-reference',
+		),
 	);
 
 	const appendixReferences = runSourcePreflight(

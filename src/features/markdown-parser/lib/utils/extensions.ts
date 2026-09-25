@@ -70,7 +70,9 @@ export const stoExtension = {
 	name: 'stoFlag',
 	level: 'block' as const,
 	start(src: string) {
-		return src.match(/\\sto_structural_heading\{|\\begin\{/)?.index;
+		return src.match(
+			/\\sto_structural_heading\{|\\sto_appendix\{|\\begin\{/,
+		)?.index;
 	},
 	tokenizer(this: TokenizerThis, src: string, _tokens: Token[]) {
 		let rule = /^\\sto_structural_heading\{([^}]+)\}/;
@@ -81,6 +83,16 @@ export const stoExtension = {
 				raw: match[0],
 				flagType: 'structural_heading',
 				text: match[1],
+			};
+		}
+
+		match = /^\\sto_appendix\{([^}]+)\}\{([^}]*)\}/.exec(src);
+		if (match) {
+			return {
+				type: 'stoFlag',
+				raw: match[0],
+				flagType: 'appendix',
+				appendix: { label: match[1], title: match[2] },
 			};
 		}
 

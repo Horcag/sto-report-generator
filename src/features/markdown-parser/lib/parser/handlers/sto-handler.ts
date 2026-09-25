@@ -10,6 +10,7 @@ import { Token } from 'marked';
 
 import {
 	NUMBERED_HEADING_STYLE_IDS,
+	parseAppendixHeading,
 	STO_LIST_ENVIRONMENTS,
 	STO_RULES,
 	STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
@@ -23,6 +24,7 @@ import {
 	StoFlagToken,
 } from '../../types';
 import { formatBibItem } from '../../utils/bib-formatter';
+import { appendixTocFieldRuns } from './appendix-toc-field';
 
 const URL_PATTERN = /https?:\/\/[^\s)]+/g;
 const URL_BREAK_OPPORTUNITY = '\u200B';
@@ -49,6 +51,34 @@ export async function handleStoFlag(
 	) => Promise<DocxElement[]>,
 	_currentContext: ProcessTokensContext,
 ): Promise<DocxElement[]> {
+	if (token.flagType === 'appendix') {
+		if (!token.appendix)
+			throw new Error('Appendix token is missing label and title.');
+		const appendix = parseAppendixHeading(
+			token.appendix.label,
+			token.appendix.title,
+		);
+		return [
+			new Paragraph({
+				style: 'AppendixHeading',
+				children: [
+					new TextRun({
+						text: `Приложение ${appendix.label}`,
+						allCaps: true,
+					}),
+					new TextRun({
+						text: appendix.title,
+						break: 1,
+						allCaps: false,
+					}),
+				],
+			}),
+			new Paragraph({
+				children: appendixTocFieldRuns(appendix),
+				spacing: { before: 0, after: 0, line: 1, lineRule: 'exact' },
+			}),
+		];
+	}
 	if (token.flagType === 'structural_heading') {
 		if (!token.text) {
 			throw new Error('STO structural heading token is missing text.');
@@ -58,15 +88,14 @@ export async function handleStoFlag(
 
 		// Convert to Sentence Case: first letter capitalized, rest lowercase
 		// This ensures they look correct in TOC, while StructuralHeading style handles caps in the document body
-		const isAppendix = /^ПРИЛОЖЕНИЕ\s+[А-Я]$/i.test(text);
-		const sentenceCaseText = isAppendix
-			? upperText
-			: text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+		const sentenceCaseText =
+			text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 
 		const useNoTocStyle =
 			STO_RULES.headings.structuralNoTocUppercase.includes(upperText);
 		const tocStyles = [
 			new StyleLevel(STRUCTURAL_HEADING_STYLE_ID, 1),
+			new StyleLevel('AppendixSectionHeading', 2),
 			...NUMBERED_HEADING_STYLE_IDS.slice(0, 4).map(
 				(styleId, index) => new StyleLevel(styleId, index + 1),
 			),
@@ -77,18 +106,7 @@ export async function handleStoFlag(
 				style: useNoTocStyle
 					? STRUCTURAL_HEADING_NO_TOC_STYLE_ID
 					: STRUCTURAL_HEADING_STYLE_ID,
-				children: [
-					new TextRun(sentenceCaseText),
-					...(isAppendix && token.appendixTitle
-						? [
-								new TextRun({
-									text: token.appendixTitle,
-									break: 1,
-									allCaps: false,
-								}),
-							]
-						: []),
-				],
+				children: [new TextRun(sentenceCaseText)],
 			}),
 		];
 
@@ -98,6 +116,7 @@ export async function handleStoFlag(
 					hyperlink: true,
 					headingStyleRange: '1-4',
 					stylesWithLevels: tocStyles,
+					tcFieldIdentifier: 'A',
 				}),
 			);
 		}

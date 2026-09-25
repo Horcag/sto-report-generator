@@ -653,7 +653,7 @@
 <w:p>
 <w:r>
 <w:fldChar w:fldCharType="begin"/>
-<w:instrText xml:space="preserve">TOC \h \o &quot;1-4&quot; \t &quot;StructuralHeading,1,StoHeading1,1,StoHeading2,2,StoHeading3,3,StoHeading4,4&quot;</w:instrText>
+<w:instrText xml:space="preserve">TOC \f &quot;A&quot; \h \o &quot;1-4&quot; \t &quot;StructuralHeading,1,AppendixSectionHeading,2,StoHeading1,1,StoHeading2,2,StoHeading3,3,StoHeading4,4&quot;</w:instrText>
 <w:fldChar w:fldCharType="separate"/>
 </w:r>
 </w:p>

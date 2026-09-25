@@ -1231,8 +1231,8 @@ bibliography: "references.bib"
 	'bibliography-urldate-in-future',
 );
 
-expectWarning(
-	'bibliography-url-year-matches-urldate',
+expectNoIssue(
+	'bibliography-publication-and-access-year-can-match',
 	validFiles({
 		'00_metadata.md': `---
 bibliography: "references.bib"
@@ -1319,8 +1319,8 @@ bibliography: "references.bib"
 	'bibliography-doi-invalid-prefix',
 );
 
-expectWarning(
-	'bibliography-article-preprint-type',
+expectNoIssue(
+	'bibliography-journal-name-does-not-prove-resource-type',
 	validFiles({
 		'00_metadata.md': `---
 bibliography: "references.bib"
@@ -1341,8 +1341,8 @@ bibliography: "references.bib"
 	'bibliography-article-preprint-type',
 );
 
-expectWarning(
-	'bibliography-latin-entry-missing-langid',
+expectNoIssue(
+	'bibliography-script-does-not-prove-language',
 	validFiles({
 		'00_metadata.md': `---
 bibliography: "references.bib"

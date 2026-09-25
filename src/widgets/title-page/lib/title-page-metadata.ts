@@ -27,7 +27,7 @@ export function getPracticeKind(metadata: ReportMetadata): string {
 	}
 
 	const match = metadata.degree.match(/Вид практики:\s*([^;]+)/i);
-	return match?.[1]?.trim() || 'производственная';
+	return match?.[1]?.trim() || '__________________';
 }
 
 export function getPracticeType(metadata: ReportMetadata): string {
@@ -36,7 +36,7 @@ export function getPracticeType(metadata: ReportMetadata): string {
 	}
 
 	const match = metadata.degree.match(/тип практики:\s*(.+)$/i);
-	return match?.[1]?.trim() || 'технологическая (научно-технологическая)';
+	return match?.[1]?.trim() || '__________________';
 }
 
 export function createTitlePageFooter(metadata: ReportMetadata): Footer {

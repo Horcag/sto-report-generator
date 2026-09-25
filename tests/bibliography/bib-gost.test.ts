@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { parseMarkdownToDocx } from '@/features/markdown-parser';
+import { loadBibliography } from '@/features/markdown-parser/lib/parser/bibliography-loader';
 import { BibItem } from '@/features/markdown-parser/lib/types';
 import { formatBibItem } from '@/features/markdown-parser/lib/utils/bib-formatter';
 
@@ -360,6 +361,99 @@ assert.match(
 	}),
 	/URL: https:\/\/example\.org\/article \(дата обращения: 25\.09\.2026\)/,
 );
+
+// ГОСТ Р 7.0.100-2018: 5.7 places the series after extent; 5.9 places
+// identifiers after notes. Values come only from explicit source metadata.
+assert.equal(
+	formatBibItem({
+		citationKey: 'numbered-series',
+		entryType: 'book',
+		entryTags: {
+			title: 'Труды по оптике',
+			year: '2024',
+			pages: '220',
+			series: 'Библиотека исследователя',
+			number: 'вып. 3',
+			isbn: '978-5-00000-123-4',
+		},
+	}),
+	'Труды по оптике. – 2024. – 220 с. – (Библиотека исследователя ; вып. 3). – ISBN 978-5-00000-123-4.',
+);
+assert.equal(
+	formatBibItem({
+		citationKey: 'identified-article',
+		entryType: 'article',
+		entryTags: {
+			title: 'Новая методика',
+			journal: 'Научный журнал',
+			year: '2025',
+			pages: '10-15',
+			url: 'https://example.org/article',
+			urldate: '2026-09-25',
+			doi: 'https://doi.org/10.1234/example',
+		},
+	}),
+	'Новая методика // Научный журнал. – 2025. – С. 10-15. – URL: https://example.org/article (дата обращения: 25.09.2026). – DOI 10.1234/example.',
+);
+assert.equal(
+	formatBibItem({
+		citationKey: 'unidentified-book',
+		entryType: 'book',
+		entryTags: { title: 'Книга', series: 'Серия' },
+	}),
+	'Книга. – (Серия).',
+);
+assert.equal(
+	formatBibItem({
+		citationKey: 'updated-network-resource',
+		entryType: 'online',
+		entryTags: {
+			title: 'Электронный документ',
+			updated: '25.02.2025',
+			republication: 'Электронная версия печатного издания',
+			url: 'https://example.org/document',
+			urldate: '2026-09-25',
+			publicationdate: '26.02.2025',
+			accessmode: 'по подписке',
+		},
+	}),
+	'Электронный документ. – Дата обновления: 25.02.2025. – Электронная версия печатного издания. – URL: https://example.org/document (дата обращения: 25.09.2026). – Дата публикации: 26.02.2025. – Режим доступа: по подписке.',
+);
+
+function testBibliographyPathResolution(): void {
+	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sto-bib-path-'));
+	try {
+		const sourceDir = path.join(tempDir, 'source');
+		const cwd = path.join(tempDir, 'cwd');
+		fs.mkdirSync(sourceDir);
+		fs.mkdirSync(cwd);
+		const metadata = { bibliography: 'references.bib' };
+		assert.throws(
+			() => loadBibliography(metadata, sourceDir, cwd),
+			/Bibliography file not found/,
+		);
+		fs.writeFileSync(
+			path.join(sourceDir, 'references.bib'),
+			'@book{source, title = {Source copy}}',
+		);
+		assert.equal(
+			loadBibliography(metadata, sourceDir, cwd)[0]?.citationKey,
+			'source',
+		);
+		fs.writeFileSync(
+			path.join(cwd, 'references.bib'),
+			'@book{cwd, title = {CWD copy}}',
+		);
+		assert.throws(
+			() => loadBibliography(metadata, sourceDir, cwd),
+			/ambiguous/i,
+		);
+	} finally {
+		fs.rmSync(tempDir, { recursive: true, force: true });
+	}
+}
+
+testBibliographyPathResolution();
 
 async function testSpecialTypeCitations(): Promise<void> {
 	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sto-bib-special-'));

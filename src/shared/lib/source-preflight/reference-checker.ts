@@ -136,7 +136,10 @@ export function validateObjectReferences(
 			const line = lines[index].trim();
 			const heading =
 				/^\\sto_structural_heading\{ПРИЛОЖЕНИЕ\s+([А-Я])\}/i.exec(line);
-			if (heading) appendix = heading[1].toUpperCase();
+			const explicitAppendix =
+				/^\\sto_appendix\{([А-Я])\}\{[^}]+\}/i.exec(line);
+			if (heading || explicitAppendix)
+				appendix = (heading ?? explicitAppendix)![1].toUpperCase();
 			const counters = appendix
 				? (appendixCounters.get(appendix) ?? {
 						fig: 0,

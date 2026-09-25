@@ -11,6 +11,7 @@ import {
 } from '@/shared/config';
 
 import { getFileEvidence } from './word-acceptance-evidence';
+import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
 import { readAcceptanceStatistics } from './word-acceptance-statistics';
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
@@ -61,6 +62,7 @@ export interface WordAcceptancePlan {
 	request: WordAcceptanceRequest;
 	requestJsonPath: string;
 	scriptPath: string;
+	localInputDocx: string;
 	localAcceptedDocx: string;
 	localPdf: string;
 	localManifest: string;
@@ -227,6 +229,7 @@ export function createWordAcceptancePlan(
 		request,
 		requestJsonPath,
 		scriptPath,
+		localInputDocx: inputDocx,
 		localAcceptedDocx: acceptedDocx,
 		localPdf: pdf,
 		localManifest: manifest,
@@ -412,6 +415,13 @@ function runWordAcceptanceAttempt(
 				'Word acceptance did not produce a pending acceptance manifest.',
 			);
 		}
+		verifyAcceptedDocxIntegrity(
+			plan.localInputDocx,
+			plan.localAcceptedDocx,
+			plan.localManifest,
+			manifest,
+			onCleanupVerified,
+		);
 		manifest.status = 'accepted';
 		manifest.execution.processCleanupVerified = true;
 		const pendingPath = `${plan.localManifest}.pending`;

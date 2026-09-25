@@ -57,7 +57,6 @@ export interface StoRules {
 			spacingBeforeDxa: number;
 			spacingAfterDxa: number;
 		};
-		semanticMarkers: string[];
 		maxTextLengthChars: number;
 	};
 	lists: {
@@ -95,8 +94,6 @@ export interface StoRules {
 		};
 		urlProtocols: string[];
 		urldatePattern: string;
-		latinLangidValues: string[];
-		articlePreprintJournalPatterns: string[];
 		doiUrlPrefixes: string[];
 		requiredFieldsByType: Record<string, string[][]>;
 	};

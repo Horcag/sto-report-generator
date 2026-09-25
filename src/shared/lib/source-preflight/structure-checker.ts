@@ -1,9 +1,10 @@
-import { STO_RULES } from '@/shared/config';
+import { APPENDIX_LABELS, STO_RULES } from '@/shared/config';
 import {
 	getStructuralHeadingOrder,
 	ReportConfig,
 } from '@/shared/lib/report-config';
 
+import { createSourceTextContext } from './text-context';
 import { SourceFile, SourcePreflightIssue } from './types';
 import { issue, lineNumberAt } from './utils';
 
@@ -13,6 +14,14 @@ interface StructuralHeading {
 	sourceIndex: number;
 	text: string;
 	upperText: string;
+	appendixTitle?: string;
+}
+
+interface AppendixReference {
+	label: string;
+	file: string;
+	line: number;
+	sourceIndex: number;
 }
 
 function collectStructuralHeadings(files: SourceFile[]): StructuralHeading[] {
@@ -20,7 +29,8 @@ function collectStructuralHeadings(files: SourceFile[]): StructuralHeading[] {
 	let sourceOffset = 0;
 
 	for (const { file, content } of files) {
-		for (const match of content.matchAll(
+		const searchable = createSourceTextContext(content).prose;
+		for (const match of searchable.matchAll(
 			/\\sto_structural_heading\{([^}]+)\}/g,
 		)) {
 			const text = match[1].trim();
@@ -32,10 +42,43 @@ function collectStructuralHeadings(files: SourceFile[]): StructuralHeading[] {
 				upperText: text.toUpperCase(),
 			});
 		}
+		for (const match of searchable.matchAll(
+			/\\sto_appendix\{([^}]+)\}\{([^}]*)\}/g,
+		)) {
+			const text = `ПРИЛОЖЕНИЕ ${match[1].trim()}`;
+			headings.push({
+				file,
+				line: lineNumberAt(content, match.index ?? 0),
+				sourceIndex: sourceOffset + (match.index ?? 0),
+				text,
+				upperText: text.toUpperCase(),
+				appendixTitle: match[2].trim(),
+			});
+		}
 		sourceOffset += content.length + 1;
 	}
 
-	return headings;
+	return headings.sort((left, right) => left.sourceIndex - right.sourceIndex);
+}
+
+function collectAppendixReferences(files: SourceFile[]): AppendixReference[] {
+	const references: AppendixReference[] = [];
+	let sourceOffset = 0;
+	for (const { file, content } of files) {
+		const searchable = createSourceTextContext(content).prose;
+		for (const match of searchable.matchAll(
+			/\\sto_appendix_ref\{([^}]*)\}/g,
+		)) {
+			references.push({
+				label: match[1].trim().toUpperCase(),
+				file,
+				line: lineNumberAt(content, match.index ?? 0),
+				sourceIndex: sourceOffset + (match.index ?? 0),
+			});
+		}
+		sourceOffset += content.length + 1;
+	}
+	return references;
 }
 
 function hasCitations(files: SourceFile[]): boolean {
@@ -60,34 +103,6 @@ function getRequiredStructuralHeadings(
 	return [...required];
 }
 
-const APPLICATION_LABELS = [
-	'А',
-	'Б',
-	'В',
-	'Г',
-	'Д',
-	'Е',
-	'Ж',
-	'И',
-	'К',
-	'Л',
-	'М',
-	'Н',
-	'П',
-	'Р',
-	'С',
-	'Т',
-	'У',
-	'Ф',
-	'Х',
-	'Ц',
-	'Ш',
-	'Щ',
-	'Э',
-	'Ю',
-	'Я',
-] as const;
-
 function getApplicationLabel(heading: StructuralHeading): string {
 	return heading.upperText.replace(/^ПРИЛОЖЕНИЕ\s*/, '').trim();
 }
@@ -95,6 +110,7 @@ function getApplicationLabel(heading: StructuralHeading): string {
 function validateApplicationHeadings(
 	headings: StructuralHeading[],
 	sourceText: string,
+	references: AppendixReference[],
 	issues: SourcePreflightIssue[],
 ): void {
 	const applicationHeadings = headings.filter(heading =>
@@ -106,9 +122,38 @@ function validateApplicationHeadings(
 	);
 	const seenLabels = new Set<string>();
 	let previousLabelIndex = -1;
+	const declaredLabels = new Set(
+		applicationHeadings.map(heading => getApplicationLabel(heading)),
+	);
+	for (const reference of references) {
+		if (!declaredLabels.has(reference.label)) {
+			issues.push(
+				issue(
+					'application-reference-unknown',
+					`appendix reference "${reference.label}" has no declared appendix.`,
+					reference.file,
+					reference.line,
+				),
+			);
+		}
+	}
 
 	for (let index = 0; index < applicationHeadings.length; index++) {
 		const application = applicationHeadings[index];
+		const title = application.appendixTitle;
+		if (
+			title !== undefined &&
+			(!title || title.endsWith('.') || title.includes('"'))
+		) {
+			issues.push(
+				issue(
+					'application-title-format',
+					'appendix title must be nonempty and have no final period.',
+					application.file,
+					application.line,
+				),
+			);
+		}
 		const appIndex = headings.indexOf(application);
 		if (sourcesIndex !== -1 && appIndex < sourcesIndex) {
 			issues.push(
@@ -129,7 +174,9 @@ function validateApplicationHeadings(
 					'application heading should include a Russian letter, for example "ПРИЛОЖЕНИЕ А".',
 					application.file,
 					application.line,
-					'warning',
+					application.appendixTitle === undefined
+						? 'warning'
+						: 'error',
 				),
 			);
 			continue;
@@ -157,8 +204,8 @@ function validateApplicationHeadings(
 		}
 		seenLabels.add(label);
 
-		const labelIndex = APPLICATION_LABELS.indexOf(
-			label as (typeof APPLICATION_LABELS)[number],
+		const labelIndex = APPENDIX_LABELS.indexOf(
+			label as (typeof APPENDIX_LABELS)[number],
 		);
 		if (labelIndex === -1) {
 			issues.push(
@@ -183,14 +230,34 @@ function validateApplicationHeadings(
 		}
 		previousLabelIndex = Math.max(previousLabelIndex, labelIndex);
 
-		const sourceTextBeforeApplication = sourceText.slice(
-			0,
-			application.sourceIndex,
+		const labelReferences = references.filter(
+			reference => reference.label === label,
 		);
+		const hasExplicitReferenceBefore = labelReferences.some(
+			reference => reference.sourceIndex < application.sourceIndex,
+		);
+		const firstLateReference = labelReferences.find(
+			reference => reference.sourceIndex > application.sourceIndex,
+		);
+		if (!hasExplicitReferenceBefore && firstLateReference) {
+			issues.push(
+				issue(
+					'application-reference-after-heading',
+					`appendix "${label}" must be referenced before its heading.`,
+					firstLateReference.file,
+					firstLateReference.line,
+				),
+			);
+		}
+		const hasLegacyReferenceBefore =
+			application.appendixTitle === undefined &&
+			new RegExp(`приложени[еяи]\\s+${label}`, 'i').test(
+				sourceText.slice(0, application.sourceIndex),
+			);
 		if (
-			!new RegExp(`приложени[еяи]\\s+${label}`, 'i').test(
-				sourceTextBeforeApplication,
-			)
+			!hasExplicitReferenceBefore &&
+			!firstLateReference &&
+			!hasLegacyReferenceBefore
 		) {
 			issues.push(
 				issue(
@@ -198,7 +265,9 @@ function validateApplicationHeadings(
 					`application "${application.text}" should be referenced in text before the appendix.`,
 					application.file,
 					application.line,
-					'warning',
+					application.appendixTitle === undefined
+						? 'warning'
+						: 'error',
 				),
 			);
 		}
@@ -229,6 +298,19 @@ export function validateDocumentStructure(
 		}
 	}
 
+	for (const heading of headings) {
+		if (heading.appendixTitle === undefined && heading.text.endsWith('.')) {
+			issues.push(
+				issue(
+					'structural-heading-final-period',
+					'structural headings must not end with a period.',
+					heading.file,
+					heading.line,
+				),
+			);
+		}
+	}
+
 	let previousIndex = -1;
 	for (const expected of getStructuralHeadingOrder(config.document)) {
 		const actualIndex = headingNames.indexOf(expected);
@@ -249,6 +331,13 @@ export function validateDocumentStructure(
 		previousIndex = Math.max(previousIndex, actualIndex);
 	}
 
-	const sourceText = files.map(({ content }) => content).join('\n');
-	validateApplicationHeadings(headings, sourceText, issues);
+	const sourceText = files
+		.map(({ content }) => createSourceTextContext(content).prose)
+		.join('\n');
+	validateApplicationHeadings(
+		headings,
+		sourceText,
+		collectAppendixReferences(files),
+		issues,
+	);
 }

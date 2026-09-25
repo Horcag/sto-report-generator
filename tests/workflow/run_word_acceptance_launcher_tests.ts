@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { mock } from 'node:test';
+import AdmZip from 'adm-zip';
 
 import { runWordAcceptance } from '@/app/word-acceptance';
 
@@ -25,7 +26,14 @@ function withFakeWord(
 ): void {
 	const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sto-word-test-'));
 	const input = path.join(root, 'input.docx');
-	fs.writeFileSync(input, 'fixture');
+	const fixture = new AdmZip();
+	fixture.addFile(
+		'word/document.xml',
+		Buffer.from(
+			'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Документ для проверки сохранения текста</w:t></w:r></w:p></w:body></w:document>',
+		),
+	);
+	fixture.writeZip(input);
 	const calls: Invocation[] = [];
 	const platform = Object.getOwnPropertyDescriptor(process, 'platform')!;
 	if (process.platform !== 'win32') {
@@ -109,6 +117,7 @@ function withFakeWord(
 							execution: {},
 						}),
 			);
+			fs.copyFileSync(input, input.replace(/\.docx$/, '.accepted.docx'));
 			return result;
 		},
 	);
