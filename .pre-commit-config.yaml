@@ -1,4 +1,5 @@
 default_install_hook_types: [pre-commit, pre-push]
+exclude: ^\.agents/skills/humanizer-ru/
 
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
