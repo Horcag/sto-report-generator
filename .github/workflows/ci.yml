@@ -15,7 +15,7 @@ concurrency:
 jobs:
     workflow-lint:
         name: Workflow lint
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -38,7 +38,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, windows-latest, macos-latest]
+                os: [ubuntu-24.04, windows-latest, macos-latest]
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -53,7 +53,6 @@ jobs:
               uses: astral-sh/setup-uv@v10.1.0
               with:
                   enable-cache: true
-                  cache-python: true
                   python-version: '3.12'
 
             - name: Install Node dependencies
@@ -65,40 +64,5 @@ jobs:
             - name: Run TypeScript quality gate
               run: npm run ci:check
 
-            - name: Upload JavaScript coverage
-              if: ${{ matrix.os == 'ubuntu-latest' }}
-              uses: actions/upload-artifact@v7
-              with:
-                  name: javascript-coverage
-                  path: coverage/lcov.info
-                  if-no-files-found: error
-
             - name: Run Python quality gate
               run: npm run python:quality
-
-    sonar:
-        name: SonarQube scan
-        runs-on: ubuntu-latest
-        needs: quality
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-        env:
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v7
-              with:
-                  fetch-depth: 0
-
-            - name: Download JavaScript coverage
-              uses: actions/download-artifact@v8
-              with:
-                  name: javascript-coverage
-                  path: coverage
-
-            - name: SonarQube Scan
-              if: ${{ env.SONAR_TOKEN != '' }}
-              uses: SonarSource/sonarqube-scan-action@v8
-              env:
-                  SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-                  SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}

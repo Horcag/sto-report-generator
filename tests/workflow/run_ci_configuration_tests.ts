@@ -18,10 +18,10 @@ assert.match(
 	/^\s{4}group: .*github\.event_name.*github\.event\.pull_request\.head\.repo\.full_name.*github\.event\.pull_request\.head\.ref/m,
 	'push and pull_request runs must use distinct concurrency groups',
 );
-assert.match(
+assert.doesNotMatch(
 	portableWorkflow,
-	/github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.full_name == github\.repository/,
-	'fork pull requests must not receive repository secrets',
+	/\$\{\{\s*secrets\./,
+	'portable CI must not access repository secrets',
 );
 
 assert.match(nativeWordWorkflow, /^\s{4}workflow_dispatch:\s*$/m);
