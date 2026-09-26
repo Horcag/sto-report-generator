@@ -24,7 +24,7 @@ repos:
             name: Prettier staged files
             entry: npx prettier --write
             language: system
-            files: ^((src|tests)/.*\.(ts|json)|docs/.*\.md|tests/.*\.md|README\.md|package\.json|tsconfig\.json|eslint\.config\.mjs|steiger\.config\.ts|\.prettierrc|\.pre-commit-config\.yaml|\.github/.*\.yml|sonar-project\.properties)$
+            files: ^((src|tests)/.*\.(ts|json)|docs/.*\.md|tests/.*\.md|README\.md|package\.json|tsconfig\.json|eslint\.config\.mjs|steiger\.config\.ts|\.prettierrc|\.pre-commit-config\.yaml|\.github/.*\.yml)$
             exclude: ^(node_modules/|reports/|output/|research/|\.agents/skills/docx/)
 
           - id: eslint

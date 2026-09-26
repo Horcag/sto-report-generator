@@ -33,7 +33,6 @@ const forbiddenExactPaths = new Set([
 	'.python-version',
 	'eslint.config.mjs',
 	'package-lock.json',
-	'sonar-project.properties',
 	'steiger.config.ts',
 ]);
 
