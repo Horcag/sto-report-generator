@@ -61,6 +61,42 @@ async function main(): Promise<void> {
 	assert.ok(!documentXml.includes('Самара 2026'));
 	assert.ok(footerXml.includes('Самара 2026'));
 
+	const courseProjectMd = path.join(tempRoot, 'course-project.md');
+	const courseProjectDocx = path.join(tempRoot, 'course-project.docx');
+	fs.writeFileSync(
+		courseProjectMd,
+		testMarkdown
+			.replace(
+				'reportType: "Отчёт по курсовой работе"',
+				'reportType: "ОТЧЁТ ПО КУРСОВОМУ ПРОЕКТУ"\nreportProfile: "coursework"\ntitlePageVariant: "ssau-course-project-v1.1"',
+			)
+			.replace(
+				'supervisorName: "Петров Петр Петрович"',
+				'supervisorName: "Петров П. П."',
+			),
+		'utf8',
+	);
+	await buildReport(courseProjectMd, courseProjectDocx);
+	const courseProjectXml = readDocxEntry(
+		courseProjectDocx,
+		'word/document.xml',
+	);
+	assert.ok(courseProjectXml.includes('ПО КУРСОВОМУ ПРОЕКТУ'));
+	assert.ok(courseProjectXml.includes('И. И. Иванов'));
+	assert.ok(courseProjectXml.includes('П. П. Петров'));
+	assert.ok(courseProjectXml.includes('Исполнитель'));
+	assert.ok(!courseProjectXml.includes('Семестр 6'));
+	assert.ok(!courseProjectXml.includes('Тестовая тема'));
+	assert.ok(!courseProjectXml.includes('Оценка ________________________'));
+	assert.ok(!courseProjectXml.includes('6300 – 010302D'));
+	const courseProjectFooterXml = new AdmZip(courseProjectDocx)
+		.getEntries()
+		.filter(entry => /^word\/footer\d+\.xml$/.test(entry.entryName))
+		.map(entry => entry.getData().toString('utf-8'))
+		.join('\n');
+	assert.ok(courseProjectFooterXml.includes('Самара 2026'));
+	assert.ok(!courseProjectFooterXml.includes('<w:b/>'));
+
 	const practiceMd = path.join(tempRoot, 'practice.md');
 	const practiceDocx = path.join(tempRoot, 'practice.docx');
 	fs.writeFileSync(

@@ -50,7 +50,10 @@ export function createTitlePageFooter(metadata: ReportMetadata): Footer {
 						size: 24,
 						font: 'Times New Roman',
 						text: `${metadata.city} ${metadata.year}`,
-						bold: !isPracticeReport(metadata),
+						bold:
+							!isPracticeReport(metadata) &&
+							metadata.titlePageVariant !==
+								'ssau-course-project-v1.1',
 					}),
 				],
 			}),

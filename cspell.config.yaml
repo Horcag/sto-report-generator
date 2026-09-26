@@ -34,6 +34,7 @@ words:
     - Ruff
     - SSRN
     - SGAU
+    - ssau
     - Samara
     - SonarQube
     - Steiger
@@ -88,3 +89,4 @@ words:
     - рендерера
     - репозиторный
     - титульнике
+    - Титульник

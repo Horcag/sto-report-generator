@@ -170,8 +170,61 @@ export function validateMetadata(
 		);
 		return;
 	}
+	const titlePageVariant = getStringField(metadata.data, 'titlePageVariant');
+	if (
+		metadata.data.titlePageVariant !== undefined &&
+		typeof metadata.data.titlePageVariant !== 'string'
+	) {
+		issues.push(
+			issue(
+				'metadata-field-invalid-type',
+				'metadata field "titlePageVariant" must be a string.',
+				metadata.file,
+			),
+		);
+	}
+	if (titlePageVariant && titlePageVariant !== 'ssau-course-project-v1.1') {
+		issues.push(
+			issue(
+				'metadata-title-page-variant-unknown',
+				`unknown titlePageVariant "${titlePageVariant}".`,
+				metadata.file,
+			),
+		);
+	}
+	if (
+		titlePageVariant === 'ssau-course-project-v1.1' &&
+		config.profile !== 'coursework'
+	) {
+		issues.push(
+			issue(
+				'metadata-title-page-variant-profile-mismatch',
+				'titlePageVariant "ssau-course-project-v1.1" requires the coursework profile.',
+				metadata.file,
+			),
+		);
+	}
+	if (
+		titlePageVariant === 'ssau-course-project-v1.1' &&
+		getStringField(metadata.data, 'reportType') !==
+			'ОТЧЁТ ПО КУРСОВОМУ ПРОЕКТУ'
+	) {
+		issues.push(
+			issue(
+				'metadata-title-page-report-type-mismatch',
+				'titlePageVariant "ssau-course-project-v1.1" requires reportType "ОТЧЁТ ПО КУРСОВОМУ ПРОЕКТУ".',
+				metadata.file,
+			),
+		);
+	}
 
 	for (const field of REQUIRED_METADATA_FIELDS) {
+		if (
+			field === 'supervisorTitle' &&
+			titlePageVariant === 'ssau-course-project-v1.1'
+		) {
+			continue;
+		}
 		if (metadata.data[field] === undefined || metadata.data[field] === '') {
 			issues.push(
 				issue(

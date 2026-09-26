@@ -18,6 +18,7 @@ import {
 import { ReportMetadata } from '@/entities/report';
 import { STO_RULES } from '@/shared/config';
 
+import { createSsauCourseProjectTitlePage } from './ssau-course-project-title-page';
 import {
 	createTitlePageFooter,
 	getPracticeKind,
@@ -334,6 +335,9 @@ function createPracticeTitlePage(
 export function createTitlePage(
 	metadata: ReportMetadata,
 ): Array<Paragraph | Table> {
+	if (metadata.titlePageVariant === 'ssau-course-project-v1.1') {
+		return createSsauCourseProjectTitlePage(metadata);
+	}
 	if (
 		metadata.reportProfile === 'vkr-bachelor' ||
 		metadata.reportProfile === 'vkr-master'
@@ -373,67 +377,49 @@ export function createTitlePage(
 	]);
 
 	return [
-		// P1: "Министерство..." - Single line spacing, Centered
 		p({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 240, lineRule: 'auto' },
 			children: organizationChildren,
 		}),
-		// P2: Empty
 		empty({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 240, lineRule: 'auto' },
 		}),
-
-		// P3: Department
 		p({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 240, lineRule: 'auto' },
 			children: [t({ text: metadata.department })],
 		}),
-
-		// P4: Subdepartment
 		p({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 240, lineRule: 'auto' },
 			tabStops: [{ type: TabStopType.LEFT, position: 1680 }],
 			children: [br(), t({ text: metadata.subdepartment })],
 		}),
-
-		// P5: Empty (starts 1.5 spacing - 360)
 		empty({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 360, lineRule: 'auto' },
 		}),
-
-		// P6: Report type
 		p({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 360, lineRule: 'auto' },
 			children: [t({ text: metadata.reportType, bold: true })],
 		}),
-
-		// P7: Degree
 		p({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 360, lineRule: 'auto' },
 			children: [t({ text: metadata.degree, bold: true })],
 		}),
-
-		// P8: Semester
 		p({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 360, lineRule: 'auto' },
 			children: [t({ text: `Семестр ${metadata.semester}`, bold: true })],
 		}),
-
-		// P9: Empty
 		empty({
 			spacing: { line: 360, lineRule: 'auto' },
 			tabStops: [{ type: TabStopType.LEFT, position: 8190 }],
 		}),
-
-		// P10: Specialty
 		p({
 			spacing: { line: 360, lineRule: 'auto' },
 			tabStops: [{ type: TabStopType.LEFT, position: 8190 }],
@@ -445,8 +431,6 @@ export function createTitlePage(
 				t({ text: `Профиль – «${metadata.profileName}» ` }),
 			],
 		}),
-
-		// P11: Empty
 		empty({
 			spacing: { line: 360, lineRule: 'auto' },
 			tabStops: [
@@ -454,8 +438,6 @@ export function createTitlePage(
 				{ type: TabStopType.LEFT, position: 9638 },
 			],
 		}),
-
-		// P12: Student name
 		p({
 			spacing: { line: 360, lineRule: 'auto' },
 			tabStops: [
@@ -464,8 +446,6 @@ export function createTitlePage(
 			],
 			children: [t({ text: `Студент ${metadata.studentName}` })],
 		}),
-
-		// P13: Group number
 		p({
 			spacing: { line: 360, lineRule: 'auto' },
 			tabStops: [
@@ -474,8 +454,6 @@ export function createTitlePage(
 			],
 			children: [t({ text: `группы ${metadata.groupNumber}` })],
 		}),
-
-		// P14: Empty
 		empty({
 			spacing: { line: 360, lineRule: 'auto' },
 			tabStops: [
@@ -483,8 +461,6 @@ export function createTitlePage(
 				{ type: TabStopType.LEFT, position: 9638 },
 			],
 		}),
-
-		// P15: Topic
 		p({
 			spacing: { line: 360, lineRule: 'auto' },
 			tabStops: [{ type: TabStopType.RIGHT, position: 9638 }],
@@ -494,14 +470,10 @@ export function createTitlePage(
 				}),
 			],
 		}),
-
-		// P16: Empty
 		empty({
 			spacing: { line: 360, lineRule: 'auto' },
 			tabStops: [{ type: TabStopType.RIGHT, position: 9638 }],
 		}),
-
-		// P17: Reviewer is included for a lab only when their name is known.
 		...(hasLabReviewer
 			? [
 					p({
@@ -521,13 +493,9 @@ export function createTitlePage(
 					}),
 				]
 			: []),
-
-		// P18: Empty spacer
 		empty({
 			spacing: { line: 360, lineRule: 'auto' },
 		}),
-
-		// P19: Empty centered (Back to single spacing 240)
 		empty({
 			alignment: AlignmentType.CENTER,
 			spacing: { line: 240, lineRule: 'auto' },
@@ -575,7 +543,6 @@ export function createTitlePage(
 						}),
 					]
 				: [
-						// P20-24: Supervisor Signature Block (Indented left by 5670)
 						p({
 							indent: { left: 5670, firstLine: 0 },
 							spacing: { line: 240, lineRule: 'auto' },
@@ -619,8 +586,6 @@ export function createTitlePage(
 							indent: { left: 5670, firstLine: 0 },
 							spacing: { line: 240, lineRule: 'auto' },
 						}),
-
-						// P25-28: Student Signature Block (Indented left by 5670)
 						p({
 							indent: { left: 5670, firstLine: 0 },
 							spacing: { line: 240, lineRule: 'auto' },
