@@ -79,7 +79,7 @@
 		"@hungknguyen/mathml2omml": "^0.4.6",
 		"@orcid/bibtex-parse-js": "^0.0.25",
 		"adm-zip": "0.6.1",
-		"docx": "9.7.1",
+		"docx": "9.7.2",
 		"gray-matter": "^4.0.3",
 		"image-size": "2.0.4",
 		"jsdom": "30.1.0",
