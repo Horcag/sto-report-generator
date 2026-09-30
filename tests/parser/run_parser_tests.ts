@@ -10,6 +10,7 @@ import { readDocxEntry } from '@/shared/lib/docx-archive';
 
 import { runAppendixParserTests } from './appendix_parser_tests';
 import { runCitationLocatorTests } from './citation_locator_tests';
+import { runEntityParserTests } from './entity_parser_tests';
 import { runSemanticParserTests } from './semantic_parser_tests';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'parser-tests');
@@ -117,6 +118,8 @@ async function main(): Promise<void> {
 		.map(line => getWordText(line));
 	assert.deepEqual(actualCodeLines, codeLines);
 	assert.doesNotMatch(codeParagraph, /\u200b/);
+
+	await runEntityParserTests({ tempRoot, packAndReadXml, getWordText });
 
 	await parseMarkdownToDocx(
 		String.raw`\begin{sto_list}

@@ -61,7 +61,7 @@ export function testPowerShellHashFallback(): void {
 	assert.equal(
 		dispatch.status,
 		0,
-		dispatch.stderr || dispatch.error?.message,
+		dispatch.stderr || dispatch.error?.message || 'PDF dispatch failed',
 	);
 	assert.match(dispatch.stdout, /Typed PDF dispatch test passed/);
 }
