@@ -8,7 +8,7 @@ The open dependency PRs were reviewed against upstream releases and tested toget
 | [43](https://github.com/Horcag/sto-report-generator/pull/43) | Retain all five dev updates and repair compatibility | Node 26 assertion overloads reject a possibly undefined string diagnostic. A concrete fallback preserves the failure message. ESLint, Prettier, cspell and typescript-eslint updates include diagnostic and formatting fixes. |
 | [44](https://github.com/Horcag/sto-report-generator/pull/44) | Integrate jsdom 30.1.1 through PR 43                 | Fixes encoding, XML serialization, focus and CSS behavior. Its Node requirements are satisfied by Node 26.                                                                                                                    |
 | [45](https://github.com/Horcag/sto-report-generator/pull/45) | Integrate docx 9.7.2 through PR 43                   | Adds durable comment IDs. nanoid 6 drops old Node versions; the project runtime now satisfies its requirements. Default styles were not changed upstream.                                                                     |
-| [46](https://github.com/Horcag/sto-report-generator/pull/46) | Integrate marked 18.0.14 through PR 43               | Fixes Markdown parsing, including numeric character references. The DOCX parser must consume decoded token text.                                                                                                              |
+| [46](https://github.com/Horcag/sto-report-generator/pull/46) | Integrate marked 18.0.14 through PR 43               | Fixes Markdown parsing, including numeric character references. The DOCX parser must decode entities once without turning decoded literals into report syntax.                                                                |
 
 PRs 44–46 are superseded only after their exact dependency versions land through PR 43. No proposed library update is discarded or added to Dependabot ignore rules. The consolidated PR permits verification of all runtime, parser and tooling changes against one revision after the base branch changes.
 
@@ -20,7 +20,7 @@ A complete quality run on Node 24.19.0 with the original dev update plus asserti
 
 ## Parser regression
 
-A new generated-DOCX test initially failed: `&#65;`, `&#x41;` and `&#x1F600;` remained literal in document text. The handler read token.raw, bypassing marked's decoded token.text. It now uses token.text, retains named-entity handling, and leaves inline and fenced code literal. The test also verifies `&amp;#65;` is decoded only once.
+A new generated-DOCX test initially failed: `&#65;`, `&#x41;` and `&#x1F600;` remained literal in document text. The old handler read token.raw and decoded only a few named entities. Consuming token.text first also allowed a second decode and converted escaped literals into citations or line breaks. The final handler processes authored citations/references first, then decodes raw text once using an inert textarea from the existing jsdom dependency. Actual HTML breaks remain separate tokens. Tests cover decimal/hex/supplementary entities, nested entities, encoded citation and break literals, and inline/fenced code preservation. Both intermediate regressions were reproduced before correction.
 
 ## Native Word evidence
 

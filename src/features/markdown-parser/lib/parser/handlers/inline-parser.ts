@@ -1,4 +1,5 @@
 import { TextRun } from 'docx';
+import { JSDOM } from 'jsdom';
 import { Token, Tokens } from 'marked';
 
 import { formatStoInlineList, parseStoInlineListItems } from '@/shared/config';
@@ -196,11 +197,7 @@ async function handleText(
 	options?: ParseInlineOptions,
 ): Promise<InlineDocxElement[]> {
 	const runs: InlineDocxElement[] = [];
-	let text = token.text
-		.replace(/&amp;/g, '&')
-		.replace(/&lt;/g, '<')
-		.replace(/&gt;/g, '>')
-		.replace(/&quot;/g, '"');
+	let text = token.raw;
 
 	// Numbered end-reference calls, optionally with a page locator.
 	text = text.replace(/\[@([^\]]*)\]/g, (_: string, keysRaw: string) => {
@@ -215,25 +212,15 @@ async function handleText(
 	// Replace references @fig:key, etc.
 	text = replaceRefs(text);
 
-	if (
-		text.includes('<br>') ||
-		text.includes('<br/>') ||
-		text.includes('<br />')
-	) {
-		const parts = text.split(/(<br\s*\/?>)/gi);
-		for (const part of parts) {
-			if (/^<br\s*\/?>$/i.test(part)) {
-				runs.push(new TextRun({ break: 1 }));
-			} else if (part.length > 0) {
-				runs.push(
-					new TextRun({
-						text: part,
-						bold: options?.bold ? true : undefined,
-					}),
-				);
-			}
-		}
-	} else if (text.length > 0) {
+	if (text.includes('&')) {
+		// Decode once, after authored citation/reference syntax is processed.
+		// A textarea keeps decoded HTML-looking characters as literal text.
+		const decoder = JSDOM.fragment('<textarea></textarea>')
+			.firstChild as Element;
+		decoder.innerHTML = text;
+		text = decoder.textContent ?? '';
+	}
+	if (text.length > 0) {
 		runs.push(
 			new TextRun({
 				text: text,

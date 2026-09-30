@@ -119,7 +119,7 @@ async function main(): Promise<void> {
 	assert.doesNotMatch(codeParagraph, /\u200b/);
 
 	const entityElements = await parseMarkdownToDocx(
-		'Entities: &#65; &#x41; &#x1F600; &amp;#65; &lt;tag&gt;. Code: `&#65; &#x41;`.',
+		'Entities: &#65; &#x41; &#x1F600; &amp;#65; &#38;lt; &#38;#39; &lt;tag&gt; &#91;@missing&#93;. Code: `&#65; &#x41;`.',
 		{},
 		{ sourceDir: tempRoot },
 	);
@@ -129,8 +129,19 @@ async function main(): Promise<void> {
 	);
 	assert.equal(
 		getWordText(entityXml),
-		'Entities: A A 😀 &#65; <tag>. Code: &#65; &#x41;.',
+		'Entities: A A 😀 &#65; &lt; &#39; <tag> [@missing]. Code: &#65; &#x41;.',
 	);
+	const breakElements = await parseMarkdownToDocx(
+		'Literal: &#x3C;br&#x3E; &lt;br&gt;. Real<br>break.',
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: breakXml } = await packAndReadXml(
+		breakElements,
+		path.join(tempRoot, 'entity-breaks.docx'),
+	);
+	assert.equal(getWordText(breakXml), 'Literal: <br> <br>. Realbreak.');
+	assert.equal([...breakXml.matchAll(/<w:br\s*\/>/g)].length, 1);
 
 	await parseMarkdownToDocx(
 		String.raw`\begin{sto_list}
