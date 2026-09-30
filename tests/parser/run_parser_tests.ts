@@ -118,6 +118,20 @@ async function main(): Promise<void> {
 	assert.deepEqual(actualCodeLines, codeLines);
 	assert.doesNotMatch(codeParagraph, /\u200b/);
 
+	const entityElements = await parseMarkdownToDocx(
+		'Entities: &#65; &#x41; &#x1F600; &amp;#65; &lt;tag&gt;. Code: `&#65; &#x41;`.',
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: entityXml } = await packAndReadXml(
+		entityElements,
+		path.join(tempRoot, 'numeric-entities.docx'),
+	);
+	assert.equal(
+		getWordText(entityXml),
+		'Entities: A A 😀 &#65; <tag>. Code: &#65; &#x41;.',
+	);
+
 	await parseMarkdownToDocx(
 		String.raw`\begin{sto_list}
 - корректный пункт

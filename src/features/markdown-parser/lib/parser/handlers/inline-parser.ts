@@ -196,12 +196,11 @@ async function handleText(
 	options?: ParseInlineOptions,
 ): Promise<InlineDocxElement[]> {
 	const runs: InlineDocxElement[] = [];
-	let text = token.raw
+	let text = token.text
 		.replace(/&amp;/g, '&')
 		.replace(/&lt;/g, '<')
 		.replace(/&gt;/g, '>')
-		.replace(/&quot;/g, '"')
-		.replace(/&#39;/g, "'");
+		.replace(/&quot;/g, '"');
 
 	// Numbered end-reference calls, optionally with a page locator.
 	text = text.replace(/\[@([^\]]*)\]/g, (_: string, keysRaw: string) => {
