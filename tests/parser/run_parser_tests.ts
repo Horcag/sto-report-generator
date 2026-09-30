@@ -10,6 +10,7 @@ import { readDocxEntry } from '@/shared/lib/docx-archive';
 
 import { runAppendixParserTests } from './appendix_parser_tests';
 import { runCitationLocatorTests } from './citation_locator_tests';
+import { runEntityParserTests } from './entity_parser_tests';
 import { runSemanticParserTests } from './semantic_parser_tests';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'parser-tests');
@@ -118,30 +119,7 @@ async function main(): Promise<void> {
 	assert.deepEqual(actualCodeLines, codeLines);
 	assert.doesNotMatch(codeParagraph, /\u200b/);
 
-	const entityElements = await parseMarkdownToDocx(
-		'Entities: &#65; &#x41; &#x1F600; &amp;#65; &#38;lt; &#38;#39; &lt;tag&gt; &#91;@missing&#93;. Code: `&#65; &#x41;`.',
-		{},
-		{ sourceDir: tempRoot },
-	);
-	const { documentXml: entityXml } = await packAndReadXml(
-		entityElements,
-		path.join(tempRoot, 'numeric-entities.docx'),
-	);
-	assert.equal(
-		getWordText(entityXml),
-		'Entities: A A 😀 &#65; &lt; &#39; <tag> [@missing]. Code: &#65; &#x41;.',
-	);
-	const breakElements = await parseMarkdownToDocx(
-		'Literal: &#x3C;br&#x3E; &lt;br&gt;. Real<br>break.',
-		{},
-		{ sourceDir: tempRoot },
-	);
-	const { documentXml: breakXml } = await packAndReadXml(
-		breakElements,
-		path.join(tempRoot, 'entity-breaks.docx'),
-	);
-	assert.equal(getWordText(breakXml), 'Literal: <br> <br>. Realbreak.');
-	assert.equal([...breakXml.matchAll(/<w:br\s*\/>/g)].length, 1);
+	await runEntityParserTests({ tempRoot, packAndReadXml, getWordText });
 
 	await parseMarkdownToDocx(
 		String.raw`\begin{sto_list}
