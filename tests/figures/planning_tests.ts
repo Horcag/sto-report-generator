@@ -334,6 +334,32 @@ export async function runFigurePlanningTests(): Promise<void> {
 		assert.ok(
 			nested.issues.some(issue => issue.code === 'unknown-text-size'),
 		);
+		fs.mkdirSync(path.join(root, 'images'));
+		fs.copyFileSync(
+			path.join(root, 'vector.svg'),
+			path.join(root, 'images', 'vector.svg'),
+		);
+		fs.copyFileSync(
+			path.join(root, 'vector.png'),
+			path.join(root, 'images', 'vector.png'),
+		);
+		assert.equal(
+			planFigure(root, 'images/vector.svg', 'nested-fallback', defaults)
+				.fallbackPath,
+			path.join(fs.realpathSync(root), 'images', 'vector.png'),
+		);
+		assert.throws(
+			() =>
+				planFigure(root, 'images/vector.svg', 'explicit-fallback', {
+					defaults: {},
+					figures: {
+						'explicit-fallback': {
+							fallback: String.raw`images\vector.png`,
+						},
+					},
+				}),
+			/report-relative/,
+		);
 		const plans: FigurePlan[] = [];
 		const children = await parseMarkdownToDocx(
 			'![Description](wide.png)\n\nРисунок 1 – First (@fig:first)\n\n![Second](wide.png)\n\nРисунок 2 – Second (@fig:second)',

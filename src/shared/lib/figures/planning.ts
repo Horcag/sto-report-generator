@@ -163,6 +163,7 @@ export function planFigure(
 			spec.fallback ??
 			path
 				.relative(fs.realpathSync(sourceDir), sourcePath)
+				.replaceAll('\\', '/')
 				.replace(/\.svg$/iu, '.png');
 		plan.fallbackPath = resolveFigurePath(sourceDir, fallback);
 		const png = fs.readFileSync(plan.fallbackPath);
