@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { buildReport } from '../../../../src/app/builder';
-import { unpackDocx } from '../../../../src/shared/lib/docx-archive';
+import { unpackDocx } from '../../../../src/shared/lib/docx';
 import { validateSTO } from '../../../../src/shared/lib/sto-validator';
 
 async function main() {

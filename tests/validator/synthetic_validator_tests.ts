@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import AdmZip from 'adm-zip';
 
-import { unpackDocx } from '@/shared/lib/docx-archive';
+import { unpackDocx } from '@/shared/lib/docx';
 
 import { runSyntheticBoldTests } from './synthetic_bold_tests';
 import { runSyntheticLayoutTests } from './synthetic_layout_tests';

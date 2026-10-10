@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
 
-import { readDocxEntry } from '@/shared/lib/docx-archive';
+import { readDocxEntry } from '@/shared/lib/docx';
+
+import { compareFigureEvidence, FigureChecks } from './word-acceptance-figures';
 
 const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
@@ -54,11 +56,14 @@ export function assertPreservedParagraphOrder(
 export function assertAcceptedDocxIntegrity(
 	inputDocx: string,
 	acceptedDocx: string,
-): void {
+): FigureChecks {
 	assertPreservedParagraphOrder(
 		readDocxEntry(inputDocx, 'word/document.xml'),
 		readDocxEntry(acceptedDocx, 'word/document.xml'),
 	);
+	const checks = compareFigureEvidence(inputDocx, acceptedDocx);
+	if (checks.status === 'failed') throw new Error(checks.issues.join('\n'));
+	return checks;
 }
 
 export function verifyAcceptedDocxIntegrity(
@@ -69,7 +74,14 @@ export function verifyAcceptedDocxIntegrity(
 	onCleanupVerified: () => void,
 ): void {
 	try {
-		assertAcceptedDocxIntegrity(inputDocx, acceptedDocx);
+		manifest.figureChecks = compareFigureEvidence(inputDocx, acceptedDocx);
+		assertPreservedParagraphOrder(
+			readDocxEntry(inputDocx, 'word/document.xml'),
+			readDocxEntry(acceptedDocx, 'word/document.xml'),
+		);
+		const checks = manifest.figureChecks as FigureChecks;
+		if (checks.status === 'failed')
+			throw new Error(checks.issues.join('\n'));
 	} catch (error) {
 		manifest.status = 'failed';
 		manifest.failure = {

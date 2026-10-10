@@ -1,10 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
-import {
-	insertDocxBodyBeforeText,
-	unpackDocx,
-} from '@/shared/lib/docx-archive';
+import { insertDocxBodyBeforeText, unpackDocx } from '@/shared/lib/docx';
 import {
 	ReportRenderer,
 	resolveReportConfig,

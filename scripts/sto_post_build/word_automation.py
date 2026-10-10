@@ -8,7 +8,6 @@ from typing import Any
 
 from .constants import (
     BROKEN_REFERENCE_MARKERS,
-    MAX_IMAGE_WIDTH_POINTS,
     WD_ACTIVE_END_PAGE_NUMBER,
     WD_ALIGN_PARAGRAPH_CENTER,
     WD_EXPORT_FORMAT_PDF,
@@ -208,22 +207,22 @@ def resync_pdf_page_replacements(
 
 def normalize_inline_images(doc: Any) -> tuple[int, int]:
     centered = 0
-    scaled = 0
-
     for index in range(1, doc.InlineShapes.Count + 1):
-        try:
-            shape = doc.InlineShapes(index)
-            shape.Range.ParagraphFormat.Alignment = WD_ALIGN_PARAGRAPH_CENTER
-            centered += 1
-
-            shape.LockAspectRatio = True
-            if abs(shape.Width - MAX_IMAGE_WIDTH_POINTS) > 1:
-                shape.Width = MAX_IMAGE_WIDTH_POINTS
-                scaled += 1
-        except Exception:
+        shape = doc.InlineShapes(index)
+        # Pictures only: inline OLE equations and controls keep their formatting.
+        if shape.Type not in (3, 4):  # wdInlineShapePicture, wdInlineShapeLinkedPicture
             continue
-
-    return centered, scaled
+        paragraph_range = shape.Range.Paragraphs(1).Range
+        # Preserve pictures embedded in running prose; center standalone figures.
+        if paragraph_range.Text.replace("\x01", "").strip():
+            continue
+        try:
+            paragraph_range.ParagraphFormat.Alignment = WD_ALIGN_PARAGRAPH_CENTER
+        except Exception as error:
+            raise RuntimeError(f"Cannot center inline picture {index}") from error
+        centered += 1
+    # Author-selected Width, Height and LockAspectRatio are deliberately untouched.
+    return centered, 0
 
 
 def previous_paragraph_before(doc: Any, position: int) -> Any | None:

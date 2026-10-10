@@ -5,7 +5,7 @@ import AdmZip from 'adm-zip';
 
 import { buildReport } from '@/app/builder';
 import { scaffoldReport } from '@/app/report-scaffold';
-import { readDocxEntry } from '@/shared/lib/docx-archive';
+import { readDocxEntry } from '@/shared/lib/docx';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'title-page-test');
 const tempMd = path.join(tempRoot, 'title_page.md');

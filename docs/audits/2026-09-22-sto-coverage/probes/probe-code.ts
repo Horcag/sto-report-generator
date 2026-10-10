@@ -4,7 +4,7 @@ import { Document, Packer } from 'docx';
 
 import { parseMarkdownToDocx } from '../../../../src/features/markdown-parser';
 import { STO_NUMBERING, STO_STYLES } from '../../../../src/shared/config';
-import { readDocxEntry } from '../../../../src/shared/lib/docx-archive';
+import { readDocxEntry } from '../../../../src/shared/lib/docx';
 
 async function main() {
 	const root = path.resolve('.agent-work/published-sto-audit');

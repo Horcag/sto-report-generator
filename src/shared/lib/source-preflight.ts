@@ -2,6 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import {
+	collectFigureOccurrences,
+	loadFigureSettings,
+	planFigure,
+} from './figures';
+import {
 	ReportConfigDiagnostic,
 	resolveReportConfig,
 	resolveReportPath,
@@ -140,6 +145,37 @@ export function runSourcePreflight(
 	}
 
 	const files = readSourceFiles(absoluteSourceDir);
+	if (fs.existsSync(path.join(absoluteSourceDir, 'figures.json'))) {
+		try {
+			const settings = loadFigureSettings(absoluteSourceDir);
+			for (const occurrence of collectFigureOccurrences(files)) {
+				const plan = planFigure(
+					absoluteSourceDir,
+					occurrence.asset,
+					occurrence.id,
+					settings,
+				);
+				issues.push(
+					...plan.issues.map(item => ({
+						code: `figure-${item.code}`,
+						file: occurrence.file,
+						message: item.message,
+						severity:
+							item.severity === 'error'
+								? ('error' as const)
+								: ('warning' as const),
+					})),
+				);
+			}
+		} catch (error) {
+			issues.push({
+				code: 'figure-plan-invalid',
+				file: 'figures.json',
+				message: error instanceof Error ? error.message : String(error),
+				severity: 'error',
+			});
+		}
+	}
 	if (files.length === 0) {
 		issues.push({
 			code: 'no-markdown-files',

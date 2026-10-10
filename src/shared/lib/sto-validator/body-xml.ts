@@ -1,4 +1,4 @@
-import { resolveWordStyleId } from '../word-style-properties';
+import { resolveWordStyleId } from '../docx/styles';
 
 export function decodeXmlText(value: string): string {
 	return value

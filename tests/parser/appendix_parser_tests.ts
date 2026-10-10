@@ -5,7 +5,7 @@ import { Document, Packer } from 'docx';
 
 import { parseMarkdownToDocx } from '@/features/markdown-parser';
 import { STO_NUMBERING, STO_STYLES } from '@/shared/config';
-import { readDocxEntry } from '@/shared/lib/docx-archive';
+import { readDocxEntry } from '@/shared/lib/docx';
 
 function getWordText(xml: string): string {
 	return [...xml.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g)]

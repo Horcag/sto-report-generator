@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { readDocxEntry } from '@/shared/lib/docx-archive';
+import { readDocxEntry } from '@/shared/lib/docx';
 
 interface AcceptanceManifest {
 	status: string;

@@ -90,8 +90,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -149,8 +148,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -223,8 +221,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -278,8 +275,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -339,8 +335,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -378,8 +373,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -414,8 +408,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -431,8 +424,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -514,8 +506,7 @@
 <w:sz w:val="24"/>
 <w:szCs w:val="24"/>
 </w:rPr>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 <w:p>
@@ -653,7 +644,7 @@
 <w:p>
 <w:r>
 <w:fldChar w:fldCharType="begin"/>
-<w:instrText xml:space="preserve">TOC \f &quot;A&quot; \h \o &quot;1-4&quot; \t &quot;StructuralHeading,1,AppendixSectionHeading,2,StoHeading1,1,StoHeading2,2,StoHeading3,3,StoHeading4,4&quot;</w:instrText>
+<w:instrText xml:space="preserve">TOC \f "A" \h \o "1-4" \t "StructuralHeading,1,AppendixSectionHeading,2,StoHeading1,1,StoHeading2,2,StoHeading3,3,StoHeading4,4"</w:instrText>
 <w:fldChar w:fldCharType="separate"/>
 </w:r>
 </w:p>
@@ -809,8 +800,7 @@
 </w:tcPr>
 <w:p>
 <w:r>
-<w:t xml:space="preserve">
-</w:t>
+<w:t xml:space="preserve"/>
 </w:r>
 </w:p>
 </w:tc>
@@ -1314,9 +1304,9 @@
 <w:r>
 <w:drawing>
 <wp:inline distT="0" distB="0" distL="0" distR="0">
-<wp:extent cx="3810000" cy="1905000"/>
+<wp:extent cx="5040000" cy="2520000"/>
 <wp:effectExtent t="0" r="0" b="0" l="0"/>
-<wp:docPr id="1" name="" descr="" title=""/>
+<wp:docPr id="1" name="sto-figure:diagram" descr="Пример диаграммы" title=""/>
 <wp:cNvGraphicFramePr>
 <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
 </wp:cNvGraphicFramePr>
@@ -1337,7 +1327,7 @@
 </a:ext>
 </a:extLst>
 </a:blip>
-<a:srcRect/>
+<a:srcRect l="0" r="0" t="0" b="0"/>
 <a:stretch>
 <a:fillRect/>
 </a:stretch>
@@ -1345,7 +1335,7 @@
 <pic:spPr bwMode="auto">
 <a:xfrm>
 <a:off x="0" y="0"/>
-<a:ext cx="3810000" cy="1905000"/>
+<a:ext cx="5040000" cy="2520000"/>
 </a:xfrm>
 <a:prstGeom prst="rect">
 <a:avLst/>

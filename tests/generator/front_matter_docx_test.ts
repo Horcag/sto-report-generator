@@ -5,10 +5,7 @@ import AdmZip from 'adm-zip';
 import { Document, Packer, Paragraph, Table, TableCell, TableRow } from 'docx';
 
 import { buildReport } from '@/app/builder';
-import {
-	insertDocxBodyBeforeText,
-	readDocxEntry,
-} from '@/shared/lib/docx-archive';
+import { insertDocxBodyBeforeText, readDocxEntry } from '@/shared/lib/docx';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'front-matter-test');
 const tempReportMd = path.join(tempRoot, 'report.md');

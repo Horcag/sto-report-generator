@@ -23,7 +23,11 @@ import {
 	STO_NUMBERING,
 	StoStylePreset,
 } from '@/shared/config';
-import { clearDirtyFieldFlags } from '@/shared/lib/docx-archive';
+import {
+	applyFigureDocumentPolicy,
+	clearDirtyFieldFlags,
+} from '@/shared/lib/docx';
+import { FigurePlan } from '@/shared/lib/figures';
 import { FormulaConversionError } from '@/shared/lib/math-converter';
 import { createTitlePage, createTitlePageFooter } from '@/widgets/title-page';
 
@@ -116,10 +120,12 @@ export async function buildReport(
 		getMetadataStylePreset(finalMetadata) ??
 		DEFAULT_STO_STYLE_PRESET;
 	const titlePage = createTitlePage(reportMetadata);
+	const figurePlans: FigurePlan[] = [];
 	let documentBody: Awaited<ReturnType<typeof parseMarkdownToDocx>>;
 	try {
 		documentBody = await parseMarkdownToDocx(finalContent, finalMetadata, {
 			sourceDir,
+			figurePlans,
 		});
 	} catch (error) {
 		if (!(error instanceof FormulaConversionError)) throw error;
@@ -182,7 +188,13 @@ export async function buildReport(
 		fs.mkdirSync(outputDir, { recursive: true });
 	}
 
-	const buffer = clearDirtyFieldFlags(await Packer.toBuffer(doc));
+	const buffer = clearDirtyFieldFlags(
+		applyFigureDocumentPolicy(await Packer.toBuffer(doc), figurePlans),
+	);
 	fs.writeFileSync(outputPath, buffer);
+	fs.writeFileSync(
+		outputPath.replace(/\.docx$/i, '') + '.figures.json',
+		`${JSON.stringify({ schemaVersion: 1, figures: figurePlans }, null, 2)}\n`,
+	);
 	console.log(`Report successfully generated at ${outputPath}`);
 }
