@@ -7,7 +7,7 @@ import { Tokens } from 'marked';
 import { parseMarkdownToDocx } from '@/features/markdown-parser';
 import { computeTableColumnWidths } from '@/features/markdown-parser/lib/parser/handlers/block-handlers';
 import { STO_NUMBERING, STO_STYLES } from '@/shared/config';
-import { readDocxEntry } from '@/shared/lib/docx-archive';
+import { readDocxEntry } from '@/shared/lib/docx';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'table-layout-tests');
 
@@ -173,7 +173,7 @@ async function run(): Promise<void> {
 	assert.match(wideDocXml, /w:tblLayout w:type="fixed"/);
 
 	const png = Buffer.from(
-		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z7fsAAAAASUVORK5CYII=',
+		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC',
 		'base64',
 	);
 	fs.writeFileSync(path.join(tempRoot, 'figure.png'), png);

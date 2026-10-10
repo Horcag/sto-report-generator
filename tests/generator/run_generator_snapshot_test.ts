@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { buildReport } from '@/app/builder';
-import { readDocxEntry } from '@/shared/lib/docx-archive';
+import { readDocxEntry } from '@/shared/lib/docx';
 
 const projectRoot = path.join(__dirname, '..', '..');
 const sampleDir = path.join(projectRoot, 'example');

@@ -8,7 +8,7 @@ import {
 	STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
 	STRUCTURAL_HEADING_STYLE_ID,
 } from '@/shared/config';
-import { readDocxEntry, unpackDocx } from '@/shared/lib/docx-archive';
+import { readDocxEntry, unpackDocx } from '@/shared/lib/docx';
 import { validateSTO } from '@/shared/lib/sto-validator';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'generated-docx');

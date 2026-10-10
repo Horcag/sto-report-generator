@@ -1,4 +1,4 @@
-import { findWordStyleXml } from '../word-style-properties';
+import { findWordStyleXml } from '../docx/styles';
 import {
 	extractWordText,
 	getParagraphStyleId,

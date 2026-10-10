@@ -3,13 +3,13 @@ import {
 	STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
 	STRUCTURAL_HEADING_STYLE_ID,
 } from '../config';
-import type { ValidationResult } from './sto-validator';
 import {
 	getEffectiveParagraphAttribute,
 	getEffectiveRunAttribute,
 	hasEffectiveParagraphTag,
 	resolveWordStyleId,
-} from './word-style-properties';
+} from './docx/styles';
+import type { ValidationResult } from './sto-validator';
 
 const REGEXP_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
 

@@ -1,5 +1,5 @@
 import { STO_RULES } from '../../config';
-import { getEffectiveBodyParagraphAttribute } from '../word-style-properties';
+import { getEffectiveBodyParagraphAttribute } from '../docx/styles';
 import {
 	extractWordText,
 	getBodyElements,

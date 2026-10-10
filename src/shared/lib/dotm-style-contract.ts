@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 
-import { readDocxEntry } from './docx-archive';
+import { readDocxEntry } from './docx';
 
 export interface DotmStyle {
 	id: string;

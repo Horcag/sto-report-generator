@@ -1,5 +1,6 @@
 import { buildReport } from '@/app/builder';
 import { runDoctor } from '@/app/doctor';
+import { runFigureCommand } from '@/app/figure-command';
 import { createLibreOfficePreview } from '@/app/libreoffice-preview';
 import { scaffoldReport } from '@/app/report-scaffold';
 import { generateReport, validateDocxFile } from '@/app/report-workflow';
@@ -33,6 +34,7 @@ const COMMANDS = new Set([
 	'accept-word',
 	'validate-docx',
 	'doctor',
+	'figures',
 	'help',
 ]);
 
@@ -139,6 +141,10 @@ Usage:
   npx tsx src/index.ts accept-word <input.docx> [--accepted-docx accepted.docx] [--pdf accepted.pdf] [--manifest acceptance.json] [--style-preset samara-template-2022|default]
   npx tsx src/index.ts validate-docx <report.docx> [unpack_dir]
   npx tsx src/index.ts doctor
+  npx tsx src/index.ts figures inspect <report_dir> [--json]
+  npx tsx src/index.ts figures preview <report_dir> [--output build/figures.html]
+  npx tsx src/index.ts figures set <report_dir> --id <figure_id> --spec '<JSON>'
+  npx tsx src/index.ts figures set <report_dir> --settings <figures.json>
 
 Backward-compatible form still works:
   npx tsx src/index.ts <input.md|report_dir> <output.docx>`);
@@ -371,6 +377,9 @@ async function main(): Promise<void> {
 			break;
 		case 'doctor':
 			runDoctor();
+			break;
+		case 'figures':
+			runFigureCommand(args);
 			break;
 	}
 }

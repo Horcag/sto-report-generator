@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { unpackDocx } from '@/shared/lib/docx-archive';
+import { unpackDocx } from '@/shared/lib/docx';
 import { validateSTO } from '@/shared/lib/sto-validator';
 
 import { runSyntheticValidatorTests } from './synthetic_validator_tests';

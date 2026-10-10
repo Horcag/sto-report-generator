@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { unpackDocx } from '@/shared/lib/docx-archive';
+import { unpackDocx } from '@/shared/lib/docx';
 import { validateSTO } from '@/shared/lib/sto-validator';
 
 export function assertNoOrdinaryBodyBold(docxPath: string): void {

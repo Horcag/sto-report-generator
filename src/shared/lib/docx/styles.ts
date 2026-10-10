@@ -1,4 +1,4 @@
-import { getSamaraTemplate2022StyleName } from '../config/sto-styles';
+import { getSamaraTemplate2022StyleName } from '../../config/sto-styles';
 
 function escapeRegExp(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);

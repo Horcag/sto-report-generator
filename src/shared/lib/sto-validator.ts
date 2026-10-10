@@ -6,6 +6,11 @@ import {
 	STO_RULES,
 	STRUCTURAL_HEADING_STYLE_ID,
 } from '../config';
+import {
+	getEffectiveBodyParagraphAttribute,
+	getEffectiveParagraphAttribute,
+	resolveWordStyleId,
+} from './docx/styles';
 import { validateTemplateStyleConformance } from './sto-template-style-validator';
 import {
 	decodeXmlText,
@@ -29,11 +34,6 @@ import {
 	countTableHeaderFinalPeriods,
 } from './sto-validator/layout-xml';
 import { inspectMathStructures } from './sto-validator/math-xml';
-import {
-	getEffectiveBodyParagraphAttribute,
-	getEffectiveParagraphAttribute,
-	resolveWordStyleId,
-} from './word-style-properties';
 
 /**
  * STO Validation Suite

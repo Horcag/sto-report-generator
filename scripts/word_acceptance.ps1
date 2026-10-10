@@ -813,7 +813,9 @@ try {
     Write-Output "Word acceptance duration: save-and-reopen ms=$($stageClock.ElapsedMilliseconds)."
     $stageClock.Restart()
     Write-Output "Word acceptance stage: export-pdf."
-    [WordAcceptance.PdfExporter]::Export($document, [string]$stagedPdf)
+    $pdfExport = [WordAcceptance.PdfExporter]::Export($document, [string]$stagedPdf)
+    Write-Output "Word PDF export: method=$($pdfExport.Method), OptimizeForImageQuality=$($pdfExport.OptimizeForImageQuality)."
+    if ($pdfExport.Warning) { Write-Warning $pdfExport.Warning }
     Write-Output "Word acceptance: PDF exported."
     Write-Output "Word acceptance duration: export-pdf ms=$($stageClock.ElapsedMilliseconds)."
     $stageClock.Restart()
@@ -894,6 +896,12 @@ try {
             path = $request.pdf
             sha256 = Get-Sha256 $request.pdf
             validSignature = $true
+            export = [ordered]@{
+                method = $pdfExport.Method
+                optimizeForImageQuality = $pdfExport.OptimizeForImageQuality
+                qualityStatus = "unverifiedUntilPdfInspection"
+                warning = $pdfExport.Warning
+            }
         }
         pageCountBeforeReopen = $pageCountBeforeReopen
         pageCountAfterReopen = $pageCountAfterReopen

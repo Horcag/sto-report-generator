@@ -9,6 +9,7 @@ import {
 import { Token } from 'marked';
 
 import { AppendixHeading } from '@/shared/config';
+import { FigurePlan, FigureSettings } from '@/shared/lib/figures';
 
 export type DocxElement = Paragraph | Table | TableOfContents;
 
@@ -32,6 +33,10 @@ export interface ParserContext {
 	bibDb: BibItem[];
 	listInstanceCounter: number;
 	sourceDir?: string;
+	figureSettings?: FigureSettings;
+	figurePlans?: FigurePlan[];
+	figureIds?: WeakMap<object, string>;
+	figureCounter?: number;
 }
 
 export interface StoFlagToken {

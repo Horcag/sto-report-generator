@@ -5,6 +5,12 @@ import {
 	getNumberedHeadingStyleId,
 	parseAppendixHeading,
 } from '@/shared/config';
+import {
+	collectFigureTokenOccurrences,
+	FigurePlan,
+	FigureSettings,
+	loadFigureSettings,
+} from '@/shared/lib/figures';
 import { mathJaxReady } from '@/shared/lib/math-converter';
 
 import { loadBibliography } from './parser/bibliography-loader';
@@ -62,8 +68,10 @@ function stripExpectedHeadingNumber(
 	return tokens;
 }
 
-interface MarkdownParserOptions {
+export interface MarkdownParserOptions {
 	sourceDir?: string;
+	figureSettings?: FigureSettings;
+	figurePlans?: FigurePlan[];
 }
 
 class MarkdownParser {
@@ -83,13 +91,27 @@ class MarkdownParser {
 			bibDb,
 			listInstanceCounter: 0,
 			sourceDir: options.sourceDir,
+			figureSettings:
+				options.figureSettings ??
+				loadFigureSettings(options.sourceDir ?? process.cwd()),
+			figurePlans: options.figurePlans ?? [],
+			figureIds: new WeakMap(),
+			figureCounter: 0,
 		};
 		this.references = new ReferenceRegistry(this.context.itemMap);
 	}
 
 	public async parse(tokens: Token[]): Promise<DocxElement[]> {
+		this.bindFigureIds(tokens);
 		this.references.assignNumbers(tokens);
 		return this.processTokens(tokens);
+	}
+
+	private bindFigureIds(tokens: Token[]): void {
+		const occurrences = collectFigureTokenOccurrences(tokens);
+		for (const occurrence of occurrences)
+			this.context.figureIds!.set(occurrence.token, occurrence.id);
+		this.context.figureCounter = occurrences.length;
 	}
 
 	private getCitationNum = (key: string): number =>

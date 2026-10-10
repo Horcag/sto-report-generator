@@ -3,6 +3,10 @@ import { spawnSync } from 'node:child_process';
 const tsxCliPath = require.resolve('tsx/cli');
 
 const tests = [
+	['tests/figures/planning_tests.ts'],
+	['tests/figures/inspector.test.ts'],
+	['tests/figures/document_policy_tests.ts'],
+	['tests/workflow/word_acceptance_figures_test.ts'],
 	['tests/source-preflight/run_source_preflight_tests.ts'],
 	['tests/source-preflight/regression_checks.ts', 'example'],
 	['tests/source-preflight/masking_regression_test.ts'],

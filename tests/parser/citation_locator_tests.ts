@@ -5,7 +5,7 @@ import { Document, Packer } from 'docx';
 
 import { parseMarkdownToDocx } from '@/features/markdown-parser';
 import { STO_NUMBERING, STO_STYLES } from '@/shared/config';
-import { readDocxEntry } from '@/shared/lib/docx-archive';
+import { readDocxEntry } from '@/shared/lib/docx';
 
 export async function runCitationLocatorTests(
 	bibPath: string,
