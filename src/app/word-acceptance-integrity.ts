@@ -71,7 +71,6 @@ export function verifyAcceptedDocxIntegrity(
 	acceptedDocx: string,
 	manifestPath: string,
 	manifest: Record<string, unknown>,
-	onCleanupVerified: () => void,
 ): void {
 	try {
 		manifest.figureChecks = compareFigureEvidence(inputDocx, acceptedDocx);
@@ -93,7 +92,6 @@ export function verifyAcceptedDocxIntegrity(
 			`${JSON.stringify(manifest, null, 2)}\n`,
 			'utf8',
 		);
-		onCleanupVerified();
 		throw error;
 	}
 }

@@ -10,6 +10,7 @@ interface AcceptanceManifest {
 	stablePageCount: boolean;
 	referatStatistics: {
 		pages: number;
+		pageTextVerified: boolean;
 		figures: number;
 		tables: number;
 		sources: number;
@@ -20,6 +21,26 @@ interface AcceptanceManifest {
 
 const placeholders =
 	/\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES|APPENDICES)\}\}/;
+
+export function assertReferatPageCountText(text: string, pages: number): void {
+	const lastTwo = pages % 100;
+	const word =
+		lastTwo > 10 && lastTwo < 20
+			? 'страниц'
+			: pages % 10 === 1
+				? 'страницу'
+				: pages % 10 > 1 && pages % 10 < 5
+					? 'страницы'
+					: 'страниц';
+	assert.match(
+		text,
+		new RegExp(
+			`(?<![\\p{L}\\p{N}])${pages}\\s+(?:${word}|с\\.)(?=$|[\\s,.;])`,
+			'u',
+		),
+		`Referat lacks the exact page count ${pages}`,
+	);
+}
 
 function main(): void {
 	const [docxPath, pdfPath, manifestPath] = process.argv.slice(2);
@@ -33,6 +54,7 @@ function main(): void {
 	assert.equal(manifest.status, 'accepted');
 	assert.equal(manifest.stablePageCount, true);
 	assert.equal(manifest.referatStatistics.placeholdersCleared, true);
+	assert.equal(manifest.referatStatistics.pageTextVerified, true);
 
 	const docxXml = readDocxEntry(docxPath, 'word/document.xml');
 	const docxText = [...docxXml.matchAll(/<w:t(?:\s[^>]*)?>(.*?)<\/w:t>/gs)]
@@ -66,6 +88,8 @@ function main(): void {
 	);
 
 	const summary = manifest.referatStatistics;
+	assertReferatPageCountText(docxText, summary.pages);
+	assertReferatPageCountText(pdfText, summary.pages);
 	for (const [count, forms] of [
 		[summary.figures, ['рисунок', 'рисунка', 'рисунков']],
 		[summary.tables, ['таблица', 'таблицы', 'таблиц']],
@@ -96,4 +120,4 @@ function main(): void {
 	);
 }
 
-main();
+if (require.main === module) main();

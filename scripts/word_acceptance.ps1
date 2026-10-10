@@ -605,6 +605,7 @@ function Set-ReferatStatistics($Document, $Request) {
             }
         }
     }
+    $writtenPages = $null
     if ($pageParagraphs.Count -gt 0) {
         for ($attempt = 0; $attempt -lt 5; $attempt++) {
             $Document.Repaginate()
@@ -622,13 +623,38 @@ function Set-ReferatStatistics($Document, $Request) {
                 $range.Text = $text
             }
             $Document.Repaginate()
-            if ((Get-SavedDocumentPageCount $Document) -eq $pages) { break }
+            if ((Get-SavedDocumentPageCount $Document) -eq $pages) {
+                $writtenPages = $pages
+                break
+            }
             if ($attempt -eq 4) { throw 'Referat page count did not stabilize.' }
         }
     }
     if ($Document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES|APPENDICES)\}\}') {
         throw 'Referat statistic placeholders remain after Word replacement.'
     }
+    return [pscustomobject]@{
+        pages = $writtenPages
+        numericPageTextOwned = ($pageParagraphs.Count -gt 0 -and @($pageParagraphs | Where-Object {
+            -not $_.Template.Contains('{{PAGES}}')
+        }).Count -eq 0)
+        texts = @($pageParagraphs | ForEach-Object {
+            ([string]$_.Paragraph.Range.Text).TrimEnd([char[]]@([char]13, [char]7))
+        })
+    }
+}
+
+function Assert-ReferatPageStatistics($Document, $Statistics, $Pages) {
+    if ($null -eq $Statistics.pages) { return $false }
+    if ([int]$Statistics.pages -ne [int]$Pages) {
+        throw "Referat page count $($Statistics.pages) differs from final Word page count $Pages."
+    }
+    foreach ($text in $Statistics.texts) {
+        if (-not ([string]$Document.Content.Text).Contains([string]$text)) {
+            throw 'Referat page statistic text changed after saving and reopening Word.'
+        }
+    }
+    return [bool]$Statistics.numericPageTextOwned
 }
 
 function Test-StyleExists($Document, $DisplayName) {
@@ -776,14 +802,15 @@ try {
     Move-FittingTablesToNextPage $document
     Write-Output "Word acceptance duration: fit-tables ms=$($stageClock.ElapsedMilliseconds)."
     $stageClock.Restart()
-    Write-Output "Word acceptance stage: set-referat-statistics."
-    Set-ReferatStatistics $document $request
-    Write-Output "Word acceptance duration: set-referat-statistics ms=$($stageClock.ElapsedMilliseconds)."
-    $stageClock.Restart()
+    Write-Output "Word acceptance: $(Get-SavedDocumentPageCount $document) pages before table splitting."
     Write-Output "Word acceptance stage: split-long-tables."
     $splitTables = Split-LongCaptionedTables $document
     Write-Output "Word acceptance: $splitTables long table segment(s) created."
     Write-Output "Word acceptance duration: split-long-tables ms=$($stageClock.ElapsedMilliseconds)."
+    $stageClock.Restart()
+    Write-Output "Word acceptance stage: set-referat-statistics."
+    $referatPageStatistics = Set-ReferatStatistics $document $request
+    Write-Output "Word acceptance duration: set-referat-statistics ms=$($stageClock.ElapsedMilliseconds)."
     $stageClock.Restart()
     Assert-TableContinuationLayout $document
     Write-Output "Word acceptance duration: verify-table-layout ms=$($stageClock.ElapsedMilliseconds)."
@@ -791,6 +818,8 @@ try {
     Write-Output "Word acceptance: fields, TOC, and pagination updated."
     $document.Save()
     $pageCountBeforeReopen = Get-SavedDocumentPageCount $document
+    Write-Output "Word acceptance stage: verify-referat-statistics."
+    $referatPageTextVerified = Assert-ReferatPageStatistics $document $referatPageStatistics $pageCountBeforeReopen
     Write-Output "Word acceptance: DOCX saved with $pageCountBeforeReopen pages."
     Copy-Item -LiteralPath $stagedInputDocx -Destination $stagedAcceptedDocx
     Copy-Item -LiteralPath $stagedAcceptedDocx -Destination $request.acceptedDocx
@@ -804,6 +833,8 @@ try {
     # Word's successful UI path reopens the saved file before publishing.
     $document = $word.Documents.Open($stagedAcceptedDocx, $false, $false)
     $pageCountAfterReopen = Get-SavedDocumentPageCount $document
+    Write-Output "Word acceptance stage: verify-referat-statistics."
+    $referatPageTextVerified = Assert-ReferatPageStatistics $document $referatPageStatistics $pageCountAfterReopen
     if ($document.Content.Text -match '\{\{(?:PAGES|PAGES_WORD|FIGURES|TABLES|SOURCES|APPENDICES)\}\}') {
         throw 'Accepted DOCX still contains referat statistic placeholders.'
     }
@@ -908,6 +939,7 @@ try {
         stablePageCount = $stable
         referatStatistics = [ordered]@{
             pages = $pageCountAfterReopen
+            pageTextVerified = $referatPageTextVerified
             figures = [int]$request.statisticCounts.figures
             tables = [int]$request.statisticCounts.tables
             sources = [int]$request.statisticCounts.sources

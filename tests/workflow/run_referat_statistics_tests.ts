@@ -6,7 +6,44 @@ import path from 'node:path';
 import { buildReport } from '@/app/builder';
 import { readDocxEntry } from '@/shared/lib/docx';
 
+import { assertReferatPageCountText } from './check_accepted_referat';
+import { toPowerShellPath } from './word_acceptance_hash_test';
+
 const tempDir = path.resolve('.agent-work/referat-statistics-test');
+
+function testFinalPageStatistics(): void {
+	for (const executable of ['pwsh', 'powershell.exe']) {
+		const probe = spawnSync(
+			executable,
+			['-NoProfile', '-Command', 'exit 0'],
+			{
+				timeout: 5000,
+				windowsHide: true,
+			},
+		);
+		if (probe.error || probe.status !== 0) continue;
+		const file = path.resolve(
+			'tests/workflow/word_referat_statistics_test.ps1',
+		);
+		const result = spawnSync(
+			executable,
+			[
+				'-NoProfile',
+				'-File',
+				executable === 'powershell.exe' ? toPowerShellPath(file) : file,
+			],
+			{ encoding: 'utf8', timeout: 30000, windowsHide: true },
+		);
+		assert.equal(result.error, undefined);
+		assert.equal(result.status, 0, result.stderr || result.stdout);
+		assert.match(result.stdout, /tests passed: 8 cases/);
+		process.stdout.write(result.stdout);
+		return;
+	}
+	console.log(
+		'SKIP referat PowerShell cases: no PowerShell runtime available.',
+	);
+}
 
 function statistics(docxPath: string): Record<string, unknown> {
 	const result = spawnSync(
@@ -26,6 +63,18 @@ function statistics(docxPath: string): Record<string, unknown> {
 }
 
 async function main(): Promise<void> {
+	assertReferatPageCountText('Записка: 24 страницы, 1 таблица.', 24);
+	assertReferatPageCountText('Записка: 24 с., 1 таблица.', 24);
+	for (const stale of ['Записка: 124 страницы.', 'Записка: 124 с.']) {
+		assert.throws(() => assertReferatPageCountText(stale, 24));
+	}
+	assert.throws(() => assertReferatPageCountText('24 страниц.', 24));
+	assertReferatPageCountText('11 страниц.', 11);
+	assertReferatPageCountText('121 страницу.', 121);
+	console.log(
+		'Exact referat page tokens passed: full words, abbreviation, stale 124 vs24 and word forms.',
+	);
+	testFinalPageStatistics();
 	fs.mkdirSync(tempDir, { recursive: true });
 	const exampleDocx = path.join(tempDir, 'example.docx');
 	await buildReport('example', exampleDocx);
