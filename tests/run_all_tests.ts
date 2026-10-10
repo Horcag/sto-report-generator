@@ -13,6 +13,7 @@ const tests = [
 	['tests/parser/run_parser_tests.ts'],
 	['tests/parser/table_layout.test.ts'],
 	['tests/shared/run_math_converter_tests.ts'],
+	['tests/shared/dependency_security_tests.ts'],
 	['tests/validator/run_validator_tests.ts'],
 	['tests/validator/template_style_conformance_test.ts'],
 	['tests/validator/dotm_style_contract_test.ts'],
