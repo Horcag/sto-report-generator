@@ -184,3 +184,10 @@
 {"timestamp":"2026-10-10T14:07:24.134874139+04:00","action":"move","task_id":30,"detail":"in-progress -\u003e done"}
 {"timestamp":"2026-10-10T14:07:24.186771825+04:00","action":"edit","task_id":30,"detail":"Исправить итоговую статистику страниц и диагностику очистки Word"}
 {"timestamp":"2026-10-10T14:07:24.186989745+04:00","action":"release","task_id":30,"detail":"crane-forge"}
+{"timestamp":"2026-10-10T14:24:57.042908307+04:00","action":"create","task_id":31,"detail":"Проверять совместимость базовых линий SVG с Word"}
+{"timestamp":"2026-10-10T14:41:08.416682723+04:00","action":"edit","task_id":31,"detail":"Проверять совместимость базовых линий SVG с Word"}
+{"timestamp":"2026-10-10T14:46:28.085510522+04:00","action":"edit","task_id":31,"detail":"Проверять совместимость базовых линий SVG с Word"}
+{"timestamp":"2026-10-10T14:50:09.739315758+04:00","action":"edit","task_id":31,"detail":"Проверять совместимость базовых линий SVG с Word"}
+{"timestamp":"2026-10-10T14:50:09.768449784+04:00","action":"edit","task_id":31,"detail":"Проверять совместимость базовых линий SVG с Word"}
+{"timestamp":"2026-10-10T14:50:09.76854377+04:00","action":"release","task_id":31,"detail":"crane-forge"}
+{"timestamp":"2026-10-10T14:51:28.150317359+04:00","action":"edit","task_id":31,"detail":"Проверять совместимость базовых линий SVG с Word"}
