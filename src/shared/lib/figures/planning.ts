@@ -10,67 +10,78 @@ import {
 	validateFigureId,
 	validateFigureSettings,
 } from './settings';
+import { svgBaselineRisks } from './svg-baselines';
 import { FigurePlan, FigureSettings } from './types';
 
 const hash = (data: Buffer): string =>
 	createHash('sha256').update(data).digest('hex');
 
-function svgFontSize(data: Buffer): number | undefined {
+function svgTextAnalysis(data: Buffer): {
+	fontPx?: number;
+	baselineRisks: string[];
+} {
 	const dom = new JSDOM(data.toString('utf8'), {
 		contentType: 'image/svg+xml',
 	});
 	try {
 		const root = dom.window.document.documentElement;
 		if (root.localName !== 'svg') throw new Error('Invalid SVG root');
-		// Estimate text nodes only; CSS, transforms and reuse require rendering.
-		if (
-			root.querySelector('style, use, foreignObject, svg') ||
-			root.querySelector('[style], [transform]') ||
-			root.hasAttribute('style') ||
-			root.hasAttribute('transform')
-		)
-			return undefined;
-		const texts = [...root.querySelectorAll('text, tspan')].filter(node =>
-			node.textContent?.trim(),
-		);
-		if (!texts.length) return undefined;
-		const sizes: number[] = [];
-		for (const node of texts) {
-			let parent: Element | null = node;
-			let raw: string | null = null;
-			while (parent && !raw) {
-				raw = parent.getAttribute('font-size');
-				parent = parent.parentElement;
-			}
-			if (!raw || !/^\d+(?:\.\d+)?(?:px)?$/u.test(raw)) return undefined;
-			const size = Number.parseFloat(raw);
-			if (!Number.isFinite(size) || size <= 0) return undefined;
-			sizes.push(size);
-		}
-		const viewBox = root
-			.getAttribute('viewBox')
-			?.trim()
-			.split(/[\s,]+/u)
-			.map(Number);
-		if (
-			viewBox &&
-			(viewBox.length !== 4 ||
-				viewBox.some(value => !Number.isFinite(value)) ||
-				viewBox[2] <= 0 ||
-				viewBox[3] <= 0)
-		)
-			return undefined;
-		const dimensions = imageSize(data);
-		if (viewBox) {
-			const sx = dimensions.width! / viewBox[2];
-			const sy = dimensions.height! / viewBox[3];
-			if (Math.abs(sx - sy) > 0.0001) return undefined;
-			return Math.min(...sizes) * sy;
-		}
-		return Math.min(...sizes);
+		return {
+			fontPx: svgFontSize(root, data),
+			baselineRisks: svgBaselineRisks(root),
+		};
 	} finally {
 		dom.window.close();
 	}
+}
+
+function svgFontSize(root: Element, data: Buffer): number | undefined {
+	// Estimate text nodes only; CSS, transforms and reuse require rendering.
+	if (
+		root.querySelector('style, use, foreignObject, svg') ||
+		root.querySelector('[style], [transform]') ||
+		root.hasAttribute('style') ||
+		root.hasAttribute('transform')
+	)
+		return undefined;
+	const texts = [...root.querySelectorAll('text, tspan')].filter(node =>
+		node.textContent?.trim(),
+	);
+	if (!texts.length) return undefined;
+	const sizes: number[] = [];
+	for (const node of texts) {
+		let parent: Element | null = node;
+		let raw: string | null = null;
+		while (parent && !raw) {
+			raw = parent.getAttribute('font-size');
+			parent = parent.parentElement;
+		}
+		if (!raw || !/^\d+(?:\.\d+)?(?:px)?$/u.test(raw)) return undefined;
+		const size = Number.parseFloat(raw);
+		if (!Number.isFinite(size) || size <= 0) return undefined;
+		sizes.push(size);
+	}
+	const viewBox = root
+		.getAttribute('viewBox')
+		?.trim()
+		.split(/[\s,]+/u)
+		.map(Number);
+	if (
+		viewBox &&
+		(viewBox.length !== 4 ||
+			viewBox.some(value => !Number.isFinite(value)) ||
+			viewBox[2] <= 0 ||
+			viewBox[3] <= 0)
+	)
+		return undefined;
+	const dimensions = imageSize(data);
+	if (viewBox) {
+		const sx = dimensions.width! / viewBox[2];
+		const sy = dimensions.height! / viewBox[3];
+		if (Math.abs(sx - sy) > 0.0001) return undefined;
+		return Math.min(...sizes) * sy;
+	}
+	return Math.min(...sizes);
 }
 
 export function planFigure(
@@ -217,7 +228,13 @@ export function planFigure(
 			'low-dpi',
 			`effective resolution ${Math.min(plan.effectiveDpi.x, plan.effectiveDpi.y).toFixed(1)} DPI is below ${settings.defaults.minDpi ?? 150}`,
 		);
-	const fontPx = extension === 'svg' ? svgFontSize(data) : spec.textSizePx;
+	const svg = extension === 'svg' ? svgTextAnalysis(data) : undefined;
+	if (svg?.baselineRisks.length)
+		issue(
+			'svg-baseline-compatibility',
+			`SVG baseline positioning (${svg.baselineRisks.join(', ')}) may shift labels in Word; use explicit alphabetic baseline coordinates and verify the rendered page`,
+		);
+	const fontPx = svg ? svg.fontPx : spec.textSizePx;
 	if (fontPx === undefined)
 		issue('unknown-text-size', 'smallest text size cannot be established');
 	else {
