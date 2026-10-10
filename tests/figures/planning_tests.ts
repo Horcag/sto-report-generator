@@ -46,6 +46,8 @@ export async function runFigurePlanningTests(): Promise<void> {
 			String.raw`images\legacy.png`,
 			String.raw`C:\report\image.png:stream`,
 			String.raw`\report\legacy.png`,
+			'/Users/example/report/legacy.png',
+			'//server/share/report/legacy.png',
 		])
 			assert.throws(
 				() =>

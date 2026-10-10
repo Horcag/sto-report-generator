@@ -32,6 +32,7 @@ export function validateFigureAssetPath(
 	}
 	if (
 		!asset ||
+		(pathApi.sep === '\\' && pathApi.isAbsolute(asset)) ||
 		/[\\:]/u.test(asset) ||
 		(!allowLegacyMarkdown &&
 			(pathApi.isAbsolute(asset) || /(?:^|\/)\.\.(?:\/|$)/u.test(asset)))
