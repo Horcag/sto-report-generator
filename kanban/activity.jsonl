@@ -158,3 +158,22 @@
 {"timestamp":"2026-09-24T20:47:56.728060472+04:00","action":"move","task_id":26,"detail":"in-progress -\u003e done"}
 {"timestamp":"2026-09-24T21:04:24.533596297+04:00","action":"edit","task_id":28,"detail":"Завершить применимость форм и матрицу внешних ГОСТ"}
 {"timestamp":"2026-09-24T21:04:27.626502354+04:00","action":"move","task_id":28,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-10-10T10:37:42.543257609+04:00","action":"create","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T10:38:12.907821054+04:00","action":"move","task_id":29,"detail":"backlog -\u003e in-progress"}
+{"timestamp":"2026-10-10T11:02:23.457027725+04:00","action":"edit","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T11:16:57.485545521+04:00","action":"edit","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:01:24.815565459+04:00","action":"edit","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:07:35.359002549+04:00","action":"move","task_id":29,"detail":"in-progress -\u003e review"}
+{"timestamp":"2026-10-10T12:07:35.359111013+04:00","action":"handoff","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:07:35.359205744+04:00","action":"block","task_id":29,"detail":"Merge blocked by inherited npm audit findings; all figure and platform regressions pass"}
+{"timestamp":"2026-10-10T12:07:35.359238871+04:00","action":"release","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:20:51.890864504+04:00","action":"edit","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:20:51.890967918+04:00","action":"unblock","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:20:51.89100438+04:00","action":"claim","task_id":29,"detail":"crane-forge"}
+{"timestamp":"2026-10-10T12:20:51.917641396+04:00","action":"move","task_id":29,"detail":"review -\u003e in-progress"}
+{"timestamp":"2026-10-10T12:43:21.510088711+04:00","action":"edit","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:46:44.997310777+04:00","action":"edit","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:46:45.020046513+04:00","action":"move","task_id":29,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-10-10T12:46:45.040472758+04:00","action":"edit","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
+{"timestamp":"2026-10-10T12:46:45.040570008+04:00","action":"release","task_id":29,"detail":"crane-forge"}
+{"timestamp":"2026-10-10T12:47:36.950584802+04:00","action":"edit","task_id":29,"detail":"Управление рисунками: размеры, обрезка, читаемость и сохранение качества Word"}
