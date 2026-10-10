@@ -349,6 +349,7 @@ function writeWordAcceptanceFailureManifest(
 			requestedMode: 'auto',
 			completedMode: null,
 			attemptedModes: plan.request.attemptedModes,
+			processCleanupVerified: true,
 		},
 		capabilityChecks: {
 			openedDocx: evidence.includes('staged DOCX opened.'),
@@ -441,6 +442,7 @@ function runWordAcceptanceAttempt(
 			{ cause: error },
 		);
 	}
+	onCleanupVerified();
 	if (!result.error && result.status === 0) {
 		const manifest = JSON.parse(
 			fs.readFileSync(plan.localManifest, 'utf8'),
@@ -450,16 +452,15 @@ function runWordAcceptanceAttempt(
 				'Word acceptance did not produce a pending acceptance manifest.',
 			);
 		}
+		manifest.execution.processCleanupVerified = true;
 		verifyAcceptedDocxIntegrity(
 			plan.localInputDocx,
 			plan.localAcceptedDocx,
 			plan.localManifest,
 			manifest,
-			onCleanupVerified,
 		);
 		assertNoOrdinaryBodyBold(plan.localAcceptedDocx);
 		manifest.status = 'accepted';
-		manifest.execution.processCleanupVerified = true;
 		const pendingPath = `${plan.localManifest}.pending`;
 		fs.writeFileSync(
 			pendingPath,
@@ -467,11 +468,9 @@ function runWordAcceptanceAttempt(
 			'utf8',
 		);
 		fs.renameSync(pendingPath, plan.localManifest);
-		onCleanupVerified();
 		if (result.stdout.trim()) console.log(result.stdout.trim());
 		return null;
 	}
-	onCleanupVerified();
 	if (
 		result.error &&
 		'code' in result.error &&

@@ -132,7 +132,6 @@ try {
 		/line height clips/,
 	);
 	const manifest: Record<string, unknown> = { status: 'pendingCleanup' };
-	let cleaned = false;
 	assert.throws(
 		() =>
 			verifyAcceptedDocxIntegrity(
@@ -140,14 +139,10 @@ try {
 				accepted,
 				path.join(temporary, 'manifest.json'),
 				manifest,
-				() => {
-					cleaned = true;
-				},
 			),
 		/line height clips/,
 	);
 	assert.equal(manifest.status, 'failed');
-	assert.equal(cleaned, true);
 	assert.equal(
 		(manifest.figureChecks as { status: string }).status,
 		'failed',

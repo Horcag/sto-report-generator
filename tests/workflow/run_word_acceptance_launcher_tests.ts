@@ -10,6 +10,8 @@ import { runWordAcceptance } from '@/app/word-acceptance';
 
 interface Scenario {
 	cleanupFails?: boolean;
+	cleanupFailsAfterAcceptance?: boolean;
+	corruptAcceptedText?: boolean;
 	malformedManifest?: boolean;
 	exportFails?: boolean;
 	hungAtStage?: string;
@@ -105,7 +107,15 @@ function withFakeWord(
 				timeout: options?.timeout,
 			});
 			if (cleanup)
-				return { ...result, status: scenario.cleanupFails ? 1 : 0 };
+				return {
+					...result,
+					status:
+						scenario.cleanupFails ||
+						(scenario.cleanupFailsAfterAcceptance &&
+							calls.some(call => call.visible))
+							? 1
+							: 0,
+				};
 			const request = JSON.parse(fs.readFileSync(requestPath, 'utf8'));
 			assert.deepEqual(request.statisticCounts, {
 				figures: 1,
@@ -138,6 +148,23 @@ function withFakeWord(
 						}),
 			);
 			fs.copyFileSync(input, input.replace(/\.docx$/, '.accepted.docx'));
+			if (scenario.corruptAcceptedText) {
+				const accepted = new AdmZip(
+					input.replace(/\.docx$/, '.accepted.docx'),
+				);
+				accepted.updateFile(
+					'word/document.xml',
+					Buffer.from(
+						accepted
+							.readAsText('word/document.xml')
+							.replace(
+								'Документ для проверки сохранения текста',
+								'Повреждённый текст',
+							),
+					),
+				);
+				accepted.writeZip(input.replace(/\.docx$/, '.accepted.docx'));
+			}
 			return result;
 		},
 	);
@@ -185,6 +212,47 @@ function testSuccessfulAcceptance(): void {
 	});
 }
 
+function testIntegrityFailurePersistsVerifiedCleanup(): void {
+	withFakeWord({ corruptAcceptedText: true }, (inputDocx, calls) => {
+		assert.throws(
+			() => runWordAcceptance({ inputDocx }),
+			/changed or reordered document text/,
+		);
+		const manifest = JSON.parse(
+			fs.readFileSync(
+				inputDocx.replace(/\.docx$/, '.acceptance.json'),
+				'utf8',
+			),
+		);
+		assert.equal(manifest.status, 'failed');
+		assert.equal(manifest.failure.stage, 'contentIntegrity');
+		assert.equal(manifest.execution.processCleanupVerified, true);
+		assert.deepEqual(
+			calls.map(call => call.cleanup),
+			[false, true, false, true],
+		);
+		assert.equal(fs.existsSync(calls[0].requestPath), false);
+	});
+}
+
+function testCleanupFailureAfterAcceptanceStaysUnverified(): void {
+	withFakeWord({ cleanupFailsAfterAcceptance: true }, (inputDocx, calls) => {
+		assert.throws(
+			() => runWordAcceptance({ inputDocx }),
+			/cleanup could not prove/,
+		);
+		const manifest = JSON.parse(
+			fs.readFileSync(
+				inputDocx.replace(/\.docx$/, '.acceptance.json'),
+				'utf8',
+			),
+		);
+		assert.equal(manifest.status, 'pendingCleanup');
+		assert.notEqual(manifest.execution.processCleanupVerified, true);
+		assert.equal(fs.existsSync(calls[0].requestPath), true);
+	});
+}
+
 function testUnverifiedCleanup(): void {
 	withFakeWord({ cleanupFails: true }, (inputDocx, calls) => {
 		assert.throws(
@@ -211,7 +279,7 @@ function testMalformedManifest(): void {
 			calls.map(call => call.cleanup),
 			[false, true, false, true],
 		);
-		assert.equal(fs.existsSync(calls[0].requestPath), true);
+		assert.equal(fs.existsSync(calls[0].requestPath), false);
 		assert.doesNotMatch(
 			fs.readFileSync(
 				inputDocx.replace(/\.docx$/, '.acceptance.json'),
@@ -242,6 +310,7 @@ function testBothAttemptsFail(): void {
 				),
 			);
 			assert.equal(manifest.status, 'failed');
+			assert.equal(manifest.execution.processCleanupVerified, true);
 			assert.equal(manifest.capabilityChecks.exportedPdf, false);
 			assert.equal(manifest.lastWordStage, 'update-toc');
 			assert.equal(manifest.failure.stage, 'update-toc');
@@ -266,6 +335,7 @@ function testDeterministicFailureDoesNotRetry(): void {
 			),
 		);
 		assert.equal(manifest.status, 'failed');
+		assert.equal(manifest.execution.processCleanupVerified, true);
 		assert.deepEqual(manifest.execution.attemptedModes, ['background']);
 		assert.equal(manifest.failure.interactiveAttempt, null);
 	});
@@ -295,6 +365,8 @@ function testBoldInputRejectedBeforeWord(): void {
 	});
 }
 testSuccessfulAcceptance();
+testIntegrityFailurePersistsVerifiedCleanup();
+testCleanupFailureAfterAcceptanceStaysUnverified();
 testUnverifiedCleanup();
 testMalformedManifest();
 testBothAttemptsFail();
