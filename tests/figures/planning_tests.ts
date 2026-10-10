@@ -12,6 +12,7 @@ import {
 	planFigure,
 	validateFigureSettings,
 } from '@/shared/lib/figures';
+import { validateFigureAssetPath } from '@/shared/lib/figures/settings';
 
 import { png } from './planning_fixtures';
 import { runPngValidationTests } from './planning_png_tests';
@@ -22,6 +23,61 @@ export async function runFigurePlanningTests(): Promise<void> {
 		fs.writeFileSync(path.join(root, 'wide.png'), png(1200, 600));
 		fs.writeFileSync(path.join(root, 'tall.png'), png(100, 2000));
 		const defaults = loadFigureSettings(root);
+		const windowsRoot = String.raw`C:\Users\example\report`;
+		assert.doesNotThrow(() =>
+			validateFigureAssetPath(
+				String.raw`C:\Users\example\report\legacy.png`,
+				true,
+				windowsRoot,
+				path.win32,
+			),
+		);
+		assert.doesNotThrow(() =>
+			validateFigureAssetPath(
+				'c:/Users/example/report/legacy.png',
+				true,
+				windowsRoot,
+				path.win32,
+			),
+		);
+		for (const invalid of [
+			String.raw`D:\report\legacy.png`,
+			'https://example.org/image.png',
+			String.raw`images\legacy.png`,
+			String.raw`C:\report\image.png:stream`,
+			String.raw`\report\legacy.png`,
+		])
+			assert.throws(
+				() =>
+					validateFigureAssetPath(
+						invalid,
+						true,
+						windowsRoot,
+						path.win32,
+					),
+				/report-relative|escapes report directory/,
+			);
+		assert.throws(
+			() =>
+				validateFigureAssetPath(
+					String.raw`C:\Users\example\report\legacy.png`,
+					false,
+					windowsRoot,
+					path.win32,
+				),
+			/report-relative/,
+		);
+		assert.throws(
+			() =>
+				validateFigureAssetPath(
+					String.raw`C:\Users\example\report\legacy.png`,
+					true,
+					'/report',
+					path.posix,
+				),
+			/report-relative/,
+		);
+
 		const legacyRoot = path.join(root, 'report');
 		fs.mkdirSync(path.join(legacyRoot, 'report'), { recursive: true });
 		fs.writeFileSync(path.join(legacyRoot, 'legacy.png'), png(100, 50));

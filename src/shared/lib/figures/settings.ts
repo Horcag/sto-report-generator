@@ -9,20 +9,44 @@ function record(value: unknown, label: string): Record<string, unknown> {
 	return value as Record<string, unknown>;
 }
 
+/** Platform path checks are pure so Windows syntax can be tested on any host. */
+export function validateFigureAssetPath(
+	asset: string,
+	allowLegacyMarkdown: boolean,
+	sourceRoot: string,
+	pathApi: Pick<typeof path, 'isAbsolute' | 'parse' | 'sep'> = path,
+): void {
+	const nativeWindowsAbsolute =
+		allowLegacyMarkdown &&
+		pathApi.sep === '\\' &&
+		pathApi.isAbsolute(asset) &&
+		/^[a-zA-Z]:[\\/]/u.test(asset) &&
+		!asset.slice(2).includes(':');
+	if (nativeWindowsAbsolute) {
+		if (
+			pathApi.parse(asset).root.slice(0, 2).toLowerCase() !==
+			pathApi.parse(sourceRoot).root.slice(0, 2).toLowerCase()
+		)
+			throw new Error(`Figure path escapes report directory: ${asset}`);
+		return;
+	}
+	if (
+		!asset ||
+		/[\\:]/u.test(asset) ||
+		(!allowLegacyMarkdown &&
+			(pathApi.isAbsolute(asset) || /(?:^|\/)\.\.(?:\/|$)/u.test(asset)))
+	)
+		throw new Error(`Figure path must be report-relative: ${asset}`);
+}
+
 /** Config paths are strictly report-relative; legacy Markdown lookup stays scoped. */
 export function resolveFigurePath(
 	sourceDir: string,
 	asset: string,
 	allowLegacyMarkdown = false,
 ): string {
-	if (
-		!asset ||
-		/[\\:]/u.test(asset) ||
-		(!allowLegacyMarkdown &&
-			(path.isAbsolute(asset) || /(?:^|\/)\.\.(?:\/|$)/u.test(asset)))
-	)
-		throw new Error(`Figure path must be report-relative: ${asset}`);
 	const root = fs.realpathSync(sourceDir);
+	validateFigureAssetPath(asset, allowLegacyMarkdown, root);
 	const primary = path.resolve(root, asset);
 	let selected = primary;
 	if (
