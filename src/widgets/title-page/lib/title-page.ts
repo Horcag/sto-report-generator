@@ -18,6 +18,7 @@ import {
 import { ReportMetadata } from '@/entities/report';
 import { STO_RULES } from '@/shared/config';
 
+import { createCompactLabTitlePage } from './compact-lab-title-page';
 import { createSsauCourseProjectTitlePage } from './ssau-course-project-title-page';
 import {
 	createTitlePageFooter,
@@ -335,6 +336,9 @@ function createPracticeTitlePage(
 export function createTitlePage(
 	metadata: ReportMetadata,
 ): Array<Paragraph | Table> {
+	if (metadata.titlePageVariant === 'compact-lab') {
+		return createCompactLabTitlePage(metadata);
+	}
 	if (metadata.titlePageVariant === 'ssau-course-project-v1.1') {
 		return createSsauCourseProjectTitlePage(metadata);
 	}

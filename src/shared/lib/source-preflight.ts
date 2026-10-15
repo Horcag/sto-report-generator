@@ -21,6 +21,7 @@ import { validateLists } from './source-preflight/list-checker';
 import { validateMetadata } from './source-preflight/metadata-checker';
 import { validateMicrotypography } from './source-preflight/microtypography-checker';
 import { validateSourcePunctuation } from './source-preflight/punctuation-checker';
+import { validateRawMath } from './source-preflight/raw-math-checker';
 import { validateReferat } from './source-preflight/referat-checker';
 import {
 	collectLabelDefinitions,
@@ -206,6 +207,7 @@ export function runSourcePreflight(
 		validateSoftTextRules(file, content, config, issues);
 		validateLists(file, content, issues);
 		validateSourceFormulas(file, content, issues);
+		validateRawMath(file, content, issues);
 		validateMarkdownTables(file, content, issues);
 		validateImageExists(file, content, absoluteSourceDir, cwd, issues);
 		validateUnknownReferences(file, content, definitions, issues);

@@ -33,6 +33,7 @@ import {
 	countTableCellsWithInsufficientPadding,
 	countTableHeaderFinalPeriods,
 } from './sto-validator/layout-xml';
+import { isMathLayoutTable } from './sto-validator/math-layout-table';
 import { inspectMathStructures } from './sto-validator/math-xml';
 
 /**
@@ -175,13 +176,18 @@ function getMissingCitationNumbers(
 }
 
 function hasFormulaPeriodBeforeWhere(docXml: string): boolean {
-	const formulaBeforeWhere = new RegExp(
-		String.raw`(<w:tbl[\s\S]*?<\/w:tbl>|<w:p[\s\S]*?${escapeRegExp(OMATH_TAG)}[\s\S]*?<\/w:p>)\s*<w:p[\s\S]*?<w:t[^>]*>где(?:\s|<|&nbsp;)`,
-		'g',
-	);
+	const elements = getBodyElements(docXml);
 
-	for (const match of docXml.matchAll(formulaBeforeWhere)) {
-		const formulaBlock = match[1];
+	for (let index = 1; index < elements.length; index++) {
+		const explanation = elements[index];
+		const formulaBlock = elements[index - 1];
+		if (
+			!isParagraphXml(explanation) ||
+			!/^где(?:\s|$)/u.test(extractWordText(explanation).trim()) ||
+			!formulaBlock.includes(OMATH_TAG)
+		) {
+			continue;
+		}
 		const mathText = [
 			...formulaBlock.matchAll(/<m:t[^>]*>([\s\S]*?)<\/m:t>/g),
 		]
@@ -195,10 +201,6 @@ function hasFormulaPeriodBeforeWhere(docXml: string): boolean {
 	}
 
 	return false;
-}
-
-function isMathLayoutTable(tableXml: string): boolean {
-	return tableXml.includes(OMATH_TAG);
 }
 
 function countTablesWithoutHeaderRepeat(docXml: string): number {
@@ -527,6 +529,7 @@ function countEmptyTableCells(docXml: string): number {
 			const text = extractWordText(cellXml).trim();
 			return (
 				text.length === 0 &&
+				!cellXml.includes(OMATH_TAG) &&
 				!cellXml.includes('<w:drawing') &&
 				!cellXml.includes('<w:br')
 			);
@@ -635,7 +638,7 @@ function isAllowedLayoutTabParagraph(
 	if (!styleId) {
 		return false;
 	}
-	if (styleId === 'TitlePageText') {
+	if (styleId === resolveWordStyleId(stylesXml, 'TitlePageText')) {
 		return true;
 	}
 

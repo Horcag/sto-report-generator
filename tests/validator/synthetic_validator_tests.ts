@@ -5,6 +5,8 @@ import AdmZip from 'adm-zip';
 
 import { unpackDocx } from '@/shared/lib/docx';
 
+import { runFormulaPunctuationTests } from './formula_punctuation_test';
+import { runMathLayoutTableTests } from './math_layout_table_test';
 import { runSyntheticBoldTests } from './synthetic_bold_tests';
 import { runSyntheticLayoutTests } from './synthetic_layout_tests';
 import { runWordNormalizedStyleTests } from './synthetic_word_style_tests';
@@ -26,6 +28,8 @@ export function runSyntheticValidatorTests(
 	writeXmlFixture: WriteXmlFixture,
 	getCheck: GetCheck,
 ): void {
+	runFormulaPunctuationTests();
+	runMathLayoutTableTests();
 	const namespaces =
 		'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 	const bodyStyles = `<w:styles ${namespaces}><w:docDefaults><w:pPrDefault><w:pPr><w:spacing w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/><w:pPr><w:ind w:firstLine="709"/></w:pPr></w:style></w:styles>`;

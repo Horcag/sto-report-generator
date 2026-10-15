@@ -7,6 +7,7 @@ import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
 import { runBibliographyRegressionTests } from './bibliography_regression_tests';
 import { runHeadingSourceTests } from './heading_source_tests';
+import { runRawMathTests } from './raw_math_tests';
 import { runSemanticSourceTests } from './semantic_source_tests';
 import { runStructureReferenceTests } from './structure_reference_tests';
 
@@ -15,6 +16,8 @@ const tempRoot = path.join(
 	'.agent-work',
 	'source-preflight-tests',
 );
+
+runRawMathTests();
 
 function writeReport(name: string, files: Record<string, string>): string {
 	const dir = path.join(tempRoot, name);
@@ -473,6 +476,49 @@ expectIssue(
 	}),
 	'raw-markdown-list',
 );
+
+const frontmatterListReport = writeReport(
+	'frontmatter-array-is-not-a-markdown-list',
+	validFiles({
+		'00_metadata.md': `---
+organizationLines:
+  - Первая строка
+  - Вторая строка
+---
+`,
+	}),
+);
+const frontmatterListResult = runSourcePreflight(frontmatterListReport);
+assert.ok(
+	!frontmatterListResult.issues.some(
+		item => item.code === 'raw-markdown-list',
+	),
+	'YAML sequence items in front matter must not be reported as Markdown lists.',
+);
+
+const bodyListReport = writeReport(
+	'body-list-still-reported-after-frontmatter-array',
+	validFiles({
+		'00_metadata.md': `---
+organizationLines:
+  - Первая строка
+  - Вторая строка
+---
+`,
+		'03_intro.md': `\\sto_structural_heading{ВВЕДЕНИЕ}
+
+Текст.
+
+- Список в теле.
+`,
+	}),
+);
+const bodyListResult = runSourcePreflight(bodyListReport);
+const bodyListIssue = bodyListResult.issues.find(
+	item => item.code === 'raw-markdown-list',
+);
+assert.equal(bodyListIssue?.file, '03_intro.md');
+assert.equal(bodyListIssue?.line, 5);
 
 expectIssue(
 	'forbidden-list-letter',
@@ -1412,6 +1458,12 @@ bibliography: "references.bib"
 `,
 	}),
 	'bibliography-book-pages-range',
+);
+
+expectWarning(
+	'raw-math-identifier-in-prose',
+	validFiles({ '03_intro.md': 'Параметр t_s измеряется в секундах.\n' }),
+	'raw-math-identifier',
 );
 
 runHeadingSourceTests({

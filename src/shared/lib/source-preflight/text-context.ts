@@ -32,6 +32,49 @@ function maskFrontmatter(chars: string[], content: string): void {
 	}
 }
 
+export function maskSourceFrontmatter(content: string): string {
+	const chars = content.split('');
+	maskFrontmatter(chars, content);
+	return chars.join('');
+}
+
+export function maskSourceCodeFences(content: string): string {
+	const source = maskSourceFrontmatter(content);
+	const chars = source.split('');
+	let fenceCharacter: '`' | '~' | undefined;
+	let fenceLength = 0;
+	let lineStart = 0;
+
+	for (const line of source.split(/(?<=\n)/)) {
+		const value = line.replace(/\r?\n$/, '');
+		if (fenceCharacter) {
+			const closing = /^( {0,3})(`+|~+)[ \t]*$/.exec(value);
+			if (
+				closing &&
+				closing[2][0] === fenceCharacter &&
+				closing[2].length >= fenceLength
+			) {
+				fenceCharacter = undefined;
+				fenceLength = 0;
+			}
+			maskRange(chars, lineStart, lineStart + line.length);
+		} else {
+			const opening = /^( {0,3})(`{3,}|~{3,})(.*)$/.exec(value);
+			if (
+				opening &&
+				!(opening[2][0] === '`' && opening[3].includes('`'))
+			) {
+				fenceCharacter = opening[2][0] as '`' | '~';
+				fenceLength = opening[2].length;
+				maskRange(chars, lineStart, lineStart + line.length);
+			}
+		}
+		lineStart += line.length;
+	}
+
+	return chars.join('');
+}
+
 function maskMarkdownLinkTargets(chars: string[], content: string): void {
 	for (const match of content.matchAll(/\[[^\]\r\n]+]\(([^)\r\n]+)\)/g)) {
 		const index = match.index ?? 0;
@@ -74,14 +117,7 @@ function findSymbolicSignIndexes(prose: string): Set<number> {
 }
 
 export function createSourceTextContext(content: string): SourceTextContext {
-	const chars = content.split('');
-
-	maskFrontmatter(chars, content);
-	maskPattern(
-		chars,
-		content,
-		/^```[^\r\n]*(?:\r?\n)[\s\S]*?^```[^\r\n]*(?:\r?\n|$)/gm,
-	);
+	const chars = maskSourceCodeFences(content).split('');
 	maskPattern(chars, content, /\$\$[\s\S]*?\$\$/g);
 	maskPattern(chars, content, /`[^`\r\n]+`/g);
 	maskPattern(chars, content, /(?<!\$)\$[^$\r\n]+\$(?!\$)/g);
