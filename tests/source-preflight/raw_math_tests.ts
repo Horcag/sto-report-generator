@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 
+import { runSourcePreflight } from '@/shared/lib/source-preflight';
 import { validateRawMath } from '@/shared/lib/source-preflight/raw-math-checker';
 import { SourcePreflightIssue } from '@/shared/lib/source-preflight/types';
 
@@ -74,5 +75,69 @@ export function runRawMathTests(): void {
 			{ code: 'raw-math-identifier', line: 25 },
 			{ code: 'raw-math-slash-fraction', line: 25 },
 		],
+	);
+}
+
+interface SourceHarness {
+	writeReport: (name: string, files: Record<string, string>) => string;
+	validFiles: (overrides?: Record<string, string>) => Record<string, string>;
+	expectWarning: (
+		name: string,
+		files: Record<string, string>,
+		code: string,
+	) => void;
+}
+export function runRawMathSourceTests({
+	writeReport,
+	validFiles,
+	expectWarning,
+}: SourceHarness): void {
+	const frontmatterListReport = writeReport(
+		'frontmatter-array-is-not-a-markdown-list',
+		validFiles({
+			'00_metadata.md': `---
+organizationLines:
+  - Первая строка
+  - Вторая строка
+---
+`,
+		}),
+	);
+	const frontmatterListResult = runSourcePreflight(frontmatterListReport);
+	assert.ok(
+		!frontmatterListResult.issues.some(
+			item => item.code === 'raw-markdown-list',
+		),
+		'YAML sequence items in front matter must not be reported as Markdown lists.',
+	);
+
+	const bodyListReport = writeReport(
+		'body-list-still-reported-after-frontmatter-array',
+		validFiles({
+			'00_metadata.md': `---
+organizationLines:
+  - Первая строка
+  - Вторая строка
+---
+`,
+			'03_intro.md': `\\sto_structural_heading{ВВЕДЕНИЕ}
+
+Текст.
+
+- Список в теле.
+`,
+		}),
+	);
+	const bodyListResult = runSourcePreflight(bodyListReport);
+	const bodyListIssue = bodyListResult.issues.find(
+		item => item.code === 'raw-markdown-list',
+	);
+	assert.equal(bodyListIssue?.file, '03_intro.md');
+	assert.equal(bodyListIssue?.line, 5);
+
+	expectWarning(
+		'raw-math-identifier-in-prose',
+		validFiles({ '03_intro.md': 'Параметр t_s измеряется в секундах.\n' }),
+		'raw-math-identifier',
 	);
 }

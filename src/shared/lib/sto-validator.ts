@@ -13,7 +13,6 @@ import {
 } from './docx/styles';
 import { validateTemplateStyleConformance } from './sto-template-style-validator';
 import {
-	decodeXmlText,
 	extractWordText,
 	getBodyElements,
 	getContinuationFailures,
@@ -34,7 +33,10 @@ import {
 	countTableHeaderFinalPeriods,
 } from './sto-validator/layout-xml';
 import { isMathLayoutTable } from './sto-validator/math-layout-table';
-import { inspectMathStructures } from './sto-validator/math-xml';
+import {
+	hasFormulaPeriodBeforeWhere,
+	inspectMathStructures,
+} from './sto-validator/math-xml';
 
 /**
  * STO Validation Suite
@@ -173,34 +175,6 @@ function getMissingCitationNumbers(
 	}
 
 	return missingNumbers;
-}
-
-function hasFormulaPeriodBeforeWhere(docXml: string): boolean {
-	const elements = getBodyElements(docXml);
-
-	for (let index = 1; index < elements.length; index++) {
-		const explanation = elements[index];
-		const formulaBlock = elements[index - 1];
-		if (
-			!isParagraphXml(explanation) ||
-			!/^где(?:\s|$)/u.test(extractWordText(explanation).trim()) ||
-			!formulaBlock.includes(OMATH_TAG)
-		) {
-			continue;
-		}
-		const mathText = [
-			...formulaBlock.matchAll(/<m:t[^>]*>([\s\S]*?)<\/m:t>/g),
-		]
-			.map(item => decodeXmlText(item[1]).trim())
-			.join('')
-			.trim();
-
-		if (mathText.endsWith('.')) {
-			return true;
-		}
-	}
-
-	return false;
 }
 
 function countTablesWithoutHeaderRepeat(docXml: string): number {
