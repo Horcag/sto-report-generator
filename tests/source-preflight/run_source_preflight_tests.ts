@@ -7,6 +7,7 @@ import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
 import { runBibliographyRegressionTests } from './bibliography_regression_tests';
 import { runHeadingSourceTests } from './heading_source_tests';
+import { runRawMathSourceTests, runRawMathTests } from './raw_math_tests';
 import { runSemanticSourceTests } from './semantic_source_tests';
 import { runStructureReferenceTests } from './structure_reference_tests';
 
@@ -15,6 +16,8 @@ const tempRoot = path.join(
 	'.agent-work',
 	'source-preflight-tests',
 );
+
+runRawMathTests();
 
 function writeReport(name: string, files: Record<string, string>): string {
 	const dir = path.join(tempRoot, name);
@@ -1413,6 +1416,8 @@ bibliography: "references.bib"
 	}),
 	'bibliography-book-pages-range',
 );
+
+runRawMathSourceTests({ writeReport, validFiles, expectWarning });
 
 runHeadingSourceTests({
 	validFiles,

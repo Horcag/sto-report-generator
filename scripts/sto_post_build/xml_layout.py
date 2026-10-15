@@ -53,11 +53,42 @@ def set_paragraph_space_before(paragraph: Any, value: str) -> None:
         spacing.set(before_key, value)
 
 
+def is_math_layout_table(element: Any, namespace: dict[str, str]) -> bool:
+    """Recognize formula wrappers, including adjacent wrappers merged by Word."""
+    if element.tag != f"{WORD}tbl" or element.xpath(
+        ".//w:tbl | .//w:drawing | .//w:tblHeader", namespaces=namespace
+    ):
+        return False
+    rows = element.findall(f"{WORD}tr")
+    if not rows:
+        return False
+    for row in rows:
+        cells = row.findall(f"{WORD}tc")
+        if len(cells) != 3:
+            return False
+        left, formula, right = cells
+        if (
+            element_text(left)
+            or element_text(formula)
+            or not formula.xpath(".//m:oMath", namespaces=namespace)
+            or not formula.xpath('.//w:jc[@w:val="center"]', namespaces=namespace)
+            or left.xpath(".//m:oMath", namespaces=namespace)
+            or right.xpath(".//m:oMath", namespaces=namespace)
+        ):
+            return False
+        number = element_text(right)
+        if (
+            number
+            and re.fullmatch(r"\((?:[A-Z\u0410-\u042f\u0401]\.)?\d+(?:\.\d+)*\)", number) is None
+        ):
+            return False
+    # Word may omit explicit no-border properties when saving the wrapper.
+    borders = element.xpath(".//w:tblBorders/* | .//w:tcBorders/*", namespaces=namespace)
+    return all(border.get(f"{WORD}val") in {"none", "nil"} for border in borders)
+
+
 def is_data_table(element: Any, namespace: dict[str, str]) -> bool:
-    return element.tag == f"{{{WORD_NS}}}tbl" and not element.xpath(
-        ".//m:oMath",
-        namespaces=namespace,
-    )
+    return element.tag == f"{WORD}tbl" and not is_math_layout_table(element, namespace)
 
 
 def find_next_visible_paragraph(elements: list[Any], table_index: int) -> Any | None:
