@@ -10,6 +10,7 @@ import { runMathLayoutTableTests } from './math_layout_table_test';
 import { runSyntheticBoldTests } from './synthetic_bold_tests';
 import { runSyntheticLayoutTests } from './synthetic_layout_tests';
 import { runWordNormalizedStyleTests } from './synthetic_word_style_tests';
+import { runUnparsedMathTests } from './unparsed_math_test';
 
 interface ValidatorCheck {
 	passed: boolean;
@@ -29,6 +30,7 @@ export function runSyntheticValidatorTests(
 	getCheck: GetCheck,
 ): void {
 	runFormulaPunctuationTests();
+	runUnparsedMathTests();
 	runMathLayoutTableTests();
 	const namespaces =
 		'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';

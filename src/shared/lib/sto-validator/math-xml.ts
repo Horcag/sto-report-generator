@@ -13,6 +13,7 @@ const UPRIGHT_LIMIT_OPERATORS = new Set(['min', 'max', 'lim', 'inf', 'sup']);
 export function inspectMathStructures(documentXml: string): {
 	accentLimits: number;
 	italicLimitOperators: number;
+	unparsedLatex: boolean;
 } {
 	const document = new JSDOM(documentXml, { contentType: 'text/xml' }).window
 		.document;
@@ -50,7 +51,26 @@ export function inspectMathStructures(documentXml: string): {
 			}
 		}
 	}
-	return { accentLimits, italicLimitOperators };
+	const unparsedLatex = [...document.getElementsByTagName('w:p')].some(
+		paragraph => {
+			const prose = [...paragraph.getElementsByTagName('w:r')]
+				.filter(run => {
+					const fonts = run.getElementsByTagName('w:rFonts')[0];
+					return !['w:ascii', 'w:hAnsi'].some(
+						attribute =>
+							fonts?.getAttribute(attribute) === 'Courier New',
+					);
+				})
+				.map(run =>
+					[...run.getElementsByTagName('w:t')]
+						.map(text => text.textContent ?? '')
+						.join(''),
+				)
+				.join('');
+			return /\$\$|\$[^$]+\$/.test(prose);
+		},
+	);
+	return { accentLimits, italicLimitOperators, unparsedLatex };
 }
 
 export function hasFormulaPeriodBeforeWhere(docXml: string): boolean {
