@@ -175,7 +175,7 @@ async function main(): Promise<void> {
 				paragraphs[groupIndex]
 					.getElementsByTagName('w:ind')[0]
 					?.getAttribute('w:left'),
-				'0',
+				'1240',
 			);
 			assert.ok(paragraphText[groupIndex + 1]?.startsWith('Студент'));
 			assert.equal(paragraphText[groupIndex + 2], '(подпись)');
@@ -204,6 +204,13 @@ async function main(): Promise<void> {
 			for (const paragraph of signatureParagraphs) {
 				assert.equal(
 					paragraph
+						.getElementsByTagName('w:ind')[0]
+						?.getAttribute('w:left'),
+					'1240',
+					'Signature lines retain the template indent rather than stretching to the body margin',
+				);
+				assert.equal(
+					paragraph
 						.getElementsByTagName('w:tabs')[0]
 						.children[0].getAttribute('w:leader'),
 					'underscore',
@@ -216,8 +223,14 @@ async function main(): Promise<void> {
 			for (const caption of captions) {
 				const tab =
 					caption.getElementsByTagName('w:tabs')[0].children[0];
-				assert.equal(tab.getAttribute('w:val'), 'center');
-				assert.equal(tab.getAttribute('w:pos'), '4070');
+				assert.equal(tab.getAttribute('w:val'), 'left');
+				assert.equal(tab.getAttribute('w:pos'), '5220');
+				assert.equal(
+					caption
+						.getElementsByTagName('w:ind')[0]
+						?.getAttribute('w:left'),
+					'1240',
+				);
 				assert.equal(caption.getElementsByTagName('w:i').length, 1);
 			}
 			const unpacked = path.join(directory, 'unpacked');
