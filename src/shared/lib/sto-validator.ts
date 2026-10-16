@@ -820,7 +820,7 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 		),
 		resultFromFailure(
 			'Math Formatting (Unparsed)',
-			regexMatches(/\$[^$]+\$/, docXml),
+			mathStructures.unparsedLatex,
 			'Detected unparsed LaTeX math ($...$).',
 		),
 		resultFromFailure(
