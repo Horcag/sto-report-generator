@@ -2,6 +2,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import {
+	WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS,
+	WORD_ACCEPTANCE_TIMEOUT_MS,
+} from '@/app/word-acceptance';
+
 const portableWorkflow = readFileSync(
 	path.resolve('.github', 'workflows', 'ci.yml'),
 	'utf8',
@@ -45,6 +50,25 @@ assert.match(nativeWordWorkflow, /\$manifest\.status -ne 'accepted'/);
 assert.match(
 	nativeWordWorkflow,
 	/\$manifest\.execution\.processCleanupVerified/,
+);
+
+const acceptanceTimeout = nativeWordWorkflow.match(
+	/- name: Run native Word acceptance\s+timeout-minutes: (\d+)/,
+);
+assert.ok(acceptanceTimeout, 'native Word acceptance needs a bounded step');
+// Both attempts need their own 45-second cleanup, with time left for receipts.
+assert.ok(
+	Number(acceptanceTimeout[1]) * 60_000 >
+		WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS +
+			WORD_ACCEPTANCE_TIMEOUT_MS +
+			120_000,
+	'the CI step must allow both Word attempts and process cleanup to finish',
+);
+const jobTimeout = nativeWordWorkflow.match(/^ {8}timeout-minutes: (\d+)$/m);
+assert.ok(jobTimeout, 'native Word acceptance needs a bounded job');
+assert.ok(
+	Number(jobTimeout[1]) >= Number(acceptanceTimeout[1]) + 5,
+	'the job must also allow dependency installation and example generation',
 );
 
 console.log('CI configuration tests passed.');
