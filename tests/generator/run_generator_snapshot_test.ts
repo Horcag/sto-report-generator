@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -22,7 +23,7 @@ function formatXml(xml: string): string {
 	return xml
 		.replaceAll(/\r\n?/g, '\n')
 		.replaceAll(
-			/(<w:t\b[^>]*>)([\s\S]*?)(<\/w:t>)/g,
+			/(<w:t\b(?![^>]*\/>)[^>]*>)([\s\S]*?)(<\/w:t>)/g,
 			(_, open: string, text: string, close: string) =>
 				open + text.replaceAll('\n', '&#10;') + close,
 		)
@@ -58,6 +59,11 @@ async function main(): Promise<void> {
 		readDocxEntry(tempOutput, 'word/document.xml'),
 	);
 	fs.rmSync(tempRoot, { recursive: true, force: true });
+	assert.equal(
+		formatXml(formattedXml),
+		formattedXml,
+		'Golden XML formatting must preserve text and be idempotent',
+	);
 
 	if (updateSnapshot || !fs.existsSync(snapshotFile)) {
 		fs.writeFileSync(snapshotFile, `${formattedXml}\n`, 'utf-8');
