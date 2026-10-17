@@ -5,6 +5,7 @@ import {
 	ListMarkerStyle,
 	parseListItemLine,
 } from './list-marker-parser';
+import { maskSourceFrontmatter } from './text-context';
 import { SourcePreflightIssue } from './types';
 import { issue, lineNumberAt, stripEnvironmentBlocks } from './utils';
 
@@ -316,19 +317,23 @@ export function validateLists(
 	issues: SourcePreflightIssue[],
 ): void {
 	const contentWithoutStoLists = stripEnvironmentBlocks(
-		content,
+		maskSourceFrontmatter(content),
 		STO_RULES.markdown.listEnvironments,
 	);
 	const rawListMatches = [
 		...contentWithoutStoLists.matchAll(/^(?:\s*[-*+]\s+|\s*\d+\.\s+)/gm),
 	];
 	for (const match of rawListMatches) {
+		const markerOffset = match[0].search(/\S/);
 		issues.push(
 			issue(
 				'raw-markdown-list',
 				'contains a raw Markdown list. Use \\begin{sto_list}...\\end{sto_list} or \\begin{sto_enum}...\\end{sto_enum}.',
 				file,
-				lineNumberAt(contentWithoutStoLists, match.index ?? 0),
+				lineNumberAt(
+					contentWithoutStoLists,
+					(match.index ?? 0) + markerOffset,
+				),
 			),
 		);
 	}
