@@ -1,11 +1,19 @@
 import { JSDOM } from 'jsdom';
 
+import {
+	decodeXmlText,
+	extractWordText,
+	getBodyElements,
+	isParagraphXml,
+} from './body-xml';
+
 const ACCENT_MARKS = new Set(['¯', '―', '~', '˜', '^', '→', '˙', '¨']);
 const UPRIGHT_LIMIT_OPERATORS = new Set(['min', 'max', 'lim', 'inf', 'sup']);
 
 export function inspectMathStructures(documentXml: string): {
 	accentLimits: number;
 	italicLimitOperators: number;
+	unparsedLatex: boolean;
 } {
 	const document = new JSDOM(documentXml, { contentType: 'text/xml' }).window
 		.document;
@@ -43,5 +51,52 @@ export function inspectMathStructures(documentXml: string): {
 			}
 		}
 	}
-	return { accentLimits, italicLimitOperators };
+	const unparsedLatex = [...document.getElementsByTagName('w:p')].some(
+		paragraph => {
+			const prose = [...paragraph.getElementsByTagName('w:r')]
+				.filter(run => {
+					const fonts = run.getElementsByTagName('w:rFonts')[0];
+					return !['w:ascii', 'w:hAnsi'].some(
+						attribute =>
+							fonts?.getAttribute(attribute) === 'Courier New',
+					);
+				})
+				.map(run =>
+					[...run.getElementsByTagName('w:t')]
+						.map(text => text.textContent ?? '')
+						.join(''),
+				)
+				.join('');
+			return /\$\$|\$[^$]+\$/.test(prose);
+		},
+	);
+	return { accentLimits, italicLimitOperators, unparsedLatex };
+}
+
+export function hasFormulaPeriodBeforeWhere(docXml: string): boolean {
+	const elements = getBodyElements(docXml);
+
+	for (let index = 1; index < elements.length; index++) {
+		const explanation = elements[index];
+		const formulaBlock = elements[index - 1];
+		if (
+			!isParagraphXml(explanation) ||
+			!/^где(?:\s|$)/u.test(extractWordText(explanation).trim()) ||
+			!formulaBlock.includes('<m:oMath')
+		) {
+			continue;
+		}
+		const mathText = [
+			...formulaBlock.matchAll(/<m:t[^>]*>([\s\S]*?)<\/m:t>/g),
+		]
+			.map(item => decodeXmlText(item[1]).trim())
+			.join('')
+			.trim();
+
+		if (mathText.endsWith('.')) {
+			return true;
+		}
+	}
+
+	return false;
 }

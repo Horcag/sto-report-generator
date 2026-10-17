@@ -60,7 +60,7 @@ const PROFILE_TITLE_PAGE_EXPECTATIONS: Record<
 	lab: {
 		reportType: /лабораторн/i,
 		topicPrefix: /лабораторн/i,
-		degree: /дисциплин/i,
+		degree: /(?:дисциплин|курсу)/i,
 	},
 	'vkr-bachelor': {
 		reportType: /(?:выпускн|ВКР)/i,
@@ -183,7 +183,10 @@ export function validateMetadata(
 			),
 		);
 	}
-	if (titlePageVariant && titlePageVariant !== 'ssau-course-project-v1.1') {
+	if (
+		titlePageVariant &&
+		!['ssau-course-project-v1.1', 'compact-lab'].includes(titlePageVariant)
+	) {
 		issues.push(
 			issue(
 				'metadata-title-page-variant-unknown',
@@ -192,6 +195,16 @@ export function validateMetadata(
 			),
 		);
 	}
+	if (titlePageVariant === 'compact-lab' && config.profile !== 'lab') {
+		issues.push(
+			issue(
+				'metadata-title-page-variant-profile-mismatch',
+				'titlePageVariant "compact-lab" requires the lab profile.',
+				metadata.file,
+			),
+		);
+	}
+
 	if (
 		titlePageVariant === 'ssau-course-project-v1.1' &&
 		config.profile !== 'coursework'
@@ -218,7 +231,21 @@ export function validateMetadata(
 		);
 	}
 
+	const compactLabUnusedFields = [
+		'semester',
+		'specialtyCode',
+		'specialtyName',
+		'profileName',
+		'topic',
+	];
 	for (const field of REQUIRED_METADATA_FIELDS) {
+		if (
+			titlePageVariant === 'compact-lab' &&
+			compactLabUnusedFields.includes(field)
+		) {
+			continue;
+		}
+
 		if (
 			field === 'supervisorTitle' &&
 			titlePageVariant === 'ssau-course-project-v1.1'

@@ -7,6 +7,7 @@ import {
 	getReportTables,
 	isParagraphXml,
 } from './body-xml';
+import { isMathLayoutTable } from './math-layout-table';
 
 interface KeywordIndentInput {
 	docXml: string;
@@ -17,10 +18,6 @@ interface KeywordIndentInput {
 function getXmlAttribute(tagXml: string, attributeName: string): string | null {
 	const match = new RegExp(`${attributeName}="([^"]+)"`).exec(tagXml);
 	return match?.[1] ?? null;
-}
-
-function isMathLayoutTable(tableXml: string): boolean {
-	return tableXml.includes('<m:' + 'oMath');
 }
 
 function getCellMarginDxa(

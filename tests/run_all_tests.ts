@@ -27,6 +27,7 @@ const tests = [
 	['tests/workflow/run_word_acceptance_launcher_tests.ts'],
 	['tests/workflow/word_acceptance_integrity_test.ts'],
 	['tests/generator/title_page_metadata_test.ts'],
+	['tests/generator/compact_lab_title_page_test.ts'],
 	['tests/generator/front_matter_docx_test.ts'],
 	['tests/scaffold/run_scaffold_tests.ts'],
 	['tests/bibliography/bib-gost.test.ts'],

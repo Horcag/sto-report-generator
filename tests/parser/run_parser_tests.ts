@@ -120,6 +120,19 @@ async function main(): Promise<void> {
 	assert.doesNotMatch(codeParagraph, /\u200b/);
 
 	await runEntityParserTests({ tempRoot, packAndReadXml, getWordText });
+	const inlineMathElements = await parseMarkdownToDocx(
+		'Таблица 1 – Параметр $t_s$\n\n| Параметр | Значение |\n|---|---|\n| $a_{cp}$ | $t_s$ |',
+		{},
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: inlineMathXml } = await packAndReadXml(
+		inlineMathElements,
+		path.join(tempRoot, 'inline-math-caption-table.docx'),
+	);
+	assert.ok(
+		(inlineMathXml.match(/<m:oMath\b/g) ?? []).length >= 3,
+		'Inline math should be converted in table captions and table cells.',
+	);
 
 	await parseMarkdownToDocx(
 		String.raw`\begin{sto_list}
