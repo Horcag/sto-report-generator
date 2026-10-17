@@ -6,7 +6,10 @@ import path from 'node:path';
 import { mock } from 'node:test';
 import AdmZip from 'adm-zip';
 
-import { runWordAcceptance } from '@/app/word-acceptance';
+import {
+	detectWordAcceptanceHost,
+	runWordAcceptance,
+} from '@/app/word-acceptance';
 
 interface Scenario {
 	cleanupFails?: boolean;
@@ -18,6 +21,8 @@ interface Scenario {
 	deterministicTableFailure?: boolean;
 	largeDocument?: boolean;
 	boldInput?: boolean;
+	platform?: NodeJS.Platform;
+	release?: string;
 }
 
 interface Invocation {
@@ -49,10 +54,12 @@ function withFakeWord(
 	fixture.writeZip(input);
 	const calls: Invocation[] = [];
 	const platform = Object.getOwnPropertyDescriptor(process, 'platform')!;
-	if (process.platform !== 'win32') {
-		Object.defineProperty(process, 'platform', { value: 'linux' });
-		mock.method(os, 'release', () => 'test-microsoft-wsl');
-	}
+	Object.defineProperty(process, 'platform', {
+		value:
+			scenario.platform ??
+			(process.platform === 'win32' ? 'win32' : 'linux'),
+	});
+	mock.method(os, 'release', () => scenario.release ?? 'test-microsoft-wsl');
 	mock.method(
 		childProcess,
 		'spawnSync',
@@ -364,6 +371,62 @@ function testBoldInputRejectedBeforeWord(): void {
 		assert.deepEqual(calls, []);
 	});
 }
+
+function testHostDetection(): void {
+	const hosts = [
+		{ platform: 'win32', release: '10.0', expected: 'windows' },
+		{
+			platform: 'linux',
+			release: '6.6-microsoft-standard',
+			expected: 'wsl',
+		},
+		{ platform: 'linux', release: '6.6-wsl', expected: 'wsl' },
+		{ platform: 'linux', release: '6.6-generic', expected: null },
+		{ platform: 'darwin', release: '24.0', expected: null },
+	] as const;
+	for (const host of hosts) {
+		withFakeWord(host, (inputDocx, calls) => {
+			if (host.expected) {
+				assert.equal(detectWordAcceptanceHost(), host.expected);
+			} else {
+				assert.throws(
+					() => detectWordAcceptanceHost(),
+					/Word acceptance requires WSL/,
+				);
+				assert.throws(
+					() => runWordAcceptance({ inputDocx }),
+					/Word acceptance requires WSL/,
+				);
+			}
+			assert.deepEqual(calls, [], `${host.platform}/${host.release}`);
+		});
+	}
+}
+
+function testMissingInputRejectedBeforeWord(): void {
+	withFakeWord({}, (inputDocx, calls) => {
+		assert.throws(
+			() => runWordAcceptance({ inputDocx: `${inputDocx}.missing` }),
+			/DOCX file not found/,
+		);
+		assert.deepEqual(calls, []);
+	});
+}
+
+function testUnsupportedStyleRejectedBeforeWord(): void {
+	withFakeWord({}, (inputDocx, calls) => {
+		assert.throws(
+			() =>
+				runWordAcceptance({
+					inputDocx,
+					stylePreset: 'unsupported' as never,
+				}),
+			/Supported style presets for Word acceptance/,
+		);
+		assert.deepEqual(calls, []);
+	});
+}
+
 testSuccessfulAcceptance();
 testIntegrityFailurePersistsVerifiedCleanup();
 testCleanupFailureAfterAcceptanceStaysUnverified();
@@ -373,4 +436,7 @@ testBothAttemptsFail();
 testDeterministicFailureDoesNotRetry();
 testLargeDocumentGetsEnoughBackgroundTime();
 testBoldInputRejectedBeforeWord();
+testHostDetection();
+testMissingInputRejectedBeforeWord();
+testUnsupportedStyleRejectedBeforeWord();
 console.log('Word acceptance launcher tests passed.');
