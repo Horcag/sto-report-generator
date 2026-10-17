@@ -89,24 +89,24 @@
 		"tsx": "4.23.15"
 	},
 	"devDependencies": {
-		"@cspell/dict-ru_ru": "2.3.2",
+		"@cspell/dict-ru_ru": "2.3.4",
 		"@eslint/js": "^10.0.1",
-		"@feature-sliced/steiger-plugin": "^0.7.0",
+		"@feature-sliced/steiger-plugin": "^0.8.0",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
-		"@types/adm-zip": "^0.5.8",
+		"@types/adm-zip": "^0.6.0",
 		"@types/jsdom": "^30.0.0",
-		"@types/node": "^26.6.2",
+		"@types/node": "^26.6.5",
 		"c8": "12.0.0",
-		"cspell": "10.3.4",
-		"eslint": "^10.11.0",
+		"cspell": "10.4.0",
+		"eslint": "^10.12.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-prettier": "^5.5.6",
-		"globals": "^17.12.0",
-		"prettier": "^3.9.9",
-		"steiger": "^0.6.0",
+		"eslint-plugin-prettier": "^5.5.7",
+		"globals": "^17.13.0",
+		"prettier": "^3.9.10",
+		"steiger": "^0.7.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.70.1"
+		"typescript-eslint": "^8.71.2"
 	},
 	"engines": {
 		"node": ">=26.0.0"
