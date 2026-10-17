@@ -1,5 +1,6 @@
-import matter from 'gray-matter';
 import { marked, Token, Tokens } from 'marked';
+
+import { parseReportFrontmatter as matter } from '@/shared/lib/frontmatter';
 
 export interface FigureOccurrence {
 	id: string;

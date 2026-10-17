@@ -9,7 +9,7 @@ import {
 	WidthType,
 } from 'docx';
 
-import { convertLatex2Math } from '@/shared/lib/math-converter';
+import { convertLatex2Math } from '@/shared/lib/math';
 
 import { MathConversionResult, ParserContext } from '../../types';
 

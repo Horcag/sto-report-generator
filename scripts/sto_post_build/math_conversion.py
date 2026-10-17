@@ -18,6 +18,10 @@ ACCENT_CHARS = {
 }
 OVERBAR_CHARS = {"¯", "―"}
 MATHML_NS = "http://www.w3.org/1998/Math/MathML"
+EXPLICIT_MATH_SPACES = {
+    r"\quad": ("\ue000", "\u2003"),
+    r"\qquad": ("\ue001", "\u2003\u2003"),
+}
 UPRIGHT_OPERATOR_COMMANDS = {
     r"\arccos",
     r"\arcsin",
@@ -40,7 +44,7 @@ UPRIGHT_OPERATOR_COMMANDS = {
 
 
 def normalize_mathml_operators(mathml: str) -> str:
-    """Keep named TeX functions upright before the OMML converter merges runs."""
+    """Preserve named functions and explicit TeX spacing through run merging."""
     root = etree.fromstring(mathml.encode("utf-8"))
     changed = False
     for identifier in root.iter(f"{{{MATHML_NS}}}mi"):
@@ -48,7 +52,19 @@ def normalize_mathml_operators(mathml: str) -> str:
         if command.startswith(r"\operatorname{") or command in UPRIGHT_OPERATOR_COMMANDS:
             identifier.tag = f"{{{MATHML_NS}}}mtext"
             changed = True
-    return etree.tostring(root, encoding="unicode") if changed else mathml
+    for space in root.iter(f"{{{MATHML_NS}}}mspace"):
+        replacement = EXPLICIT_MATH_SPACES.get(space.get("data-latex", ""))
+        if replacement is None:
+            continue
+        marker = etree.Element(f"{{{MATHML_NS}}}mi")
+        marker.text = replacement[0]
+        marker.tail = space.tail
+        space.getparent().replace(space, marker)
+        changed = True
+    # The converter trims literal NBSPs, but retains MathJax's numeric references.
+    return (
+        etree.tostring(root, encoding="unicode").replace("\u00a0", "&#xA0;") if changed else mathml
+    )
 
 
 def run_node_json_batch(
@@ -128,7 +144,19 @@ const { pathToFileURL } = require('url');
             f"MathJax failed for formula: {first.get('formula')}\n{first.get('error')}"
         )
 
-    return [item["mathml"] for item in results]
+    values = [item["mathml"] for item in results]
+    for formula, mathml in zip(formulas, values, strict=True):
+        root = etree.fromstring(mathml.encode("utf-8"))
+        for error in root.iter(f"{{{MATHML_NS}}}merror"):
+            reason = error.get("data-mjx-error") or "".join(error.itertext())
+            raise RuntimeError(f"MathJax failed for formula: {formula}\n{reason}")
+        for text in root.iter(f"{{{MATHML_NS}}}mtext"):
+            command = text.get("data-latex", "")
+            if text.get("mathcolor") == "red" and command.startswith("\\"):
+                raise RuntimeError(
+                    f"MathJax failed for formula: {formula}\nUnknown TeX command {command}"
+                )
+    return values
 
 
 def mathml_to_omml_batch(mathml_values: Sequence[str], repo_root: Path) -> list[str]:
@@ -162,7 +190,10 @@ process.stdout.write(JSON.stringify(result));
             f"{first.get('mathml')}\n{first.get('error')}"
         )
 
-    return [item["omml"] for item in results]
+    values = [item["omml"] for item in results]
+    for marker, spacing in EXPLICIT_MATH_SPACES.values():
+        values = [value.replace(marker, spacing) for value in values]
+    return values
 
 
 def normalize_accents(root: Any) -> int:

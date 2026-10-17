@@ -1,5 +1,7 @@
 import os from 'node:os';
 
+import { readWordcraftVersion } from './wordcraft-renderer';
+
 function currentPlatformLabel(): string {
 	const release = os.release().toLowerCase();
 	if (
@@ -23,6 +25,21 @@ export function runDoctor(): void {
 	console.log('Portable renderer: available');
 	console.log(
 		'  Builds and validates DOCX with Node/OpenXML; PDF pagination is not authoritative.',
+	);
+	try {
+		console.log(
+			`Wordcraft renderer: experimental (${readWordcraftVersion()})`,
+		);
+	} catch (error) {
+		console.log(
+			'Wordcraft renderer: unavailable (requires wordcraft-cli 0.7.0)',
+		);
+		console.log(
+			`  ${String(error instanceof Error ? error.message : error).slice(0, 300)}`,
+		);
+	}
+	console.log(
+		'  Optional PDF export requires uv/Python; set WORDCRAFT_CLI for a custom executable.',
 	);
 	if (process.platform === 'win32') {
 		console.log('Word renderer: optional');

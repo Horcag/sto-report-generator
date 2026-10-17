@@ -33,7 +33,7 @@ const forbiddenExactPaths = new Set([
 	'.python-version',
 	'eslint.config.mjs',
 	'package-lock.json',
-	'steiger.config.ts',
+	'steiger.config.mjs',
 ]);
 
 function runPackDryRun(): PackResult[] {

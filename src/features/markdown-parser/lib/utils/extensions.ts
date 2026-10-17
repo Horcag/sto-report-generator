@@ -1,6 +1,7 @@
 import { Token, TokenizerThis } from 'marked';
 
 import { SUPPORTED_STO_ENVIRONMENTS } from '@/shared/config';
+import { maskMarkdownMathAndCode } from '@/shared/lib/math';
 
 const PARENTHESIZED_ITEM_PATTERN =
 	/^([ \t]*)((?:[A-Za-zА-Яа-яЁё]|\d+)\))\s+(.+)$/u;
@@ -66,15 +67,28 @@ function tokenizeStoListContent(
 	return tokens;
 }
 
+// Marked 18 calls block start() with currentSource.slice(1). Keep the full
+// tokenizer input per lexer so a leading inline math delimiter is not lost.
+// The equality guard confines this adapter to that exact callback relationship.
+const stoTokenizerSources = new WeakMap<TokenizerThis['lexer'], string>();
+
+function findStoStart(source: string): number | undefined {
+	return maskMarkdownMathAndCode(source).match(
+		/\\sto_structural_heading\{|\\sto_appendix\{|\\sto_referat_(?:characteristics|application)\{|\\begin\{/,
+	)?.index;
+}
+
 export const stoExtension = {
 	name: 'stoFlag',
 	level: 'block' as const,
-	start(src: string) {
-		return src.match(
-			/\\sto_structural_heading\{|\\sto_appendix\{|\\sto_referat_(?:characteristics|application)\{|\\begin\{/,
-		)?.index;
+	start(this: TokenizerThis, src: string) {
+		const fullSource = stoTokenizerSources.get(this.lexer);
+		const clipped = fullSource !== undefined && fullSource.slice(1) === src;
+		const index = findStoStart(clipped ? fullSource : src);
+		return index === undefined ? undefined : index - (clipped ? 1 : 0);
 	},
 	tokenizer(this: TokenizerThis, src: string, _tokens: Token[]) {
+		stoTokenizerSources.set(this.lexer, src);
 		let rule = /^\\sto_structural_heading\{([^}]+)\}/;
 		let match = rule.exec(src);
 		if (match) {

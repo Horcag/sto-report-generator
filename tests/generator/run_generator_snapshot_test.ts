@@ -17,7 +17,17 @@ const snapshotFile = path.join(
 );
 
 function formatXml(xml: string): string {
-	return xml.replaceAll(/\r\n?/g, '\n').replaceAll(/>\s*</g, '>\n<').trim();
+	// Preserve significant text line breaks without storing trailing whitespace
+	// in the golden file. A character reference has the same XML text value.
+	return xml
+		.replaceAll(/\r\n?/g, '\n')
+		.replaceAll(
+			/(<w:t\b[^>]*>)([\s\S]*?)(<\/w:t>)/g,
+			(_, open: string, text: string, close: string) =>
+				open + text.replaceAll('\n', '&#10;') + close,
+		)
+		.replaceAll(/>\s*</g, '>\n<')
+		.trim();
 }
 
 function firstDifference(expectedXml: string, actualXml: string): string {
@@ -50,7 +60,7 @@ async function main(): Promise<void> {
 	fs.rmSync(tempRoot, { recursive: true, force: true });
 
 	if (updateSnapshot || !fs.existsSync(snapshotFile)) {
-		fs.writeFileSync(snapshotFile, formattedXml, 'utf-8');
+		fs.writeFileSync(snapshotFile, `${formattedXml}\n`, 'utf-8');
 		console.log(`Snapshot saved to ${snapshotFile}`);
 		return;
 	}

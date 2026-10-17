@@ -4,7 +4,7 @@ import { Token, Tokens } from 'marked';
 
 import { formatStoInlineList, parseStoInlineListItems } from '@/shared/config';
 import { parseCitationReferences } from '@/shared/lib/citation-syntax';
-import { convertLatex2Math } from '@/shared/lib/math-converter';
+import { convertLatex2Math } from '@/shared/lib/math';
 
 import {
 	InlineDocxElement,

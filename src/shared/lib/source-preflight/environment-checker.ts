@@ -1,5 +1,7 @@
 import { STO_RULES } from '@/shared/config';
 
+import { maskMarkdownMathAndCode } from '../math/markdown-spans';
+import { maskSourceCodeFences } from './text-context';
 import { SourcePreflightIssue } from './types';
 import { issue, lineNumberAt } from './utils';
 
@@ -10,7 +12,8 @@ export function validateStoEnvironments(
 ): void {
 	const supported = new Set(STO_RULES.markdown.supportedEnvironments);
 	const stack: { envName: string; line: number }[] = [];
-	const tokenMatches = [...content.matchAll(/\\(begin|end)\{([^}]+)\}/g)];
+	const prose = maskMarkdownMathAndCode(maskSourceCodeFences(content));
+	const tokenMatches = [...prose.matchAll(/\\(begin|end)\{([^}]+)\}/g)];
 
 	for (const match of tokenMatches) {
 		const command = match[1];

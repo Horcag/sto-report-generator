@@ -18,7 +18,7 @@ import {
 import { JSDOM } from 'jsdom';
 import mathjax, { MathJaxApi } from 'mathjax';
 
-import { normalizeOmmlMath } from './math/omml-normalizer';
+import { normalizeOmmlMath } from './omml-normalizer';
 
 type DocxMathChild =
 	| MathFraction
@@ -110,14 +110,6 @@ function convertChildren(children: HTMLCollection): DocxMathChild[] {
 		.filter((child): child is DocxMathChild => child !== undefined);
 }
 
-function firstChildByTagName(element: Element, tagName: string): Element {
-	const child = element.getElementsByTagName(tagName)[0];
-	if (!child) {
-		throw new Error(`Malformed OMML: ${tagName} not found.`);
-	}
-	return child;
-}
-
 function directChildByTagName(element: Element, tagName: string): Element {
 	const child = [...element.children].find(
 		candidate => candidate.tagName === tagName,
@@ -163,8 +155,8 @@ function convertItem(item: Element): DocxMathChild | undefined {
 }
 
 function buildFraction(item: Element): MathFraction {
-	const numerator = firstChildByTagName(item, 'm:num');
-	const denominator = firstChildByTagName(item, 'm:den');
+	const numerator = directChildByTagName(item, 'm:num');
+	const denominator = directChildByTagName(item, 'm:den');
 	return new MathFraction({
 		numerator: convertChildren(numerator.children),
 		denominator: convertChildren(denominator.children),
@@ -172,7 +164,7 @@ function buildFraction(item: Element): MathFraction {
 }
 
 function buildMathRun(item: Element): MathRun {
-	const text = firstChildByTagName(item, 'm:t');
+	const text = directChildByTagName(item, 'm:t');
 	const run = new StyledMathRun(text.textContent ?? '');
 	run.addProperties(item);
 	return run;
@@ -208,8 +200,8 @@ function importMathProperty(element: Element): ImportedXmlComponent {
 }
 
 function buildSubScript(item: Element): MathSubScript {
-	const element = firstChildByTagName(item, 'm:e');
-	const subScript = firstChildByTagName(item, 'm:sub');
+	const element = directChildByTagName(item, 'm:e');
+	const subScript = directChildByTagName(item, 'm:sub');
 	return new MathSubScript({
 		children: convertChildren(element.children),
 		subScript: convertChildren(subScript.children),
@@ -217,8 +209,8 @@ function buildSubScript(item: Element): MathSubScript {
 }
 
 function buildSuperScript(item: Element): MathSuperScript {
-	const element = firstChildByTagName(item, 'm:e');
-	const superScript = firstChildByTagName(item, 'm:sup');
+	const element = directChildByTagName(item, 'm:e');
+	const superScript = directChildByTagName(item, 'm:sup');
 	return new MathSuperScript({
 		children: convertChildren(element.children),
 		superScript: convertChildren(superScript.children),
@@ -226,9 +218,9 @@ function buildSuperScript(item: Element): MathSuperScript {
 }
 
 function buildSubSuperScript(item: Element): MathSubSuperScript {
-	const element = firstChildByTagName(item, 'm:e');
-	const subScript = firstChildByTagName(item, 'm:sub');
-	const superScript = firstChildByTagName(item, 'm:sup');
+	const element = directChildByTagName(item, 'm:e');
+	const subScript = directChildByTagName(item, 'm:sub');
+	const superScript = directChildByTagName(item, 'm:sup');
 	return new MathSubSuperScript({
 		children: convertChildren(element.children),
 		subScript: convertChildren(subScript.children),
@@ -237,15 +229,12 @@ function buildSubSuperScript(item: Element): MathSubSuperScript {
 }
 
 function buildRadical(item: Element): MathRadical {
-	const element = firstChildByTagName(item, 'm:e');
-	const degree = item.getElementsByTagName('m:deg')[0]?.children[0];
+	const element = directChildByTagName(item, 'm:e');
+	const degree = [...item.children].find(child => child.tagName === 'm:deg');
+	const degreeChildren = degree ? convertChildren(degree.children) : [];
 	return new MathRadical({
 		children: convertChildren(element.children),
-		degree: degree
-			? [convertItem(degree)].filter(
-					(child): child is DocxMathChild => !!child,
-				)
-			: undefined,
+		degree: degreeChildren.length ? degreeChildren : undefined,
 	});
 }
 
@@ -267,9 +256,17 @@ function buildLimitLower(item: Element): MathLimitLower {
 	});
 }
 
-function buildNary(item: Element): MathIntegral | MathSum | undefined {
-	const char = firstChildByTagName(item, 'm:chr');
-	const charValue = char.getAttribute('m:val');
+function buildNary(item: Element): DocxMathChild {
+	const properties = [...item.children].find(
+		child => child.tagName === 'm:naryPr',
+	);
+	const char = [...(properties?.children ?? [])].find(
+		child => child.tagName === 'm:chr',
+	);
+	const charValue = char?.getAttribute('m:val');
+	if (charValue !== '∑' && charValue !== '∫') {
+		return importMathProperty(item) as DocxMathChild;
+	}
 	const element = directChildByTagName(item, 'm:e');
 	const subScript = directChildByTagName(item, 'm:sub');
 	const superScript = directChildByTagName(item, 'm:sup');
@@ -282,10 +279,7 @@ function buildNary(item: Element): MathIntegral | MathSum | undefined {
 	if (charValue === '∑') {
 		return new MathSum(options);
 	}
-	if (charValue === '∫') {
-		return new MathIntegral(options);
-	}
-	return undefined;
+	return new MathIntegral(options);
 }
 
 export function convertOmml2Math(ommlString: string): DocxMath {
@@ -358,7 +352,9 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 		changedOperator = true;
 	}
 	let ommlString = mml2omml(
-		changedOperator ? mathMl.documentElement.outerHTML : mathMlString,
+		changedOperator
+			? mathMl.documentElement.outerHTML.replaceAll('\u00a0', '&#xA0;')
+			: mathMlString,
 		{
 			disableDecode: true,
 		},

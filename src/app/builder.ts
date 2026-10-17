@@ -4,6 +4,7 @@ import {
 	AlignmentType,
 	Document,
 	Footer,
+	ImportedXmlComponent,
 	Packer,
 	PageNumber,
 	Paragraph,
@@ -28,7 +29,7 @@ import {
 	clearDirtyFieldFlags,
 } from '@/shared/lib/docx';
 import { FigurePlan } from '@/shared/lib/figures';
-import { FormulaConversionError } from '@/shared/lib/math-converter';
+import { FormulaConversionError } from '@/shared/lib/math';
 import { createTitlePage, createTitlePageFooter } from '@/widgets/title-page';
 
 export interface BuildReportOptions {
@@ -181,6 +182,14 @@ export async function buildReport(
 			},
 		],
 	});
+	const mathProperties = new ImportedXmlComponent('m:mathPr');
+	mathProperties.push(
+		new ImportedXmlComponent('m:brkBin', { 'm:val': 'repeat' }),
+	);
+	mathProperties.push(
+		new ImportedXmlComponent('m:brkBinSub', { 'm:val': '--' }),
+	);
+	doc.Settings.addChildElement(mathProperties);
 
 	// Ensure output directory exists
 	const outputDir = path.dirname(outputPath);

@@ -15,6 +15,10 @@ import {
 import { validateSTO, ValidationResult } from '@/shared/lib/sto-validator';
 
 import { buildReport } from './builder';
+import {
+	createWordcraftPdf,
+	WordcraftRenderResult,
+} from './wordcraft-renderer';
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 
@@ -24,6 +28,8 @@ export interface GenerateReportOptions {
 	renderer?: ReportRenderer;
 	postBuild?: boolean;
 	validate?: boolean;
+	outputPdf?: string;
+	wordcraftExecutable?: string;
 }
 
 export interface GenerateReportResult {
@@ -34,6 +40,7 @@ export interface GenerateReportResult {
 	validation?: ValidationResult[];
 	renderer: ReportRenderer;
 	postBuildRan: boolean;
+	wordcraft?: WordcraftRenderResult;
 }
 
 function formatValidationFailures(results: ValidationResult[]): string {
@@ -97,6 +104,15 @@ export async function generateReport(
 			diagnostics.map(diagnostic => diagnostic.message).join('\n'),
 		);
 	}
+	if (
+		(options.outputPdf || options.wordcraftExecutable) &&
+		config.renderer !== 'wordcraft'
+	) {
+		throw new Error('PDF overrides require renderer "wordcraft".');
+	}
+	if (config.renderer !== 'word' && options.postBuild) {
+		throw new Error('Word COM post-build requires renderer "word".');
+	}
 
 	const sourceDir = resolveReportPath(reportDir, config.sourceDir);
 	const outputDocx = path.resolve(reportDir, config.outputDocx);
@@ -138,6 +154,16 @@ export async function generateReport(
 			throw new Error(formatValidationFailures(validation));
 		}
 	}
+	const wordcraft =
+		config.renderer === 'wordcraft'
+			? createWordcraftPdf({
+					inputDocx: outputDocx,
+					outputPdf: options.outputPdf
+						? resolveReportPath(reportDir, options.outputPdf)
+						: undefined,
+					executable: options.wordcraftExecutable,
+				})
+			: undefined;
 
 	return {
 		reportDir,
@@ -147,5 +173,6 @@ export async function generateReport(
 		validation,
 		renderer: config.renderer,
 		postBuildRan: config.postBuild.enabled,
+		wordcraft,
 	};
 }

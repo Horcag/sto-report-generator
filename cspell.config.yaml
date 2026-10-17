@@ -13,6 +13,11 @@ ignorePaths:
     - coverage/**
     - tests/fixtures/**
 words:
+    - Wordcraft
+    - bmatrix
+    - pypdf
+    - PDFium
+    - pypdfium
     - BibTeX
     - DOCX
     - DOTM

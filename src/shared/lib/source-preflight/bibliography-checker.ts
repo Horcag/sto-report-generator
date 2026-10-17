@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import matter from 'gray-matter';
 
 import { STO_RULES } from '@/shared/config';
 import { resolveBibliographyPath } from '@/shared/lib/bibliography-path';
 import { parseCitationReferences } from '@/shared/lib/citation-syntax';
+import { parseReportFrontmatter as matter } from '@/shared/lib/frontmatter';
 import { ReportConfig } from '@/shared/lib/report-config';
 
 import { validateManualBibliographyContent } from './bibliography-content-checker';

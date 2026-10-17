@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
-import matter from 'gray-matter';
+
+import { parseReportFrontmatter as matter } from '@/shared/lib/frontmatter';
 
 const loadDependency = createRequire(__filename);
 

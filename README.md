@@ -58,7 +58,7 @@ npm run accept:word -- reports/my_report/build/my_report.docx
 запускает LibreOffice и по умолчанию сохраняет отдельные файлы
 `*.accepted.docx`, `*.accepted.pdf`, `*.acceptance.json` рядом с исходным DOCX.
 
-В WSL полный путь к PDF: сначала `generate --renderer portable --validate`, затем `accept-word` для полученного DOCX.
+Для финального PDF через Microsoft Word в WSL: сначала `generate --renderer portable --validate`, затем `accept-word` для полученного DOCX.
 Word работает на Windows-хосте; временная копия документа размещается в Windows TEMP. Экспорт использует небольшой
 C#-адаптер с явно типизированными аргументами COM. Итоговый статус `accepted` записывается только после проверки
 завершения принадлежащих запуску процессов. При неудачной очистке каталог запроса сохраняется для восстановления.
@@ -70,6 +70,33 @@ C#-адаптер с явно типизированными аргумента�
 Примените их командой `npx sto-report-generator figures set <report_dir> --settings <figures.json>` и повторите сборку DOCX.
 Сборка сохраняет исходники и редактируемую обрезку; Word-приёмка проверяет размеры и сохранность изображений.
 Качество PDF проверяется отдельно. Подробности: [управление рисунками](docs/figure-controls.md).
+
+### Экспериментальный PDF через Wordcraft
+
+Wordcraft 0.7.0 позволяет получить PDF в Linux, WSL, macOS и Windows без установленного Office.
+Установите `wordcraft-cli` из [официального релиза 0.7.0](https://github.com/storytold/wordcraft/releases/tag/v0.7.0)
+и выполните `uv sync` в каталоге генератора для подготовки Python-инструментов XML.
+
+```sh
+npm run generate:report -- example --renderer wordcraft --validate
+npx tsx src/index.ts preview build/report.docx --renderer wordcraft
+```
+
+Если CLI отсутствует в `PATH`, передайте `--wordcraft /path/to/wordcraft-cli` или задайте `WORDCRAFT_CLI`.
+`generate` и `audit` поддерживают `--renderer wordcraft`; режим также задаётся в `report.config.json`.
+Для `audit` указывайте renderer явно. `--pdf` меняет путь PDF: в `generate` и `audit` он считается от каталога отчёта,
+в `preview` — от текущего каталога.
+
+Результат — отдельные `*.wordcraft.pdf` и `*.wordcraft.json`. Исходный DOCX сохраняется без изменений.
+Движок обновляет поля во временной копии, заполняет статистику реферата и проверяет стабилизацию числа страниц.
+JSON содержит версию, хеши, предупреждения и признак `experimental: true`.
+Число страниц в манифесте получено из layout Wordcraft; независимая проверка PDF отмечена как невыполненная.
+Этот режим не подтверждает совпадение пагинации и формул с Microsoft Word. Другие версии CLI отклоняются до проверки.
+
+SVG сохраняется в DOCX вместе с проверенным PNG-компаньоном: укажите `fallback` в настройках рисунка
+или положите PNG с тем же именем рядом с SVG. Генератор проверяет PNG, пропорции и качество;
+при отсутствии корректного компаньона сборка завершается ошибкой. Автоматическое создание PNG не выполняется.
+Подробности, ограничения и сценарии проверки: [Wordcraft renderer](docs/architecture/wordcraft-renderer.md).
 
 ## Что поддерживается
 

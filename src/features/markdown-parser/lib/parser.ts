@@ -11,7 +11,7 @@ import {
 	FigureSettings,
 	loadFigureSettings,
 } from '@/shared/lib/figures';
-import { mathJaxReady } from '@/shared/lib/math-converter';
+import { mathJaxReady } from '@/shared/lib/math';
 
 import { loadBibliography } from './parser/bibliography-loader';
 import { getCitationNumber } from './parser/citation-registry';
