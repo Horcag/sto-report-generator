@@ -626,8 +626,7 @@
 <w:pStyle w:val="Normal"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">В процессе работы успешно реализована обработка списков, математических формул, перекрестных ссылок, автоматического оглавления и формирования библиографического списка. 
-В результате доказана высокая эффективность использования утилиты для рутинной работы студентов и преподавателей.</w:t>
+<w:t xml:space="preserve">В процессе работы успешно реализована обработка списков, математических формул, перекрестных ссылок, автоматического оглавления и формирования библиографического списка. &#10;В результате доказана высокая эффективность использования утилиты для рутинной работы студентов и преподавателей.</w:t>
 </w:r>
 </w:p>
 <w:p>
@@ -642,11 +641,163 @@
 <w:sdtPr/>
 <w:sdtContent>
 <w:p>
+<w:pPr>
+<w:pStyle w:val="TOC1"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9355" w:leader="dot"/>
+</w:tabs>
+</w:pPr>
 <w:r>
 <w:fldChar w:fldCharType="begin"/>
 <w:instrText xml:space="preserve">TOC \f "A" \h \o "1-4" \t "StructuralHeading,1,AppendixSectionHeading,2,StoHeading1,1,StoHeading2,2,StoHeading3,3,StoHeading4,4"</w:instrText>
 <w:fldChar w:fldCharType="separate"/>
 </w:r>
+<w:hyperlink w:history="1" w:anchor="_Toc1">
+<w:r>
+<w:t xml:space="preserve">Введение</w:t>
+</w:r>
+<w:r>
+<w:tab/>
+</w:r>
+<w:r>
+<w:fldChar w:fldCharType="begin"/>
+<w:instrText xml:space="preserve">PAGEREF _Toc1 \h</w:instrText>
+<w:fldChar w:fldCharType="separate"/>
+<w:fldChar w:fldCharType="end"/>
+</w:r>
+</w:hyperlink>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TOC1"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9355" w:leader="dot"/>
+</w:tabs>
+</w:pPr>
+<w:hyperlink w:history="1" w:anchor="_Toc2">
+<w:r>
+<w:t xml:space="preserve">Основная часть</w:t>
+</w:r>
+<w:r>
+<w:tab/>
+</w:r>
+<w:r>
+<w:fldChar w:fldCharType="begin"/>
+<w:instrText xml:space="preserve">PAGEREF _Toc2 \h</w:instrText>
+<w:fldChar w:fldCharType="separate"/>
+<w:fldChar w:fldCharType="end"/>
+</w:r>
+</w:hyperlink>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TOC2"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9355" w:leader="dot"/>
+</w:tabs>
+</w:pPr>
+<w:hyperlink w:history="1" w:anchor="_Toc3">
+<w:r>
+<w:t xml:space="preserve">Математические формулы</w:t>
+</w:r>
+<w:r>
+<w:tab/>
+</w:r>
+<w:r>
+<w:fldChar w:fldCharType="begin"/>
+<w:instrText xml:space="preserve">PAGEREF _Toc3 \h</w:instrText>
+<w:fldChar w:fldCharType="separate"/>
+<w:fldChar w:fldCharType="end"/>
+</w:r>
+</w:hyperlink>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TOC2"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9355" w:leader="dot"/>
+</w:tabs>
+</w:pPr>
+<w:hyperlink w:history="1" w:anchor="_Toc4">
+<w:r>
+<w:t xml:space="preserve">Таблицы и списки</w:t>
+</w:r>
+<w:r>
+<w:tab/>
+</w:r>
+<w:r>
+<w:fldChar w:fldCharType="begin"/>
+<w:instrText xml:space="preserve">PAGEREF _Toc4 \h</w:instrText>
+<w:fldChar w:fldCharType="separate"/>
+<w:fldChar w:fldCharType="end"/>
+</w:r>
+</w:hyperlink>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TOC2"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9355" w:leader="dot"/>
+</w:tabs>
+</w:pPr>
+<w:hyperlink w:history="1" w:anchor="_Toc5">
+<w:r>
+<w:t xml:space="preserve">Изображения</w:t>
+</w:r>
+<w:r>
+<w:tab/>
+</w:r>
+<w:r>
+<w:fldChar w:fldCharType="begin"/>
+<w:instrText xml:space="preserve">PAGEREF _Toc5 \h</w:instrText>
+<w:fldChar w:fldCharType="separate"/>
+<w:fldChar w:fldCharType="end"/>
+</w:r>
+</w:hyperlink>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TOC1"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9355" w:leader="dot"/>
+</w:tabs>
+</w:pPr>
+<w:hyperlink w:history="1" w:anchor="_Toc6">
+<w:r>
+<w:t xml:space="preserve">Заключение</w:t>
+</w:r>
+<w:r>
+<w:tab/>
+</w:r>
+<w:r>
+<w:fldChar w:fldCharType="begin"/>
+<w:instrText xml:space="preserve">PAGEREF _Toc6 \h</w:instrText>
+<w:fldChar w:fldCharType="separate"/>
+<w:fldChar w:fldCharType="end"/>
+</w:r>
+</w:hyperlink>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="TOC1"/>
+<w:tabs>
+<w:tab w:val="right" w:pos="9355" w:leader="dot"/>
+</w:tabs>
+</w:pPr>
+<w:hyperlink w:history="1" w:anchor="_Toc7">
+<w:r>
+<w:t xml:space="preserve">Список использованных источников</w:t>
+</w:r>
+<w:r>
+<w:tab/>
+</w:r>
+<w:r>
+<w:fldChar w:fldCharType="begin"/>
+<w:instrText xml:space="preserve">PAGEREF _Toc7 \h</w:instrText>
+<w:fldChar w:fldCharType="separate"/>
+<w:fldChar w:fldCharType="end"/>
+</w:r>
+</w:hyperlink>
 </w:p>
 <w:p>
 <w:r>
@@ -659,9 +810,11 @@
 <w:pPr>
 <w:pStyle w:val="StructuralHeading"/>
 </w:pPr>
+<w:bookmarkStart w:name="_Toc1" w:id="1"/>
 <w:r>
 <w:t xml:space="preserve">Введение</w:t>
 </w:r>
+<w:bookmarkEnd w:id="1"/>
 </w:p>
 <w:p>
 <w:pPr>
@@ -748,17 +901,21 @@
 <w:pPr>
 <w:pStyle w:val="StoHeading1"/>
 </w:pPr>
+<w:bookmarkStart w:name="_Toc2" w:id="2"/>
 <w:r>
 <w:t xml:space="preserve">Основная часть</w:t>
 </w:r>
+<w:bookmarkEnd w:id="2"/>
 </w:p>
 <w:p>
 <w:pPr>
 <w:pStyle w:val="StoHeading2"/>
 </w:pPr>
+<w:bookmarkStart w:name="_Toc3" w:id="3"/>
 <w:r>
 <w:t xml:space="preserve">Математические формулы</w:t>
 </w:r>
+<w:bookmarkEnd w:id="3"/>
 </w:p>
 <w:p>
 <w:pPr>
@@ -778,7 +935,7 @@
 </w:p>
 <w:tbl>
 <w:tblPr>
-<w:tblW w:type="pct" w:w="100%"/>
+<w:tblW w:type="pct" w:w="5000"/>
 <w:tblBorders>
 <w:top w:val="none" w:color="auto" w:sz="0"/>
 <w:left w:val="none" w:color="auto" w:sz="0"/>
@@ -789,14 +946,14 @@
 </w:tblBorders>
 </w:tblPr>
 <w:tblGrid>
-<w:gridCol w:w="100"/>
-<w:gridCol w:w="100"/>
-<w:gridCol w:w="100"/>
+<w:gridCol w:w="1403"/>
+<w:gridCol w:w="6549"/>
+<w:gridCol w:w="1403"/>
 </w:tblGrid>
 <w:tr>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="pct" w:w="15%"/>
+<w:tcW w:type="pct" w:w="750"/>
 </w:tcPr>
 <w:p>
 <w:r>
@@ -806,7 +963,7 @@
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="pct" w:w="70%"/>
+<w:tcW w:type="pct" w:w="3500"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -895,7 +1052,7 @@
 </w:tc>
 <w:tc>
 <w:tcPr>
-<w:tcW w:type="pct" w:w="15%"/>
+<w:tcW w:type="pct" w:w="750"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
@@ -928,9 +1085,11 @@
 <w:pPr>
 <w:pStyle w:val="StoHeading2"/>
 </w:pPr>
+<w:bookmarkStart w:name="_Toc4" w:id="4"/>
 <w:r>
 <w:t xml:space="preserve">Таблицы и списки</w:t>
 </w:r>
+<w:bookmarkEnd w:id="4"/>
 </w:p>
 <w:p>
 <w:pPr>
@@ -1282,9 +1441,11 @@
 <w:pPr>
 <w:pStyle w:val="StoHeading2"/>
 </w:pPr>
+<w:bookmarkStart w:name="_Toc5" w:id="5"/>
 <w:r>
 <w:t xml:space="preserve">Изображения</w:t>
 </w:r>
+<w:bookmarkEnd w:id="5"/>
 </w:p>
 <w:p>
 <w:pPr>
@@ -1360,9 +1521,11 @@
 <w:pPr>
 <w:pStyle w:val="StructuralHeading"/>
 </w:pPr>
+<w:bookmarkStart w:name="_Toc6" w:id="6"/>
 <w:r>
 <w:t xml:space="preserve">Заключение</w:t>
 </w:r>
+<w:bookmarkEnd w:id="6"/>
 </w:p>
 <w:p>
 <w:pPr>
@@ -1376,9 +1539,11 @@
 <w:pPr>
 <w:pStyle w:val="StructuralHeading"/>
 </w:pPr>
+<w:bookmarkStart w:name="_Toc7" w:id="7"/>
 <w:r>
 <w:t xml:space="preserve">Список использованных источников</w:t>
 </w:r>
+<w:bookmarkEnd w:id="7"/>
 </w:p>
 <w:p>
 <w:pPr>
@@ -1399,8 +1564,8 @@
 </w:r>
 </w:p>
 <w:sectPr>
-<w:footerReference w:type="default" r:id="rId7"/>
-<w:footerReference w:type="first" r:id="rId8"/>
+<w:footerReference w:type="default" r:id="rId6"/>
+<w:footerReference w:type="first" r:id="rId7"/>
 <w:pgSz w:w="11906" w:h="16838" w:orient="portrait"/>
 <w:pgMar w:top="1134" w:right="850" w:bottom="1134" w:left="1701" w:header="708" w:footer="708" w:gutter="0"/>
 <w:pgNumType w:start="1"/>

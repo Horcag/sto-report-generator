@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { JSDOM } from 'jsdom';
 
 import { buildReport } from '@/app/builder';
 import {
@@ -120,6 +121,27 @@ function assertDefaultDotmStyleProperties(): void {
 	}
 }
 
+function assertMathBinaryOperatorRepeat(docxPath: string): void {
+	const xml = readDocxEntry(docxPath, 'word/settings.xml');
+	assert.doesNotMatch(xml, /<undefined\b/);
+	const settings = new JSDOM(xml, { contentType: 'text/xml' }).window.document
+		.documentElement;
+	const mathProperties = [...settings.children].filter(
+		child => child.tagName === 'm:mathPr',
+	);
+	assert.equal(mathProperties.length, 1, 'Document needs one mathPr setting');
+	const breakSettings = [...mathProperties[0].children].filter(
+		child => child.tagName === 'm:brkBin',
+	);
+	assert.equal(breakSettings.length, 1, 'mathPr needs one brkBin setting');
+	assert.equal(breakSettings[0].getAttribute('m:val'), 'repeat');
+	const subtractionSettings = [...mathProperties[0].children].filter(
+		child => child.tagName === 'm:brkBinSub',
+	);
+	assert.equal(subtractionSettings.length, 1);
+	assert.equal(subtractionSettings[0].getAttribute('m:val'), '--');
+}
+
 async function main(): Promise<void> {
 	fs.rmSync(tempRoot, { recursive: true, force: true });
 	fs.mkdirSync(tempRoot, { recursive: true });
@@ -128,6 +150,8 @@ async function main(): Promise<void> {
 	await buildReport('example', genericPresetDocx, {
 		stylePreset: 'default',
 	});
+	assertMathBinaryOperatorRepeat(outputDocx);
+	assertMathBinaryOperatorRepeat(genericPresetDocx);
 	assertDefaultDotmStyleNames();
 	assertDefaultDotmStyleProperties();
 	unpackDocx(outputDocx, unpackedDir);

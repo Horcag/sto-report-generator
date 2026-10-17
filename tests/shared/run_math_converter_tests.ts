@@ -6,10 +6,11 @@ import { JSDOM } from 'jsdom';
 
 import {
 	convertLatex2Math,
+	convertOmml2Math,
 	FormulaConversionError,
 	mathJaxReady,
 	normalizeMathJaxImportSpecifier,
-} from '../../src/shared/lib/math-converter';
+} from '../../src/shared/lib/math';
 import { validateSourceFormulas } from '../../src/shared/lib/source-preflight/formula-checker';
 
 assert.equal(
@@ -151,6 +152,119 @@ async function main(): Promise<void> {
 		'∑i=1n',
 	);
 	assert.equal(xml.includes('口'), false);
+	const nestedCases = [
+		String.raw`\frac{\frac{a}{b}}{c}`,
+		String.raw`\left[x^J\right]^{3/2}`,
+		String.raw`\sqrt[x_i^2]{y}`,
+		String.raw`x_{i_j}`,
+		String.raw`x^{i^2}`,
+		String.raw`x_{i_j}^{k^2}`,
+		String.raw`a=\frac{\sum_{i=1}^{n}(\bar{T}^J-T_i^J)^3}{6\left[\sum_{i=1}^{n}(\bar{T}^J-T_i^J)^2\right]^{3/2}}`,
+		String.raw`\sqrt{x}`,
+	];
+	const unsupportedNary = convertOmml2Math(
+		'<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:nary><m:naryPr><m:chr m:val="∏"/><m:grow m:val="1"/></m:naryPr><m:sub><m:r><m:t>i=1</m:t></m:r></m:sub><m:sup><m:r><m:t>n</m:t></m:r></m:sup><m:e><m:r><m:t>x_i</m:t></m:r></m:e></m:nary></m:oMath>',
+	);
+	const defaultNary = convertOmml2Math(
+		'<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:nary><m:naryPr><m:grow m:val="1"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e><m:r><m:t>x</m:t></m:r></m:e></m:nary></m:oMath>',
+	);
+	const nestedBuffer = await Packer.toBuffer(
+		new Document({
+			sections: [
+				{
+					children: [
+						...nestedCases.map(
+							latex =>
+								new Paragraph({
+									children: [convertLatex2Math(latex)],
+								}),
+						),
+						new Paragraph({ children: [unsupportedNary] }),
+						new Paragraph({ children: [defaultNary] }),
+					],
+				},
+			],
+		}),
+	);
+	const nestedXml = new AdmZip(nestedBuffer)
+		.getEntry('word/document.xml')
+		?.getData()
+		.toString('utf8');
+	assert.ok(nestedXml);
+	const nestedMath = [
+		...new JSDOM(nestedXml, {
+			contentType: 'text/xml',
+		}).window.document.getElementsByTagName('m:oMath'),
+	];
+	const direct = (parent: Element, name: string): Element => {
+		const child = [...parent.children].find(
+			value => value.tagName === name,
+		);
+		assert.ok(child, `${name} missing from ${parent.tagName}`);
+		return child;
+	};
+	const nestedFraction = direct(nestedMath[0], 'm:f');
+	assert.equal(direct(nestedFraction, 'm:num').textContent, 'ab');
+	assert.equal(direct(nestedFraction, 'm:den').textContent, 'c');
+	const nestedPower = direct(nestedMath[1], 'm:sSup');
+	assert.equal(direct(nestedPower, 'm:e').textContent, '[xJ]');
+	assert.equal(direct(nestedPower, 'm:sup').textContent, '3/2');
+	const nestedRadical = direct(nestedMath[2], 'm:rad');
+	assert.equal(direct(nestedRadical, 'm:e').textContent, 'y');
+	const radicalDegree = direct(nestedRadical, 'm:deg');
+	assert.equal(radicalDegree.textContent, 'xi2');
+	assert.equal(radicalDegree.getElementsByTagName('m:sSubSup').length, 1);
+	const nestedSubscript = direct(nestedMath[3], 'm:sSub');
+	assert.equal(direct(nestedSubscript, 'm:e').textContent, 'x');
+	const nestedSubSlot = direct(nestedSubscript, 'm:sub');
+	assert.equal(nestedSubSlot.textContent, 'ij');
+	assert.equal(nestedSubSlot.getElementsByTagName('m:sSub').length, 1);
+	const nestedSuperscript = direct(nestedMath[4], 'm:sSup');
+	assert.equal(direct(nestedSuperscript, 'm:e').textContent, 'x');
+	const nestedSupSlot = direct(nestedSuperscript, 'm:sup');
+	assert.equal(nestedSupSlot.textContent, 'i2');
+	assert.equal(nestedSupSlot.getElementsByTagName('m:sSup').length, 1);
+	const nestedSubSuper = direct(nestedMath[5], 'm:sSubSup');
+	assert.equal(direct(nestedSubSuper, 'm:e').textContent, 'x');
+	const nestedSubSuperSub = direct(nestedSubSuper, 'm:sub');
+	const nestedSubSuperSup = direct(nestedSubSuper, 'm:sup');
+	assert.equal(nestedSubSuperSub.textContent, 'ij');
+	assert.equal(nestedSubSuperSup.textContent, 'k2');
+	assert.equal(nestedSubSuperSub.getElementsByTagName('m:sSub').length, 1);
+	assert.equal(nestedSubSuperSup.getElementsByTagName('m:sSup').length, 1);
+	const courseworkFraction = nestedMath[6].getElementsByTagName('m:f')[0];
+	assert.ok(courseworkFraction);
+	const courseworkDenominator = direct(courseworkFraction, 'm:den');
+	assert.ok(
+		[...courseworkDenominator.getElementsByTagName('m:sSup')].some(
+			power => direct(power, 'm:sup').textContent === '3/2',
+		),
+	);
+	const squareRoot = direct(nestedMath[7], 'm:rad');
+	assert.equal(direct(squareRoot, 'm:e').textContent, 'x');
+	assert.equal(
+		direct(direct(squareRoot, 'm:radPr'), 'm:degHide').getAttribute(
+			'm:val',
+		),
+		'1',
+	);
+	const product = direct(nestedMath[8], 'm:nary');
+	assert.equal(
+		direct(direct(product, 'm:naryPr'), 'm:chr').getAttribute('m:val'),
+		'∏',
+	);
+	assert.equal(
+		direct(direct(product, 'm:naryPr'), 'm:grow').getAttribute('m:val'),
+		'1',
+	);
+	assert.equal(direct(product, 'm:sub').textContent, 'i=1');
+	assert.equal(direct(product, 'm:sup').textContent, 'n');
+	assert.equal(direct(product, 'm:e').textContent, 'x_i');
+	const defaultIntegral = direct(nestedMath[9], 'm:nary');
+	assert.equal(direct(defaultIntegral, 'm:naryPr').children.length, 1);
+	assert.equal(direct(defaultIntegral, 'm:sub').textContent, '0');
+	assert.equal(direct(defaultIntegral, 'm:sup').textContent, '1');
+	assert.equal(direct(defaultIntegral, 'm:e').textContent, 'x');
 	const issues: Parameters<typeof validateSourceFormulas>[2] = [];
 	validateSourceFormulas('formula.md', '$x_{\\stoabbr{max}}$', issues);
 	assert.equal(
@@ -229,6 +343,7 @@ async function main(): Promise<void> {
 			String.raw`\bar{y}=\frac{1}{n}\sum_{i=1}^{n}y_i,\quad\tilde{y}=\operatorname{median}(y_1,\ldots,y_n)`,
 			'\u2003',
 		],
+		[String.raw`a\quad\text{при } b`, '\u2003'],
 	] as const;
 	const spacingDocx = await Packer.toBuffer(
 		new Document({
@@ -262,6 +377,10 @@ async function main(): Promise<void> {
 	for (const [index, [, expectedSpace]] of spacingCases.entries()) {
 		assert.ok(spacingMath[index].textContent?.includes(expectedSpace));
 	}
+	assert.ok(
+		runs(spacingMath[4]).some(value => text(value)?.includes('при\u00a0')),
+		'TeX text trailing space should remain in the math run',
+	);
 	assert.doesNotMatch(spacingXml, /[\uE000\uE001]/);
 	for (const invalid of ['x=\\frac{1}{', '\\left( x', '\\badcommand{x}']) {
 		assert.throws(

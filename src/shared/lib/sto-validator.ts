@@ -37,6 +37,7 @@ import {
 	hasFormulaPeriodBeforeWhere,
 	inspectMathStructures,
 } from './sto-validator/math-xml';
+import { hasForbiddenTabCharacters } from './sto-validator/tab-xml';
 
 /**
  * STO Validation Suite
@@ -597,37 +598,6 @@ function hasInvalidDirectBodyFormatting(
 				effective('spacing', 'lineRule') !== 'auto')
 		);
 	});
-}
-
-function hasRunLevelTab(paragraphXml: string): boolean {
-	const runs = paragraphXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? [];
-	return runs.some(runXml => regexMatches(/<w:tab\b/, runXml));
-}
-
-function isAllowedLayoutTabParagraph(
-	paragraphXml: string,
-	stylesXml: string,
-): boolean {
-	const styleId = getParagraphStyleId(paragraphXml);
-	if (!styleId) {
-		return false;
-	}
-	if (styleId === resolveWordStyleId(stylesXml, 'TitlePageText')) {
-		return true;
-	}
-
-	const styleName = getStyleName(stylesXml, styleId);
-	return styleName ? /^toc\s+\d+$/i.test(styleName) : false;
-}
-
-function hasForbiddenTabCharacters(docXml: string, stylesXml: string): boolean {
-	const paragraphs = docXml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? [];
-	return paragraphs.some(
-		paragraphXml =>
-			(hasRunLevelTab(paragraphXml) ||
-				extractWordText(paragraphXml).includes('\t')) &&
-			!isAllowedLayoutTabParagraph(paragraphXml, stylesXml),
-	);
 }
 
 function validateHeadingText(input: ValidationInput): ValidationResult[] {

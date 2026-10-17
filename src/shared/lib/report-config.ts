@@ -16,7 +16,7 @@ export const REPORT_PROFILE_NAMES = [
 	'vkr-bachelor',
 	'vkr-master',
 ] as const;
-export const REPORT_RENDERERS = ['portable', 'word'] as const;
+export const REPORT_RENDERERS = ['portable', 'word', 'wordcraft'] as const;
 
 export type ReportProfile = (typeof REPORT_PROFILE_NAMES)[number];
 export type ReportRenderer = (typeof REPORT_RENDERERS)[number];
@@ -458,14 +458,14 @@ function normalizeRawConfig(
 			}
 		}
 		if (
-			config.renderer === 'portable' &&
+			(config.renderer === 'portable' ||
+				config.renderer === 'wordcraft') &&
 			config.postBuild.enabled === true
 		) {
 			diagnostics.push({
 				code: 'report-config-renderer-conflict',
 				file: configPath,
-				message:
-					'report.config.json cannot combine renderer "portable" with postBuild.enabled true. Use renderer "word" for Word COM post-build, or disable postBuild for the portable path.',
+				message: `report.config.json cannot combine renderer "${config.renderer}" with postBuild.enabled true. Use renderer "word" for Word COM post-build, or disable postBuild.`,
 				severity: 'error',
 			});
 		}

@@ -1,4 +1,4 @@
-import matter from 'gray-matter';
+import { parseReportFrontmatter as matter } from '@/shared/lib/frontmatter';
 
 import { ReportConfig, ReportProfile } from '../report-config';
 import { SourceFile, SourcePreflightIssue } from './types';

@@ -1,7 +1,10 @@
+import tempfile
 import unittest
 from pathlib import Path
+from zipfile import ZipFile
 
 from scripts.sto_post_build.constants import MATH_NS, WORD_NS
+from scripts.sto_post_build.formula_replacement import replace_formulas_from_markdown
 from scripts.sto_post_build.math_conversion import (
     convert_mathml_to_omath,
     latex_to_mathml_batch,
@@ -103,6 +106,54 @@ class MathSemanticPostBuildTests(unittest.TestCase):
         variable = formula.xpath('.//m:r[contains(m:t, "x")]', namespaces=namespaces)
         self.assertEqual(len(variable), 1)
         self.assertEqual(len(variable[0].xpath("./m:rPr/m:nor", namespaces=namespaces)), 0)
+
+    def test_explicit_spacing_survives_formula_replacement(self) -> None:
+        cases = [
+            (r"a,\quad b", "\u2003"),
+            (r"a,\qquad b", "\u2003\u2003"),
+            (r"a\;b", " "),
+            (r"a\quad b\qquad c\quad d", "\u2003\u2003"),
+        ]
+        repo_root = Path(__file__).resolve().parents[2]
+        mathml = latex_to_mathml_batch([latex for latex, _ in cases], repo_root)
+        formulas = convert_mathml_to_omath(mathml, repo_root)
+        for formula, (latex, expected) in zip(formulas, cases, strict=True):
+            with self.subTest(latex=latex):
+                text = "".join(formula.itertext())
+                self.assertIn(expected, text)
+                self.assertNotIn("\ue000", text)
+                self.assertNotIn("\ue001", text)
+        self.assertEqual("".join(formulas[-1].itertext()), "a\u2003b\u2003\u2003c\u2003d")
+
+    def test_malformed_tex_is_rejected_before_formula_replacement(self) -> None:
+        repo_root = Path(__file__).resolve().parents[2]
+        for latex in (r"x=\frac{1}{", r"\left( x", r"\badcommand{x}"):
+            with self.subTest(latex=latex), self.assertRaisesRegex(RuntimeError, "MathJax"):
+                latex_to_mathml_batch(["x", latex], repo_root)
+
+    def test_spacing_normalization_preserves_spaces_inside_text(self) -> None:
+        repo_root = Path(__file__).resolve().parents[2]
+        latex = r"\sin x\text{при } b"
+        mathml = latex_to_mathml_batch([latex], repo_root)
+        formula = convert_mathml_to_omath(mathml, repo_root)[0]
+        self.assertEqual("".join(formula.itertext()), "sin\u2061x\u043f\u0440\u0438\u00a0b")
+
+    def test_failed_conversion_leaves_original_docx_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="sto-math-failure-") as temporary:
+            root = Path(temporary)
+            (root / "10_math.md").write_text(r"$$x=\frac{1}{$$", encoding="utf-8")
+            docx = root / "report.docx"
+            with ZipFile(docx, "w") as archive:
+                archive.writestr(
+                    "word/document.xml",
+                    f'<w:document xmlns:w="{WORD_NS}" xmlns:m="{MATH_NS}">'
+                    "<w:body><w:p><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></w:p>"
+                    "</w:body></w:document>",
+                )
+            before = docx.read_bytes()
+            with self.assertRaisesRegex(RuntimeError, "MathJax"):
+                replace_formulas_from_markdown(docx, root)
+            self.assertEqual(docx.read_bytes(), before)
 
 
 if __name__ == "__main__":

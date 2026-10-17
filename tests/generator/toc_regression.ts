@@ -25,10 +25,19 @@ title: Тест ТОС
 \sto_structural_heading{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
 `;
 
-function paragraphContaining(xml: string, text: string): string | undefined {
+function paragraphContaining(
+	xml: string,
+	text: string,
+	styleId?: string,
+): string | undefined {
 	return xml
 		.match(/<w:p\b[\s\S]*?<\/w:p>/g)
-		?.find(paragraphXml => paragraphXml.includes(`>${text}<`));
+		?.find(
+			paragraphXml =>
+				paragraphXml.includes(`>${text}<`) &&
+				(!styleId ||
+					paragraphXml.includes(`<w:pStyle w:val="${styleId}"`)),
+		);
 }
 
 async function main(): Promise<void> {
@@ -56,7 +65,12 @@ async function main(): Promise<void> {
 		);
 	}
 
-	const numberedHeadingBlock = paragraphContaining(currentXml, 'Глава 1');
+	// Cached TOC entries repeat heading text before the numbered body paragraph.
+	const numberedHeadingBlock = paragraphContaining(
+		currentXml,
+		'Глава 1',
+		'StoHeading1',
+	);
 	const headingStyle =
 		/<w:style\b(?=[^>]*w:styleId="StoHeading1")[\s\S]*?<\/w:style>/.exec(
 			stylesXml,

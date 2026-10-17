@@ -1,7 +1,8 @@
 import { buildReport } from '@/app/builder';
+import { printHelp } from '@/app/cli-help';
+import { printWordcraftResult, runPreview } from '@/app/cli-preview';
 import { runDoctor } from '@/app/doctor';
 import { runFigureCommand } from '@/app/figure-command';
-import { createLibreOfficePreview } from '@/app/libreoffice-preview';
 import { scaffoldReport } from '@/app/report-scaffold';
 import { generateReport, validateDocxFile } from '@/app/report-workflow';
 import { runWordAcceptance } from '@/app/word-acceptance';
@@ -128,28 +129,6 @@ function optionStylePreset(args: ParsedArgs): StoStylePreset | undefined {
 	return value;
 }
 
-function printHelp(): void {
-	console.log(`STO Report Generator
-
-Usage:
-  npx tsx src/index.ts build <input.md|report_dir> <output.docx>
-  npx tsx src/index.ts new <slug> --profile nir|coursework|lab|vkr-bachelor|vkr-master [--title "..."] [--dir reports/<slug>] [--no-git]
-  npx tsx src/index.ts check <report_dir> [--strict]
-  npx tsx src/index.ts generate <report_dir> [--output build/report.docx] [--renderer portable|word] [--post-build] [--validate]
-  npx tsx src/index.ts audit <report_dir> [--output build/report.docx] [--renderer portable|word]
-  npx tsx src/index.ts preview <input.docx> [--pdf preview.pdf] [--soffice /path/to/soffice]
-  npx tsx src/index.ts accept-word <input.docx> [--accepted-docx accepted.docx] [--pdf accepted.pdf] [--manifest acceptance.json] [--style-preset samara-template-2022|default]
-  npx tsx src/index.ts validate-docx <report.docx> [unpack_dir]
-  npx tsx src/index.ts doctor
-  npx tsx src/index.ts figures inspect <report_dir> [--json]
-  npx tsx src/index.ts figures preview <report_dir> [--output build/figures.html]
-  npx tsx src/index.ts figures set <report_dir> --id <figure_id> --spec '<JSON>'
-  npx tsx src/index.ts figures set <report_dir> --settings <figures.json>
-
-Backward-compatible form still works:
-  npx tsx src/index.ts <input.md|report_dir> <output.docx>`);
-}
-
 async function runBuild(args: ParsedArgs): Promise<void> {
 	const inputPath = args.positionals[1];
 	const outputPath = args.positionals[2] ?? 'test_report.docx';
@@ -227,9 +206,9 @@ async function runGenerate(args: ParsedArgs): Promise<void> {
 	}
 	const renderer = optionRenderer(args);
 	const postBuild = optionBoolean(args, 'post-build');
-	if (renderer === 'portable' && postBuild === true) {
+	if (renderer && renderer !== 'word' && postBuild === true) {
 		throw new Error(
-			'--post-build is the legacy Word COM renderer path. Use --renderer word for Word/PDF post-build, or omit --post-build for --renderer portable.',
+			'--post-build is the legacy Word COM renderer path. Use --renderer word for Word/PDF post-build, or omit --post-build for portable/wordcraft.',
 		);
 	}
 
@@ -239,11 +218,14 @@ async function runGenerate(args: ParsedArgs): Promise<void> {
 		renderer,
 		postBuild,
 		validate: optionBoolean(args, 'validate'),
+		outputPdf: optionString(args, 'pdf'),
+		wordcraftExecutable: optionString(args, 'wordcraft'),
 	});
 
 	console.log(`Generated ${result.outputDocx}`);
 	console.log(`Renderer: ${result.renderer}`);
 	console.log(`Post-build: ${result.postBuildRan ? 'ran' : 'skipped'}`);
+	if (result.wordcraft) printWordcraftResult(result.wordcraft);
 	if (result.renderer === 'portable') {
 		console.log('PDF pagination: not authoritative in portable renderer.');
 	}
@@ -267,6 +249,8 @@ async function runAudit(args: ParsedArgs): Promise<void> {
 		outputPath: optionString(args, 'output'),
 		renderer,
 		validate: true,
+		outputPdf: optionString(args, 'pdf'),
+		wordcraftExecutable: optionString(args, 'wordcraft'),
 	});
 	const warnings = result.preflight.issues.filter(
 		item => item.severity === 'warning',
@@ -282,6 +266,7 @@ async function runAudit(args: ParsedArgs): Promise<void> {
 	);
 	console.log(`Renderer: ${result.renderer}`);
 	console.log(`Post-build: ${result.postBuildRan ? 'ran' : 'skipped'}`);
+	if (result.wordcraft) printWordcraftResult(result.wordcraft);
 	console.log('DOCX validation passed.');
 }
 
@@ -297,22 +282,6 @@ function runAcceptWord(args: ParsedArgs): void {
 		manifest: optionString(args, 'manifest'),
 		stylePreset: optionStylePreset(args),
 	});
-}
-
-function runPreview(args: ParsedArgs): void {
-	const inputDocx = args.positionals[1];
-	if (!inputDocx) {
-		throw new Error('preview command requires an input DOCX path.');
-	}
-	const pdf = createLibreOfficePreview({
-		inputDocx,
-		outputPdf: optionString(args, 'pdf'),
-		soffice: optionString(args, 'soffice'),
-	});
-	console.log(`LibreOffice preview: ${pdf}`);
-	console.log(
-		'Pagination is not authoritative; use accept-word for final Word/PDF acceptance.',
-	);
 }
 
 function runValidateDocx(args: ParsedArgs): void {
@@ -370,7 +339,13 @@ async function main(): Promise<void> {
 			runAcceptWord(args);
 			break;
 		case 'preview':
-			runPreview(args);
+			runPreview({
+				inputDocx: args.positionals[1],
+				renderer: optionString(args, 'renderer'),
+				pdf: optionString(args, 'pdf'),
+				soffice: optionString(args, 'soffice'),
+				wordcraft: optionString(args, 'wordcraft'),
+			});
 			break;
 		case 'validate-docx':
 			runValidateDocx(args);

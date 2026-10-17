@@ -12,7 +12,10 @@ const baselinePath = resolve(
 	projectRoot,
 	'scripts/quality/coverage-baseline.json',
 );
-const reportPath = resolve(projectRoot, 'coverage/lcov.info');
+const coverageRoot = process.env.AGENT_STORAGE_SCRATCH
+	? resolve(process.env.AGENT_STORAGE_SCRATCH, 'coverage')
+	: resolve(projectRoot, 'coverage');
+const reportPath = resolve(coverageRoot, 'lcov.info');
 
 const result = spawnSync(
 	process.execPath,
@@ -21,7 +24,13 @@ const result = spawnSync(
 		'--config',
 		configPath,
 		'--reports-dir',
-		resolve(projectRoot, 'coverage'),
+		coverageRoot,
+		...(process.env.AGENT_STORAGE_SCRATCH
+			? [
+					'--temp-directory',
+					resolve(process.env.AGENT_STORAGE_SCRATCH, 'v8'),
+				]
+			: []),
 		process.execPath,
 		tsxCliPath,
 		'tests/run_all_tests.ts',
