@@ -79,7 +79,7 @@ def prepare_docx(source: Path, destination: Path, pages: int) -> list[str]:
                     data = etree.tostring(root, xml_declaration=True, encoding="UTF-8")
             if entry.filename.lower().endswith(".svg"):
                 warnings.append(
-                    "DOCX contains SVG media; Wordcraft 0.7.0 uses raster fallbacks. Check figure text and sharpness."
+                    "DOCX contains SVG media; check raster fallback text and sharpness in the Wordcraft PDF."
                 )
             output.writestr(entry, data)
     return sorted(set(warnings))

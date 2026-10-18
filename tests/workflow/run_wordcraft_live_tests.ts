@@ -11,15 +11,20 @@ import {
 	readWordcraftVersion,
 } from '@/app/wordcraft-renderer';
 
+import { verifyLiveWordcraftFields } from './wordcraft_live_fields';
+
 const root = path.resolve(__dirname, '../..');
 const hash = (file: string): string =>
 	createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 
 async function main(): Promise<void> {
 	readWordcraftVersion();
-	const directory = fs.mkdtempSync(
-		path.join(os.tmpdir(), 'sto-wordcraft-live-'),
-	);
+	const retainedOutput = process.env.WORDCRAFT_TEST_OUTPUT;
+	const directory = retainedOutput
+		? path.resolve(retainedOutput)
+		: fs.mkdtempSync(path.join(os.tmpdir(), 'sto-wordcraft-live-'));
+	// An explicit evidence destination must be new; never reuse or clean user data.
+	if (retainedOutput) fs.mkdirSync(directory);
 	try {
 		const example = path.join(directory, 'example');
 		fs.cpSync(path.join(root, 'example'), example, { recursive: true });
@@ -30,6 +35,13 @@ async function main(): Promise<void> {
 		});
 		assert.ok(generated.wordcraft);
 		assert.equal(generated.postBuildRan, false);
+		verifyLiveWordcraftFields(
+			generated.outputDocx,
+			path.join(directory, 'fields'),
+		);
+		console.log(
+			'LIVE fields: stale TOC refreshed, numbered entries preserved, dirty flag cleared.',
+		);
 		const corpus = path.join(directory, 'corpus');
 		fs.cpSync(path.join(root, 'tests/fixtures/dotm-word-corpus'), corpus, {
 			recursive: true,
@@ -89,7 +101,8 @@ async function main(): Promise<void> {
 			assert.equal(manifest.wordAccepted, false);
 			assert.equal(manifest.pdfPageCountVerified, false);
 			assert.equal(manifest.pdfSha256, hash(result.outputPdf));
-			assert.equal(manifest.version, '0.7.0');
+			assert.equal(manifest.sourceSha256, hash(manifest.inputDocx));
+			assert.equal(manifest.version, '0.8.0');
 			assert.ok(result.pageCount > 1);
 			console.log(
 				`LIVE ${path.basename(path.dirname(result.outputPdf))}: ${result.pageCount} layout pages, source preserved, PDF hash verified.`,
@@ -99,7 +112,9 @@ async function main(): Promise<void> {
 			'Wordcraft live smoke passed (example + 90-row table + math/appendix controls). PDF visual/Word acceptance is separate.',
 		);
 	} finally {
-		fs.rmSync(directory, { recursive: true, force: true });
+		if (retainedOutput)
+			console.log(`Live artifacts retained at ${directory}`);
+		else fs.rmSync(directory, { recursive: true, force: true });
 	}
 }
 
