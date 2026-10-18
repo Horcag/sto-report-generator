@@ -6,8 +6,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.7.0**, release commit `fc41918814f62645b6746ed68e71e8c2c2e85d6f`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.7.0).
+- Supported CLI: **0.8.0**, release commit `f2e15cf8f899a79899a2d9595ca4ce7df1e5ea22`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.8.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -86,21 +86,27 @@ Run the opt-in live suite with an installed supported CLI:
 npm run test:wordcraft
 ```
 
-It uses disposable public fixtures and removes its outputs. It does not download Wordcraft or claim
+It uses disposable public fixtures and removes its outputs by default. For independent PDF inspection,
+set `WORDCRAFT_TEST_OUTPUT` to a new directory under managed scratch. An existing destination is
+rejected; explicitly retained artifacts remain the caller's cleanup responsibility.
+It does not download Wordcraft or claim
 independent PDF/Word acceptance. The controls include `example`, a 90-row extension of
 `tests/fixtures/dotm-word-corpus`, and `tests/fixtures/wordcraft/math-controls.md` (fractions, radicals,
 accents, sums, integrals, a matrix and appendix TOC fields).
+The live suite also injects a stale cached TOC result, marks the TOC dirty, runs the installed
+field updater and checks numbered entries, field boundaries, cleared dirty state and source preservation.
 The style corpus has deliberate source-preflight violations, so exercise its raw build for
 renderer comparisons rather than reporting a successful source audit.
 
-The [17 October audit](../audits/2026-10-17-wordcraft.md) separates historical experiments from the
-integrated quality, live renderer and native Word checks.
+The [17 October audit](../audits/2026-10-17-wordcraft.md) records the 0.7.0 integration.
+The [0.8.0 audit](../audits/2026-10-18-wordcraft-080.md) records the upgrade comparison, independent
+PDF inspection and remaining acceptance boundaries.
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.7.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/eae242176108d328c5dd81fbc10370c51ab90706/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/eae242176108d328c5dd81fbc10370c51ab90706/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.8.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.8.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.8.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.

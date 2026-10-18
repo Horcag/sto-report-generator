@@ -20,7 +20,7 @@ export interface WordcraftRenderResult {
 	version: string;
 }
 
-const TESTED_VERSION = '0.7.0';
+const TESTED_VERSION = '0.8.0';
 const EXPERIMENTAL_WARNING =
 	'Experimental Wordcraft rendering; Microsoft Word acceptance has not been performed.';
 
