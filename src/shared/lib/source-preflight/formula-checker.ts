@@ -1,6 +1,7 @@
 import { STO_RULES } from '@/shared/config';
 
 import {
+	maskFormulaSource,
 	stripEquationLabel,
 	validateConsecutiveFormulaPunctuation,
 	validateFormulaBeforeWhere,
@@ -14,8 +15,9 @@ interface MathSpan {
 }
 
 function hasForbiddenDivisionColon(formula: string): boolean {
-	const withoutLabels = stripEquationLabel(formula);
-	return /\d\s*:\s*\d|[a-zа-яё]\s+:\s+[a-zа-яё]/i.test(withoutLabels);
+	return /\d\s*:\s*\d|[a-zа-яё]\s+:\s+[a-zа-яё]/i.test(
+		stripEquationLabel(formula),
+	);
 }
 
 function collectMathSpans(content: string): MathSpan[] {
@@ -194,6 +196,7 @@ export function validateSourceFormulas(
 	content: string,
 	issues: SourcePreflightIssue[],
 ): void {
+	content = maskFormulaSource(content);
 	const rawEquationNumberMatches = [
 		...content.matchAll(/\$\$[\s\S]*?\(\d+\)\s*\$\$/g),
 	];
@@ -207,7 +210,6 @@ export function validateSourceFormulas(
 			),
 		);
 	}
-
 	for (const match of content.matchAll(/\(@eq:([a-zA-Z0-9_-]+)\)/g)) {
 		const before = content.lastIndexOf('$$', match.index ?? 0);
 		const after = content.indexOf(
@@ -225,7 +227,6 @@ export function validateSourceFormulas(
 			);
 		}
 	}
-
 	for (const span of collectMathSpans(content)) {
 		const bareAbbreviation = findBareUprightAbbreviation(span.formula);
 		if (bareAbbreviation) {
@@ -287,7 +288,6 @@ export function validateSourceFormulas(
 			issues,
 		);
 	}
-
 	for (const match of content.matchAll(/\$\$([\s\S]*?)\$\$/g)) {
 		const formula = match[1];
 		for (const sign of STO_RULES.formulas

@@ -1057,7 +1057,7 @@ $$
 	'formula-redundant-cdot',
 );
 
-expectWarning(
+expectIssue(
 	'formula-period-before-where',
 	validFiles({
 		'03_intro.md': `Формула @eq:period_where.
@@ -1078,7 +1078,7 @@ expectWarning(
 		'03_intro.md': `Формула @eq:where_separator.
 
 $$
-x = y (@eq:where_separator)
+x = y, (@eq:where_separator)
 $$
 
 где $x$ – первая величина
@@ -1094,7 +1094,7 @@ expectWarning(
 		'03_intro.md': `Формула @eq:where_period.
 
 $$
-x = y (@eq:where_period)
+x = y, (@eq:where_period)
 $$
 
 где $x$ – первая величина
@@ -1117,7 +1117,7 @@ $$
 	'formula-line-break-after-division',
 );
 
-expectWarning(
+expectIssue(
 	'consecutive-formula-punctuation',
 	validFiles({
 		'03_intro.md': `Две формулы приведены подряд.

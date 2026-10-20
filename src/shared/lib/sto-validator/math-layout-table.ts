@@ -17,7 +17,7 @@ export function isMathLayoutTable(tableXml: string): boolean {
 		const [left, formula, right] = cells;
 		if (
 			extractWordText(left).trim() !== '' ||
-			extractWordText(formula).trim() !== '' ||
+			!/^[,;.]?$/u.test(extractWordText(formula).trim()) ||
 			!formula.includes('<m:oMath') ||
 			!/<w:jc\b[^>]*\bw:val="center"/.test(formula) ||
 			left.includes('<m:oMath') ||
@@ -28,7 +28,7 @@ export function isMathLayoutTable(tableXml: string): boolean {
 		const number = extractWordText(right).trim();
 		if (
 			number !== '' &&
-			!/^\((?:[A-ZА-ЯЁ]\.)?\d+(?:\.\d+)*\)$/u.test(number)
+			!/^\((?:[A-ZА-ЯЁ]\.)?\d+(?:\.\d+)*\)[,;.]?$/u.test(number)
 		) {
 			return false;
 		}

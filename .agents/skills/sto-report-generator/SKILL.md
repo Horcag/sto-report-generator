@@ -138,7 +138,7 @@ local absolute paths there.
   indentation level, and make the last list item end with a period.
 - Avoid bold Markdown outside `01_referat.md`; the parser treats bold in regular text as an STO violation.
 - Put code and technical file-size audit details outside the final report unless they are substantively needed.
-- After a formula followed by a lowercase `где`, do not end the formula with a period and do not write `где:`. In LaTeX
+- After a block formula immediately followed by a structured `где $x$ – ...` explanation, put a comma before the equation label and do not write `где:`. Separate consecutive block formulas with a comma or semicolon. In LaTeX
   formulas, write upright functions as commands (`\sin`, `\ln`, `\max`) and use `\ldots`, `\dots` or `\cdots` instead
   of raw `...`. Do not use raw `×`, `∙` or `…`; do not put `\cdot` between a number and a letter symbol.
 - Prefer Russian terms in the report when a standard Russian equivalent exists.

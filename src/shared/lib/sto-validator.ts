@@ -34,8 +34,8 @@ import {
 } from './sto-validator/layout-xml';
 import { isMathLayoutTable } from './sto-validator/math-layout-table';
 import {
-	hasFormulaPeriodBeforeWhere,
 	inspectMathStructures,
+	validateFormulaPunctuation,
 } from './sto-validator/math-xml';
 import { hasForbiddenTabCharacters } from './sto-validator/tab-xml';
 
@@ -823,11 +823,7 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 			regexMatches(/<m:t>[^<]*\d+\.\d+[^<]*<\/m:t>/, docXml),
 			'Detected dot (.) as decimal separator in formula. Russian typography requires a comma (,).',
 		),
-		resultFromFailure(
-			'Formula Punctuation Before Where',
-			hasFormulaPeriodBeforeWhere(docXml),
-			'Detected a block formula ending with a period before a lowercase "где" explanation. Use a comma or no final period.',
-		),
+		...validateFormulaPunctuation(docXml),
 	];
 }
 function validateFieldsTablesAndImages(
