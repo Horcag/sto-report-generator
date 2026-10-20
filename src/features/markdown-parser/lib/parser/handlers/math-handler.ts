@@ -20,7 +20,9 @@ export async function handleBlockMath(
 	mathContent: string,
 	context: ParserContext,
 ): Promise<Table> {
-	const numberMatch = mathContent.match(/^(.*?)\s*\((@eq:[a-zA-Z0-9_-]+)\)$/);
+	const numberMatch = mathContent.match(
+		/^([\s\S]*?)\s*\((@eq:[a-zA-Z0-9_-]+)\)$/,
+	);
 	let formula = mathContent;
 	let eqNumber = '';
 
@@ -29,7 +31,7 @@ export async function handleBlockMath(
 		const eqId = numberMatch[2].trim();
 		eqNumber = `(${context.itemMap.has(eqId) ? String(context.itemMap.get(eqId)) : '?'})`;
 	} else {
-		const plainNumMatch = mathContent.match(/^(.*?)\s*(\(\d+\))$/);
+		const plainNumMatch = mathContent.match(/^([\s\S]*?)\s*(\(\d+\))$/);
 		if (plainNumMatch) {
 			formula = plainNumMatch[1].trim();
 			eqNumber = plainNumMatch[2].trim();

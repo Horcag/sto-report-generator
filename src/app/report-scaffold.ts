@@ -292,9 +292,9 @@ function methodologyTemplate(profile: ReportProfile): string {
 
 Базовая расчетная зависимость задается формулой @eq:base_metric:
 
-$$y_i = \frac{x_i}{z_i} (@eq:base_metric)$$
+$$y_i = \frac{x_i}{z_i}, (@eq:base_metric)$$
 
-где $y_i$ – расчетный показатель, $x_i$ – числитель, $z_i$ – знаменатель.
+где $y_i$ – расчетный показатель; $x_i$ – числитель; $z_i$ – знаменатель.
 `;
 }
 

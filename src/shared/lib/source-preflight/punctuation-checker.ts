@@ -20,17 +20,6 @@ export function validateSourcePunctuation(
 		const trimmed = lines[i].trim();
 		const line = i + 1;
 
-		if (/^где\s*:/.test(trimmed)) {
-			issues.push(
-				issue(
-					'where-colon',
-					'uses "где:". STO formula explanations start with "где" without a colon.',
-					file,
-					line,
-				),
-			);
-		}
-
 		if (captionWithFinalDotPattern.test(trimmed)) {
 			issues.push(
 				issue(
