@@ -43,6 +43,7 @@ const valid = [
 	'$$ x=y $$\n\n`промежуточный код`\n\n' + where,
 	`$$ x=y, $$\n<!-- невидимый комментарий -->\n${where}`,
 ];
+valid.push('$$ x=y, $$\n\nгде $x$ – имя переменной\n`identifier`.');
 for (const source of valid) assert.deepEqual(inspect(source), [], source);
 
 const invalid: [string, string, 'error' | 'warning'][] = [

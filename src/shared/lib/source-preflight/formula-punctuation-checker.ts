@@ -85,7 +85,11 @@ export function validateFormulaBeforeWhere(
 				!startsSymbolDefinition(explanationText(line))
 			)
 				break;
-			if (/\$\$|^\s*(?:\uFFFC|#|\\sto_|\\begin\{|\|)/u.test(line)) break;
+			if (
+				/\$\$|^\s*(?:#|\\sto_|\\begin\{|\|)/u.test(line) ||
+				/^[\s\uFFFC]+$/u.test(line)
+			)
+				break;
 			explanation.push(line);
 			blank = false;
 		}

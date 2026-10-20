@@ -58,6 +58,12 @@ assert.equal(
 		.join(', '),
 );
 
+assert.deepEqual(
+	scaffoldPreflight.issues.filter(item => /formula|where/u.test(item.code)),
+	[],
+	'New report template must satisfy formula punctuation without warnings',
+);
+
 const courseworkResult = scaffoldReport({
 	slug: 'coursework_demo',
 	dir: path.join(tempRoot, 'coursework_demo'),
