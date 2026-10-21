@@ -18,6 +18,10 @@ import {
 import { JSDOM } from 'jsdom';
 import mathjax, { MathJaxApi } from 'mathjax';
 
+import {
+	markMatrixDelimiters,
+	restoreMatrixDelimiters,
+} from './matrix-delimiters';
 import { normalizeOmmlMath } from './omml-normalizer';
 
 type DocxMathChild =
@@ -318,7 +322,8 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 	}
 	// The OMML converter can merge a named mi operator with its argument into
 	// one italic run. Preserve the source role before that merge occurs.
-	let changedOperator = false;
+	const matrixDelimiters = markMatrixDelimiters(mathMl);
+	let changedOperator = matrixDelimiters.length > 0;
 	// mathml2omml collapses MathML's 1em/2em mspace to an ordinary space.
 	// Carry explicit TeX spacing through its text merge, then restore it in OMML.
 	for (const space of [...mathMl.getElementsByTagName('mspace')]) {
@@ -362,7 +367,9 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 	for (const [marker, value] of EXPLICIT_MATH_SPACES.values()) {
 		ommlString = ommlString.replaceAll(marker, value);
 	}
-	return convertOmml2Math(ommlString);
+	return convertOmml2Math(
+		restoreMatrixDelimiters(ommlString, matrixDelimiters),
+	);
 }
 
 export function convertLatex2Math(latexString: string): DocxMath {

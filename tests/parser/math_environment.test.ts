@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import AdmZip from 'adm-zip';
 import { Document, Packer } from 'docx';
+import { JSDOM } from 'jsdom';
 import { Lexer, Marked, TokenizerThis } from 'marked';
 
 import { parseMarkdownToDocx } from '@/features/markdown-parser';
@@ -10,6 +11,39 @@ import {
 } from '@/features/markdown-parser/lib/utils/extensions';
 
 async function run(): Promise<void> {
+	const mathChildren = await parseMarkdownToDocx(
+		String.raw`Inline $\frac{x}{y}$ text.
+
+$$\frac{x+1}{y-1} (7)$$`,
+		{},
+	);
+	const mathBytes = await Packer.toBuffer(
+		new Document({ sections: [{ children: mathChildren }] }),
+	);
+	const mathDocument = new JSDOM(
+		new AdmZip(mathBytes).readAsText('word/document.xml'),
+		{ contentType: 'text/xml' },
+	).window.document;
+	const equations = [...mathDocument.getElementsByTagName('m:oMath')];
+	assert.equal(equations.length, 2, 'both formulas survive conversion');
+	assert.equal(
+		equations[0].parentElement?.tagName,
+		'w:p',
+		'inline stays inline',
+	);
+	const display = equations[1].parentElement;
+	assert.equal(display?.tagName, 'm:oMathPara', 'block uses display OMML');
+	assert.equal(
+		display?.getElementsByTagName('m:jc')[0]?.getAttribute('m:val'),
+		'center',
+	);
+	assert.equal(mathDocument.getElementsByTagName('w:tbl').length, 1);
+	assert.ok(
+		[...mathDocument.getElementsByTagName('w:t')].some(
+			run => run.textContent === '(7)',
+		),
+		'equation label remains separate from display math',
+	);
 	const cases = [
 		String.raw`$
 \begin{bmatrix}1&2\\3&4\end{bmatrix}

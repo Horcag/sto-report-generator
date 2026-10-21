@@ -1,4 +1,11 @@
 import { buildReport } from '@/app/builder';
+import {
+	optionBoolean,
+	optionNumber,
+	optionString,
+	parseArgs,
+	ParsedArgs,
+} from '@/app/cli-args';
 import { printHelp } from '@/app/cli-help';
 import { printWordcraftResult, runPreview } from '@/app/cli-preview';
 import { runDoctor } from '@/app/doctor';
@@ -20,11 +27,6 @@ import {
 	runSourcePreflight,
 } from '@/shared/lib/source-preflight';
 
-interface ParsedArgs {
-	positionals: string[];
-	options: Map<string, string | boolean>;
-}
-
 const COMMANDS = new Set([
 	'build',
 	'new',
@@ -38,59 +40,6 @@ const COMMANDS = new Set([
 	'figures',
 	'help',
 ]);
-
-function parseArgs(args: string[]): ParsedArgs {
-	const positionals: string[] = [];
-	const options = new Map<string, string | boolean>();
-
-	for (let index = 0; index < args.length; index++) {
-		const arg = args[index];
-		if (!arg.startsWith('--')) {
-			positionals.push(arg);
-			continue;
-		}
-
-		const [rawName, inlineValue] = arg.slice(2).split('=', 2);
-		if (inlineValue !== undefined) {
-			options.set(rawName, inlineValue);
-			continue;
-		}
-
-		const next = args[index + 1];
-		if (next && !next.startsWith('--')) {
-			options.set(rawName, next);
-			index++;
-		} else {
-			options.set(rawName, true);
-		}
-	}
-
-	return { positionals, options };
-}
-
-function optionString(args: ParsedArgs, name: string): string | undefined {
-	const value = args.options.get(name);
-	return typeof value === 'string' ? value : undefined;
-}
-
-function optionBoolean(args: ParsedArgs, name: string): boolean | undefined {
-	if (!args.options.has(name)) {
-		return undefined;
-	}
-	return args.options.get(name) !== false;
-}
-
-function optionNumber(args: ParsedArgs, name: string): number | undefined {
-	const value = optionString(args, name);
-	if (value === undefined) {
-		return undefined;
-	}
-	const numberValue = Number(value);
-	if (!Number.isFinite(numberValue)) {
-		throw new Error(`--${name} must be a number.`);
-	}
-	return numberValue;
-}
 
 function optionProfile(args: ParsedArgs): ReportProfile | undefined {
 	const value = optionString(args, 'profile');
@@ -220,6 +169,8 @@ async function runGenerate(args: ParsedArgs): Promise<void> {
 		validate: optionBoolean(args, 'validate'),
 		outputPdf: optionString(args, 'pdf'),
 		wordcraftExecutable: optionString(args, 'wordcraft'),
+		wordcraftFontDirectory: optionString(args, 'font-dir'),
+		strictFonts: optionBoolean(args, 'strict-fonts'),
 	});
 
 	console.log(`Generated ${result.outputDocx}`);
@@ -251,6 +202,8 @@ async function runAudit(args: ParsedArgs): Promise<void> {
 		validate: true,
 		outputPdf: optionString(args, 'pdf'),
 		wordcraftExecutable: optionString(args, 'wordcraft'),
+		wordcraftFontDirectory: optionString(args, 'font-dir'),
+		strictFonts: optionBoolean(args, 'strict-fonts'),
 	});
 	const warnings = result.preflight.issues.filter(
 		item => item.severity === 'warning',
@@ -345,6 +298,8 @@ async function main(): Promise<void> {
 				pdf: optionString(args, 'pdf'),
 				soffice: optionString(args, 'soffice'),
 				wordcraft: optionString(args, 'wordcraft'),
+				fontDirectory: optionString(args, 'font-dir'),
+				strictFonts: optionBoolean(args, 'strict-fonts'),
 			});
 			break;
 		case 'validate-docx':

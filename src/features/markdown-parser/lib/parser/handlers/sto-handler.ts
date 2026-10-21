@@ -4,7 +4,6 @@ import {
 	StyleLevel,
 	Table,
 	TableCell,
-	TableOfContents,
 	TableRow,
 	TabStopType,
 	TextRun,
@@ -20,6 +19,7 @@ import {
 	STO_RULES,
 	STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
 	STRUCTURAL_HEADING_STYLE_ID,
+	TOC_HEADING_STYLE_ID,
 } from '@/shared/config';
 
 import {
@@ -30,6 +30,7 @@ import {
 } from '../../types';
 import { formatBibItem } from '../../utils/bib-formatter';
 import { appendixTocFieldRuns } from './appendix-toc-field';
+import { ReportTableOfContents } from './report-table-of-contents';
 
 const URL_PATTERN = /https?:\/\/[^\s)]+/g;
 const URL_BREAK_OPPORTUNITY = '\u200B';
@@ -131,16 +132,19 @@ export async function handleStoFlag(
 
 		const result: DocxElement[] = [
 			new Paragraph({
-				style: useNoTocStyle
-					? STRUCTURAL_HEADING_NO_TOC_STYLE_ID
-					: STRUCTURAL_HEADING_STYLE_ID,
+				style:
+					upperText === 'СОДЕРЖАНИЕ'
+						? TOC_HEADING_STYLE_ID
+						: useNoTocStyle
+							? STRUCTURAL_HEADING_NO_TOC_STYLE_ID
+							: STRUCTURAL_HEADING_STYLE_ID,
 				children: [new TextRun(sentenceCaseText)],
 			}),
 		];
 
 		if (upperText === 'СОДЕРЖАНИЕ') {
 			result.push(
-				new TableOfContents('', {
+				new ReportTableOfContents({
 					hyperlink: true,
 					headingStyleRange: '1-4',
 					stylesWithLevels: tocStyles,

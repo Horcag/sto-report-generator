@@ -15,6 +15,7 @@ import {
 import { validateSTO, ValidationResult } from '@/shared/lib/sto-validator';
 
 import { buildReport } from './builder';
+import { readWordcraftFontDirectory } from './wordcraft-fonts';
 import {
 	createWordcraftPdf,
 	WordcraftRenderResult,
@@ -30,6 +31,8 @@ export interface GenerateReportOptions {
 	validate?: boolean;
 	outputPdf?: string;
 	wordcraftExecutable?: string;
+	wordcraftFontDirectory?: string;
+	strictFonts?: boolean;
 }
 
 export interface GenerateReportResult {
@@ -105,7 +108,10 @@ export async function generateReport(
 		);
 	}
 	if (
-		(options.outputPdf || options.wordcraftExecutable) &&
+		(options.outputPdf ||
+			options.wordcraftExecutable ||
+			options.wordcraftFontDirectory ||
+			options.strictFonts) &&
 		config.renderer !== 'wordcraft'
 	) {
 		throw new Error('PDF overrides require renderer "wordcraft".');
@@ -162,6 +168,11 @@ export async function generateReport(
 						? resolveReportPath(reportDir, options.outputPdf)
 						: undefined,
 					executable: options.wordcraftExecutable,
+					fontFiles: readWordcraftFontDirectory(
+						options.wordcraftFontDirectory ??
+							process.env.WORDCRAFT_FONT_DIR,
+					),
+					strictFonts: options.strictFonts,
 				})
 			: undefined;
 

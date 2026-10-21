@@ -1,10 +1,4 @@
-import {
-	AlignmentType,
-	INumberingOptions,
-	IStylesOptions,
-	LeaderType,
-	TabStopType,
-} from 'docx';
+import { AlignmentType, INumberingOptions, IStylesOptions } from 'docx';
 
 import { APPENDIX_STYLES } from './sto-appendix-styles';
 import {
@@ -13,6 +7,13 @@ import {
 	NUMBERED_HEADING_STYLE_IDS,
 } from './sto-heading-styles';
 import { STO_RULES } from './sto-rules';
+import {
+	createTocHeadingStyle,
+	TOC_ENTRY_STYLES,
+	WORD_TOC_ENTRY_STYLES,
+} from './sto-toc-styles';
+
+export { TOC_HEADING_STYLE_ID } from './sto-toc-styles';
 
 export {
 	getNumberedHeadingStyleId,
@@ -22,8 +23,6 @@ export {
 
 const TYPOGRAPHY = STO_RULES.typography;
 const NESTED_LIST_INDENT = TYPOGRAPHY.nestedListIndentStepDxa;
-const TOC_RIGHT_TAB_STOP = TYPOGRAPHY.tocRightTabStopDxa;
-const TOC_LEVEL_INDENTS = TYPOGRAPHY.tocLevelIndentsDxa;
 const BIBLIOGRAPHY_PARAGRAPH = STO_RULES.bibliography.paragraph;
 
 export const STRUCTURAL_HEADING_STYLE_ID = 'StructuralHeading';
@@ -78,26 +77,6 @@ function applySamaraTemplate2022StyleNames(
 ): ParagraphStyle {
 	const presetName = getSamaraTemplate2022StyleName(style.id);
 	return presetName ? { ...style, name: presetName } : style;
-}
-
-function createTocStyle(level: number) {
-	return {
-		id: `TOC${level}`,
-		name: `toc ${level}`,
-		basedOn: level === 1 ? 'Normal' : 'TOC1',
-		next: 'Normal',
-		paragraph: {
-			alignment: AlignmentType.LEFT,
-			indent: { left: TOC_LEVEL_INDENTS[level - 1] ?? 0, firstLine: 0 },
-			tabStops: [
-				{
-					type: TabStopType.RIGHT,
-					position: TOC_RIGHT_TAB_STOP,
-					leader: LeaderType.DOT,
-				},
-			],
-		},
-	};
 }
 
 export const MARGINS = { ...STO_RULES.page.marginsDxa };
@@ -191,6 +170,7 @@ export const STO_STYLES: IStylesOptions = {
 				pageBreakBefore: true,
 			},
 		},
+		createTocHeadingStyle(STRUCTURAL_HEADING_NO_TOC_STYLE_ID),
 		...NUMBERED_HEADING_STYLE_IDS.slice(1).map((_, index) =>
 			createNumberedHeadingStyle(index + 2),
 		),
@@ -264,7 +244,7 @@ export const STO_STYLES: IStylesOptions = {
 				},
 			},
 		},
-		...TOC_LEVEL_INDENTS.map((_, index) => createTocStyle(index + 1)),
+		...TOC_ENTRY_STYLES,
 	],
 };
 
@@ -277,9 +257,12 @@ export function getStoStyles(
 
 	return {
 		...STO_STYLES,
-		paragraphStyles: STO_STYLES.paragraphStyles?.map(
-			applySamaraTemplate2022StyleNames,
-		),
+		paragraphStyles: [
+			...(STO_STYLES.paragraphStyles?.map(
+				applySamaraTemplate2022StyleNames,
+			) ?? []),
+			...WORD_TOC_ENTRY_STYLES,
+		],
 	};
 }
 
