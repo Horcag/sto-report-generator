@@ -18,7 +18,7 @@ class RendererParityTests(unittest.TestCase):
     def setUp(self) -> None:
         temporary = tempfile.TemporaryDirectory(prefix="sto-parity-test-")
         self.addCleanup(temporary.cleanup)
-        self.root = Path(temporary.name)
+        self.root = Path(temporary.name).resolve()
         self.source = self.root / "source.docx"
         self.source.write_bytes(b"frozen source DOCX fixture")
         self.word_pdf, self.candidate_pdf = self.root / "word.pdf", self.root / "candidate.pdf"

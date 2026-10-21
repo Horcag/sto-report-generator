@@ -19,8 +19,18 @@ const fixture = readFileSync(
 	join(__dirname, '../fixtures/wordcraft/matrix-controls.md'),
 	'utf8',
 );
-const cases = [...fixture.matchAll(/^## (.+)\n\n\$\$([\s\S]*?)\$\$/gm)].map(
-	match => ({ name: match[1], latex: match[2] }),
+function parseControls(source: string): { name: string; latex: string }[] {
+	return [
+		...source
+			.replace(/\r\n?/g, '\n')
+			.matchAll(/^## (.+)\n\n\$\$([\s\S]*?)\$\$/gm),
+	].map(match => ({ name: match[1], latex: match[2] }));
+}
+const cases = parseControls(fixture);
+assert.deepEqual(
+	parseControls(fixture.replace(/\r?\n/g, '\r\n')),
+	cases,
+	'LF and CRLF fixtures must discover the same matrix controls',
 );
 
 function children(element: Element, tag: string): Element[] {
