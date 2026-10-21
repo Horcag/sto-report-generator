@@ -16,7 +16,7 @@ Usage:
   npx tsx src/index.ts figures set <report_dir> --id <figure_id> --spec '<JSON>'
   npx tsx src/index.ts figures set <report_dir> --settings <figures.json>
 
-Wordcraft is experimental; it requires wordcraft-cli 0.8.0 and uv/Python.
+Wordcraft is experimental; it requires wordcraft-cli 0.9.0 and uv/Python.
 It produces a separate PDF and diagnostic JSON, preserving the generated DOCX.
 
 Backward-compatible form still works:

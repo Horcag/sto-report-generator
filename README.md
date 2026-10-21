@@ -73,8 +73,8 @@ C#-адаптер с явно типизированными аргумента�
 
 ### Экспериментальный PDF через Wordcraft
 
-Wordcraft 0.8.0 позволяет получить PDF в Linux, WSL, macOS и Windows без установленного Office.
-Установите `wordcraft-cli` из [официального релиза 0.8.0](https://github.com/storytold/wordcraft/releases/tag/v0.8.0)
+Wordcraft 0.9.0 позволяет получить PDF в Linux, WSL, macOS и Windows без установленного Office.
+Установите `wordcraft-cli` из [официального релиза 0.9.0](https://github.com/storytold/wordcraft/releases/tag/v0.9.0)
 и выполните `uv sync` в каталоге генератора для подготовки Python-инструментов XML.
 
 ```sh
@@ -97,6 +97,8 @@ SVG сохраняется в DOCX вместе с проверенным PNG-к
 или положите PNG с тем же именем рядом с SVG. Генератор проверяет PNG, пропорции и качество;
 при отсутствии корректного компаньона сборка завершается ошибкой. Автоматическое создание PNG не выполняется.
 Подробности, ограничения и сценарии проверки: [Wordcraft renderer](docs/architecture/wordcraft-renderer.md).
+Матрица для Linux, WSL, Windows и macOS, известные расхождения и ручные проверки:
+[совместимость с Word](docs/wordcraft-compatibility.md).
 
 ## Что поддерживается
 
