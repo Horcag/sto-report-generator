@@ -6,8 +6,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.8.0**, release commit `f2e15cf8f899a79899a2d9595ca4ce7df1e5ea22`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.8.0).
+- Supported CLI: **0.9.0**, release commit `2e6db0bd88795e80375176c01665cff7dbe2b057`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.9.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -59,6 +59,9 @@ that preserves source offsets, escapes and line breaks. Unknown environments out
 with the original source line number. A lexer-local adapter guards Marked 18's clipped `start`
 callback; an explicit regression tests that dependency behavior.
 
+See the [user compatibility matrix](../wordcraft-compatibility.md) and
+[0.9.0 comparison audit](../audits/2026-10-21-wordcraft-090.md) for measured Word and platform differences.
+
 ## Compatibility boundaries
 
 - Wordcraft is alpha. Its documentation records pagination and format-fidelity gaps.
@@ -104,9 +107,9 @@ PDF inspection and remaining acceptance boundaries.
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.8.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.8.0/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.8.0/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.9.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.9.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.9.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.

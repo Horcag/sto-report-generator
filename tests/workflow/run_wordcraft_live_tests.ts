@@ -102,7 +102,7 @@ async function main(): Promise<void> {
 			assert.equal(manifest.pdfPageCountVerified, false);
 			assert.equal(manifest.pdfSha256, hash(result.outputPdf));
 			assert.equal(manifest.sourceSha256, hash(manifest.inputDocx));
-			assert.equal(manifest.version, '0.8.0');
+			assert.equal(manifest.version, '0.9.0');
 			assert.ok(result.pageCount > 1);
 			console.log(
 				`LIVE ${path.basename(path.dirname(result.outputPdf))}: ${result.pageCount} layout pages, source preserved, PDF hash verified.`,
