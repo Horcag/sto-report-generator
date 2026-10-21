@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import childProcess, {
+	spawnSync,
+	type SpawnSyncOptions,
+} from 'node:child_process';
 import fs from 'node:fs';
+import { syncBuiltinESMExports } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
+import { mock } from 'node:test';
 import AdmZip from 'adm-zip';
 import { JSDOM } from 'jsdom';
 
@@ -119,7 +124,7 @@ else if (args[0] === 'convert') {
 }
 
 function invoke(args: string[]): string {
-	const result = spawnSync(engine, args, {
+	const result = spawnSync(process.execPath, [engine, ...args], {
 		encoding: 'utf8',
 		timeout: 20_000,
 	});
@@ -305,29 +310,48 @@ try {
 			fixture();
 			process.env.WORDCRAFT_LAYOUT_TEST_MODE = 'ok';
 			const original = fs.readFileSync(source);
-			const result = createWordcraftPdf({
-				inputDocx: source,
-				executable: engine,
-				outputPdf: path.join(directory, 'result.pdf'),
-				timeoutMs: 120_000,
-			});
-			assert.equal(result.pageCount, 3);
-			assert.equal(result.tables.verifiedTables, 3);
-			assert.equal(result.tables.splits, 2);
-			assert.deepEqual(fs.readFileSync(source), original);
-			checkRows(snapshot);
-			const calls = fs
-				.readFileSync(log, 'utf8')
-				.trim()
-				.split('\n')
-				.map(line => JSON.parse(line) as { file: string });
-			assert.ok(calls.every(call => call.file !== source));
-			assert.equal(
-				fs
-					.readdirSync(directory)
-					.some(name => name.startsWith('.sto-wordcraft-')),
-				false,
+			const rawSpawn = childProcess.spawnSync;
+			const engineSpawn = mock.method(
+				childProcess,
+				'spawnSync',
+				(
+					executable: string,
+					args: string[],
+					options?: SpawnSyncOptions,
+				) =>
+					executable === engine
+						? rawSpawn(process.execPath, [engine, ...args], options)
+						: rawSpawn(executable, args, options),
 			);
+			syncBuiltinESMExports();
+			try {
+				const result = createWordcraftPdf({
+					inputDocx: source,
+					executable: engine,
+					outputPdf: path.join(directory, 'result.pdf'),
+					timeoutMs: 120_000,
+				});
+				assert.equal(result.pageCount, 3);
+				assert.equal(result.tables.verifiedTables, 3);
+				assert.equal(result.tables.splits, 2);
+				assert.deepEqual(fs.readFileSync(source), original);
+				checkRows(snapshot);
+				const calls = fs
+					.readFileSync(log, 'utf8')
+					.trim()
+					.split('\n')
+					.map(line => JSON.parse(line) as { file: string });
+				assert.ok(calls.every(call => call.file !== source));
+				assert.equal(
+					fs
+						.readdirSync(directory)
+						.some(name => name.startsWith('.sto-wordcraft-')),
+					false,
+				);
+			} finally {
+				engineSpawn.mock.restore();
+				syncBuiltinESMExports();
+			}
 		},
 	);
 	console.log(`Wordcraft layout tests: ${checks} passed.`);
