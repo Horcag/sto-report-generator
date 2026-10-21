@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -79,19 +80,38 @@ try {
 			`#!/usr/bin/env node
 const fs = require('node:fs');
 const AdmZip = require(${JSON.stringify(require.resolve('adm-zip'))});
-const args = process.argv.slice(2);
+let args = process.argv.slice(2);
+if (args.includes('--script')) {
+ const script = JSON.parse(fs.readFileSync(args[args.indexOf('--script') + 1], 'utf8'));
+ args = ['run', '--file', script.file, ...script.commands.flatMap(item => ['--cmd', item.command + (item.params === undefined ? '' : '=' + JSON.stringify(item.params))]), ...(script.save || []).flatMap(file => ['--save', file])];
+}
 const mode = process.env.WORDCRAFT_TEST_MODE || 'ok';
 const log = ${JSON.stringify(log)};
 const calls = fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\\n').filter(Boolean).map(JSON.parse) : [];
 fs.appendFileSync(log, JSON.stringify(args) + '\\n');
 if (args[0] === '--version') { console.log(mode === 'version' ? 'wordcraft-cli 0.8.0' : mode === 'future-version' ? 'wordcraft-cli 0.10.0' : 'wordcraft-cli 0.9.0'); }
+else if (args[0] === 'run' && args.includes('font.list={"all":true}')) {
+ if (mode === 'bad-font-json') console.log('font.list: invalid');
+ else if (mode === 'missing-font-catalog') console.log('font.list: {"fonts":[]}');
+ else console.log('font.list: ' + JSON.stringify({families: mode === 'font-missing' || (mode.startsWith('font-load') && !args.some(arg => arg.startsWith('font.add='))) ? [] : ['Times New Roman']}));
+}
 else if (args[0] === 'run') {
  if (mode === 'fail') { console.error('fixture failure'); process.exit(9); }
  if (mode === 'timeout') Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5000);
  const source = args[args.indexOf('--file') + 1];
+ if (args.includes('document.layout')) { console.log('document.layout: ' + JSON.stringify({pages: [{},{}], caret: null})); process.exit(0); }
+ const target = args[args.indexOf('--save') + 1];
+ if (target && target.endsWith('.pdf')) {
+  fs.writeFileSync(target, '%PDF-1.4\\nfixture');
+  if (mode === 'font-load-mutate') {
+   const fontCommand = args.find(arg => arg.startsWith('font.add='));
+   fs.appendFileSync(JSON.parse(fontCommand.slice('font.add='.length)).path, 'changed during export');
+  }
+  process.exit(0);
+ }
  const xml = new AdmZip(source).readAsText('word/document.xml');
  if (/\\{\\{(?:PAGES|FIGURES|TABLES|SOURCES)\\}\\}/.test(xml)) { console.error('unresolved statistics'); process.exit(8); }
- if (args[args.indexOf('--cmd') + 1] !== 'references.updateFields') process.exit(7);
+ if (!args.includes('references.updateFields')) process.exit(7);
  if (mode !== 'missing-docx') fs.copyFileSync(source, args[args.indexOf('--save') + 1]);
 } else if (args[0] === 'info') {
  const count = calls.filter(call => call[0] === 'info').length;
@@ -149,7 +169,7 @@ else if (args[0] === 'run') {
 			.map(line => JSON.parse(line) as string[]);
 		check(
 			calls.map(call => call[0]).join(',') ===
-				'--version,run,info,convert,info,run,info,convert,info',
+				'--version,run,run,info,convert,info,run,info,convert,info',
 			'fields updated before info/export, counts converge',
 		);
 		check(
@@ -159,8 +179,45 @@ else if (args[0] === 'run') {
 		cleanupCheck();
 		const acceptedPdf = fs.readFileSync(outputPdf);
 		const acceptedManifest = fs.readFileSync(manifestPath);
+		check(
+			result.fonts.missingFamilies.length === 0 &&
+				result.fonts.unverifiedRequirements.length > 0,
+			'fixture has only unresolved requirements, with no known missing family',
+		);
+		mode('ok');
+		throws(
+			() => createWordcraftPdf({ inputDocx, strictFonts: true }),
+			/font requirements are not verified/,
+		);
+		check(
+			fs.readFileSync(inputDocx).equals(original),
+			'strict unverified rejection preserves source',
+		);
+		check(
+			fs.readFileSync(outputPdf).equals(acceptedPdf),
+			'strict unverified rejection preserves previous PDF',
+		);
+		check(
+			fs.readFileSync(manifestPath).equals(acceptedManifest),
+			'strict unverified rejection preserves previous manifest',
+		);
+		const strictCalls = fs
+			.readFileSync(log, 'utf8')
+			.trim()
+			.split('\n')
+			.map(line => JSON.parse(line) as string[]);
+		check(
+			strictCalls.length === 2 &&
+				!strictCalls.some(call =>
+					call.includes('references.updateFields'),
+				),
+			'strict rejection occurs before field updates and PDF export',
+		);
+		cleanupCheck();
 		for (const [failure, pattern] of [
 			['fail', /fixture failure/],
+			['bad-font-json', /font.list returned invalid JSON/],
+			['missing-font-catalog', /available font families/],
 			['missing-docx', /updated DOCX/],
 			['bad-json', /invalid JSON/],
 			['bad-pages', /invalid page count/],
@@ -188,6 +245,129 @@ else if (args[0] === 'run') {
 			);
 			cleanupCheck();
 		}
+		const fontDocx = path.join(directory, 'font-report.docx');
+		const fontArchive = new AdmZip();
+		fontArchive.addFile(
+			'word/document.xml',
+			Buffer.from(
+				'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/></w:rPr><w:t>Known font</w:t></w:r></w:p></w:body></w:document>',
+			),
+		);
+		fontArchive.writeZip(fontDocx);
+		const fontSource = fs.readFileSync(fontDocx);
+		mode('font-missing');
+		throws(
+			() =>
+				createWordcraftPdf({
+					inputDocx: fontDocx,
+					outputPdf,
+					strictFonts: true,
+				}),
+			/font requirements are not verified: Times New Roman/,
+		);
+		check(
+			fs.readFileSync(fontDocx).equals(fontSource),
+			'strict missing font rejection preserves source',
+		);
+		check(
+			fs.readFileSync(outputPdf).equals(acceptedPdf),
+			'strict missing font rejection preserves prior PDF',
+		);
+		check(
+			fs.readFileSync(manifestPath).equals(acceptedManifest),
+			'strict missing font rejection preserves prior manifest',
+		);
+		cleanupCheck();
+		mode('ok');
+		const verified = createWordcraftPdf({
+			inputDocx: fontDocx,
+			outputPdf,
+			strictFonts: true,
+		});
+		check(
+			verified.fonts.missingFamilies.length === 0 &&
+				verified.fonts.unverifiedRequirements.length === 0,
+			'strict mode accepts verified requirements',
+		);
+		const fontFile = path.join(directory, 'times.ttf');
+		const strings = ['Times New Roman', 'Regular'].map(value =>
+			Buffer.from(value, 'utf16le').swap16(),
+		);
+		const nameTable = Buffer.alloc(
+			30 + strings[0].length + strings[1].length,
+		);
+		nameTable.writeUInt16BE(2, 2);
+		nameTable.writeUInt16BE(30, 4);
+		for (let index = 0; index < 2; index++) {
+			const offset = 6 + index * 12;
+			nameTable.writeUInt16BE(3, offset);
+			nameTable.writeUInt16BE(1, offset + 2);
+			nameTable.writeUInt16BE(0x0409, offset + 4);
+			nameTable.writeUInt16BE(index + 1, offset + 6);
+			nameTable.writeUInt16BE(strings[index].length, offset + 8);
+			nameTable.writeUInt16BE(index ? strings[0].length : 0, offset + 10);
+		}
+		strings[0].copy(nameTable, 30);
+		strings[1].copy(nameTable, 30 + strings[0].length);
+		const fontHeader = Buffer.alloc(28);
+		fontHeader.writeUInt32BE(0x00010000);
+		fontHeader.writeUInt16BE(1, 4);
+		fontHeader.write('name', 12, 'ascii');
+		fontHeader.writeUInt32BE(28, 20);
+		fontHeader.writeUInt32BE(nameTable.length, 24);
+		fs.writeFileSync(fontFile, Buffer.concat([fontHeader, nameTable]));
+		const fontHash = createHash('sha256')
+			.update(fs.readFileSync(fontFile))
+			.digest('hex');
+		mode('font-load');
+		const loaded = createWordcraftPdf({
+			inputDocx: fontDocx,
+			outputPdf,
+			strictFonts: true,
+			fontFiles: [fontFile],
+		});
+		check(
+			loaded.fonts.loadedFiles?.length === 1 &&
+				loaded.fonts.loadedFiles[0].path === fontFile &&
+				loaded.fonts.loadedFiles[0].sha256 === fontHash,
+			'result records exact selected font bytes',
+		);
+		const loadedPdf = fs.readFileSync(outputPdf);
+		const loadedManifest = fs.readFileSync(manifestPath);
+		const loadedReceipt = JSON.parse(loadedManifest.toString('utf8'));
+		check(
+			loadedReceipt.fonts.loadedFiles[0].sha256 === fontHash,
+			'manifest preserves font hash',
+		);
+		check(
+			loadedReceipt.pageCountSource === 'wordcraft-document-layout',
+			'font-loaded rendering reports actual layout source',
+		);
+		cleanupCheck();
+		mode('font-load-mutate');
+		throws(
+			() =>
+				createWordcraftPdf({
+					inputDocx: fontDocx,
+					outputPdf,
+					strictFonts: true,
+					fontFiles: [fontFile],
+				}),
+			/loaded font file changed/,
+		);
+		check(
+			fs.readFileSync(fontDocx).equals(fontSource),
+			'changed font failure preserves source',
+		);
+		check(
+			fs.readFileSync(outputPdf).equals(loadedPdf),
+			'changed font failure preserves prior PDF',
+		);
+		check(
+			fs.readFileSync(manifestPath).equals(loadedManifest),
+			'changed font failure preserves prior manifest',
+		);
+		cleanupCheck();
 		mode('timeout');
 		const start = Date.now();
 		throws(

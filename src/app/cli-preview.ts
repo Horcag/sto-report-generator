@@ -1,4 +1,5 @@
 import { createLibreOfficePreview } from './libreoffice-preview';
+import { readWordcraftFontDirectory } from './wordcraft-fonts';
 import {
 	createWordcraftPdf,
 	WordcraftRenderResult,
@@ -17,6 +18,8 @@ export function runPreview(options: {
 	pdf?: string;
 	soffice?: string;
 	wordcraft?: string;
+	fontDirectory?: string;
+	strictFonts?: boolean;
 }): void {
 	if (!options.inputDocx) {
 		throw new Error('preview command requires an input DOCX path.');
@@ -30,6 +33,10 @@ export function runPreview(options: {
 				inputDocx: options.inputDocx,
 				outputPdf: options.pdf,
 				executable: options.wordcraft,
+				fontFiles: readWordcraftFontDirectory(
+					options.fontDirectory ?? process.env.WORDCRAFT_FONT_DIR,
+				),
+				strictFonts: options.strictFonts,
 			}),
 		);
 		return;
@@ -37,7 +44,7 @@ export function runPreview(options: {
 	if (renderer !== 'libreoffice') {
 		throw new Error('Preview renderers: libreoffice, wordcraft.');
 	}
-	if (options.wordcraft)
+	if (options.wordcraft || options.fontDirectory || options.strictFonts)
 		throw new Error('--wordcraft requires Wordcraft preview.');
 	const pdf = createLibreOfficePreview({
 		inputDocx: options.inputDocx,

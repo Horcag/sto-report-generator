@@ -1,6 +1,7 @@
 import {
 	AlignmentType,
 	BorderStyle,
+	ImportedXmlComponent,
 	Paragraph,
 	Table,
 	TableCell,
@@ -39,6 +40,17 @@ export async function handleBlockMath(
 	}
 
 	const formulaMath: MathConversionResult = convertLatex2Math(formula);
+	// A standalone equation is display math even inside its numbering table.
+	// Bare oMath denotes inline math to readers that do not infer this from layout.
+	const displayMath = new ImportedXmlComponent('m:oMathPara');
+	const displayProperties = new ImportedXmlComponent('m:oMathParaPr');
+	displayProperties.push(
+		new ImportedXmlComponent('m:jc', { 'm:val': 'center' }),
+	);
+	displayMath.push(displayProperties);
+	displayMath.push(formulaMath);
+	const formulaParagraph = new Paragraph({ alignment: AlignmentType.CENTER });
+	formulaParagraph.addChildElement(displayMath);
 
 	return new Table({
 		width: { size: 100, type: WidthType.PERCENTAGE },
@@ -67,12 +79,7 @@ export async function handleBlockMath(
 					}),
 					new TableCell({
 						width: { size: 70, type: WidthType.PERCENTAGE },
-						children: [
-							new Paragraph({
-								alignment: AlignmentType.CENTER,
-								children: [formulaMath],
-							}),
-						],
+						children: [formulaParagraph],
 					}),
 					new TableCell({
 						width: { size: 15, type: WidthType.PERCENTAGE },

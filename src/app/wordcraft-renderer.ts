@@ -3,6 +3,18 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { stageWordcraftCommand } from './wordcraft-command';
+import { selectWordcraftFontFiles } from './wordcraft-font-files';
+import {
+	preflightWordcraftFonts,
+	wordcraftFontCommands,
+	type WordcraftFontReport,
+} from './wordcraft-fonts';
+import {
+	normalizeWordcraftTables,
+	readWordcraftLayout,
+	type WordcraftTableReport,
+} from './wordcraft-layout';
 import { prepareWordcraftDocx } from './wordcraft-statistics';
 
 export interface WordcraftRenderOptions {
@@ -10,6 +22,8 @@ export interface WordcraftRenderOptions {
 	outputPdf?: string;
 	executable?: string;
 	timeoutMs?: number;
+	fontFiles?: string[];
+	strictFonts?: boolean;
 }
 
 export interface WordcraftRenderResult {
@@ -18,6 +32,8 @@ export interface WordcraftRenderResult {
 	warnings: string[];
 	pageCount: number;
 	version: string;
+	fonts: WordcraftFontReport;
+	tables: WordcraftTableReport;
 }
 
 const TESTED_VERSION = '0.9.0';
@@ -63,7 +79,7 @@ export function createWordcraftPdf(
 	options: WordcraftRenderOptions,
 ): WordcraftRenderResult {
 	const startedAt = Date.now();
-	const timeoutMs = options.timeoutMs ?? 120_000;
+	const timeoutMs = options.timeoutMs ?? 300_000;
 	if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
 		throw new Error('Wordcraft timeoutMs must be a positive integer.');
 	}
@@ -92,14 +108,21 @@ export function createWordcraftPdf(
 		if (remaining <= 0) throw new Error('Wordcraft rendering timed out.');
 		return remaining;
 	};
-	const invoke = (args: string[]): string =>
-		runWordcraft(executable, args, remainingBudget());
 	const version = readWordcraftVersion(executable, remainingBudget());
+	wordcraftFontCommands(options.fontFiles); // Validate all explicitly supplied paths before staging.
+	let fontFiles: string[] = [];
+	let fontCommands: string[] = [];
 	const sourceHash = hashFile(inputDocx);
 	fs.mkdirSync(path.dirname(outputPdf), { recursive: true });
 	const temporaryDir = fs.mkdtempSync(
 		path.join(path.dirname(outputPdf), '.sto-wordcraft-'),
 	);
+	const invoke = (args: string[]): string =>
+		runWordcraft(
+			executable,
+			stageWordcraftCommand(args, temporaryDir),
+			remainingBudget(),
+		);
 	try {
 		const warnings = new Set([EXPERIMENTAL_WARNING]);
 		const prepared = path.join(temporaryDir, 'prepared.docx');
@@ -107,6 +130,12 @@ export function createWordcraftPdf(
 		const stagedPdf = path.join(temporaryDir, 'rendered.pdf');
 		let pageCount = 1;
 		let converged = false;
+		let fonts: WordcraftFontReport | undefined;
+		let tables: WordcraftTableReport = {
+			splits: 0,
+			verifiedTables: 0,
+			warnings: [],
+		};
 		for (let pass = 0; pass < 3; pass += 1) {
 			for (const warning of prepareWordcraftDocx(
 				inputDocx,
@@ -115,12 +144,52 @@ export function createWordcraftPdf(
 				remainingBudget(),
 			).warnings)
 				warnings.add(warning);
+			if (!fonts) {
+				const catalog = (): string =>
+					invoke([
+						'run',
+						'--file',
+						prepared,
+						...fontCommands,
+						'--cmd',
+						'font.list={"all":true}',
+						'--print',
+					]);
+				fonts = preflightWordcraftFonts(prepared, catalog());
+				if (options.fontFiles?.length && fonts.missingFamilies.length) {
+					const selected = selectWordcraftFontFiles(
+						options.fontFiles,
+						fonts.missingFamilies,
+					);
+					fontFiles = selected.files;
+					fontCommands = wordcraftFontCommands(fontFiles);
+					fonts = preflightWordcraftFonts(prepared, catalog());
+					fonts.loadedFiles = selected.files.map(file => ({
+						path: file,
+						sha256: selected.fileSha256[file],
+					}));
+					fonts.selectionWarnings = selected.warnings;
+					if (fonts.missingFamilies.length)
+						for (const warning of selected.warnings)
+							warnings.add(warning);
+				}
+				for (const warning of fonts.warnings) warnings.add(warning);
+				if (
+					options.strictFonts &&
+					(fonts.missingFamilies.length ||
+						fonts.unverifiedRequirements.length)
+				)
+					throw new Error(
+						`Wordcraft font requirements are not verified: ${[...fonts.missingFamilies, ...fonts.unverifiedRequirements].join('; ')}. Supply --font-dir with licensed font files and explicit supported font settings.`,
+					);
+			}
 			fs.rmSync(updated, { force: true });
 			fs.rmSync(stagedPdf, { force: true });
 			invoke([
 				'run',
 				'--file',
 				prepared,
+				...fontCommands,
 				'--cmd',
 				'references.updateFields',
 				'--save',
@@ -129,10 +198,30 @@ export function createWordcraftPdf(
 			rejectSymlink(updated);
 			if (!fs.existsSync(updated) || !fs.statSync(updated).isFile())
 				throw new Error('Wordcraft did not save the updated DOCX.');
-			const before = readPageCount(invoke(['info', updated]));
-			invoke(['convert', updated, stagedPdf]);
+			tables = normalizeWordcraftTables({
+				invoke,
+				docx: updated,
+				fontFiles,
+				temporaryDir,
+			});
+			for (const warning of tables.warnings) warnings.add(warning);
+			const countPages = (): number =>
+				fontCommands.length
+					? readWordcraftLayout(invoke, updated, fontFiles)
+					: readPageCount(invoke(['info', updated]));
+			const before = countPages();
+			if (fontCommands.length)
+				invoke([
+					'run',
+					'--file',
+					updated,
+					...fontCommands,
+					'--save',
+					stagedPdf,
+				]);
+			else invoke(['convert', updated, stagedPdf]);
 			validatePdf(stagedPdf);
-			const after = readPageCount(invoke(['info', updated]));
+			const after = countPages();
 			if (before !== after)
 				throw new Error(
 					`Wordcraft page count changed during export (${before} -> ${after}).`,
@@ -143,10 +232,17 @@ export function createWordcraftPdf(
 			}
 			pageCount = after;
 		}
+		if (!fonts) throw new Error('Wordcraft font preflight did not run.');
 		if (!converged)
 			throw new Error(
 				'Wordcraft page count did not converge after 3 passes.',
 			);
+		for (const font of fonts.loadedFiles ?? []) {
+			if (hashFile(font.path) !== font.sha256)
+				throw new Error(
+					'A loaded font file changed during Wordcraft rendering.',
+				);
+		}
 		if (hashFile(inputDocx) !== sourceHash)
 			throw new Error('Source DOCX changed during Wordcraft rendering.');
 		const result: WordcraftRenderResult = {
@@ -155,6 +251,8 @@ export function createWordcraftPdf(
 			warnings: [...warnings],
 			pageCount,
 			version,
+			fonts,
+			tables,
 		};
 		const stagedManifest = path.join(temporaryDir, 'manifest.json');
 		fs.writeFileSync(
@@ -166,7 +264,9 @@ export function createWordcraftPdf(
 					experimental: true,
 					wordAccepted: false,
 					pdfPageCountVerified: false,
-					pageCountSource: 'wordcraft-info',
+					pageCountSource: fontCommands.length
+						? 'wordcraft-document-layout'
+						: 'wordcraft-info',
 					inputDocx,
 					sourceSha256: sourceHash,
 					pdfSha256: hashFile(stagedPdf),
