@@ -12,7 +12,7 @@ import {
 
 import { assertNoOrdinaryBodyBold } from './word-acceptance-bold';
 import { stopOwnedWordAcceptanceProcesses } from './word-acceptance-cleanup';
-import { getFileEvidence } from './word-acceptance-evidence';
+import { writeWordAcceptanceFailureManifest } from './word-acceptance-evidence';
 import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
 import {
 	readAcceptanceStatistics,
@@ -23,7 +23,7 @@ const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
 export const WORD_ACCEPTANCE_TIMEOUT_MS = 600_000;
 export const WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS = 45_000;
-export const WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS = 120_000;
+export const WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS = 180_000;
 export type WordAcceptanceInteractionMode = 'background' | 'interactive';
 
 export interface WordAcceptanceOptions {
@@ -32,6 +32,7 @@ export interface WordAcceptanceOptions {
 	pdf?: string;
 	manifest?: string;
 	stylePreset?: StoStylePreset;
+	backgroundOnly?: boolean;
 }
 export interface WordAcceptanceExpectedStyle {
 	styleId: string;
@@ -67,6 +68,7 @@ export interface WordAcceptancePlan {
 	localAcceptedDocx: string;
 	localPdf: string;
 	localManifest: string;
+	backgroundOnly: boolean;
 }
 
 interface CreatePlanEnvironment {
@@ -234,6 +236,7 @@ export function createWordAcceptancePlan(
 		localAcceptedDocx: acceptedDocx,
 		localPdf: pdf,
 		localManifest: manifest,
+		backgroundOnly: options.backgroundOnly ?? false,
 	};
 }
 
@@ -248,11 +251,10 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		toHostPath: absolutePath => toHostPath(hostKind, absolutePath),
 	});
 	const statistics = readAcceptanceStatistics(options.inputDocx);
-	// Large table-heavy reports spend tens of seconds in native Word layout.
-	// Give a progressing background run time to finish instead of restarting the
-	// same work in visible Word at the small-document deadline.
+	// Large reports and background-only runs need time for native layout,
+	// save/reopen, PDF export, final verification, and Word quit.
 	const backgroundTimeout =
-		statistics.tables >= 10
+		plan.backgroundOnly || statistics.tables >= 10
 			? WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS
 			: WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS;
 	plan.request.statisticReplacements = statistics.replacements;
@@ -267,18 +269,39 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 
 	try {
 		writeWordAcceptanceRequest(plan);
-		const backgroundFailure = runWordAcceptanceAttempt(
-			plan,
-			backgroundTimeout,
-			() => {
-				cleanupVerified = true;
-			},
-		);
+		let backgroundFailure: string | null;
+		try {
+			backgroundFailure = runWordAcceptanceAttempt(
+				plan,
+				backgroundTimeout,
+				() => {
+					cleanupVerified = true;
+				},
+			);
+		} catch (error) {
+			if (plan.backgroundOnly) {
+				writeWordAcceptanceFailureManifest(
+					plan,
+					error instanceof Error ? error.message : String(error),
+					null,
+					cleanupVerified,
+					true,
+				);
+			}
+			throw error;
+		}
 		if (!backgroundFailure) return;
 		if (isDeterministicDocumentFailure(backgroundFailure)) {
 			writeWordAcceptanceFailureManifest(plan, backgroundFailure, null);
 			throw new Error(
 				`Word desktop acceptance rejected the document.\n${backgroundFailure}`,
+			);
+		}
+
+		if (plan.backgroundOnly) {
+			writeWordAcceptanceFailureManifest(plan, backgroundFailure, null);
+			throw new Error(
+				`Word background-only acceptance failed; interactive fallback is disabled.\n${backgroundFailure}`,
 			);
 		}
 
@@ -314,86 +337,6 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 			});
 		}
 	}
-}
-
-function writeWordAcceptanceFailureManifest(
-	plan: WordAcceptancePlan,
-	backgroundFailure: string,
-	interactiveFailure: string | null,
-): void {
-	const evidence = `${backgroundFailure}\n${interactiveFailure ?? ''}`;
-	const lastStage =
-		[
-			...(interactiveFailure ?? '').matchAll(
-				/Word acceptance stage: ([a-z-]+)\./g,
-			),
-		].at(-1)?.[1] ??
-		[
-			...backgroundFailure.matchAll(
-				/Word acceptance stage: ([a-z-]+)\./g,
-			),
-		].at(-1)?.[1] ??
-		null;
-	const pageMatches = [
-		...evidence.matchAll(/DOCX saved with (\d+) pages\./g),
-	];
-	const lastPageMatch = pageMatches.at(-1);
-	const pageCount = lastPageMatch ? Number(lastPageMatch[1]) : null;
-	const acceptedDocx = getFileEvidence(plan.localAcceptedDocx);
-	const pdf = getFileEvidence(plan.localPdf);
-	const manifest = {
-		schemaVersion: WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION,
-		renderer: 'word-desktop-interactive',
-		status: 'failed',
-		execution: {
-			requestedMode: 'auto',
-			completedMode: null,
-			attemptedModes: plan.request.attemptedModes,
-			processCleanupVerified: true,
-		},
-		capabilityChecks: {
-			openedDocx: evidence.includes('staged DOCX opened.'),
-			updatedFieldsAndToc: evidence.includes(
-				'fields, TOC, and pagination updated.',
-			),
-			repaginated: evidence.includes(
-				'fields, TOC, and pagination updated.',
-			),
-			savedAcceptedDocx: acceptedDocx.exists,
-			exportedPdf: pdf.exists,
-			reopenedAcceptedDocx: false,
-			stablePageCount: false,
-		},
-		officeLicenseDiagnostic: {
-			status: 'warning',
-			message: evidence.includes('---NOTIFICATIONS---, 0xC004F009')
-				? 'Microsoft Word reported ---NOTIFICATIONS---, 0xC004F009; capability verification continued.'
-				: 'The Office licensing diagnostic did not block capability verification.',
-		},
-		printer: {
-			restoredSystemDefault: evidence.includes(
-				'Restored and verified Windows default printer:',
-			),
-		},
-		pageCountBeforeFailure: pageCount,
-		lastWordStage: lastStage,
-		acceptedDocx,
-		pdf,
-		failure: {
-			stage:
-				pageCount !== null && !pdf.exists
-					? 'exportPdf'
-					: (lastStage ?? 'wordDesktopAcceptance'),
-			backgroundAttempt: backgroundFailure,
-			interactiveAttempt: interactiveFailure,
-		},
-	};
-	fs.mkdirSync(path.dirname(plan.localManifest), { recursive: true });
-	fs.writeFileSync(
-		plan.localManifest,
-		`${JSON.stringify(manifest, null, 2)}\n`,
-		'utf8',
-	);
 }
 
 function isDeterministicDocumentFailure(evidence: string): boolean {
@@ -453,6 +396,9 @@ function runWordAcceptanceAttempt(
 			);
 		}
 		manifest.execution.processCleanupVerified = true;
+		if (plan.backgroundOnly) {
+			manifest.execution.requestedMode = 'background-only';
+		}
 		verifyAcceptedDocxIntegrity(
 			plan.localInputDocx,
 			plan.localAcceptedDocx,

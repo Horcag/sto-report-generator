@@ -71,6 +71,14 @@ for (const value of ['NaN', 'Infinity', 'text']) {
 }
 assert.deepEqual(parseArgs([]).positionals, []);
 assert.equal(parseArgs([]).options.size, 0);
+assert.equal(
+	optionBoolean(
+		parseArgs(['accept-word', 'input.docx', '--background-only']),
+		'background-only',
+	),
+	true,
+);
+
 console.log(
 	'CLI argument parser tests passed: options, positionals, literal paths and compatibility.',
 );

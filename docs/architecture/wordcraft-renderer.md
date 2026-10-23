@@ -6,8 +6,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.9.0**, release commit `2e6db0bd88795e80375176c01665cff7dbe2b057`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.9.0).
+- Supported CLI: **0.10.0**, release commit `9130181a5fdaee2293e67756fd5458c601489f3c`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.10.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -145,7 +145,10 @@ rejected; explicitly retained artifacts remain the caller's cleanup responsibili
 It does not download Wordcraft or claim
 independent PDF/Word acceptance. The controls include `example`, a 90-row extension of
 `tests/fixtures/dotm-word-corpus`, and `tests/fixtures/wordcraft/math-controls.md` (fractions, radicals,
-accents, sums, integrals, a matrix and appendix TOC fields).
+accents, sums, integrals, a matrix and appendix TOC fields). Matrix sizes through 8x8, rectangular/nested matrices, the three-section
+control and release-sensitive run/tab/equation-array controls also run in the live suite.
+The normal quality gate separately checks release fixture XML for both style presets, including
+direct OMML placement without synthetic wrapper elements.
 The live suite also injects a stale cached TOC result, marks the TOC dirty, runs the installed
 field updater and checks numbered entries, field boundaries, cleared dirty state and source preservation.
 The style corpus has deliberate source-preflight violations, so exercise its raw build for
@@ -200,9 +203,24 @@ accepted Word receipts for their exact source DOCX before a new comparison can e
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.9.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.9.0/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.9.0/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.10.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.10.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.10.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.
+
+## 0.10.0 comparison and background Word acceptance
+
+The [0.10.0 audit](../audits/2026-10-23-wordcraft-0100.md) separates upstream release fixes
+from measured changes on frozen source documents. Known math spacing and pagination differences remain.
+
+Use `npm run accept:word -- report.docx --background-only` when foreground Word is unwanted.
+This mode makes one background attempt with a 180-second deadline and never retries interactively.
+It records the selected mode and exact-process cleanup in the acceptance receipt. Failure to clean up
+retains the request evidence and records `processCleanupVerified: false`.
+The automatic mode retains a 45-second initial deadline for small documents and 180 seconds for
+large table-heavy documents, followed by its existing interactive fallback.
+
+`background-only` avoids foreground automation; it still uses the installed Word COM server.
+No Computer Use, keyboard/mouse automation or desktop focus is needed.

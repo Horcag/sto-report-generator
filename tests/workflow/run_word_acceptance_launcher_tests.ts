@@ -11,11 +11,16 @@ import {
 	runWordAcceptance,
 } from '@/app/word-acceptance';
 
+import { testBackgroundOnlyLifecycle } from './word_acceptance_background_only_test';
+
 interface Scenario {
+	backgroundSucceeds?: boolean;
 	cleanupFails?: boolean;
 	cleanupFailsAfterAcceptance?: boolean;
 	corruptAcceptedText?: boolean;
 	malformedManifest?: boolean;
+	missingManifest?: boolean;
+	unexpectedManifest?: boolean;
 	exportFails?: boolean;
 	hungAtStage?: string;
 	deterministicTableFailure?: boolean;
@@ -24,14 +29,13 @@ interface Scenario {
 	platform?: NodeJS.Platform;
 	release?: string;
 }
-
 interface Invocation {
 	cleanup: boolean;
 	requestPath: string;
 	visible: boolean;
+	hidden: boolean;
 	timeout?: number;
 }
-
 function withFakeWord(
 	scenario: Scenario,
 	test: (input: string, calls: Invocation[]) => void,
@@ -66,7 +70,11 @@ function withFakeWord(
 		(
 			command: string,
 			args: string[],
-			options?: { env?: NodeJS.ProcessEnv; timeout?: number },
+			options?: {
+				env?: NodeJS.ProcessEnv;
+				timeout?: number;
+				windowsHide?: boolean;
+			},
 		) => {
 			const result = {
 				pid: 0,
@@ -111,6 +119,7 @@ function withFakeWord(
 				cleanup,
 				requestPath,
 				visible: options?.env?.WINDOWS_CONSOLE_VISIBLE === '1',
+				hidden: options?.windowsHide === true,
 				timeout: options?.timeout,
 			});
 			if (cleanup)
@@ -131,7 +140,8 @@ function withFakeWord(
 				appendices: 0,
 			});
 			if (
-				request.interactionMode === 'background' ||
+				(request.interactionMode === 'background' &&
+					!scenario.backgroundSucceeds) ||
 				scenario.exportFails
 			) {
 				return {
@@ -145,15 +155,18 @@ function withFakeWord(
 						: 'simulated export failure',
 				};
 			}
-			fs.writeFileSync(
-				request.manifest,
-				scenario.malformedManifest
-					? '{malformed manifest'
-					: JSON.stringify({
-							status: 'pendingCleanup',
-							execution: {},
-						}),
-			);
+			if (!scenario.missingManifest)
+				fs.writeFileSync(
+					request.manifest,
+					scenario.malformedManifest
+						? '{malformed manifest'
+						: JSON.stringify({
+								status: scenario.unexpectedManifest
+									? 'unexpected'
+									: 'pendingCleanup',
+								execution: {},
+							}),
+				);
 			fs.copyFileSync(input, input.replace(/\.docx$/, '.accepted.docx'));
 			if (scenario.corruptAcceptedText) {
 				const accepted = new AdmZip(
@@ -188,7 +201,6 @@ function withFakeWord(
 		fs.rmSync(root, { recursive: true, force: true });
 	}
 }
-
 function testSuccessfulAcceptance(): void {
 	withFakeWord({}, (inputDocx, calls) => {
 		runWordAcceptance({ inputDocx });
@@ -198,6 +210,7 @@ function testSuccessfulAcceptance(): void {
 				'utf8',
 			),
 		);
+		assert.equal(calls[0].timeout, 45_000);
 		assert.equal(manifest.status, 'accepted');
 		assert.equal(manifest.execution.processCleanupVerified, true);
 		assert.deepEqual(
@@ -218,7 +231,6 @@ function testSuccessfulAcceptance(): void {
 		);
 	});
 }
-
 function testIntegrityFailurePersistsVerifiedCleanup(): void {
 	withFakeWord({ corruptAcceptedText: true }, (inputDocx, calls) => {
 		assert.throws(
@@ -241,7 +253,6 @@ function testIntegrityFailurePersistsVerifiedCleanup(): void {
 		assert.equal(fs.existsSync(calls[0].requestPath), false);
 	});
 }
-
 function testCleanupFailureAfterAcceptanceStaysUnverified(): void {
 	withFakeWord({ cleanupFailsAfterAcceptance: true }, (inputDocx, calls) => {
 		assert.throws(
@@ -259,7 +270,6 @@ function testCleanupFailureAfterAcceptanceStaysUnverified(): void {
 		assert.equal(fs.existsSync(calls[0].requestPath), true);
 	});
 }
-
 function testUnverifiedCleanup(): void {
 	withFakeWord({ cleanupFails: true }, (inputDocx, calls) => {
 		assert.throws(
@@ -278,7 +288,6 @@ function testUnverifiedCleanup(): void {
 		);
 	});
 }
-
 function testMalformedManifest(): void {
 	withFakeWord({ malformedManifest: true }, (inputDocx, calls) => {
 		assert.throws(() => runWordAcceptance({ inputDocx }), SyntaxError);
@@ -296,7 +305,6 @@ function testMalformedManifest(): void {
 		);
 	});
 }
-
 function testBothAttemptsFail(): void {
 	withFakeWord(
 		{ exportFails: true, hungAtStage: 'update-toc' },
@@ -324,7 +332,6 @@ function testBothAttemptsFail(): void {
 		},
 	);
 }
-
 function testDeterministicFailureDoesNotRetry(): void {
 	withFakeWord({ deterministicTableFailure: true }, (inputDocx, calls) => {
 		assert.throws(
@@ -347,13 +354,12 @@ function testDeterministicFailureDoesNotRetry(): void {
 		assert.equal(manifest.failure.interactiveAttempt, null);
 	});
 }
-
 function testLargeDocumentGetsEnoughBackgroundTime(): void {
 	withFakeWord(
 		{ largeDocument: true, deterministicTableFailure: true },
 		(inputDocx, calls) => {
 			assert.throws(() => runWordAcceptance({ inputDocx }));
-			assert.equal(calls[0].timeout, 120_000);
+			assert.equal(calls[0].timeout, 180_000);
 			assert.deepEqual(
 				calls.map(call => call.cleanup),
 				[false, true],
@@ -433,6 +439,7 @@ testCleanupFailureAfterAcceptanceStaysUnverified();
 testUnverifiedCleanup();
 testMalformedManifest();
 testBothAttemptsFail();
+testBackgroundOnlyLifecycle(withFakeWord);
 testDeterministicFailureDoesNotRetry();
 testLargeDocumentGetsEnoughBackgroundTime();
 testBoldInputRejectedBeforeWord();

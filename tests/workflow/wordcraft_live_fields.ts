@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import AdmZip from 'adm-zip';
 
+import { prepareWordcraftTocForImport } from '@/app/wordcraft-fields';
+
 const DOCUMENT_XML = 'word/document.xml';
 
 function readXml(docx: string): string {
@@ -12,16 +14,30 @@ function readXml(docx: string): string {
 	return entry.getData().toString('utf8');
 }
 
-function fieldSpan(xml: string, instruction: string): string {
+export function wordcraftFieldSpan(xml: string, instruction: string): string {
 	const marker = xml.indexOf(instruction);
 	assert.notEqual(marker, -1, `field instruction exists: ${instruction}`);
-	const fieldStart = xml.lastIndexOf('<w:fldChar', marker);
-	const fieldEnd = xml.indexOf('<w:fldChar w:fldCharType="end"', marker);
-	assert.ok(
-		fieldStart >= 0 && fieldStart < marker && fieldEnd > marker,
-		'field boundaries are complete',
-	);
-	return xml.slice(fieldStart, fieldEnd);
+	const stack: number[] = [];
+	let fieldStart: number | undefined;
+	for (const match of xml.matchAll(/<w:fldChar\b[^>]*>/g)) {
+		if (match.index > marker && fieldStart === undefined) {
+			fieldStart = stack.at(-1);
+			assert.notEqual(
+				fieldStart,
+				undefined,
+				'instruction belongs to an open field',
+			);
+		}
+		const type = /\bw:fldCharType="([^"]+)"/.exec(match[0])?.[1];
+		if (type === 'begin') stack.push(match.index);
+		if (type === 'end') {
+			const start = stack.pop();
+			if (fieldStart !== undefined && start === fieldStart) {
+				return xml.slice(fieldStart, match.index);
+			}
+		}
+	}
+	assert.fail('field boundaries are complete');
 }
 
 /** Runs the installed Wordcraft field updater against a disposable DOCX copy. */
@@ -94,6 +110,11 @@ export function verifyLiveWordcraftFields(
 		);
 		archive.updateFile(DOCUMENT_XML, Buffer.from(xml, 'utf8'));
 		archive.writeZip(stale);
+		assert.equal(
+			prepareWordcraftTocForImport(stale),
+			1,
+			'only the staged semantic TOC wrapper is prepared for engine import',
+		);
 
 		const result = spawnSync(
 			executable,
@@ -116,7 +137,7 @@ export function verifyLiveWordcraftFields(
 		);
 		assert.ok(fs.existsSync(updated), 'Wordcraft saved the updated DOCX');
 		const output = readXml(updated);
-		const outputToc = fieldSpan(output, 'TOC \\f');
+		const outputToc = wordcraftFieldSpan(output, 'TOC \\f');
 		assert.doesNotMatch(output, /STALE WORDCRAFT TOC PLACEHOLDER/);
 		assert.doesNotMatch(
 			outputToc.slice(0, outputToc.indexOf('TOC \\f')),

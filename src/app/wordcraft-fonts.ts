@@ -252,7 +252,7 @@ export function preflightWordcraftFonts(
 					normalizeFamily('Cambria Math')
 				)
 					unverified(
-						`Wordcraft 0.9.0 ignores the configured math font ${configured} and uses Cambria Math; the requested mathematical font remains unverified.`,
+						`Wordcraft ignores the configured math font ${configured} and uses Cambria Math; the requested mathematical font remains unverified.`,
 					);
 			}
 		}

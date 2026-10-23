@@ -12,6 +12,8 @@ import {
 } from '@/app/wordcraft-renderer';
 
 import { verifyLiveWordcraftFields } from './wordcraft_live_fields';
+import { buildWordcraftReleaseFixture } from './wordcraft_release_fixture';
+import { buildWordcraftSectionFixture } from './wordcraft_sections_fixture';
 
 const root = path.resolve(__dirname, '../..');
 const hash = (file: string): string =>
@@ -72,28 +74,59 @@ async function main(): Promise<void> {
 		);
 		// This style fixture deliberately includes source-preflight violations.
 		await buildReport(corpus, corpusDocx);
-		const before = hash(corpusDocx);
-		const rendered = createWordcraftPdf({ inputDocx: corpusDocx });
-		assert.equal(hash(corpusDocx), before);
-		const mathSource = path.join(directory, 'math.md');
-		fs.writeFileSync(
-			mathSource,
-			fs
-				.readFileSync(path.join(root, 'example/00_metadata.md'), 'utf8')
-				.replace(/^bibliography:.*\n/m, '') +
-				'\n' +
-				fs.readFileSync(
-					path.join(
-						root,
-						'tests/fixtures/wordcraft/math-controls.md',
+		const renderPreservingSource = (inputDocx: string) => {
+			const before = hash(inputDocx);
+			const result = createWordcraftPdf({ inputDocx });
+			assert.equal(
+				hash(inputDocx),
+				before,
+				'render preserves source DOCX',
+			);
+			const manifest = JSON.parse(
+				fs.readFileSync(result.manifestPath, 'utf8'),
+			);
+			assert.equal(manifest.inputDocx, inputDocx);
+			assert.equal(manifest.sourceSha256, before);
+			return result;
+		};
+		const rendered = renderPreservingSource(corpusDocx);
+		const controls = [];
+		for (const control of ['math', 'matrix']) {
+			const source = path.join(directory, `${control}.md`);
+			fs.writeFileSync(
+				source,
+				fs
+					.readFileSync(
+						path.join(root, 'example/00_metadata.md'),
+						'utf8',
+					)
+					.replace(/^bibliography:.*\n/m, '') +
+					'\n' +
+					fs.readFileSync(
+						path.join(
+							root,
+							`tests/fixtures/wordcraft/${control}-controls.md`,
+						),
+						'utf8',
 					),
-					'utf8',
-				),
-		);
-		const mathDocx = path.join(directory, 'math.docx');
-		await buildReport(mathSource, mathDocx);
-		const mathResult = createWordcraftPdf({ inputDocx: mathDocx });
-		for (const result of [generated.wordcraft, rendered, mathResult]) {
+			);
+			const docx = path.join(directory, `${control}.docx`);
+			await buildReport(source, docx);
+			controls.push(renderPreservingSource(docx));
+		}
+		const sectionsDocx = path.join(directory, 'multisection.docx');
+		await buildWordcraftSectionFixture(sectionsDocx);
+		const sectionsResult = renderPreservingSource(sectionsDocx);
+		const releaseDocx = path.join(directory, 'release-controls.docx');
+		await buildWordcraftReleaseFixture(releaseDocx);
+		const releaseResult = renderPreservingSource(releaseDocx);
+		for (const result of [
+			generated.wordcraft,
+			rendered,
+			...controls,
+			sectionsResult,
+			releaseResult,
+		]) {
 			const manifest = JSON.parse(
 				fs.readFileSync(result.manifestPath, 'utf8'),
 			);
@@ -102,14 +135,14 @@ async function main(): Promise<void> {
 			assert.equal(manifest.pdfPageCountVerified, false);
 			assert.equal(manifest.pdfSha256, hash(result.outputPdf));
 			assert.equal(manifest.sourceSha256, hash(manifest.inputDocx));
-			assert.equal(manifest.version, '0.9.0');
+			assert.equal(manifest.version, '0.10.0');
 			assert.ok(result.pageCount > 1);
 			console.log(
-				`LIVE ${path.basename(path.dirname(result.outputPdf))}: ${result.pageCount} layout pages, source preserved, PDF hash verified.`,
+				`LIVE ${path.basename(result.outputPdf)}: ${result.pageCount} layout pages, source preserved, PDF hash verified.`,
 			);
 		}
 		console.log(
-			'Wordcraft live smoke passed (example + 90-row table + math/appendix controls). PDF visual/Word acceptance is separate.',
+			'Wordcraft live smoke passed (example + 90-row table + math/appendix + matrix + multisection + release controls). PDF visual/Word acceptance is separate.',
 		);
 	} finally {
 		if (retainedOutput)
