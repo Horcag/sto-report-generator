@@ -26,7 +26,6 @@ import {
 function fakeHostPath(absolutePath: string): string {
 	return `WIN:${absolutePath}`;
 }
-
 function testTablePaginationPowerShell(): void {
 	const probe = spawnSync('pwsh', ['-NoProfile', '-Command', 'exit 0']);
 	if (probe.error) return;
@@ -37,7 +36,6 @@ function testTablePaginationPowerShell(): void {
 	]);
 	assert.equal(result.status, 0, String(result.stderr || result.stdout));
 }
-
 function testPowerShellLicenseStatusParsing(): void {
 	const executable = 'powershell.exe';
 	const availability = spawnSync(executable, [
@@ -46,7 +44,6 @@ function testPowerShellLicenseStatusParsing(): void {
 		'exit 0',
 	]);
 	if (availability.error) return;
-
 	mkdirSync(path.resolve('.agent-work'), { recursive: true });
 	const temporaryDirectory = mkdtempSync(
 		path.resolve('.agent-work', 'word-license-test-'),
@@ -79,11 +76,9 @@ function testPowerShellLicenseStatusParsing(): void {
 	const legacyVNextStatus = `
 ========== Mode per ProductReleaseId ==========
 o365proplusretail = Legacy
-
 ========== vNext licenses found ==========
 No licenses found.
 `;
-
 	try {
 		const licensed = run(
 			`
@@ -470,8 +465,13 @@ function main(): void {
 		/stop_word_acceptance\.ps1/,
 	);
 	assert.match(launcher, /writeWordAcceptanceFailureManifest/);
-	assert.match(launcher, /pageCountBeforeFailure/);
-	assert.match(launcher, /stage:[\s\S]*'exportPdf'/);
+	assert.match(
+		readFileSync(
+			path.resolve('src/app/word-acceptance-evidence.ts'),
+			'utf8',
+		),
+		/pageCountBeforeFailure[\s\S]*'exportPdf'/,
+	);
 	const cleanupScript = readFileSync(
 		path.resolve('scripts', 'stop_word_acceptance.ps1'),
 		'utf8',

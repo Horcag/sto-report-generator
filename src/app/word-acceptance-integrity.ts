@@ -26,8 +26,19 @@ function stableParagraphs(xml: string): string[] {
 				!paragraph.getElementsByTagNameNS(WORD_NS, 'fldSimple').length,
 		)
 		.map(paragraph =>
-			[...paragraph.getElementsByTagNameNS(WORD_NS, 't')]
-				.map(text => text.textContent ?? '')
+			[...paragraph.getElementsByTagNameNS(WORD_NS, '*')]
+				.flatMap(element => {
+					if (element.localName === 't')
+						return [element.textContent ?? ''];
+					const parent = element.parentElement;
+					if (
+						parent?.namespaceURI === WORD_NS &&
+						parent.localName === 'r' &&
+						['tab', 'br', 'cr'].includes(element.localName)
+					)
+						return [' '];
+					return [];
+				})
 				.join('')
 				.replace(/\s+/g, ' ')
 				.trim(),

@@ -32,6 +32,8 @@ const tests = [
 	['tests/workflow/run_wordcraft_table_tests.ts'],
 	['tests/workflow/run_wordcraft_layout_tests.ts'],
 	['tests/workflow/run_wordcraft_sections_tests.ts'],
+	['tests/workflow/run_wordcraft_release_tests.ts'],
+	['tests/workflow/run_wordcraft_fields_tests.ts'],
 	['tests/workflow/cli_args.test.ts'],
 	['tests/workflow/run_wordcraft_renderer_tests.ts'],
 	['tests/workflow/run_wordcraft_workflow_tests.ts'],

@@ -233,6 +233,7 @@ function runAcceptWord(args: ParsedArgs): void {
 		acceptedDocx: optionString(args, 'accepted-docx'),
 		pdf: optionString(args, 'pdf'),
 		manifest: optionString(args, 'manifest'),
+		backgroundOnly: optionBoolean(args, 'background-only'),
 		stylePreset: optionStylePreset(args),
 	});
 }
