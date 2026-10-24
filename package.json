@@ -43,7 +43,7 @@
 		"build:example": "npx tsx tests/source-preflight/regression_checks.ts example && npx tsx src/index.ts build example example/output.docx && uv run python scripts/post_build.py example/output.docx example",
 		"build:example:raw": "npx tsx tests/source-preflight/regression_checks.ts example && npx tsx src/index.ts build example .agent-work/example-raw.docx",
 		"test": "npx tsx tests/run_all_tests.ts",
-		"test:source": "npx tsx tests/source-preflight/run_source_preflight_tests.ts && npx tsx tests/source-preflight/regression_checks.ts example",
+		"test:source": "npx tsx tests/source-preflight/run_source_preflight_tests.ts && npx tsx tests/source-preflight/table_regressions_test.ts && npx tsx tests/source-preflight/regression_checks.ts example",
 		"test:parser": "npx tsx tests/parser/run_parser_tests.ts",
 		"test:validator": "npx tsx tests/validator/run_validator_tests.ts",
 		"test:generated-docx": "npx tsx tests/generator/run_generated_docx_validation.ts",

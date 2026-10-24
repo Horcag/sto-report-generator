@@ -4,7 +4,8 @@
   "base_commit": "817f1e28b9654325e20b6b5ecaeb72a921ffe16b",
   "working_tree_changes": true,
   "fixture": "tests/fixtures/formulas/layout.md",
-  "fixture_sha256": "aa7714d442a387be2685b2a22c088b0d2c12792464b4c405b04581045952ef43",
+  "fixture_sha256": "d6ec40ee452d15fc792fcb539953c33e5a03459bed7a60628cf43ee48ef4e261",
+  "fixture_revision_note": "Redundant second alignment markers removed from two continuation rows; expression text and equation labels retained. Multiple outer alignment groups now fail before rendering.",
   "numbered_formulas": 14,
   "native_math_nodes_per_pipeline": 18,
   "identical_math_text_between_pipelines": true,
@@ -12,10 +13,14 @@
     {
       "pipeline": "formulas",
       "status": "accepted",
-      "docx_sha256": "a438338a3cbd5bd2fb68cf4804c4f4cd71e8a907c0b366222c9fc86da6bcacfd",
-      "pdf_sha256": "aee36897ce790ee56937f26b2fc58e7011dd23aba346790fc48b7a658b6cf0c0",
+      "docx_sha256": "349a22efb3e352271b30bad1d2321c1301b57285835089c1375a8968a20a2f14",
+      "pdf_sha256": "382fc01cf5d2ddcd787a21d6051de1ba86b8ef2b7437fdacb5f20a570250db58",
       "stable_pages": 3,
       "process_cleanup_verified": true,
+      "docx_checks": {
+        "checks": 66,
+        "passed": 66
+      },
       "capability_checks": {
         "openedDocx": true,
         "updatedFieldsAndToc": true,
@@ -27,7 +32,7 @@
       },
       "geometry": {
         "status": "passed",
-        "pdf_sha256": "aee36897ce790ee56937f26b2fc58e7011dd23aba346790fc48b7a658b6cf0c0",
+        "pdf_sha256": "382fc01cf5d2ddcd787a21d6051de1ba86b8ef2b7437fdacb5f20a570250db58",
         "page_count": 3,
         "tolerance_pt": 2,
         "tolerance_basis": "fixture regression tolerance, not an STO allowance",
@@ -162,12 +167,16 @@
       }
     },
     {
-      "pipeline": "postbuild",
+      "pipeline": "python-formulas",
       "status": "accepted",
-      "docx_sha256": "e0f431d0311b8cd64cfe9921da76e75a92132c8478e115a5cff8efe3eb9184e1",
-      "pdf_sha256": "5b61248e05fe064ff47c11e19e56379bd5671704ff2674b69f000f722539061a",
+      "docx_sha256": "e5be3546bfe98dc4b1e69cbf63db911a0f85e0fd2915b0bd030b97f693a6268d",
+      "pdf_sha256": "97e0f5cfbb560a10189e2a091e3a91a8590cbb7cacdda3d29c29ea30bd34ff74",
       "stable_pages": 3,
       "process_cleanup_verified": true,
+      "docx_checks": {
+        "checks": 66,
+        "passed": 66
+      },
       "capability_checks": {
         "openedDocx": true,
         "updatedFieldsAndToc": true,
@@ -179,7 +188,7 @@
       },
       "geometry": {
         "status": "passed",
-        "pdf_sha256": "5b61248e05fe064ff47c11e19e56379bd5671704ff2674b69f000f722539061a",
+        "pdf_sha256": "97e0f5cfbb560a10189e2a091e3a91a8590cbb7cacdda3d29c29ea30bd34ff74",
         "page_count": 3,
         "tolerance_pt": 2,
         "tolerance_basis": "fixture regression tolerance, not an STO allowance",
@@ -314,11 +323,12 @@
       }
     }
   ],
-  "visual_review": "Tall case braces cover all 3 branches; cases columns left; aligned systems and array preserve right/left; no clipped conditions or footer-only page. Both pipelines inspected.",
+  "visual_review": "All formula pages in both pipelines inspected: full braces, preserved conditions/alignment, no clipped content or footer-only page.",
   "boundaries": [
     "Automatic Word line wrapping not covered",
     "Scalable middle delimiters not covered",
-    "Two-point tolerance is fixture regression tolerance, not STO allowance"
+    "Two-point tolerance is fixture regression tolerance, not STO allowance",
+    "Multiple outer alignment markers per continuation row rejected explicitly"
   ],
   "source_formula_rules_passed": true
 }

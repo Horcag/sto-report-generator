@@ -34,11 +34,11 @@ $$\operatorname{Roles}=\stovec{a}\cdot\stovec{b}+\sin x+\stomat{A}\stovec{x}. (@
 
 Перенос выражения показан в формуле @eq:continuation:
 
-$$\begin{aligned}\operatorname{Start}&=a+b+\\&+c+d+\\&+\operatorname{Finish}&=e+f.\end{aligned} (@eq:continuation)$$
+$$\begin{aligned}\operatorname{Start}&=a+b+\\&+c+d+\\&+\operatorname{Finish}=e+f.\end{aligned} (@eq:continuation)$$
 
 Матрица внутри переноса приведена в формуле @eq:nested:
 
-$$\begin{aligned}\operatorname{Nested}&=\begin{pmatrix}1&0\\0&1\end{pmatrix}+\\&+\operatorname{Last}&=\frac{a}{b}.\end{aligned} (@eq:nested)$$
+$$\begin{aligned}\operatorname{Nested}&=\begin{pmatrix}1&0\\0&1\end{pmatrix}+\\&+\operatorname{Last}=\frac{a}{b}.\end{aligned} (@eq:nested)$$
 
 Ненумерованное выражение:
 

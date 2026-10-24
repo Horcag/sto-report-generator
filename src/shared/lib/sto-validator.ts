@@ -20,7 +20,6 @@ import {
 	getNoteFailures,
 	getParagraphStyleId,
 	getReportBodyElements,
-	getReportTables,
 	isParagraphXml,
 	isTableXml,
 	isVisibleParagraph,
@@ -29,9 +28,11 @@ import {
 } from './sto-validator/body-xml';
 import { hasBoldOrdinaryBodyText } from './sto-validator/bold-formatting';
 import {
+	countEmptyTableCells,
 	countReferatKeywordsWithWrongIndent,
 	countTableCellsWithInsufficientPadding,
 	countTableHeaderFinalPeriods,
+	countTablesWithDiagonalBorders,
 } from './sto-validator/layout-xml';
 import { isMathLayoutTable } from './sto-validator/math-layout-table';
 import {
@@ -39,6 +40,12 @@ import {
 	validateFormulaPunctuation,
 } from './sto-validator/math-xml';
 import { hasForbiddenTabCharacters } from './sto-validator/tab-xml';
+import {
+	countTablesWithoutHeaderRepeat,
+	validateTableLayout,
+} from './sto-validator/table-layout';
+
+export { validateTableLayout } from './sto-validator/table-layout';
 
 /** Inspect unpacked DOCX XML against the STO rules. */
 
@@ -59,7 +66,6 @@ interface ValidationInput {
 }
 
 const REGEXP_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
-const OMATH_TAG = '<m:' + 'o' + 'Math';
 const HANSI_ATTRIBUTE = 'w:h' + 'Ansi';
 
 function escapeRegExp(value: string): string {
@@ -174,24 +180,6 @@ function getMissingCitationNumbers(
 	}
 
 	return missingNumbers;
-}
-
-function countTablesWithoutHeaderRepeat(docXml: string): number {
-	const tables = getReportTables(docXml);
-
-	return tables.filter(tableXml => {
-		if (isMathLayoutTable(tableXml)) {
-			return false;
-		}
-
-		const [firstRow, secondRow] =
-			tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/g) ?? [];
-		if (firstRow && secondRow) {
-			return !regexMatches(/<w:tblHeader\b/, firstRow);
-		}
-
-		return false;
-	}).length;
 }
 
 function hasOversizedImages(docXml: string): boolean {
@@ -330,16 +318,6 @@ function hasExpectedBibliographyNumbering(numberingXml: string): boolean {
 			regexMatches(bibliographyIndentPattern, levelXml) &&
 			!regexMatches(/<w:suff\b[^>]*w:val="space"/, levelXml),
 	);
-}
-
-function countTablesWithDiagonalBorders(docXml: string): number {
-	const tables = getReportTables(docXml);
-	return tables.filter(
-		tableXml =>
-			!isMathLayoutTable(tableXml) &&
-			(regexMatches(/<w:tl2br\b/, tableXml) ||
-				regexMatches(/<w:tr2bl\b/, tableXml)),
-	).length;
 }
 
 function hasExpectedDefaultFont(stylesXml: string): boolean {
@@ -486,30 +464,6 @@ function hasStylePropertyOrInheritedByIdOrName(
 		expandStyleIdsByName(stylesXml, styleIdsOrNames),
 		propertyPattern,
 	);
-}
-
-function countEmptyTableCells(docXml: string): number {
-	const tables = getReportTables(docXml);
-	let emptyCells = 0;
-
-	for (const tableXml of tables) {
-		if (isMathLayoutTable(tableXml)) {
-			continue;
-		}
-
-		const cells = tableXml.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
-		emptyCells += cells.filter(cellXml => {
-			const text = extractWordText(cellXml).trim();
-			return (
-				text.length === 0 &&
-				!cellXml.includes(OMATH_TAG) &&
-				!cellXml.includes('<w:drawing') &&
-				!cellXml.includes('<w:br')
-			);
-		}).length;
-	}
-
-	return emptyCells;
 }
 
 function hasInvalidDirectBodyFormatting(
@@ -849,6 +803,7 @@ function validateFieldsTablesAndImages(
 		input.docXml,
 	);
 	return [
+		...validateTableLayout(input.docXml, input.stylesXml),
 		resultFromPass(
 			'Table Continuation Label',
 			continuation.label === 0,

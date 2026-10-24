@@ -34,6 +34,28 @@ class DisplayLineTests(unittest.TestCase):
         self.assertEqual(split_display_math_lines(matrix), [matrix])
         self.assertEqual(split_display_math_lines(cases), [cases])
 
+    def test_multiple_outer_alignment_markers_fail_in_each_row(self) -> None:
+        for outer in ("aligned", "gathered"):
+            for row in (r"a&=b&c&=d", r"a&=b\\c&=d&e", r"a\&b&=c&d"):
+                with (
+                    self.subTest(outer=outer, row=row),
+                    self.assertRaisesRegex(
+                        RuntimeError, "Multiple top-level alignment markers.*not supported"
+                    ),
+                ):
+                    split_display_math_lines(rf"\begin{{{outer}}}{row}\end{{{outer}}}")
+
+    def test_nested_and_escaped_ampersands_do_not_count_as_outer_markers(self) -> None:
+        matrix = r"\begin{matrix}a&b&c\\d&e&f\end{matrix}"
+        system = r"\left\{\begin{aligned}a&=b&c&=d\\e&=f&g&=h\end{aligned}\right."
+        for outer in ("aligned", "gathered"):
+            for nested in (matrix, system, r"\text{a&b&c}"):
+                with self.subTest(outer=outer, nested=nested):
+                    source = rf"\begin{{{outer}}}x&={nested}\\&=z\end{{{outer}}}"
+                    self.assertEqual(split_display_math_lines(source), [f"x={nested}", "=z"])
+            source = rf"\begin{{{outer}}}a\&b&=c\&d\\&=e\end{{{outer}}}"
+            self.assertEqual(split_display_math_lines(source), [r"a\&b=c\&d", "=e"])
+
     def test_braced_rows_do_not_split(self) -> None:
         source = r"\begin{aligned}x&=\text{a\\b&c}\\&=\frac{{a\\b}}{c}\end{aligned}"
         self.assertEqual(

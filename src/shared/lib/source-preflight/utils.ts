@@ -37,10 +37,28 @@ export function stripEnvironmentBlocks(
 
 export function splitMarkdownTableRow(line: string): string[] {
 	const trimmed = line.trim();
-	const withoutOuter = trimmed.replace(/^\|/, '').replace(/\|$/, '');
-	return withoutOuter.split('|').map(cell => cell.trim());
+	const cells: string[] = [];
+	let start = 0;
+	let backslashes = 0;
+	for (let index = 0; index < trimmed.length; index++) {
+		const character = trimmed[index];
+		if (character === '|' && backslashes % 2 === 0) {
+			cells.push(trimmed.slice(start, index).trim());
+			start = index + 1;
+		}
+		backslashes = character === '\\' ? backslashes + 1 : 0;
+	}
+	cells.push(trimmed.slice(start).trim());
+	if (trimmed.startsWith('|')) cells.shift();
+	if (start === trimmed.length && trimmed.endsWith('|')) cells.pop();
+	return cells;
 }
 
 export function isMarkdownTableSeparator(line: string): boolean {
-	return /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+	const cells = splitMarkdownTableRow(line);
+	return (
+		line.includes('|') &&
+		cells.length > 0 &&
+		cells.every(cell => /^:?-+:?$/.test(cell))
+	);
 }
