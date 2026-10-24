@@ -11,6 +11,7 @@ import {
 	getEffectiveParagraphAttribute,
 	resolveWordStyleId,
 } from './docx/styles';
+import { validateFormulaLayout } from './math/formula-layout-validator';
 import { validateTemplateStyleConformance } from './sto-template-style-validator';
 import {
 	extractWordText,
@@ -39,10 +40,7 @@ import {
 } from './sto-validator/math-xml';
 import { hasForbiddenTabCharacters } from './sto-validator/tab-xml';
 
-/**
- * STO Validation Suite
- * This script analyzes an unpacked .docx (XML) to ensure compliance with STO standards.
- */
+/** Inspect unpacked DOCX XML against the STO rules. */
 
 export interface ValidationResult {
 	check: string;
@@ -824,6 +822,7 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 			'Detected dot (.) as decimal separator in formula. Russian typography requires a comma (,).',
 		),
 		...validateFormulaPunctuation(docXml),
+		...validateFormulaLayout(docXml),
 	];
 }
 function validateFieldsTablesAndImages(

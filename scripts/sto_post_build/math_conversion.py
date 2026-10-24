@@ -1,12 +1,13 @@
 import json
 import subprocess
 from collections.abc import Sequence
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
 from lxml import etree
 
-from .constants import MATH_NS, SMALL_TILDE
+from .constants import MATH_NS, SMALL_TILDE, WORD_NS
 
 ACCENT_CHARS = {
     "~": "\u0303",  # combining tilde
@@ -65,6 +66,178 @@ def normalize_mathml_operators(mathml: str) -> str:
     return (
         etree.tostring(root, encoding="unicode").replace("\u00a0", "&#xA0;") if changed else mathml
     )
+
+
+def mark_mathml_fences(mathml: str) -> tuple[str, list[dict[str, str]]]:
+    """Carry paired scalable MathJax fences through plain-text operator conversion."""
+    root = etree.fromstring(mathml.encode("utf-8"))
+    prefix = "\ue100FENCE"
+    while prefix in "".join(root.itertext()):
+        prefix += "X"
+    fences: list[dict[str, str]] = []
+    for row in reversed(list(root.iter(f"{{{MATHML_NS}}}mrow"))):
+        if row.get("data-mjx-texclass") != "INNER" or len(row) < 3:
+            continue
+        first, last = row[0], row[-1]
+        if (
+            first.tag != f"{{{MATHML_NS}}}mo"
+            or last.tag != f"{{{MATHML_NS}}}mo"
+            or first.get("data-mjx-texclass") != "OPEN"
+            or last.get("data-mjx-texclass") != "CLOSE"
+            or first.get("stretchy") == "false"
+            or last.get("stretchy") == "false"
+        ):
+            continue
+        fence = {
+            "open": f"{prefix}{len(fences)}OPEN\ue101",
+            "close": f"{prefix}{len(fences)}CLOSE\ue101",
+            "begin": first.text or "",
+            "end": last.text or "",
+        }
+        first.text, last.text = fence["open"], fence["close"]
+        fences.append(fence)
+    if not fences:
+        return mathml, fences
+    return etree.tostring(root, encoding="unicode").replace("\u00a0", "&#xA0;"), fences
+
+
+def restore_omml_fences(omml: str, fences: list[dict[str, str]]) -> str:
+    if not fences:
+        return omml
+    root = etree.fromstring(omml.encode("utf-8"))
+    tokens = {fence[key] for fence in fences for key in ("open", "close")}
+    markers: dict[str, Any] = {}
+    # The converter merges markers with adjacent text. Split only marked runs,
+    # keeping all formatting on the neighbouring non-fence text.
+    for text in list(root.iter(f"{{{MATH_NS}}}t")):
+        remaining = text.text or ""
+        if not any(token in remaining for token in tokens):
+            continue
+        run = text.getparent()
+        if run is None or run.tag != f"{{{MATH_NS}}}r":
+            raise RuntimeError("Malformed formula fence marker.")
+        parent = run.getparent()
+        if parent is None:
+            raise RuntimeError("Formula fence marker has no expression container.")
+        while remaining:
+            found = sorted(
+                (remaining.index(token), token) for token in tokens if token in remaining
+            )
+            chunks = [remaining[: found[0][0]], found[0][1]] if found else [remaining]
+            for chunk in filter(None, chunks):
+                clone = deepcopy(run)
+                clone.find(f"{{{MATH_NS}}}t").text = chunk
+                clone.tail = None
+                run.addprevious(clone)
+                if chunk in tokens:
+                    if chunk in markers:
+                        raise RuntimeError("Duplicate formula fence marker.")
+                    markers[chunk] = clone
+            remaining = remaining[found[0][0] + len(found[0][1]) :] if found else ""
+        previous = run.getprevious()
+        if run.tail and previous is not None:
+            previous.tail = run.tail
+        parent.remove(run)
+    for fence in fences:
+        if fence["open"] not in markers or fence["close"] not in markers:
+            raise RuntimeError("Formula fences lost their shared expression container.")
+        opening, closing = markers[fence["open"]], markers[fence["close"]]
+        if opening.getparent() is not closing.getparent():
+            raise RuntimeError("Formula fences lost their shared expression container.")
+        closing_tail = closing.tail
+        contents = []
+        node = opening.getnext()
+        while node is not None and node is not closing:
+            contents.append(node)
+            node = node.getnext()
+        if node is not closing or not contents:
+            raise RuntimeError("Formula fences lost their enclosed expression.")
+        delimiter = etree.Element(f"{{{MATH_NS}}}d")
+        properties = etree.SubElement(delimiter, f"{{{MATH_NS}}}dPr")
+        for name, value in (("begChr", fence["begin"]), ("endChr", fence["end"]), ("grow", "1")):
+            property_element = etree.SubElement(properties, f"{{{MATH_NS}}}{name}")
+            property_element.set(f"{{{MATH_NS}}}val", value)
+        run_properties = opening.find(f"{{{WORD_NS}}}rPr")
+        if run_properties is not None:
+            control = etree.SubElement(properties, f"{{{MATH_NS}}}ctrlPr")
+            control.append(deepcopy(run_properties))
+        expression = etree.SubElement(delimiter, f"{{{MATH_NS}}}e")
+        for child in contents:
+            expression.append(child)
+        parent = opening.getparent()
+        parent.replace(opening, delimiter)
+        delimiter.tail = closing_tail
+        parent.remove(closing)
+    return etree.tostring(root, encoding="unicode")
+
+
+def collect_matrix_alignments(mathml: str) -> list[dict[str, Any]]:
+    """Capture source table alignment before the converter defaults every column to center."""
+    root = etree.fromstring(mathml.encode("utf-8"))
+    matrices = list(root.iter(f"{{{MATHML_NS}}}mtable"))
+    result = []
+    for matrix in matrices:
+        rows = matrix.findall(f"{{{MATHML_NS}}}mtr")
+        lengths = [len(row.findall(f"{{{MATHML_NS}}}mtd")) for row in rows]
+        if not rows or len(rows) != len(matrix) or any(length == 0 for length in lengths):
+            raise RuntimeError("Unsupported MathML matrix row structure.")
+        alignments = matrix.get("columnalign", "center").split() or ["center"]
+        if any(value not in {"left", "center", "right"} for value in alignments):
+            raise RuntimeError("Unsupported MathML matrix column alignment.")
+        parent = next(
+            (matrices.index(node) for node in matrix.iterancestors() if node in matrices), None
+        )
+        result.append(
+            {
+                "columns": [
+                    alignments[min(index, len(alignments) - 1)] for index in range(max(lengths))
+                ],
+                "row_lengths": lengths,
+                "parent": parent,
+            }
+        )
+    return result
+
+
+def restore_matrix_alignments(omml: str, source: list[dict[str, Any]]) -> str:
+    """Restore alignment only when matrix count, nesting and dimensions survived conversion."""
+    root = etree.fromstring(omml.encode("utf-8"))
+    matrices = list(root.iter(f"{{{MATH_NS}}}m"))
+    if len(matrices) != len(source):
+        raise RuntimeError("MathML/OMML matrix count mismatch.")
+    for matrix, expected in zip(matrices, source, strict=True):
+        parent = next(
+            (matrices.index(node) for node in matrix.iterancestors() if node in matrices), None
+        )
+        lengths = [
+            len(row.findall(f"{{{MATH_NS}}}e")) for row in matrix.findall(f"{{{MATH_NS}}}mr")
+        ]
+        if parent != expected["parent"] or lengths != expected["row_lengths"]:
+            raise RuntimeError("MathML/OMML matrix nesting or dimensions mismatch.")
+        properties = matrix.find(f"{{{MATH_NS}}}mPr")
+        if properties is None:
+            properties = etree.Element(f"{{{MATH_NS}}}mPr")
+            matrix.insert(0, properties)
+        for old in properties.findall(f"{{{MATH_NS}}}mcs"):
+            properties.remove(old)
+        columns = etree.Element(f"{{{MATH_NS}}}mcs")
+        index = 0
+        while index < len(expected["columns"]):
+            alignment = expected["columns"][index]
+            end = index + 1
+            while end < len(expected["columns"]) and expected["columns"][end] == alignment:
+                end += 1
+            group = etree.SubElement(columns, f"{{{MATH_NS}}}mc")
+            group_properties = etree.SubElement(group, f"{{{MATH_NS}}}mcPr")
+            for name, value in (("count", str(end - index)), ("mcJc", alignment)):
+                property_element = etree.SubElement(group_properties, f"{{{MATH_NS}}}{name}")
+                property_element.set(f"{{{MATH_NS}}}val", value)
+            index = end
+        control = properties.find(f"{{{MATH_NS}}}ctrlPr")
+        properties.insert(
+            properties.index(control) if control is not None else len(properties), columns
+        )
+    return etree.tostring(root, encoding="unicode")
 
 
 def run_node_json_batch(
@@ -178,9 +351,11 @@ const result = mathmlValues.map((mathml) => {
 process.stdout.write(JSON.stringify(result));
 """
 
-    normalized_values = [normalize_mathml_operators(value) for value in mathml_values]
+    marked_values = [
+        mark_mathml_fences(normalize_mathml_operators(value)) for value in mathml_values
+    ]
     results = run_node_json_batch(
-        node_script, normalized_values, repo_root, "MathML to OMML conversion"
+        node_script, [value for value, _ in marked_values], repo_root, "MathML to OMML conversion"
     )
     failed = [item for item in results if not item.get("ok")]
     if failed:
@@ -190,7 +365,12 @@ process.stdout.write(JSON.stringify(result));
             f"{first.get('mathml')}\n{first.get('error')}"
         )
 
-    values = [item["omml"] for item in results]
+    values = [
+        restore_matrix_alignments(
+            restore_omml_fences(item["omml"], fences), collect_matrix_alignments(mathml)
+        )
+        for item, (_, fences), mathml in zip(results, marked_values, mathml_values, strict=True)
+    ]
     for marker, spacing in EXPLICIT_MATH_SPACES.values():
         values = [value.replace(marker, spacing) for value in values]
     return values

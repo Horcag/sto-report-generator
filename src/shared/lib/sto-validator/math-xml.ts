@@ -171,12 +171,30 @@ export function inspectFormulaPunctuation(docXml: string): {
 			if (element.tagName === 'w:p') appendParagraph(element);
 			else if (element.tagName === 'w:tbl') {
 				if (isMathLayoutTable(element.outerHTML)) {
-					for (const row of [...element.children].filter(
+					const rows = [...element.children].filter(
 						child => child.tagName === 'w:tr',
-					)) {
-						const cell = [...row.children].filter(
+					);
+					for (const [rowIndex, row] of rows.entries()) {
+						const cells = [...row.children].filter(
 							child => child.tagName === 'w:tc',
-						)[1];
+						);
+						const cell = cells[1];
+						// Explicit continuation rows are kept with their next row; only
+						// the final row owns the equation's sentence punctuation.
+						const continued = [
+							...cell.getElementsByTagName('w:keepNext'),
+						].some(
+							property =>
+								!['0', 'false', 'off'].includes(
+									property.getAttribute('w:val') ?? '',
+								),
+						);
+						if (
+							continued &&
+							rowIndex < rows.length - 1 &&
+							!proseText(cells[2]).trim()
+						)
+							continue;
 						appendContainer(cell);
 					}
 				} else {

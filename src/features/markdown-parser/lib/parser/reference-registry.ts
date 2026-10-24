@@ -119,7 +119,15 @@ export class ReferenceRegistry {
 		);
 		return appendixText.replace(
 			/@(fig|tab|eq):([a-zA-Z0-9_-]+)/g,
-			match => this.itemMap.get(match) ?? `[${match} NOT FOUND]`,
+			(match, kind: string, _label: string, offset: number) => {
+				const number = this.itemMap.get(match);
+				if (!number) return `[${match} NOT FOUND]`;
+				if (kind !== 'eq') return number;
+				const alreadyParenthesized =
+					/\(\s*$/u.test(appendixText.slice(0, offset)) &&
+					/^\s*\)/u.test(appendixText.slice(offset + match.length));
+				return alreadyParenthesized ? number : `(${number})`;
+			},
 		);
 	}
 }

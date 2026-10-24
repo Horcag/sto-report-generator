@@ -5,9 +5,11 @@ import {
 	Document,
 	Footer,
 	ImportedXmlComponent,
+	LineRuleType,
 	Packer,
 	PageNumber,
 	Paragraph,
+	Table,
 	TextRun,
 } from 'docx';
 
@@ -149,6 +151,21 @@ export async function buildReport(
 		);
 	}
 
+	// Word requires a paragraph after a terminal table. Reserve a minimal one
+	// instead of letting it insert a full body line on an otherwise empty page.
+	if (documentBody.at(-1) instanceof Table) {
+		documentBody.push(
+			new Paragraph({
+				spacing: {
+					before: 0,
+					after: 0,
+					line: 20,
+					lineRule: LineRuleType.EXACT,
+				},
+				children: [new TextRun({ text: '', size: 2 })],
+			}),
+		);
+	}
 	const doc = new Document({
 		styles: getStoStyles(stylePreset),
 		numbering: STO_NUMBERING,

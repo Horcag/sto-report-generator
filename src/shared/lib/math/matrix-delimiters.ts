@@ -28,8 +28,7 @@ export function markMatrixDelimiters(document: Document): MatrixDelimiter[] {
 			first.getAttribute('data-mjx-texclass') !== 'OPEN' ||
 			last.getAttribute('data-mjx-texclass') !== 'CLOSE' ||
 			first.getAttribute('stretchy') === 'false' ||
-			last.getAttribute('stretchy') === 'false' ||
-			!row.getElementsByTagName('mtable').length
+			last.getAttribute('stretchy') === 'false'
 		)
 			continue;
 		const delimiter = {

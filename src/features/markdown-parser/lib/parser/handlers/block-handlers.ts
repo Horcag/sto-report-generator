@@ -70,10 +70,23 @@ export async function handleParagraph(
 	if (text.includes('$$')) {
 		const parts = text.split(/(\$\$[\s\S]+?\$\$)/g);
 		const result: DocxElement[] = [];
-		for (const part of parts) {
+		for (const [partIndex, part] of parts.entries()) {
 			const match = part.match(/^\$\$([\s\S]+?)\$\$/);
 			if (match) {
-				result.push(await handleBlockMath(match[1].trim(), context));
+				const following =
+					parts.slice(partIndex + 1).find(value => value.trim()) ??
+					'';
+				const keepWithExplanation =
+					/^где(?:\s|:)/iu.test(following.trim()) ||
+					(!following &&
+						currentContext.keepFormulaWithExplanation === true);
+				result.push(
+					await handleBlockMath(
+						match[1].trim(),
+						context,
+						keepWithExplanation,
+					),
+				);
 			} else if (part.trim().length > 0) {
 				// Handle potential text around math blocks in the same paragraph
 				// though usually STO expects math blocks to be separate

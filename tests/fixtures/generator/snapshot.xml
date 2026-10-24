@@ -935,7 +935,7 @@
 <w:pStyle w:val="Normal"/>
 </w:pPr>
 <w:r>
-<w:t xml:space="preserve">Функция плотности нормального распределения задается формулой 1:</w:t>
+<w:t xml:space="preserve">Функция плотности нормального распределения задается формулой (1):</w:t>
 </w:r>
 </w:p>
 <w:tbl>
@@ -956,22 +956,42 @@
 <w:gridCol w:w="1403"/>
 </w:tblGrid>
 <w:tr>
+<w:trPr>
+<w:cantSplit/>
+</w:trPr>
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="pct" w:w="750"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="280"/>
+<w:left w:type="dxa" w:w="0"/>
+<w:bottom w:type="dxa" w:w="280"/>
+<w:right w:type="dxa" w:w="0"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
-<w:r>
-<w:t xml:space="preserve"/>
-</w:r>
+<w:pPr>
+<w:keepNext w:val="false"/>
+<w:spacing w:after="0" w:before="0" w:line="240"/>
+<w:ind w:left="0" w:right="0" w:firstLine="0"/>
+</w:pPr>
 </w:p>
 </w:tc>
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="pct" w:w="3500"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="280"/>
+<w:left w:type="dxa" w:w="0"/>
+<w:bottom w:type="dxa" w:w="280"/>
+<w:right w:type="dxa" w:w="0"/>
+</w:tcMar>
 </w:tcPr>
 <w:p>
 <w:pPr>
+<w:keepNext w:val="false"/>
+<w:spacing w:after="0" w:before="0" w:line="240"/>
+<w:ind w:left="0" w:right="0" w:firstLine="0"/>
 <w:jc w:val="center"/>
 </w:pPr>
 <m:oMathPara>
@@ -1063,12 +1083,26 @@
 <w:tc>
 <w:tcPr>
 <w:tcW w:type="pct" w:w="750"/>
+<w:tcMar>
+<w:top w:type="dxa" w:w="280"/>
+<w:left w:type="dxa" w:w="0"/>
+<w:bottom w:type="dxa" w:w="280"/>
+<w:right w:type="dxa" w:w="0"/>
+</w:tcMar>
+<w:vAlign w:val="center"/>
 </w:tcPr>
 <w:p>
 <w:pPr>
+<w:keepNext w:val="false"/>
+<w:spacing w:after="0" w:before="0" w:line="240"/>
+<w:ind w:left="0" w:right="0" w:firstLine="0"/>
 <w:jc w:val="right"/>
 </w:pPr>
 <w:r>
+<w:rPr>
+<w:i w:val="false"/>
+<w:iCs w:val="false"/>
+</w:rPr>
 <w:t xml:space="preserve">(1)</w:t>
 </w:r>
 </w:p>

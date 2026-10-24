@@ -1,5 +1,6 @@
 import { STO_RULES } from '@/shared/config';
 
+import { validateFormulaLineBreaks } from './formula-line-break-checker';
 import {
 	maskFormulaSource,
 	stripEquationLabel,
@@ -78,66 +79,6 @@ function findBareUprightAbbreviation(formula: string): string | undefined {
 	);
 }
 
-function lastConfiguredOperator(
-	value: string,
-	operators: readonly string[],
-): string | undefined {
-	const trimmed = value.trimEnd();
-	return [...operators]
-		.sort((left, right) => right.length - left.length)
-		.find(operator => trimmed.endsWith(operator));
-}
-
-function validateFormulaLineBreaks(
-	file: string,
-	content: string,
-	formula: string,
-	index: number,
-	issues: SourcePreflightIssue[],
-): void {
-	const parts = formula.split(/\\\\/);
-	if (parts.length < 2) {
-		return;
-	}
-
-	for (let partIndex = 0; partIndex < parts.length - 1; partIndex++) {
-		const beforeBreak = parts[partIndex];
-		const afterBreak = parts[partIndex + 1].trimStart();
-		const forbiddenOperator = lastConfiguredOperator(
-			beforeBreak,
-			STO_RULES.formulas.lineBreakOperators.forbiddenBeforeBreak,
-		);
-		if (forbiddenOperator) {
-			issues.push(
-				issue(
-					'formula-line-break-after-division',
-					`formula line break appears after "${forbiddenOperator}". STO notes do not allow formula breaks on division signs.`,
-					file,
-					lineNumberAt(content, index),
-					'warning',
-				),
-			);
-			continue;
-		}
-
-		const repeatedOperator = lastConfiguredOperator(
-			beforeBreak,
-			STO_RULES.formulas.lineBreakOperators.repeatRequired,
-		);
-		if (repeatedOperator && !afterBreak.startsWith(repeatedOperator)) {
-			issues.push(
-				issue(
-					'formula-line-break-operator-not-repeated',
-					`formula line break after "${repeatedOperator}" should repeat the operator at the start of the next line.`,
-					file,
-					lineNumberAt(content, index),
-					'warning',
-				),
-			);
-		}
-	}
-}
-
 function forbiddenRawTokenMessage(rawToken: string): string {
 	if (rawToken === '...' || rawToken === '…') {
 		return `formula contains raw "${rawToken}". Use LaTeX ellipsis commands such as \\ldots, \\dots or \\cdots.`;
@@ -174,15 +115,11 @@ function validateRedundantMultiplicationDot(
 	index: number,
 	issues: SourcePreflightIssue[],
 ): void {
-	if (
-		/\\cdot\s*(?:\(|\\left\s*\(|\\(?:vec|mathbf|boldsymbol)\s*\{)/u.test(
-			formula,
-		)
-	) {
+	if (/\\cdot\s*(?:\(|\\left\s*\(|\\(?:frac|dfrac|tfrac)\b)/u.test(formula)) {
 		issues.push(
 			issue(
 				'formula-redundant-cdot',
-				'formula uses \\cdot before a parenthesized expression or vector/matrix symbol. Check whether the multiplication sign should be omitted.',
+				'formula uses \\cdot before a parenthesized expression or fraction. Check whether the multiplication sign should be omitted.',
 				file,
 				lineNumberAt(content, index),
 				'warning',
@@ -197,6 +134,7 @@ export function validateSourceFormulas(
 	issues: SourcePreflightIssue[],
 ): void {
 	content = maskFormulaSource(content);
+	const blockFormulas = [...content.matchAll(/\$\$([\s\S]*?)\$\$/g)];
 	const rawEquationNumberMatches = [
 		...content.matchAll(/\$\$[\s\S]*?\(\d+\)\s*\$\$/g),
 	];
@@ -209,23 +147,6 @@ export function validateSourceFormulas(
 				lineNumberAt(content, match.index ?? 0),
 			),
 		);
-	}
-	for (const match of content.matchAll(/\(@eq:([a-zA-Z0-9_-]+)\)/g)) {
-		const before = content.lastIndexOf('$$', match.index ?? 0);
-		const after = content.indexOf(
-			'$$',
-			(match.index ?? 0) + match[0].length,
-		);
-		if (before === -1 || after === -1) {
-			issues.push(
-				issue(
-					'formula-label-outside-block',
-					`formula label @eq:${match[1]} is outside a block formula.`,
-					file,
-					lineNumberAt(content, match.index ?? 0),
-				),
-			);
-		}
 	}
 	for (const span of collectMathSpans(content)) {
 		const bareAbbreviation = findBareUprightAbbreviation(span.formula);
@@ -266,6 +187,29 @@ export function validateSourceFormulas(
 				);
 			}
 		}
+		for (const sign of STO_RULES.formulas
+			.forbiddenSourceMultiplicationSigns) {
+			if (span.formula.includes(sign)) {
+				issues.push(
+					issue(
+						'formula-forbidden-multiplication-sign',
+						`formula contains "${sign}" as multiplication sign. Use LaTeX commands that render STO-compatible multiplication.`,
+						file,
+						lineNumberAt(content, span.index),
+					),
+				);
+			}
+		}
+		if (/\d+\.\d+/.test(span.formula)) {
+			issues.push(
+				issue(
+					'formula-decimal-dot',
+					'formula contains decimal dot. Use comma as decimal separator.',
+					file,
+					lineNumberAt(content, span.index),
+				),
+			);
+		}
 		validateFormulaLineBreaks(
 			file,
 			content,
@@ -288,31 +232,8 @@ export function validateSourceFormulas(
 			issues,
 		);
 	}
-	for (const match of content.matchAll(/\$\$([\s\S]*?)\$\$/g)) {
+	for (const match of blockFormulas) {
 		const formula = match[1];
-		for (const sign of STO_RULES.formulas
-			.forbiddenSourceMultiplicationSigns) {
-			if (formula.includes(sign)) {
-				issues.push(
-					issue(
-						'formula-forbidden-multiplication-sign',
-						`formula contains "${sign}" as multiplication sign. Use LaTeX commands that render STO-compatible multiplication.`,
-						file,
-						lineNumberAt(content, match.index ?? 0),
-					),
-				);
-			}
-		}
-		if (/\d+\.\d+/.test(formula)) {
-			issues.push(
-				issue(
-					'formula-decimal-dot',
-					'formula contains decimal dot. Use comma as decimal separator.',
-					file,
-					lineNumberAt(content, match.index ?? 0),
-				),
-			);
-		}
 		if (hasForbiddenDivisionColon(formula)) {
 			issues.push(
 				issue(
@@ -327,20 +248,20 @@ export function validateSourceFormulas(
 	validateConsecutiveFormulaPunctuation(file, content, issues);
 	validateFormulaBeforeWhere(file, content, issues);
 
-	const lines = content.split('\n');
-	for (let index = 0; index < lines.length; index++) {
-		if (!lines[index].includes('$$')) {
-			continue;
-		}
-		const previous = lines[index - 1]?.trim() ?? '';
-		const next = lines[index + 1]?.trim() ?? '';
-		if (previous.length > 0 || next.length > 0) {
+	for (const block of blockFormulas) {
+		const before = content.slice(0, block.index).split('\n');
+		const after = content.slice(block.index + block[0].length).split('\n');
+		if (
+			[before.at(-1), before.at(-2), after[0], after[1]].some(line =>
+				line?.trim(),
+			)
+		) {
 			issues.push(
 				issue(
 					'formula-missing-surrounding-blank-line',
 					'block formulas should be separated from surrounding text by blank lines.',
 					file,
-					index + 1,
+					lineNumberAt(content, block.index),
 					'warning',
 				),
 			);
