@@ -10,6 +10,8 @@ import {
 } from 'docx';
 import { Tokens as MarkedTokens, Token } from 'marked';
 
+import { STO_RULES } from '@/shared/config';
+
 import { InlineDocxElement } from '../../types';
 
 const TOTAL_TABLE_WIDTH_DXA = 9355; // A4 (11906) - Left margin (1701) - Right margin (850)
@@ -213,7 +215,9 @@ export async function handleTable(
 				children: [
 					new Paragraph({
 						style: 'TableText',
-						alignment: getCellAlignment(token.align[colIdx]),
+						// ГОСТ 7.32-2017, 6.6.6: column headers are centered;
+						// Markdown alignment applies only to the data below them.
+						alignment: STO_RULES.tables.headerAlignment,
 						children: await parseInline(cell.tokens, {
 							allowBold: true,
 						}),

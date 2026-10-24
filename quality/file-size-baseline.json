@@ -9,7 +9,7 @@
     "src/shared/lib/report-config.ts": 682,
     "src/shared/lib/source-preflight/bibliography-checker.ts": 487,
     "src/shared/lib/source-preflight/list-checker.ts": 361,
-    "src/shared/lib/sto-validator.ts": 1054,
+    "src/shared/lib/sto-validator.ts": 1009,
     "src/widgets/title-page/lib/title-page.ts": 622,
     "tests/source-preflight/run_source_preflight_tests.ts": 1437
   },

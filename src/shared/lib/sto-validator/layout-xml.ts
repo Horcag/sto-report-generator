@@ -9,6 +9,44 @@ import {
 } from './body-xml';
 import { isMathLayoutTable } from './math-layout-table';
 
+export function countEmptyTableCells(docXml: string): number {
+	let empty = 0;
+	for (const table of getReportTables(docXml)) {
+		if (isMathLayoutTable(table)) continue;
+		for (const cell of table.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? []) {
+			const properties =
+				/<w:tcPr\b[^>]*>([\s\S]*?)<\/w:tcPr>/.exec(cell)?.[1] ?? '';
+			// A continuation of a merged cell is not an absent data value.
+			const mergedContinuation = [
+				...properties.matchAll(/<w:(?:vMerge|hMerge)\b[^>]*>/g),
+			].some(match => {
+				const value = getXmlAttribute(match[0], 'w:val');
+				return value === null || value === 'continue';
+			});
+			if (
+				!mergedContinuation &&
+				extractWordText(cell).trim().length === 0 &&
+				!/<m:oMath\b|<w:drawing\b/.test(cell)
+			)
+				empty++;
+		}
+	}
+	return empty;
+}
+
+export function countTablesWithDiagonalBorders(docXml: string): number {
+	return getReportTables(docXml).filter(
+		table =>
+			!isMathLayoutTable(table) &&
+			[...table.matchAll(/<w:(?:tl2br|tr2bl)\b[^>]*>/g)].some(
+				match =>
+					!['none', 'nil'].includes(
+						getXmlAttribute(match[0], 'w:val') ?? '',
+					),
+			),
+	).length;
+}
+
 interface KeywordIndentInput {
 	docXml: string;
 	stylesXml: string;
@@ -120,15 +158,21 @@ export function countTableHeaderFinalPeriods(docXml: string): number {
 			continue;
 		}
 
-		const firstRow = tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/)?.[0];
-		if (!firstRow) {
-			continue;
+		const rows = tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/g) ?? [];
+		for (const [index, rowXml] of rows.entries()) {
+			const rowProperties =
+				/<w:trPr\b[\s\S]*?<\/w:trPr>/.exec(rowXml)?.[0] ?? '';
+			const repeat = /<w:tblHeader\b[^>]*>/.exec(rowProperties)?.[0];
+			if (
+				index > 0 &&
+				(!repeat || /\bw:val="(?:0|false|off)"/.test(repeat))
+			)
+				break;
+			const cells = rowXml.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
+			cellsWithFinalPeriod += cells.filter(cellXml =>
+				/[.]$/.test(extractWordText(cellXml).trim()),
+			).length;
 		}
-
-		const cells = firstRow.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
-		cellsWithFinalPeriod += cells.filter(cellXml =>
-			/[.]$/.test(extractWordText(cellXml).trim()),
-		).length;
 	}
 
 	return cellsWithFinalPeriod;

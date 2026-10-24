@@ -77,6 +77,7 @@ def split_display_math_lines(source: str) -> list[str]:
     line = ""
     braces = 0
     environments = 0
+    alignment_markers = 0
     index = 0
     while index < len(formula):
         rest = formula[index:]
@@ -93,6 +94,7 @@ def split_display_math_lines(source: str) -> list[str]:
                 raise RuntimeError("Display line spacing options are not supported.")
             lines.append(line.strip())
             line = ""
+            alignment_markers = 0
             index += 2
             continue
         if formula[index] == "\\" and index + 1 < len(formula) and formula[index + 1] in "{}&":
@@ -103,7 +105,13 @@ def split_display_math_lines(source: str) -> list[str]:
             braces += 1
         if formula[index] == "}":
             braces -= 1
-        if not (outer and formula[index] == "&" and braces == 0 and environments == 0):
+        if outer and formula[index] == "&" and braces == 0 and environments == 0:
+            alignment_markers += 1
+            if alignment_markers > 1:
+                raise RuntimeError(
+                    "Multiple top-level alignment markers per display row are not supported."
+                )
+        else:
             line += formula[index]
         index += 1
     lines.append(line.strip())

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
 
 import { readDocxEntry } from '@/shared/lib/docx';
+import { validateTableLayout } from '@/shared/lib/sto-validator';
 
 import { compareFigureEvidence, FigureChecks } from './word-acceptance-figures';
 
@@ -74,6 +75,24 @@ export function assertAcceptedDocxIntegrity(
 	);
 	const checks = compareFigureEvidence(inputDocx, acceptedDocx);
 	if (checks.status === 'failed') throw new Error(checks.issues.join('\n'));
+	assertAcceptedTableLayout(acceptedDocx);
+	return checks;
+}
+
+function assertAcceptedTableLayout(acceptedDocx: string) {
+	const documentXml = readDocxEntry(acceptedDocx, 'word/document.xml');
+	const checks = validateTableLayout(
+		documentXml,
+		documentXml.includes('<w:tbl')
+			? readDocxEntry(acceptedDocx, 'word/styles.xml')
+			: '',
+	);
+	const failures = checks.filter(check => !check.passed);
+	if (failures.length) {
+		throw new Error(
+			`Word acceptance rejected table layout:\n${failures.map(check => `${check.check}: ${check.error}`).join('\n')}`,
+		);
+	}
 	return checks;
 }
 
@@ -89,6 +108,7 @@ export function verifyAcceptedDocxIntegrity(
 			readDocxEntry(inputDocx, 'word/document.xml'),
 			readDocxEntry(acceptedDocx, 'word/document.xml'),
 		);
+		manifest.tableChecks = assertAcceptedTableLayout(acceptedDocx);
 		const checks = manifest.figureChecks as FigureChecks;
 		if (checks.status === 'failed')
 			throw new Error(checks.issues.join('\n'));

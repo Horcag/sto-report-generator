@@ -1,8 +1,9 @@
 {
 	"metadata": {
-		"standard": "STO 02068410-004-2019 and extracted local STO/GOST notes",
+		"standard": "STO 02068410-004-2018 and GOST 7.32-2017 with local teaching notes",
 		"references": [
-			"STO 02068410-004-2019",
+			"STO 02068410-004-2018",
+			"GOST 7.32-2017, section 6.6",
 			"Rules for Russian academic lists, bibliography and formulas"
 		],
 		"purpose": "Shared STO constants for generator formatting, parser guards and validators"
@@ -145,6 +146,8 @@
 		}
 	},
 	"tables": {
+		"headerAlignment": "center",
+		"headerAlignmentSource": "ГОСТ 7.32-2017, п. 6.6.6",
 		"discouragedOrdinalHeaders": ["№ п/п", "Номер по порядку"]
 	},
 	"formulas": {

@@ -92,6 +92,51 @@ $$B=\frac{1}{N}\sum_{i=1}^{N}(p_i-y_i)^2, (@eq:tall)$$`,
 	] as const;
 	for (const [source, expected] of continuations)
 		assert.deepEqual(splitDisplayMathLines(source), expected);
+	for (const outer of ['aligned', 'gathered']) {
+		const matrix = String.raw`\begin{matrix}a&b&c\\d&e&f\end{matrix}`;
+		const system = String.raw`\left\{\begin{aligned}a&=b&c&=d\\e&=f&g&=h\end{aligned}\right.`;
+		for (const nested of [matrix, system, String.raw`\text{a&b&c}`])
+			assert.deepEqual(
+				splitDisplayMathLines(
+					`\\begin{${outer}}x&=${nested}\\\\&=z\\end{${outer}}`,
+				),
+				[`x=${nested}`, '=z'],
+			);
+		assert.deepEqual(
+			splitDisplayMathLines(
+				`\\begin{${outer}}a\\&b&=c\\&d\\\\&=e\\end{${outer}}`,
+			),
+			[String.raw`a\&b=c\&d`, '=e'],
+		);
+		for (const row of [
+			'a&=b&c&=d',
+			String.raw`a&=b\\c&=d&e`,
+			String.raw`a\&b&=c&d`,
+		])
+			assert.throws(
+				() =>
+					splitDisplayMathLines(
+						`\\begin{${outer}}${row}\\end{${outer}}`,
+					),
+				/multiple top-level alignment markers.*not supported/i,
+			);
+	}
+	const unsupportedColumns = String.raw`$$\begin{aligned}a&=b&c&=d\end{aligned} (@eq:columns)$$`;
+	const alignmentIssues: SourcePreflightIssue[] = [];
+	validateSourceFormulas('columns.md', unsupportedColumns, alignmentIssues);
+	assert.ok(
+		alignmentIssues.some(
+			issue =>
+				issue.code === 'formula-unsupported-continuation' &&
+				issue.severity === 'error' &&
+				/multiple top-level alignment markers/i.test(issue.message),
+		),
+		'preflight must reject unsupported columns before rendering',
+	);
+	await assert.rejects(
+		parseMarkdownToDocx(unsupportedColumns, {}),
+		/multiple top-level alignment markers.*not supported/i,
+	);
 	const adjacent = String.raw`\begin{aligned}a&=b\end{aligned}+\begin{aligned}c&=d\end{aligned}`;
 	assert.deepEqual(splitDisplayMathLines(adjacent), [adjacent]);
 	assert.deepEqual(

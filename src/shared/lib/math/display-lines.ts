@@ -41,6 +41,7 @@ export function splitDisplayMathLines(source: string): string[] {
 	let line = '';
 	let braces = 0;
 	let environments = 0;
+	let alignmentMarkers = 0;
 	for (let index = 0; index < formula.length; index++) {
 		const rest = formula.slice(index);
 		const environment = /^\\(begin|end)\{[A-Za-z*]+\}/u.exec(rest);
@@ -61,6 +62,7 @@ export function splitDisplayMathLines(source: string): string[] {
 				);
 			lines.push(line.trim());
 			line = '';
+			alignmentMarkers = 0;
 			index++;
 			continue;
 		}
@@ -79,8 +81,14 @@ export function splitDisplayMathLines(source: string): string[] {
 			formula[index] === '&' &&
 			braces === 0 &&
 			environments === 0
-		)
+		) {
+			alignmentMarkers++;
+			if (alignmentMarkers > 1)
+				throw new Error(
+					'Multiple top-level alignment markers per display row are not supported.',
+				);
 			continue;
+		}
 		line += formula[index];
 	}
 	lines.push(line.trim());
