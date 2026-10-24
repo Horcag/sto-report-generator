@@ -143,8 +143,23 @@ class MarkdownParser {
 			tokenIndex++
 		) {
 			const token = tokensToProcess[tokenIndex];
+			let nextIndex = tokenIndex + 1;
+			while (
+				tokensToProcess[nextIndex]?.type === 'space' ||
+				(tokensToProcess[nextIndex]?.type === 'html' &&
+					/^<!--[\s\S]*-->$/u.test(
+						tokensToProcess[nextIndex].raw.trim(),
+					))
+			)
+				nextIndex++;
+			const next = tokensToProcess[nextIndex];
 			const tokenContext: ProcessTokensContext = {
 				...currentContext,
+				keepFormulaWithExplanation:
+					next?.type === 'paragraph' &&
+					/^где(?:\s|:)/iu.test(
+						(next as Tokens.Paragraph).text.trim(),
+					),
 				structuralHeading: activeStructuralHeading,
 			};
 			if (token.type !== 'space' && token.type !== 'html') {

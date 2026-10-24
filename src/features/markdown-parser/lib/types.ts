@@ -53,6 +53,7 @@ export interface StoFlagToken {
 }
 
 export interface ProcessTokensContext {
+	keepFormulaWithExplanation?: boolean;
 	structuralHeading?: string;
 	isBib?: boolean;
 	isStoList?: boolean;

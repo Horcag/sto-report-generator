@@ -42,10 +42,12 @@ export function collectLabelDefinitions(
 		});
 	}
 
-	for (const match of content.matchAll(/\(@eq:([a-zA-Z0-9_-]+)\)/g)) {
+	for (const block of content.matchAll(/\$\$([\s\S]*?)\$\$/g)) {
+		const match = /\(@eq:([a-zA-Z0-9_-]+)\)\s*$/u.exec(block[1]);
+		if (!match) continue;
 		addLabelDefinition(definitions, issues, match[1], {
 			file,
-			line: lineNumberAt(content, match.index ?? 0),
+			line: lineNumberAt(content, block.index + 2 + match.index),
 			kind: 'eq',
 		});
 	}
@@ -72,17 +74,6 @@ export function validateUnknownReferences(
 	}
 }
 
-function isDefinitionReference(
-	content: string,
-	index: number,
-	rawReference: string,
-): boolean {
-	return (
-		content[index - 1] === '(' &&
-		content[index + rawReference.length] === ')'
-	);
-}
-
 export function validateUnusedEquationLabels(
 	files: SourceFile[],
 	definitions: LabelDefinitions,
@@ -91,11 +82,8 @@ export function validateUnusedEquationLabels(
 	const usedEquationLabels = new Set<string>();
 
 	for (const { content } of files) {
-		for (const match of content.matchAll(/@eq:([a-zA-Z0-9_-]+)/g)) {
-			const index = match.index ?? 0;
-			if (isDefinitionReference(content, index, match[0])) {
-				continue;
-			}
+		const text = content.replace(/\$\$[\s\S]*?\$\$/g, '');
+		for (const match of text.matchAll(/@eq:([a-zA-Z0-9_-]+)/g)) {
 			usedEquationLabels.add(`eq:${match[1]}`);
 		}
 	}

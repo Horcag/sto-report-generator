@@ -1,0 +1,324 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-24",
+  "base_commit": "817f1e28b9654325e20b6b5ecaeb72a921ffe16b",
+  "working_tree_changes": true,
+  "fixture": "tests/fixtures/formulas/layout.md",
+  "fixture_sha256": "aa7714d442a387be2685b2a22c088b0d2c12792464b4c405b04581045952ef43",
+  "numbered_formulas": 14,
+  "native_math_nodes_per_pipeline": 18,
+  "identical_math_text_between_pipelines": true,
+  "pipelines": [
+    {
+      "pipeline": "formulas",
+      "status": "accepted",
+      "docx_sha256": "a438338a3cbd5bd2fb68cf4804c4f4cd71e8a907c0b366222c9fc86da6bcacfd",
+      "pdf_sha256": "aee36897ce790ee56937f26b2fc58e7011dd23aba346790fc48b7a658b6cf0c0",
+      "stable_pages": 3,
+      "process_cleanup_verified": true,
+      "capability_checks": {
+        "openedDocx": true,
+        "updatedFieldsAndToc": true,
+        "repaginated": true,
+        "savedAcceptedDocx": true,
+        "exportedPdf": true,
+        "reopenedAcceptedDocx": true,
+        "stablePageCount": true
+      },
+      "geometry": {
+        "status": "passed",
+        "pdf_sha256": "aee36897ce790ee56937f26b2fc58e7011dd23aba346790fc48b7a658b6cf0c0",
+        "page_count": 3,
+        "tolerance_pt": 2,
+        "tolerance_basis": "fixture regression tolerance, not an STO allowance",
+        "cases": [
+          {
+            "equation": 1,
+            "anchor": "Plain",
+            "page": 2,
+            "number_baseline_pt": 138.26,
+            "formula_baseline_pt": 138.26,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 2,
+            "anchor": "Brier",
+            "page": 2,
+            "number_baseline_pt": 222.14,
+            "formula_baseline_pt": 222.74,
+            "baseline_difference_pt": 0.6,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 3,
+            "anchor": "Fraction",
+            "page": 2,
+            "number_baseline_pt": 323.21,
+            "formula_baseline_pt": 323.33,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 4,
+            "anchor": "Integral",
+            "page": 2,
+            "number_baseline_pt": 419.57,
+            "formula_baseline_pt": 419.93,
+            "baseline_difference_pt": 0.36,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 5,
+            "anchor": "Matrix",
+            "page": 2,
+            "number_baseline_pt": 504.55,
+            "formula_baseline_pt": 504.43,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 6,
+            "anchor": "Cases",
+            "page": 2,
+            "number_baseline_pt": 586.63,
+            "formula_baseline_pt": 586.51,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 7,
+            "anchor": "Fences",
+            "page": 2,
+            "number_baseline_pt": 670.66,
+            "formula_baseline_pt": 672.1,
+            "baseline_difference_pt": 1.44,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 8,
+            "anchor": "Roles",
+            "page": 2,
+            "number_baseline_pt": 746.976,
+            "formula_baseline_pt": 746.976,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 9,
+            "anchor": "Finish",
+            "page": 3,
+            "number_baseline_pt": 116.78,
+            "formula_baseline_pt": 116.78,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 10,
+            "anchor": "Last",
+            "page": 3,
+            "number_baseline_pt": 219.5,
+            "formula_baseline_pt": 219.38,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.231
+          },
+          {
+            "equation": 11,
+            "anchor": "Tall",
+            "page": 3,
+            "number_baseline_pt": 407.33,
+            "formula_baseline_pt": 407.33,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.231
+          },
+          {
+            "equation": 12,
+            "anchor": "System",
+            "page": 3,
+            "number_baseline_pt": 541.03,
+            "formula_baseline_pt": 540.91,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.231
+          },
+          {
+            "equation": 13,
+            "anchor": "Conditions",
+            "page": 3,
+            "number_baseline_pt": 650.47,
+            "formula_baseline_pt": 650.47,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.231
+          },
+          {
+            "equation": 14,
+            "anchor": "Array",
+            "page": 3,
+            "number_baseline_pt": 742.896,
+            "formula_baseline_pt": 742.896,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.231
+          }
+        ]
+      }
+    },
+    {
+      "pipeline": "postbuild",
+      "status": "accepted",
+      "docx_sha256": "e0f431d0311b8cd64cfe9921da76e75a92132c8478e115a5cff8efe3eb9184e1",
+      "pdf_sha256": "5b61248e05fe064ff47c11e19e56379bd5671704ff2674b69f000f722539061a",
+      "stable_pages": 3,
+      "process_cleanup_verified": true,
+      "capability_checks": {
+        "openedDocx": true,
+        "updatedFieldsAndToc": true,
+        "repaginated": true,
+        "savedAcceptedDocx": true,
+        "exportedPdf": true,
+        "reopenedAcceptedDocx": true,
+        "stablePageCount": true
+      },
+      "geometry": {
+        "status": "passed",
+        "pdf_sha256": "5b61248e05fe064ff47c11e19e56379bd5671704ff2674b69f000f722539061a",
+        "page_count": 3,
+        "tolerance_pt": 2,
+        "tolerance_basis": "fixture regression tolerance, not an STO allowance",
+        "cases": [
+          {
+            "equation": 1,
+            "anchor": "Plain",
+            "page": 2,
+            "number_baseline_pt": 138.26,
+            "formula_baseline_pt": 138.26,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 2,
+            "anchor": "Brier",
+            "page": 2,
+            "number_baseline_pt": 222.14,
+            "formula_baseline_pt": 222.74,
+            "baseline_difference_pt": 0.6,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 3,
+            "anchor": "Fraction",
+            "page": 2,
+            "number_baseline_pt": 323.21,
+            "formula_baseline_pt": 323.33,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 4,
+            "anchor": "Integral",
+            "page": 2,
+            "number_baseline_pt": 419.57,
+            "formula_baseline_pt": 419.93,
+            "baseline_difference_pt": 0.36,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 5,
+            "anchor": "Matrix",
+            "page": 2,
+            "number_baseline_pt": 504.55,
+            "formula_baseline_pt": 504.43,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 6,
+            "anchor": "Cases",
+            "page": 2,
+            "number_baseline_pt": 586.63,
+            "formula_baseline_pt": 586.51,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 7,
+            "anchor": "Fences",
+            "page": 2,
+            "number_baseline_pt": 670.66,
+            "formula_baseline_pt": 672.1,
+            "baseline_difference_pt": 1.44,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 8,
+            "anchor": "Roles",
+            "page": 2,
+            "number_baseline_pt": 746.976,
+            "formula_baseline_pt": 746.976,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 9,
+            "anchor": "Finish",
+            "page": 3,
+            "number_baseline_pt": 116.78,
+            "formula_baseline_pt": 116.78,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.227
+          },
+          {
+            "equation": 10,
+            "anchor": "Last",
+            "page": 3,
+            "number_baseline_pt": 219.5,
+            "formula_baseline_pt": 219.38,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.231
+          },
+          {
+            "equation": 11,
+            "anchor": "Tall",
+            "page": 3,
+            "number_baseline_pt": 407.33,
+            "formula_baseline_pt": 407.33,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.231
+          },
+          {
+            "equation": 12,
+            "anchor": "System",
+            "page": 3,
+            "number_baseline_pt": 541.03,
+            "formula_baseline_pt": 540.91,
+            "baseline_difference_pt": 0.12,
+            "right_margin_difference_pt": 0.231
+          },
+          {
+            "equation": 13,
+            "anchor": "Conditions",
+            "page": 3,
+            "number_baseline_pt": 650.47,
+            "formula_baseline_pt": 650.47,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.231
+          },
+          {
+            "equation": 14,
+            "anchor": "Array",
+            "page": 3,
+            "number_baseline_pt": 742.896,
+            "formula_baseline_pt": 742.896,
+            "baseline_difference_pt": 0.0,
+            "right_margin_difference_pt": 0.231
+          }
+        ]
+      }
+    }
+  ],
+  "visual_review": "Tall case braces cover all 3 branches; cases columns left; aligned systems and array preserve right/left; no clipped conditions or footer-only page. Both pipelines inspected.",
+  "boundaries": [
+    "Automatic Word line wrapping not covered",
+    "Scalable middle delimiters not covered",
+    "Two-point tolerance is fixture regression tolerance, not STO allowance"
+  ],
+  "source_formula_rules_passed": true
+}

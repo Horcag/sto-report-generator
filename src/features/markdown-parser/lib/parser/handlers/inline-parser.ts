@@ -25,12 +25,31 @@ export async function parseInline(
 	inlineTokens: Token[],
 	context: ParserContext,
 	getCitationNum: (key: string) => number,
-	replaceRefs: (text: string) => string,
+	replaceReferenceText: (text: string) => string,
 	options?: ParseInlineOptions,
 ): Promise<InlineDocxElement[]> {
 	const runs: InlineDocxElement[] = [];
 
-	for (const token of inlineTokens) {
+	for (const [tokenIndex, token] of inlineTokens.entries()) {
+		const left = inlineTokens
+			.slice(0, tokenIndex)
+			.map(item => item.raw)
+			.join('');
+		const right = inlineTokens
+			.slice(tokenIndex + 1)
+			.map(item => item.raw)
+			.join('');
+		const replaceRefs = (text: string): string => {
+			// Parentheses may live in neighbouring tokens around an italic reference.
+			if (
+				/^\s*@eq:[a-zA-Z0-9_-]+\s*$/u.test(text) &&
+				/\(\s*$/u.test(left) &&
+				/^\s*\)/u.test(right)
+			) {
+				return replaceReferenceText(`(${text})`).slice(1, -1);
+			}
+			return replaceReferenceText(text);
+		};
 		switch (token.type) {
 			case 'stoInlineList': {
 				const inlineList = token as Token & {

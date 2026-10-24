@@ -207,7 +207,18 @@ async function main(): Promise<void> {
 	assert.equal(direct(nestedFraction, 'm:num').textContent, 'ab');
 	assert.equal(direct(nestedFraction, 'm:den').textContent, 'c');
 	const nestedPower = direct(nestedMath[1], 'm:sSup');
-	assert.equal(direct(nestedPower, 'm:e').textContent, '[xJ]');
+	const powerFence = direct(direct(nestedPower, 'm:e'), 'm:d');
+	assert.equal(direct(powerFence, 'm:e').textContent, 'xJ');
+	const fenceProperties = direct(powerFence, 'm:dPr');
+	assert.equal(
+		direct(fenceProperties, 'm:begChr').getAttribute('m:val'),
+		'[',
+	);
+	assert.equal(
+		direct(fenceProperties, 'm:endChr').getAttribute('m:val'),
+		']',
+	);
+	assert.equal(direct(fenceProperties, 'm:grow').getAttribute('m:val'), '1');
 	assert.equal(direct(nestedPower, 'm:sup').textContent, '3/2');
 	const nestedRadical = direct(nestedMath[2], 'm:rad');
 	assert.equal(direct(nestedRadical, 'm:e').textContent, 'y');

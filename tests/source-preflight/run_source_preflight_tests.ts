@@ -1031,10 +1031,10 @@ $$
 	'formula-redundant-cdot',
 );
 
-expectWarning(
+expectNoIssue(
 	'formula-vector-cdot',
 	validFiles({
-		'03_intro.md': `Формула содержит лишнюю точку умножения.
+		'03_intro.md': `Точка может обозначать скалярное произведение.
 
 $$
 x = a \\cdot \\vec{b}
