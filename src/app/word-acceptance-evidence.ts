@@ -34,7 +34,9 @@ export function writeWordAcceptanceFailureManifest(
 			);
 			if (
 				existing.status === 'failed' &&
-				existing.failure?.stage === 'contentIntegrity'
+				['contentIntegrity', 'pdfImageQuality'].includes(
+					existing.failure?.stage,
+				)
 			) {
 				existing.execution.requestedMode = 'background-only';
 				existing.execution.processCleanupVerified = cleanupVerified;

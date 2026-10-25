@@ -1,6 +1,6 @@
 {
   "files": {
-    "scripts/sto_post_build/word_automation.py": 517,
+    "scripts/sto_post_build/word_automation.py": 498,
     "src/app/report-scaffold.ts": 438,
     "src/shared/config/sto-styles.ts": 441,
     "src/shared/lib/docx/archive.ts": 806,

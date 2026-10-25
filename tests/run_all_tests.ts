@@ -50,6 +50,7 @@ const tests = [
 	['tests/workflow/run_wordcraft_workflow_tests.ts'],
 	['tests/workflow/run_ci_configuration_tests.ts'],
 	['tests/workflow/run_word_acceptance_tests.ts'],
+	['tests/workflow/word_pdf_quality_test.ts'],
 	['tests/workflow/word_builtin_styles_test.ts'],
 	['tests/workflow/run_referat_statistics_tests.ts'],
 	['tests/workflow/run_word_acceptance_launcher_tests.ts'],

@@ -10,12 +10,13 @@ from .constants import (
     BROKEN_REFERENCE_MARKERS,
     WD_ACTIVE_END_PAGE_NUMBER,
     WD_ALIGN_PARAGRAPH_CENTER,
-    WD_EXPORT_FORMAT_PDF,
     WD_FIND_CONTINUE,
     WD_REPLACE_ALL,
     WD_STATISTIC_PAGES,
 )
 from .models import WordPostBuildResult
+from .pdf_export import export_pdf
+from .pdf_export import get_default_pdf_path as get_default_pdf_path
 
 
 def normalize_tables(doc: Any) -> int:
@@ -274,26 +275,6 @@ def keep_small_tables_on_one_page(doc: Any) -> int:
         doc.Repaginate()
 
     return moved
-
-
-def get_default_pdf_path(docx_path: str | Path) -> str:
-    return str(Path(docx_path).with_suffix(".pdf"))
-
-
-def export_pdf(doc: Any, docx_path: str | Path, pdf_output_path: str | Path | None = None) -> str:
-    pdf_path = os.path.abspath(str(pdf_output_path or get_default_pdf_path(docx_path)))
-    Path(pdf_path).parent.mkdir(parents=True, exist_ok=True)
-
-    if os.path.exists(pdf_path):
-        try:
-            os.remove(pdf_path)
-        except PermissionError as error:
-            raise RuntimeError(
-                f"PDF export target is locked. Close the PDF and rerun post-build: {pdf_path}"
-            ) from error
-
-    doc.ExportAsFixedFormat(pdf_path, WD_EXPORT_FORMAT_PDF)
-    return pdf_path
 
 
 def count_pdf_pages(pdf_path: str | Path) -> int:
