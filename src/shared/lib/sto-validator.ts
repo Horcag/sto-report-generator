@@ -754,7 +754,7 @@ function validateMathAndCitations(input: ValidationInput): ValidationResult[] {
 			regexMatches(/<m:t>[^<]*\d+\.\d+[^<]*<\/m:t>/, docXml),
 			'Detected dot (.) as decimal separator in formula. Russian typography requires a comma (,).',
 		),
-		...validateFormulaPunctuation(docXml),
+		...validateFormulaPunctuation(docXml, stylesXml),
 		...validateFormulaLayout(docXml, stylesXml),
 	];
 }

@@ -28,13 +28,19 @@ def is_math_layout_table(element: Any, namespace: dict[str, str], styles_root: A
         if len(cells) != 3:
             return False
         left, formula, right = cells
+        math_paragraphs = [
+            paragraph
+            for paragraph in formula.findall(f"{WORD}p")
+            if paragraph.xpath(".//m:oMath", namespaces=namespace)
+        ]
         if (
             element_text(left)
             or element_text(formula)
             or not formula.xpath(".//m:oMath", namespaces=namespace)
-            or not any(
+            or not math_paragraphs
+            or not all(
                 formula_paragraph_is_centered(paragraph, styles_root)
-                for paragraph in formula.findall(f"{WORD}p")
+                for paragraph in math_paragraphs
             )
             or left.xpath(".//m:oMath", namespaces=namespace)
             or right.xpath(".//m:oMath", namespaces=namespace)
@@ -93,7 +99,11 @@ def formula_paragraph_is_centered(paragraph: Any, styles: Any = None) -> bool:
     if effective is not None:
         return effective == "center"
     marker = paragraph.find(f"{WORD}pPr/{WORD}pStyle")
-    return marker is not None and marker.get(f"{WORD}val") in {"Formula", "MTDisplayEquation"}
+    return (
+        styles is None
+        and marker is not None
+        and marker.get(f"{WORD}val") in {"Formula", "MTDisplayEquation"}
+    )
 
 
 def add_spacing_after_data_tables(document_root: Any, styles_root: Any = None) -> int:

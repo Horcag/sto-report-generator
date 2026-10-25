@@ -93,6 +93,25 @@ class MathTableLayoutTests(unittest.TestCase):
         )
         self.assertEqual(add_spacing_after_data_tables(self.document(table), styles), 0)
 
+    def test_supplied_style_without_alignment_does_not_use_name_fallback(self) -> None:
+        table = self.layout_table().replace('<w:jc w:val="center"/>', '<w:pStyle w:val="Formula"/>')
+        styles = etree.fromstring(
+            f'<w:styles xmlns:w="{WORD_NS}"><w:style w:styleId="Formula"><w:pPr/></w:style></w:styles>'
+        )
+        self.assertEqual(add_spacing_after_data_tables(self.document(table), styles), 1)
+
+    def test_centered_empty_paragraph_does_not_hide_left_aligned_math(self) -> None:
+        table = (
+            self.layout_table()
+            .replace('<w:jc w:val="center"/>', '<w:jc w:val="left"/>')
+            .replace(
+                "<w:tc><w:p><w:pPr>",
+                '<w:tc><w:p><w:pPr><w:jc w:val="center"/></w:pPr></w:p><w:p><w:pPr>',
+                1,
+            )
+        )
+        self.assertEqual(add_spacing_after_data_tables(self.document(table)), 1)
+
     def test_word_merged_display_rows_do_not_get_data_table_spacing(self) -> None:
         document = self.document(self.layout_table(rows=2))
         table = document.find(f"{{{WORD_NS}}}body/{{{WORD_NS}}}tbl")

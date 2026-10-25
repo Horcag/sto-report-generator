@@ -55,6 +55,17 @@ export function runMathLayoutTableTests(): void {
 		'Table Diagonal Borders',
 	];
 	try {
+		const misleading = layout
+			.replace('<w:jc w:val="center"/>', '<w:jc w:val="left"/>')
+			.replace(
+				'<w:tc><w:p><w:pPr>',
+				'<w:tc><w:p><w:pPr><w:jc w:val="center"/></w:pPr></w:p><w:p><w:pPr>',
+			);
+		assert.equal(
+			isMathLayoutTable(misleading),
+			false,
+			'An unrelated centered empty paragraph cannot hide left-aligned math',
+		);
 		const named = layout.replace(
 			'<w:jc w:val="center"/>',
 			'<w:pStyle w:val="Formula"/>',
