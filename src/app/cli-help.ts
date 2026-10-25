@@ -5,6 +5,7 @@ Usage:
   npx tsx src/index.ts build <input.md|report_dir> <output.docx>
   npx tsx src/index.ts new <slug> --profile nir|coursework|lab|vkr-bachelor|vkr-master [--title "..."] [--dir reports/<slug>] [--no-git]
   npx tsx src/index.ts check <report_dir> [--strict]
+  npx tsx src/index.ts bibliography <report_dir> [--require-evidence] [--json]
   npx tsx src/index.ts generate <report_dir> [--output build/report.docx] [--renderer portable|word|wordcraft] [--post-build] [--validate] [--wordcraft /path/to/wordcraft-cli] [--pdf report.wordcraft.pdf]
   npx tsx src/index.ts audit <report_dir> [--output build/report.docx] [--renderer portable|word|wordcraft] [--wordcraft /path/to/wordcraft-cli] [--pdf report.wordcraft.pdf]
   npx tsx src/index.ts preview <input.docx> [--renderer libreoffice|wordcraft] [--pdf preview.pdf] [--soffice /path/to/soffice] [--wordcraft /path/to/wordcraft-cli]

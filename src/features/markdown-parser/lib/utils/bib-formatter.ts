@@ -1,5 +1,10 @@
 import { BibItem } from '../types';
 import {
+	formatArticle,
+	formatCollectionPart,
+	formatSitePart,
+} from './bib-component-formatters';
+import {
 	appendFinalAreas,
 	appendSeriesArea,
 	formatEditionArea,
@@ -13,9 +18,9 @@ import {
 	buildPrimaryDescription,
 	cleanText,
 	ensureFinalDot,
-	formatPages,
+	formatContinuingYear,
 	formatPlacePublisherYear,
-	formatVolumeIssue,
+	formatVersion,
 	isEnglish,
 	normalizeRecord,
 	parseAuthors,
@@ -110,6 +115,7 @@ export function formatBibItem(item: BibItem): string {
 				title,
 				typeInfo,
 				authorBlock,
+				isEng,
 				noteBlock,
 			);
 			break;
@@ -118,7 +124,16 @@ export function formatBibItem(item: BibItem): string {
 				`Unsupported bibliography type "${item.entryType}" for @${item.citationKey}.`,
 			);
 	}
-	return normalizeRecord(appendFinalAreas(record, tags));
+	return normalizeRecord(
+		appendFinalAreas(
+			record,
+			['article', 'inproceedings', 'incollection', 'inonline'].includes(
+				entryType,
+			)
+				? { ...tags, doi: '' }
+				: tags,
+		),
+	);
 }
 
 function formatPatent(
@@ -152,7 +167,7 @@ function formatThesis(
 	isEng: boolean,
 ): string {
 	const responsibility = [
-		authorBlock.responsibility,
+		cleanText(tags.responsibility) || authorBlock.responsibility,
 		cleanText(tags.institution || tags.school),
 	]
 		.filter(Boolean)
@@ -184,72 +199,6 @@ function formatStandard(tags: Record<string, string>, title: string): string {
 	record = appendArea(record, formatPhysicalArea(tags, false));
 	record = appendUrlArea(record, tags);
 	return normalizeRecord(record);
-}
-
-function formatSitePart(
-	tags: Record<string, string>,
-	title: string,
-	authorBlock: AuthorBlock,
-	isEng: boolean,
-): string {
-	const website = cleanText(tags.website || tags.booktitle);
-	let record = `${buildPrimaryDescription(title, authorBlock)} // ${website} : ${isEng ? 'website' : 'сайт'}.`;
-	record = appendArea(record, cleanText(tags.year));
-	record = appendUrlArea(record, tags);
-	return normalizeRecord(record);
-}
-
-function formatArticle(
-	tags: Record<string, string>,
-	title: string,
-	authorBlock: AuthorBlock,
-	isEng: boolean,
-	noteBlock: NoteBlock,
-): string {
-	let record = buildPrimaryDescription(title, authorBlock, noteBlock);
-	if (tags.journal) {
-		record = `${record} // ${cleanText(tags.journal)}.`;
-	} else {
-		record = ensureFinalDot(record);
-	}
-
-	record = appendArea(record, cleanText(tags.year));
-	record = appendArea(
-		record,
-		formatVolumeIssue(tags.volume, tags.number || tags.issue, isEng),
-	);
-	record = appendArea(record, formatPages(tags.pages, isEng));
-	for (const publicationNote of noteBlock.publication) {
-		record = appendArea(record, publicationNote);
-	}
-	return normalizeRecord(appendUrlArea(record, tags));
-}
-
-function formatCollectionPart(
-	tags: Record<string, string>,
-	title: string,
-	authorBlock: AuthorBlock,
-	isEng: boolean,
-	noteBlock: NoteBlock,
-): string {
-	let record = buildPrimaryDescription(title, authorBlock, noteBlock);
-	if (tags.booktitle) {
-		record = `${record} // ${cleanText(tags.booktitle)}.`;
-	}
-
-	record = appendArea(
-		record,
-		formatPlacePublisherYear(
-			tags.address || tags.location,
-			tags.publisher || tags.organization,
-			tags.year,
-		),
-	);
-	record = appendArea(record, formatPages(tags.pages, isEng));
-	for (const publicationNote of noteBlock.publication) {
-		record = appendArea(record, publicationNote);
-	}
-	return normalizeRecord(appendUrlArea(record, tags));
 }
 
 function formatBook(
@@ -339,6 +288,7 @@ function formatTechReport(
 		heading: authorBlock.heading,
 		responsibility,
 	});
+	record = appendArea(record, formatVersion(tags, isEng));
 	record = appendArea(
 		record,
 		tags.number ? `${isEng ? 'No.' : '№'} ${cleanText(tags.number)}` : '',
@@ -354,6 +304,7 @@ function formatOnline(
 	title: string,
 	typeInfo: string,
 	authorBlock: AuthorBlock,
+	isEng: boolean,
 	noteBlock: NoteBlock,
 ): string {
 	const containerTitle = cleanText(
@@ -368,12 +319,13 @@ function formatOnline(
 		record = ensureFinalDot(record);
 	}
 
+	record = appendArea(record, formatVersion(tags, isEng));
 	record = appendArea(
 		record,
 		formatPlacePublisherYear(
 			tags.address || tags.location,
 			tags.publisher,
-			tags.year,
+			formatContinuingYear(tags.year),
 		),
 	);
 	record = appendUrlArea(record, tags);

@@ -161,6 +161,40 @@ export async function handleTable(
 ): Promise<Table> {
 	const columnWidths = computeTableColumnWidths(token, explicitWidths);
 
+	const headerCells: TableCell[] = [];
+	for (let colIdx = 0; colIdx < token.header.length; colIdx++) {
+		const cell = token.header[colIdx];
+		const colWidth = columnWidths[colIdx] ?? 1000;
+
+		headerCells.push(
+			new TableCell({
+				width: { size: colWidth, type: WidthType.DXA },
+				margins: {
+					top: TABLE_CELL_VERTICAL_MARGIN_DXA,
+					bottom: TABLE_CELL_VERTICAL_MARGIN_DXA,
+					left: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
+					right: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
+				},
+				children: [
+					new Paragraph({
+						style: 'TableText',
+						// ГОСТ 7.32-2017, 6.6.6: column headers are centered;
+						// Markdown alignment applies only to the data below them.
+						alignment: STO_RULES.tables.headerAlignment,
+						children: await parseInline(cell.tokens, {
+							allowBold: true,
+						}),
+					}),
+				],
+			}),
+		);
+	}
+	const headerRow = new TableRow({
+		children: headerCells,
+		tableHeader: true,
+		cantSplit: true,
+	});
+
 	const rows: TableRow[] = [];
 	for (const row of token.rows) {
 		const rowCells: TableCell[] = [];
@@ -197,40 +231,6 @@ export async function handleTable(
 			}),
 		);
 	}
-
-	const headerCells: TableCell[] = [];
-	for (let colIdx = 0; colIdx < token.header.length; colIdx++) {
-		const cell = token.header[colIdx];
-		const colWidth = columnWidths[colIdx] ?? 1000;
-
-		headerCells.push(
-			new TableCell({
-				width: { size: colWidth, type: WidthType.DXA },
-				margins: {
-					top: TABLE_CELL_VERTICAL_MARGIN_DXA,
-					bottom: TABLE_CELL_VERTICAL_MARGIN_DXA,
-					left: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
-					right: TABLE_CELL_HORIZONTAL_MARGIN_DXA,
-				},
-				children: [
-					new Paragraph({
-						style: 'TableText',
-						// ГОСТ 7.32-2017, 6.6.6: column headers are centered;
-						// Markdown alignment applies only to the data below them.
-						alignment: STO_RULES.tables.headerAlignment,
-						children: await parseInline(cell.tokens, {
-							allowBold: true,
-						}),
-					}),
-				],
-			}),
-		);
-	}
-	const headerRow = new TableRow({
-		children: headerCells,
-		tableHeader: true,
-		cantSplit: true,
-	});
 
 	return new Table({
 		borders: continuedOnNextSegment

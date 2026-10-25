@@ -1,5 +1,11 @@
 # Repository process-safety rules
 
+## Bibliography
+
+- Before changing bibliography metadata or formatting, read `docs/bibliography-workflow.md` and its coverage matrix. Source-list descriptions, citations in the text, and bibliographic references follow distinct rules.
+- Verify the source type, version, authors and supplied description fields against the original publication or repository record. Store field-level evidence in the report's private `bibliography-evidence.json`; do not infer missing dates, publishers, places or identifiers.
+- New reports require evidence by default. For an existing report, set `bibliographyEvidence: required` when bringing its bibliography into this workflow. Run `audit:bibliography -- <report> --require-evidence`, source preflight and DOCX validation. Inspect the final bibliography after Word acceptance. Keep recordings, transcripts and personal audit evidence outside public Git.
+
 ## Russian report prose
 
 - When drafting or editing connected Russian prose in report Markdown, use the bundled [`humanizer-ru`](.agents/skills/humanizer-ru/SKILL.md) skill as a required editorial pass before source preflight. Read its academic-genre exceptions and rewrite guide. Review the actual prose, make only justified edits, and inspect the diff.

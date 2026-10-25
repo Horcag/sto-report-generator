@@ -50,6 +50,14 @@ assert.match(
 	/Пояснительная записка: \{\{PAGES\}\} с\., \{\{FIGURES\}\}, \{\{TABLES\}\}, \{\{SOURCES\}\}, \{\{APPENDICES\}\}\./,
 );
 const scaffoldPreflight = runSourcePreflight(result.targetDir);
+assert.match(
+	fs.readFileSync(path.join(result.targetDir, '00_metadata.md'), 'utf8'),
+	/bibliographyEvidence: required/,
+);
+assert.doesNotMatch(
+	fs.readFileSync(path.join(result.targetDir, 'references.bib'), 'utf8'),
+	/@article|example2026/,
+);
 assert.equal(
 	scaffoldPreflight.passed,
 	true,
@@ -62,6 +70,20 @@ assert.deepEqual(
 	scaffoldPreflight.issues.filter(item => /formula|where/u.test(item.code)),
 	[],
 	'New report template must satisfy formula punctuation without warnings',
+);
+fs.appendFileSync(
+	path.join(result.targetDir, '03_intro.md'),
+	'\nПроверяемый источник [@unchecked].\n',
+);
+fs.appendFileSync(
+	path.join(result.targetDir, 'references.bib'),
+	'@online{unchecked,title={Synthetic control},url={https://example.org},urldate={2020-01-01}}\n',
+);
+assert.ok(
+	runSourcePreflight(result.targetDir).issues.some(
+		item => item.code === 'bibliography-evidence-missing',
+	),
+	'A newly cited source in a scaffold requires real metadata evidence',
 );
 
 const courseworkResult = scaffoldReport({

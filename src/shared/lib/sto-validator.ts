@@ -13,6 +13,7 @@ import {
 } from './docx/styles';
 import { validateFormulaLayout } from './math/formula-layout-validator';
 import { validateTemplateStyleConformance } from './sto-template-style-validator';
+import { validateBibliographyPresentation } from './sto-validator/bibliography-xml';
 import {
 	extractWordText,
 	getBodyElements,
@@ -717,11 +718,6 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 	const citationNumbers = extractCitationNumbers(documentText);
 	const missingCitationNumbers = getMissingCitationNumbers(citationNumbers);
 	const highestCitationNumber = citationNumbers.at(-1) ?? 0;
-	const legacyBibliographyMarkers = [
-		'[Текст]',
-		'[Электронный ресурс]',
-		'Электрон. дан.',
-	];
 	return [
 		resultFromFailure(
 			'Citation Formatting',
@@ -733,13 +729,7 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 			missingCitationNumbers.length === 0,
 			`Citation numbers must be dense from [1] to [${highestCitationNumber}]; missing: ${missingCitationNumbers.join(', ')}.`,
 		),
-		resultFromFailure(
-			'Bibliography Legacy Resource Markers',
-			legacyBibliographyMarkers.some(marker =>
-				documentText.includes(marker),
-			),
-			`Detected legacy bibliography marker. Do not use ${legacyBibliographyMarkers.join(', ')} in source-list records.`,
-		),
+		...validateBibliographyPresentation(docXml),
 		resultFromFailure(
 			'Math Formatting (Unparsed)',
 			mathStructures.unparsedLatex,

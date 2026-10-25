@@ -84,8 +84,13 @@ export function validateDescriptionAreas(
 	}
 	const unsupported = unrenderedKnownFields(entryType, tags);
 	if (unsupported.length > 0) {
+		const archiveGuidance = unsupported.some(field =>
+			['eprint', 'archiveprefix', 'primaryclass'].includes(field),
+		)
+			? ' Put verified archive identifiers/classification in bibliographicnote and the repository address in url.'
+			: '';
 		throw new Error(
-			`Bibliography entry @${citationKey} (${entryType}) cannot render fields: ${unsupported.join(', ')}.`,
+			`Bibliography entry @${citationKey} (${entryType}) cannot render fields: ${unsupported.join(', ')}.${archiveGuidance}`,
 		);
 	}
 	const numberField = cleanText(tags.seriesnumber)
@@ -106,6 +111,8 @@ function validateCompetingAliases(
 	citationKey: string,
 ): void {
 	const groups: string[][] = [['access', 'accessmode', 'availability']];
+	if (['article', 'inproceedings', 'incollection'].includes(entryType))
+		groups.push(['eid', 'articleno']);
 	if (
 		[
 			'book',
@@ -129,6 +136,7 @@ function validateCompetingAliases(
 			'standard',
 			'inproceedings',
 			'incollection',
+			'inonline',
 			'online',
 			'misc',
 		].includes(entryType)

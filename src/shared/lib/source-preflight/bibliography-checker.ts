@@ -2,13 +2,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { STO_RULES } from '@/shared/config';
-import { resolveBibliographyPath } from '@/shared/lib/bibliography-path';
-import { parseCitationReferences } from '@/shared/lib/citation-syntax';
-import { parseReportFrontmatter as matter } from '@/shared/lib/frontmatter';
 import { ReportConfig } from '@/shared/lib/report-config';
 
+import { validateCitationContext } from './bibliography-citations';
 import { validateManualBibliographyContent } from './bibliography-content-checker';
+import {
+	bibliographyPathFromMetadata,
+	collectAllCitationKeys,
+	readBibliographyMetadata,
+} from './bibliography-context';
 import { isFutureDate, parseIsoDate } from './bibliography-date';
+import { validateBibliographyEvidence } from './bibliography-evidence';
+import { validateBibliographyMetadata } from './bibliography-metadata';
 import {
 	BibEntrySource,
 	getNormalizedTagValue,
@@ -17,64 +22,7 @@ import {
 	readBibTagValue,
 } from './bibtex-source';
 import { SourceFile, SourcePreflightIssue } from './types';
-import { issue, lineNumberAt } from './utils';
-
-function collectCitationKeys(
-	content: string,
-	onInvalid?: (message: string, line: number) => void,
-): string[] {
-	const keys = new Set<string>();
-	for (const match of content.matchAll(/\[@([^\]]*)]/g)) {
-		try {
-			for (const { key } of parseCitationReferences(match[1])) {
-				keys.add(key);
-			}
-		} catch (error) {
-			onInvalid?.(String(error), lineNumberAt(content, match.index ?? 0));
-		}
-	}
-	return [...keys];
-}
-
-function collectAllCitationKeys(
-	files: SourceFile[],
-	issues?: SourcePreflightIssue[],
-): string[] {
-	return [
-		...new Set(
-			files.flatMap(({ file, content }) =>
-				collectCitationKeys(content, (message, line) => {
-					issues?.push(
-						issue('citation-invalid-syntax', message, file, line),
-					);
-				}),
-			),
-		),
-	];
-}
-
-function readMetadata(files: SourceFile[]): Record<string, unknown> {
-	for (const source of files) {
-		const parsed = matter(source.content);
-		if (Object.keys(parsed.data).length > 0) {
-			return parsed.data as Record<string, unknown>;
-		}
-	}
-	return {};
-}
-
-function bibliographyPathFromMetadata(
-	files: SourceFile[],
-	sourceDir: string,
-	cwd: string,
-): string {
-	const metadata = readMetadata(files);
-	const rawPath =
-		typeof metadata.bibliography === 'string'
-			? metadata.bibliography
-			: 'references.bib';
-	return resolveBibliographyPath(rawPath, sourceDir, cwd);
-}
+import { issue } from './utils';
 
 const ONLINE_ENTRY_TYPES = new Set(['online', 'inonline']);
 const ONLINE_SUBTYPES = new Set(['online', 'electronic']);
@@ -396,10 +344,12 @@ export function validateBibliography(
 	cwd: string,
 	config: ReportConfig,
 	issues: SourcePreflightIssue[],
+	requireEvidence = false,
 ): void {
 	for (const { file, content } of files) {
 		validateManualBibliographyContent(file, content, issues);
 	}
+	validateCitationContext(files, issues);
 
 	const citationKeys = collectAllCitationKeys(files, issues);
 	if (citationKeys.length === 0) {
@@ -475,6 +425,17 @@ export function validateBibliography(
 	validateUrlAccessDates(bibliographyPath, citationKeys, entries, issues);
 	validateRequiredBibFields(bibliographyPath, citationKeys, entries, issues);
 	validateBibEntryQuality(bibliographyPath, citationKeys, entries, issues);
+	const citedEntries = entries.filter(entry =>
+		citationKeys.includes(entry.key),
+	);
+	validateBibliographyMetadata(bibliographyPath, citedEntries, issues);
+	validateBibliographyEvidence(
+		bibliographyPath,
+		citedEntries,
+		issues,
+		requireEvidence ||
+			readBibliographyMetadata(files).bibliographyEvidence === 'required',
+	);
 
 	if (config.document.requireSources === false && citationKeys.length > 0) {
 		issues.push(

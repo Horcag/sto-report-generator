@@ -1329,7 +1329,7 @@ bibliography: "references.bib"
 	'bibliography-doi-url',
 );
 
-expectWarning(
+expectIssue(
 	'bibliography-doi-invalid-prefix',
 	validFiles({
 		'00_metadata.md': `---

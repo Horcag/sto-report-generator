@@ -47,6 +47,16 @@ export type {
 	SourcePreflightResult,
 	SourcePreflightSeverity,
 } from './source-preflight/types';
+export { validateBibliography } from './source-preflight/bibliography-checker';
+export {
+	bibliographyPathFromMetadata,
+	collectAllCitationKeys,
+} from './source-preflight/bibliography-context';
+export {
+	BIBLIOGRAPHY_EVIDENCE_FILE,
+	bibliographyEntryHash,
+} from './source-preflight/bibliography-evidence';
+export { readBibEntrySources } from './source-preflight/bibtex-source';
 
 export function formatSourcePreflightIssue(item: SourcePreflightIssue): string {
 	const location = item.file

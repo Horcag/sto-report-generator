@@ -1,3 +1,5 @@
+import { formatAuthorName, splitAuthorNames } from './bib-author-names';
+
 export interface AuthorBlock {
 	heading: string;
 	responsibility: string;
@@ -31,17 +33,11 @@ export function parseAuthors(rawAuthors: string, isEng: boolean): AuthorBlock {
 		return { heading: '', responsibility: '' };
 	}
 
-	const withoutBraces = cleanText(raw);
-	const isCollective = /^\{+[^{}].*}+$/s.test(raw) && !/\s+and\s+/i.test(raw);
-	if (isCollective) {
-		return { heading: '', responsibility: withoutBraces };
-	}
-
-	const hasOthers = /\bothers\b/i.test(raw);
-	const persons = raw
-		.split(/\s+and\s+/i)
-		.map(cleanText)
-		.filter(value => value && !/^others$/i.test(value));
+	const names = splitAuthorNames(raw);
+	const hasOthers = names.some(name => /^others$/i.test(name));
+	const persons = names
+		.filter(name => cleanText(name) && !/^others$/i.test(name))
+		.map(name => formatAuthorName(cleanText(name), /^\{.*\}$/s.test(name)));
 
 	if (persons.length === 0) {
 		return { heading: '', responsibility: '' };
@@ -50,16 +46,17 @@ export function parseAuthors(rawAuthors: string, isEng: boolean): AuthorBlock {
 	if (hasOthers || persons.length > 4) {
 		const visibleAuthors = persons
 			.slice(0, 3)
-			.map(formatResponsibilityName);
+			.map(person => person.responsibility);
 		return {
 			heading: '',
 			responsibility: `${visibleAuthors.join(', ')} ${isEng ? '[et al.]' : '[и др.]'}`,
 		};
 	}
 
-	const responsibility = persons.map(formatResponsibilityName).join(', ');
-	const heading =
-		persons.length <= 3 ? formatHeadingName(persons[0] ?? '') : '';
+	const responsibility = persons
+		.map(person => person.responsibility)
+		.join(', ');
+	const heading = persons.length <= 3 ? (persons[0]?.heading ?? '') : '';
 	return { heading, responsibility };
 }
 
@@ -72,7 +69,7 @@ export function parseNote(rawNote: string): NoteBlock {
 	const parts = note
 		.split(/\s+–\s+/)
 		.map(cleanText)
-		.map(compactInitials)
+		.map(spaceInitials)
 		.filter(Boolean);
 	if (parts.length === 0) {
 		return { responsibility: [], publication: [] };
@@ -83,30 +80,6 @@ export function parseNote(rawNote: string): NoteBlock {
 		return { responsibility: [first], publication: rest };
 	}
 	return { responsibility: [], publication: parts };
-}
-
-function formatHeadingName(rawName: string): string {
-	const name = cleanText(rawName);
-	const commaIndex = name.indexOf(',');
-	if (commaIndex < 0) {
-		return compactInitials(name);
-	}
-
-	const family = name.slice(0, commaIndex).trim();
-	const given = compactInitials(name.slice(commaIndex + 1).trim());
-	return given ? `${family}, ${given}` : family;
-}
-
-function formatResponsibilityName(rawName: string): string {
-	const name = cleanText(rawName);
-	const commaIndex = name.indexOf(',');
-	if (commaIndex < 0) {
-		return compactInitials(name);
-	}
-
-	const family = name.slice(0, commaIndex).trim();
-	const given = compactInitials(name.slice(commaIndex + 1).trim());
-	return given ? `${given} ${family}` : family;
 }
 
 export function titleWithType(title: string, typeInfo: string): string {
@@ -144,12 +117,37 @@ export function formatPages(pages: string | undefined, isEng: boolean): string {
 	return `${isEng ? 'P.' : 'С.'} ${cleanPages}`;
 }
 
+export function formatArticleNumber(
+	tags: Record<string, string>,
+	isEng: boolean,
+): string {
+	const number = cleanText(tags.eid || tags.articleno);
+	return number ? `${isEng ? 'Article' : 'Статья'} ${number}` : '';
+}
+
+export function formatVersion(
+	tags: Record<string, string>,
+	isEng: boolean,
+): string {
+	const version = cleanText(tags.version);
+	return version ? `${isEng ? 'Version' : 'Версия'} ${version}` : '';
+}
+
 export function formatPageCount(
 	pages: string | undefined,
 	isEng: boolean,
 ): string {
 	const cleanPages = cleanText(pages);
 	return cleanPages ? `${cleanPages} ${isEng ? 'p.' : 'с.'}` : '';
+}
+
+/** Continuing website dates are supplied explicitly, never inferred from access. */
+export function formatContinuingYear(year: string | undefined): string {
+	return cleanText(year).replace(
+		/^(\d{4})\s*(?:--|[–-])\s*(\d{4})?$/,
+		(_, start: string, end: string | undefined) =>
+			end ? `${start}–${end}` : `${start} –`,
+	);
 }
 
 export function formatPlacePublisherYear(
@@ -246,8 +244,8 @@ function normalizePageRange(pages: string | undefined): string {
 	return cleanText(pages).replace(/--/g, '-');
 }
 
-function compactInitials(value: string): string {
-	return cleanText(value).replace(/([A-ZА-ЯЁ])\.\s+(?=[A-ZА-ЯЁ]\.)/g, '$1.');
+function spaceInitials(value: string): string {
+	return cleanText(value).replace(/(\p{Lu})\.\s*(?=\p{Lu}\.)/gu, '$1. ');
 }
 
 export function cleanText(value: string | undefined): string {
@@ -267,6 +265,7 @@ export function normalizeRecord(record: string): string {
 		record
 			.replace(/\s+/g, ' ')
 			.replace(/\s+([,.])/g, '$1')
+			.replace(/(\d{4}) –\./g, '$1 – .')
 			.replace(/\.{2,}/g, '.')
 			.replace(/\s+–\s+/g, ' – ')
 			.trim(),
