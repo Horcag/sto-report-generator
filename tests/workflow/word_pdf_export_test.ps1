@@ -7,19 +7,19 @@ using System.IO;
 using System.Runtime.InteropServices;
 public class PdfExportReceiver {
     public int LegacyCalls;
-    protected void Check(string output, int format, bool open, int optimize, int range,
-        int from, int to, int item, bool properties, bool irm, int bookmarks,
-        bool tags, bool bitmapFonts, bool pdfa, object extension) {
-        if (format != 17 || open || optimize != 0 || range != 0 || from != 1 || to != 1 ||
-            item != 0 || !properties || !irm || bookmarks != 1 || !tags ||
-            !bitmapFonts || pdfa || extension != null)
+    protected void Check(string OutputFileName, int ExportFormat, bool OpenAfterExport, int OptimizeFor, int Range,
+        int From, int To, int Item, bool IncludeDocProps, bool KeepIRM, int CreateBookmarks,
+        bool DocStructureTags, bool BitmapMissingFonts, bool UseISO19005_1, object FixedFormatExtClassPtr) {
+        if (ExportFormat != 17 || OpenAfterExport || (OptimizeFor != 0 && OptimizeFor != 1) || Range != 0 || From != 1 || To != 1 ||
+            Item != 0 || !IncludeDocProps || !KeepIRM || CreateBookmarks != 1 || !DocStructureTags ||
+            !BitmapMissingFonts || UseISO19005_1 || FixedFormatExtClassPtr != null)
             throw new InvalidOperationException("Unexpected PDF export options");
-        File.WriteAllText(output, "typed dispatch passed");
+        File.WriteAllText(OutputFileName, "typed dispatch passed");
     }
-    public void ExportAsFixedFormat(string output, int format, bool open, int optimize, int range,
-        int from, int to, int item, bool properties, bool irm, int bookmarks,
-        bool tags, bool bitmapFonts, bool pdfa, object extension = null) {
-        Check(output, format, open, optimize, range, from, to, item, properties, irm, bookmarks, tags, bitmapFonts, pdfa, extension);
+    public void ExportAsFixedFormat(string OutputFileName, int ExportFormat, bool OpenAfterExport, int OptimizeFor, int Range,
+        int From, int To, int Item, bool IncludeDocProps, bool KeepIRM, int CreateBookmarks,
+        bool DocStructureTags, bool BitmapMissingFonts, bool UseISO19005_1, object FixedFormatExtClassPtr = null) {
+        Check(OutputFileName, ExportFormat, OpenAfterExport, OptimizeFor, Range, From, To, Item, IncludeDocProps, KeepIRM, CreateBookmarks, DocStructureTags, BitmapMissingFonts, UseISO19005_1, FixedFormatExtClassPtr);
         LegacyCalls++;
     }
 }
@@ -27,14 +27,14 @@ public class HighQualityReceiver : PdfExportReceiver {
     public int HighQualityCalls;
     public int FailureCode;
     public bool FailExport;
-    public void ExportAsFixedFormat2(string output, int format, bool open, int optimize, int range,
-        int from, int to, int item, bool properties, bool irm, int bookmarks,
-        bool tags, bool bitmapFonts, bool pdfa, bool quality, object extension = null) {
+    public void ExportAsFixedFormat2(string OutputFileName, int ExportFormat, bool OpenAfterExport, int OptimizeFor, int Range,
+        int From, int To, int Item, bool IncludeDocProps, bool KeepIRM, int CreateBookmarks,
+        bool DocStructureTags, bool BitmapMissingFonts, bool UseISO19005_1, object FixedFormatExtClassPtr = null, bool OptimizeForImageQuality = false) {
         HighQualityCalls++;
         if (FailureCode != 0) throw new COMException("Test dispatch failure", FailureCode);
         if (FailExport) throw new IOException("Export failed");
-        if (!quality) throw new InvalidOperationException("Image-quality optimization must be true");
-        Check(output, format, open, optimize, range, from, to, item, properties, irm, bookmarks, tags, bitmapFonts, pdfa, extension);
+        if (!OptimizeForImageQuality) throw new InvalidOperationException("Image-OptimizeForImageQuality optimization must be true");
+        Check(OutputFileName, ExportFormat, OpenAfterExport, OptimizeFor, Range, From, To, Item, IncludeDocProps, KeepIRM, CreateBookmarks, DocStructureTags, BitmapMissingFonts, UseISO19005_1, FixedFormatExtClassPtr);
     }
 }
 '@
@@ -49,18 +49,20 @@ try {
         throw 'High-quality typed dispatch or diagnostic is incorrect.'
     }
     $legacy = New-Object PdfExportReceiver
-    $diagnostic = [WordAcceptance.PdfExporter]::Export($legacy, $output)
-    if ($legacy.LegacyCalls -ne 1 -or $diagnostic.OptimizeForImageQuality -or
-        $diagnostic.Method -ne 'ExportAsFixedFormat' -or $diagnostic.Warning -notmatch 'unverified') {
-        throw 'Legacy fallback did not report unknown image quality.'
+    $failed = $false
+    try { [WordAcceptance.PdfExporter]::Export($legacy, $output) | Out-Null } catch { $failed = $true }
+    if (-not $failed -or $legacy.LegacyCalls -ne 0) { throw 'Original quality silently fell back.' }
+    foreach ($mode in @('print', 'screen')) {
+        $diagnostic = [WordAcceptance.PdfExporter]::Export($legacy, $output, $mode)
+        if ($diagnostic.OptimizeForImageQuality -or -not $diagnostic.Warning) { throw 'Explicit reduced quality was not diagnosed.' }
     }
-    foreach ($code in @(-2147352573, -2147352570)) { # MEMBERNOTFOUND, UNKNOWNNAME
+    if ($legacy.LegacyCalls -ne 2) { throw 'Explicit modes were not exported.' }
+    foreach ($code in @(-2147352573, -2147352570)) {
         $missing = New-Object HighQualityReceiver
         $missing.FailureCode = $code
-        $diagnostic = [WordAcceptance.PdfExporter]::Export($missing, $output)
-        if ($missing.LegacyCalls -ne 1 -or $diagnostic.OptimizeForImageQuality) {
-            throw 'Unsupported COM method did not use the diagnosed legacy fallback.'
-        }
+        $failed = $false
+        try { [WordAcceptance.PdfExporter]::Export($missing, $output) | Out-Null } catch { $failed = $true }
+        if (-not $failed -or $missing.LegacyCalls -ne 0) { throw 'Unavailable original quality silently fell back.' }
     }
     foreach ($code in @(0, -2147352562)) { # Actual export error, BADPARAMCOUNT
         $broken = New-Object HighQualityReceiver
@@ -71,7 +73,7 @@ try {
         if (-not $failed -or $broken.LegacyCalls -ne 0) { throw 'An export error was silently downgraded.' }
     }
     if ([IO.File]::ReadAllText($output) -ne 'typed dispatch passed') { throw 'Typed export options changed.' }
-    Write-Output 'Typed PDF dispatch test passed: 6 cases (high quality, legacy, two unsupported dispatch codes, two export failures; no Word process created).'
+    Write-Output 'Typed PDF dispatch test passed: 8 cases (named binding with reordered optional arguments, strict legacy failure, print/screen, two unsupported dispatch codes, two export failures; no Word process created).'
 } finally {
     Remove-Item -LiteralPath $directory -Recurse -Force
 }

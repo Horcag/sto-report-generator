@@ -85,6 +85,22 @@ function withFakeWord(
 				signal: null,
 			};
 			if (command === 'wslpath') return { ...result, stdout: args[1] };
+			if (command === 'uv' && args[1] === '--with') {
+				const output = args[args.indexOf('--output') + 1];
+				const receipt = args[args.indexOf('--receipt') + 1];
+				fs.writeFileSync(output, '%PDF-fake-original-images');
+				fs.writeFileSync(
+					receipt,
+					JSON.stringify({
+						pdf_sha256: 'fake-hash',
+						status: 'originalPixelsVerified',
+					}),
+				);
+				return {
+					...result,
+					stdout: 'PDF original pixels verified: fixture',
+				};
+			}
 			if (command === 'uv') {
 				assert.deepEqual(args.slice(0, 4), [
 					'run',
@@ -165,6 +181,7 @@ function withFakeWord(
 									? 'unexpected'
 									: 'pendingCleanup',
 								execution: {},
+								pdf: { sha256: 'old', export: {} },
 							}),
 				);
 			fs.copyFileSync(input, input.replace(/\.docx$/, '.accepted.docx'));

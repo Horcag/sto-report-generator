@@ -895,8 +895,9 @@ try {
     Write-Output "Word acceptance duration: save-and-reopen ms=$($stageClock.ElapsedMilliseconds)."
     $stageClock.Restart()
     Write-Output "Word acceptance stage: export-pdf."
-    $pdfExport = [WordAcceptance.PdfExporter]::Export($document, [string]$stagedPdf)
-    Write-Output "Word PDF export: method=$($pdfExport.Method), OptimizeForImageQuality=$($pdfExport.OptimizeForImageQuality)."
+    $pdfImageQuality = if ($request.pdfImageQuality) { [string]$request.pdfImageQuality } else { "original" }
+    $pdfExport = [WordAcceptance.PdfExporter]::Export($document, [string]$stagedPdf, $pdfImageQuality)
+    Write-Output "Word PDF export: requested=$pdfImageQuality, method=$($pdfExport.Method), OptimizeForImageQuality=$($pdfExport.OptimizeForImageQuality)."
     if ($pdfExport.Warning) { Write-Warning $pdfExport.Warning }
     Write-Output "Word acceptance: PDF exported."
     Write-Output "Word acceptance duration: export-pdf ms=$($stageClock.ElapsedMilliseconds)."
@@ -979,6 +980,8 @@ try {
             sha256 = Get-Sha256 $request.pdf
             validSignature = $true
             export = [ordered]@{
+                requestedImageQuality = $pdfImageQuality
+                optimizeFor = if ($pdfImageQuality -eq "screen") { "screen" } else { "print" }
                 method = $pdfExport.Method
                 optimizeForImageQuality = $pdfExport.OptimizeForImageQuality
                 qualityStatus = "unverifiedUntilPdfInspection"

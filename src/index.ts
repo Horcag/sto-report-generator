@@ -234,6 +234,9 @@ function runAcceptWord(args: ParsedArgs): void {
 		inputDocx,
 		acceptedDocx: optionString(args, 'accepted-docx'),
 		pdf: optionString(args, 'pdf'),
+		pdfImageQuality: args.options.has('pdf-image-quality')
+			? (optionString(args, 'pdf-image-quality') ?? '')
+			: undefined,
 		manifest: optionString(args, 'manifest'),
 		backgroundOnly: optionBoolean(args, 'background-only'),
 		stylePreset: optionStylePreset(args),

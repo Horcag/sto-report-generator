@@ -18,6 +18,7 @@ import {
 	readAcceptanceStatistics,
 	StatisticCounts,
 } from './word-acceptance-statistics';
+import { preserveWordPdfImages } from './word-pdf-quality';
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
@@ -30,6 +31,7 @@ export interface WordAcceptanceOptions {
 	inputDocx: string;
 	acceptedDocx?: string;
 	pdf?: string;
+	pdfImageQuality?: string;
 	manifest?: string;
 	stylePreset?: StoStylePreset;
 	backgroundOnly?: boolean;
@@ -43,6 +45,7 @@ export interface WordAcceptanceRequest {
 	inputDocx: string;
 	acceptedDocx: string;
 	pdf: string;
+	pdfImageQuality: string;
 	manifest: string;
 	requiredFont: string;
 	stylePreset: StoStylePreset;
@@ -180,6 +183,9 @@ export function createWordAcceptancePlan(
 			'Supported style presets for Word acceptance: samara-template-2022, default.',
 		);
 	}
+	const pdfImageQuality = options.pdfImageQuality ?? 'original';
+	if (!['original', 'print', 'screen'].includes(pdfImageQuality))
+		throw new Error('PDF image quality must be original, print or screen.');
 	assertDifferentPaths(inputDocx, acceptedDocx);
 
 	const scriptPath = path.resolve(
@@ -194,6 +200,7 @@ export function createWordAcceptancePlan(
 		inputDocx: environment.toHostPath(inputDocx),
 		acceptedDocx: environment.toHostPath(acceptedDocx),
 		pdf: environment.toHostPath(pdf),
+		pdfImageQuality,
 		manifest: environment.toHostPath(manifest),
 		requiredFont: 'Times New Roman',
 		stylePreset,
@@ -398,6 +405,20 @@ function runWordAcceptanceAttempt(
 		manifest.execution.processCleanupVerified = true;
 		if (plan.backgroundOnly) {
 			manifest.execution.requestedMode = 'background-only';
+		}
+		try {
+			preserveWordPdfImages(plan, manifest);
+		} catch (error) {
+			manifest.status = 'failed';
+			manifest.failure = {
+				stage: 'pdfImageQuality',
+				message: String(error),
+			};
+			fs.writeFileSync(
+				plan.localManifest,
+				JSON.stringify(manifest, null, 2),
+			);
+			throw error;
 		}
 		verifyAcceptedDocxIntegrity(
 			plan.localInputDocx,
