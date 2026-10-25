@@ -6,7 +6,11 @@ import { Document, Packer, TableOfContents } from 'docx';
 
 import { buildReport } from '@/app/builder';
 import { ReportTableOfContents } from '@/features/markdown-parser/lib/parser/handlers/report-table-of-contents';
-import { getStoStyles, STO_STYLE_PRESET_NAMES } from '@/shared/config';
+import {
+	getStoStyles,
+	STO_NUMBERING,
+	STO_STYLE_PRESET_NAMES,
+} from '@/shared/config';
 import { readDocxEntry } from '@/shared/lib/docx';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'toc-test');
@@ -48,10 +52,22 @@ function paragraphContaining(
 async function main(): Promise<void> {
 	console.log('Running TOC Regression Test...\n');
 	for (const preset of STO_STYLE_PRESET_NAMES) {
-		const styles = getStoStyles(preset).paragraphStyles ?? [];
+		const archive = new AdmZip(
+			await Packer.toBuffer(
+				new Document({
+					styles: getStoStyles(preset),
+					numbering: STO_NUMBERING,
+					sections: [{ children: [] }],
+				}),
+			),
+		);
+		const styleBlocks =
+			archive
+				.readAsText('word/styles.xml')
+				.match(/<w:style\b[\s\S]*?<\/w:style>/g) ?? [];
 		for (let level = 1; level <= 4; level++) {
-			const builtin = styles.filter(
-				style => style.name === `toc ${level}`,
+			const builtin = styleBlocks.filter(xml =>
+				xml.includes(`<w:name w:val="toc ${level}"`),
 			);
 			assert.equal(
 				builtin.length,
@@ -59,17 +75,24 @@ async function main(): Promise<void> {
 				`${preset} has one built-in TOC style per level`,
 			);
 			if (preset === 'samara-template-2022') {
-				assert.equal(builtin[0].id, `WordTOC${level}`);
-				assert.equal(builtin[0].basedOn, `TOC${level}`);
-				assert.equal(builtin[0].paragraph?.spacing?.before, 0);
-				assert.equal(builtin[0].paragraph?.spacing?.after, 0);
-				assert.equal(
-					styles.find(style => style.id === `TOC${level}`)?.name,
-					`+Оглавление ${level}`,
+				assert.ok(builtin[0].includes(`w:styleId="WordTOC${level}"`));
+				assert.ok(
+					builtin[0].includes(`<w:basedOn w:val="TOC${level}"`),
 				);
-			} else {
-				assert.equal(builtin[0].id, `TOC${level}`);
-			}
+				assert.match(
+					builtin[0],
+					/<w:spacing\b(?=[^>]*w:before="0")(?=[^>]*w:after="0")/,
+				);
+				assert.ok(
+					styleBlocks.some(
+						xml =>
+							xml.includes(`w:styleId="TOC${level}"`) &&
+							xml.includes(
+								`<w:name w:val="+Оглавление ${level}"`,
+							),
+					),
+				);
+			} else assert.ok(builtin[0].includes(`w:styleId="TOC${level}"`));
 		}
 	}
 	const options = {
@@ -136,10 +159,10 @@ async function main(): Promise<void> {
 			stylesXml,
 		)?.[0];
 	assert.ok(tocHeadingStyle);
-	assert.ok(
-		tocHeadingStyle?.includes('<w:basedOn w:val="StructuralHeadingNoTOC"'),
-	);
-	assert.doesNotMatch(tocHeadingStyle, /<w:outlineLvl\b/);
+	assert.ok(tocHeadingStyle?.includes('<w:basedOn w:val="Heading1"'));
+	assert.match(tocHeadingStyle, /<w:outlineLvl w:val="9"/);
+	assert.match(tocHeadingStyle, /<w:jc w:val="center"/);
+	assert.match(tocHeadingStyle, /<w:color w:val="000000"/);
 	const tocInstruction = currentXml.match(
 		/<w:instrText[^>]*>TOC [\s\S]*?<\/w:instrText>/,
 	)?.[0];

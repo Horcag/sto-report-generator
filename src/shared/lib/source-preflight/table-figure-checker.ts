@@ -2,6 +2,7 @@ import { Lexer } from 'marked';
 
 import { STO_RULES } from '@/shared/config';
 
+import { validateTableCellContent } from './table-cell-checker';
 import { maskSourceCodeFences } from './text-context';
 import { SourcePreflightIssue } from './types';
 import {
@@ -107,9 +108,11 @@ export function validateMarkdownTables(
 		// Marked normalizes body rows to the header width, losing extra cells
 		// and padding missing ones. Inspect the original rows before that loss.
 		const rowCount = bodyRowCounts.get(i) ?? 0;
+		const bodyCells: string[][] = [];
 		for (let offset = 0; offset < rowCount; offset++) {
 			const rowIndex = i + 2 + offset;
 			const cells = splitMarkdownTableRow(lines[rowIndex]);
+			bodyCells.push(cells);
 			if (cells.length !== headerCells.length) {
 				issues.push(
 					issue(
@@ -131,6 +134,7 @@ export function validateMarkdownTables(
 				);
 			}
 		}
+		validateTableCellContent(file, headerCells, bodyCells, i + 3, issues);
 		i += rowCount + 1;
 	}
 }

@@ -4,128 +4,21 @@ from typing import Any
 
 from lxml import etree
 
-from .constants import MATH_NS, SPACING_AFTER_TABLE_TWIPS, WORD_NS
+from .constants import WORD_NS
 from .docx_package import read_docx_part, rewrite_docx_part
+from .table_spacing import (
+    add_spacing_after_data_tables,
+    element_text,
+)
+from .table_spacing import (
+    is_data_table as is_data_table,
+)
+from .table_spacing import (
+    is_math_layout_table as is_math_layout_table,
+)
 
 WORD = f"{{{WORD_NS}}}"
 SIGNATURE_COLUMN_WIDTHS = ("4263", "2916", "1675")
-
-
-def paragraph_style(paragraph: Any) -> str:
-    namespace = {"w": WORD_NS}
-    values = paragraph.xpath("./w:pPr/w:pStyle/@w:val", namespaces=namespace)
-    return values[0] if values else ""
-
-
-def paragraph_has_visible_content(paragraph: Any) -> bool:
-    namespace = {"w": WORD_NS}
-    text = "".join(paragraph.xpath(".//w:t/text()", namespaces=namespace)).strip()
-    has_drawing = bool(paragraph.xpath(".//w:drawing", namespaces=namespace))
-    return bool(text or has_drawing)
-
-
-def element_text(element: Any) -> str:
-    namespace = {"w": WORD_NS}
-    return "".join(element.xpath(".//w:t/text()", namespaces=namespace)).strip()
-
-
-def report_body_elements(elements: list[Any]) -> list[Any]:
-    for index, element in enumerate(elements):
-        if element.tag == f"{{{WORD_NS}}}p" and element_text(element).upper() == "РЕФЕРАТ":
-            return elements[index:]
-    return elements
-
-
-def set_paragraph_space_before(paragraph: Any, value: str) -> None:
-    paragraph_properties = paragraph.find(f"{{{WORD_NS}}}pPr")
-    if paragraph_properties is None:
-        paragraph_properties = etree.Element(f"{{{WORD_NS}}}pPr")
-        paragraph.insert(0, paragraph_properties)
-
-    spacing = paragraph_properties.find(f"{{{WORD_NS}}}spacing")
-    if spacing is None:
-        spacing = etree.Element(f"{{{WORD_NS}}}spacing")
-        paragraph_properties.append(spacing)
-
-    before_key = f"{{{WORD_NS}}}before"
-    current = spacing.get(before_key)
-    if current is None or int(current) < int(value):
-        spacing.set(before_key, value)
-
-
-def is_math_layout_table(element: Any, namespace: dict[str, str]) -> bool:
-    """Recognize formula wrappers, including adjacent wrappers merged by Word."""
-    if element.tag != f"{WORD}tbl" or element.xpath(
-        ".//w:tbl | .//w:drawing | .//w:tblHeader", namespaces=namespace
-    ):
-        return False
-    rows = element.findall(f"{WORD}tr")
-    if not rows:
-        return False
-    for row in rows:
-        cells = row.findall(f"{WORD}tc")
-        if len(cells) != 3:
-            return False
-        left, formula, right = cells
-        if (
-            element_text(left)
-            or element_text(formula)
-            or not formula.xpath(".//m:oMath", namespaces=namespace)
-            or not formula.xpath('.//w:jc[@w:val="center"]', namespaces=namespace)
-            or left.xpath(".//m:oMath", namespaces=namespace)
-            or right.xpath(".//m:oMath", namespaces=namespace)
-        ):
-            return False
-        number = element_text(right)
-        if (
-            number
-            and re.fullmatch(r"\((?:[A-Z\u0410-\u042f\u0401]\.)?\d+(?:\.\d+)*\)", number) is None
-        ):
-            return False
-    # Word may omit explicit no-border properties when saving the wrapper.
-    borders = element.xpath(".//w:tblBorders/* | .//w:tcBorders/*", namespaces=namespace)
-    return all(border.get(f"{WORD}val") in {"none", "nil"} for border in borders)
-
-
-def is_data_table(element: Any, namespace: dict[str, str]) -> bool:
-    return element.tag == f"{WORD}tbl" and not is_math_layout_table(element, namespace)
-
-
-def find_next_visible_paragraph(elements: list[Any], table_index: int) -> Any | None:
-    for following in elements[table_index + 1 :]:
-        if following.tag == f"{{{WORD_NS}}}tbl":
-            return None
-        if following.tag == f"{{{WORD_NS}}}p" and paragraph_has_visible_content(following):
-            return following
-    return None
-
-
-def should_space_after_table(paragraph: Any) -> bool:
-    style = paragraph_style(paragraph)
-    return not style.startswith("Heading") and style not in {
-        "TableCaption",
-        "FigureCaption",
-    }
-
-
-def add_spacing_after_data_tables(document_root: Any) -> int:
-    namespace = {"m": MATH_NS, "w": WORD_NS}
-    body = document_root.find(f"{WORD}body")
-    if body is None:
-        return 0
-
-    elements = report_body_elements(list(body))
-    changed = 0
-    for index, element in enumerate(elements):
-        if not is_data_table(element, namespace):
-            continue
-
-        following = find_next_visible_paragraph(elements, index)
-        if following is not None and should_space_after_table(following):
-            set_paragraph_space_before(following, SPACING_AFTER_TABLE_TWIPS)
-            changed += 1
-
-    return changed
 
 
 def table_grid_width(table: Any) -> int | None:
@@ -433,7 +326,8 @@ def normalize_docx_xml_layout(docx_path: str | Path) -> int:
     document_xml = read_docx_part(docx_path, "word/document.xml")
     parser = etree.XMLParser(resolve_entities=False, remove_blank_text=False)
     document_root = etree.fromstring(document_xml, parser=parser)
-    table_spacing_changes = add_spacing_after_data_tables(document_root)
+    styles_root = etree.fromstring(read_docx_part(docx_path, "word/styles.xml"), parser=parser)
+    table_spacing_changes = add_spacing_after_data_tables(document_root, styles_root)
     referat_keyword_changes = normalize_referat_keyword_paragraphs(document_root)
     changes = table_spacing_changes + referat_keyword_changes
 

@@ -158,6 +158,7 @@ export async function handleTable(
 	) => Promise<InlineDocxElement[]>,
 	explicitWidths?: number[],
 	continuedOnNextSegment = false,
+	notes: InlineDocxElement[][] = [],
 ): Promise<Table> {
 	const columnWidths = computeTableColumnWidths(token, explicitWidths);
 
@@ -177,7 +178,7 @@ export async function handleTable(
 				},
 				children: [
 					new Paragraph({
-						style: 'TableText',
+						style: 'TableTextCenter',
 						// ГОСТ 7.32-2017, 6.6.6: column headers are centered;
 						// Markdown alignment applies only to the data below them.
 						alignment: STO_RULES.tables.headerAlignment,
@@ -214,7 +215,12 @@ export async function handleTable(
 					},
 					children: [
 						new Paragraph({
-							style: 'TableText',
+							style:
+								alignType === AlignmentType.CENTER
+									? 'TableTextCenter'
+									: alignType === AlignmentType.RIGHT
+										? 'TableTextRight'
+										: 'TableText',
 							alignment: alignType,
 							children: await parseInline(cell.tokens, {
 								allowBold: true,
@@ -228,6 +234,29 @@ export async function handleTable(
 			new TableRow({
 				cantSplit: true,
 				children: rowCells,
+			}),
+		);
+	}
+
+	for (const note of notes) {
+		rows.push(
+			new TableRow({
+				cantSplit: true,
+				children: [
+					new TableCell({
+						columnSpan: columnWidths.length,
+						width: {
+							size: TOTAL_TABLE_WIDTH_DXA,
+							type: WidthType.DXA,
+						},
+						children: [
+							new Paragraph({
+								style: 'TableNote',
+								children: note,
+							}),
+						],
+					}),
+				],
 			}),
 		);
 	}

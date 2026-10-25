@@ -4,6 +4,7 @@ import path from 'node:path';
 import AdmZip from 'adm-zip';
 
 import { getStoStylePresetDisplayNames } from '@/shared/config';
+import copiedTemplateStyles from '@/shared/config/samara-template-2022-styles.json';
 import {
 	dotmStyleSemanticsSha256,
 	readDotmStyles,
@@ -123,6 +124,11 @@ function assertFixture(): void {
 	assert.equal(containsVba, contract.containsVba);
 
 	const actualStyles = readDotmStyles(fixturePath);
+	assert.deepEqual(
+		copiedTemplateStyles,
+		actualStyles.map(style => style.xml),
+		'The versioned import must exactly match every source style, independently of generator adapters',
+	);
 	assert.equal(actualStyles.length, contract.styles.length);
 	const actualById = new Map(actualStyles.map(style => [style.id, style]));
 	for (const expected of contract.styles) {

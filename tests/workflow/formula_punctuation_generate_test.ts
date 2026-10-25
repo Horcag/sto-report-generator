@@ -30,7 +30,8 @@ function generate(reportDir: string, outputPath: string, validate = false) {
 			cwd: process.cwd(),
 			encoding: 'utf8',
 			shell: false,
-			timeout: 30000,
+			// Include instrumented CLI startup and coverage flushing.
+			timeout: 90_000,
 			maxBuffer: 1024 * 1024,
 		},
 	);

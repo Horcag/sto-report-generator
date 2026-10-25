@@ -9,10 +9,30 @@ import {
 } from './body-xml';
 import { isMathLayoutTable } from './math-layout-table';
 
-export function countEmptyTableCells(docXml: string): number {
+export function countUncenteredImageParagraphs(
+	docXml: string,
+	stylesXml = '',
+): number {
+	const paragraphs =
+		docXml.match(/<w:p\b(?![^>]*\/>)[^>]*>[\s\S]*?<\/w:p>/g) ?? [];
+	return paragraphs.filter(
+		paragraph =>
+			paragraph.includes('<w:drawing') &&
+			getEffectiveBodyParagraphAttribute(
+				paragraph,
+				stylesXml,
+				null,
+				getParagraphStyleId(paragraph) ?? 'Normal',
+				'jc',
+				'val',
+			) !== 'center',
+	).length;
+}
+
+export function countEmptyTableCells(docXml: string, stylesXml = ''): number {
 	let empty = 0;
 	for (const table of getReportTables(docXml)) {
-		if (isMathLayoutTable(table)) continue;
+		if (isMathLayoutTable(table, stylesXml)) continue;
 		for (const cell of table.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? []) {
 			const properties =
 				/<w:tcPr\b[^>]*>([\s\S]*?)<\/w:tcPr>/.exec(cell)?.[1] ?? '';
@@ -34,10 +54,13 @@ export function countEmptyTableCells(docXml: string): number {
 	return empty;
 }
 
-export function countTablesWithDiagonalBorders(docXml: string): number {
+export function countTablesWithDiagonalBorders(
+	docXml: string,
+	stylesXml = '',
+): number {
 	return getReportTables(docXml).filter(
 		table =>
-			!isMathLayoutTable(table) &&
+			!isMathLayoutTable(table, stylesXml) &&
 			[...table.matchAll(/<w:(?:tl2br|tr2bl)\b[^>]*>/g)].some(
 				match =>
 					!['none', 'nil'].includes(
@@ -76,11 +99,14 @@ function getCellMarginDxa(
 	return Number.isFinite(width) ? width : null;
 }
 
-export function countTableCellsWithInsufficientPadding(docXml: string): number {
+export function countTableCellsWithInsufficientPadding(
+	docXml: string,
+	stylesXml = '',
+): number {
 	let insufficient = 0;
 	const minimums = { top: 57, bottom: 57, left: 108, right: 108 };
 	for (const tableXml of getReportTables(docXml)) {
-		if (isMathLayoutTable(tableXml)) continue;
+		if (isMathLayoutTable(tableXml, stylesXml)) continue;
 		const tableProperties =
 			/<w:tblPr\b[\s\S]*?<\/w:tblPr>/.exec(tableXml)?.[0] ?? '';
 		for (const cellXml of tableXml.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ??
@@ -149,12 +175,15 @@ export function countReferatKeywordsWithWrongIndent(
 	return wrongIndent;
 }
 
-export function countTableHeaderFinalPeriods(docXml: string): number {
+export function countTableHeaderFinalPeriods(
+	docXml: string,
+	stylesXml = '',
+): number {
 	const tables = getReportTables(docXml);
 	let cellsWithFinalPeriod = 0;
 
 	for (const tableXml of tables) {
-		if (isMathLayoutTable(tableXml)) {
+		if (isMathLayoutTable(tableXml, stylesXml)) {
 			continue;
 		}
 

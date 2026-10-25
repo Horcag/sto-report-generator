@@ -141,7 +141,10 @@ function formulaEnding(paragraph: Element): string | null {
 	return /^[,;.]/u.exec(after)?.[0] ?? mathEnding(math);
 }
 
-export function inspectFormulaPunctuation(docXml: string): {
+export function inspectFormulaPunctuation(
+	docXml: string,
+	stylesXml = '',
+): {
 	beforeWhere: number[];
 	whereColon: number[];
 	consecutive: number[];
@@ -170,7 +173,7 @@ export function inspectFormulaPunctuation(docXml: string): {
 		for (const element of [...container.children]) {
 			if (element.tagName === 'w:p') appendParagraph(element);
 			else if (element.tagName === 'w:tbl') {
-				if (isMathLayoutTable(element.outerHTML)) {
+				if (isMathLayoutTable(element.outerHTML, stylesXml)) {
 					const rows = [...element.children].filter(
 						child => child.tagName === 'w:tr',
 					);
@@ -261,8 +264,9 @@ export function inspectFormulaPunctuation(docXml: string): {
 /** Add the same deterministic punctuation rules to the existing DOCX validation suite. */
 export function validateFormulaPunctuation(
 	docXml: string,
+	stylesXml = '',
 ): { check: string; passed: boolean; error?: string }[] {
-	const punctuation = inspectFormulaPunctuation(docXml);
+	const punctuation = inspectFormulaPunctuation(docXml, stylesXml);
 	const rules: [string, number[], string][] = [
 		[
 			'Formula Punctuation Before Where',

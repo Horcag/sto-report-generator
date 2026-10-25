@@ -51,8 +51,58 @@ function getStyleName(styleXml: string): string {
 	return match[1];
 }
 
-function stripStyleNames(styleXml: string): string {
-	return styleXml.replace(/<w:name\b[^>]*\/>/g, '<w:name/>');
+function assertPortableProperties(
+	actualXml: string,
+	portableXml: string,
+	styleId: string,
+): void {
+	const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+	const dom = new JSDOM(
+		`<root xmlns:w="${W}">${actualXml}${portableXml}</root>`,
+		{ contentType: 'text/xml' },
+	);
+	try {
+		const [actual, portable] = Array.from(
+			dom.window.document.documentElement.children,
+		);
+		for (const containerName of ['pPr', 'rPr']) {
+			const container = Array.from(portable.children).find(
+				node => node.localName === containerName,
+			);
+			if (!container) continue;
+			const actualContainer = Array.from(actual.children).find(
+				node => node.localName === containerName,
+			);
+			assert.ok(actualContainer, `${styleId}/${containerName}`);
+			for (const property of Array.from(container.children)) {
+				// Canonical parents supply inherited bold; the dedicated all-style
+				// and native Word tests verify its effective value, not tag presence.
+				if (['b', 'bCs'].includes(property.localName)) continue;
+				const counterpart: Element | undefined = Array.from(
+					actualContainer.children,
+				).find(node => node.localName === property.localName);
+				assert.ok(
+					counterpart,
+					`${styleId}/${property.localName} retained`,
+				);
+				// Numbering IDs are assigned per package; the independent style test
+				// resolves their references rather than comparing arbitrary IDs.
+				if (property.localName === 'numPr') continue;
+				for (const attribute of Array.from(property.attributes)) {
+					assert.equal(
+						counterpart.getAttributeNS(
+							attribute.namespaceURI,
+							attribute.localName,
+						),
+						attribute.value,
+						`${styleId}/${property.localName}/${attribute.localName}`,
+					);
+				}
+			}
+		}
+	} finally {
+		dom.window.close();
+	}
 }
 
 function assertDefaultDotmStyleNames(): void {
@@ -66,11 +116,7 @@ function assertDefaultDotmStyleNames(): void {
 		const defaultStyleXml = findStyleXml(defaultStylesXml, styleId);
 		const genericStyleXml = findStyleXml(genericStylesXml, styleId);
 		assert.equal(getStyleName(defaultStyleXml), expectedName);
-		assert.equal(
-			stripStyleNames(defaultStyleXml),
-			stripStyleNames(genericStyleXml),
-			`${styleId} changed beyond display name`,
-		);
+		assertPortableProperties(defaultStyleXml, genericStyleXml, styleId);
 	}
 }
 

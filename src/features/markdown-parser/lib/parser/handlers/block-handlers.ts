@@ -106,7 +106,7 @@ export async function handleParagraph(
 	if (token.tokens?.every(item => item.type === 'image')) {
 		return [
 			new Paragraph({
-				style: 'Normal',
+				style: 'Figure',
 				alignment: AlignmentType.CENTER,
 				indent: { firstLine: 0 },
 				keepNext: true,
@@ -127,7 +127,7 @@ export async function handleParagraph(
 				parenthesizedItem.stoParenthesizedIndentLevel ?? 0;
 			return [
 				new Paragraph({
-					style: 'Normal',
+					style: 'ListParagraph',
 					indent: {
 						left:
 							indentLevel *
@@ -151,7 +151,7 @@ export async function handleParagraph(
 		}
 		return [
 			new Paragraph({
-				style: 'Normal',
+				style: 'ListParagraph',
 				indent: {
 					left: 0,
 					firstLine: STO_RULES.typography.firstLineIndentDxa,
@@ -186,15 +186,16 @@ export async function handleParagraph(
 		];
 	}
 
+	const isTableContinuation =
+		/^Продолжение таблицы\s+(?:[А-Я]\.)?\d+(?:\.\d+)?$/u.test(text.trim());
 	if (
-		/^Продолжение таблицы\s+(?:[А-Я]\.)?\d+(?:\.\d+)?$/u.test(
-			text.trim(),
-		) ||
+		isTableContinuation ||
 		/^Таблица\s*(?:@tab:[a-zA-Z0-9_-]+|(?:[А-Я]\.)?\d+)/.test(text.trim())
 	) {
 		return [
 			new Paragraph({
 				style: 'TableCaption',
+				pageBreakBefore: isTableContinuation || undefined,
 				children: await parseInline(cleanCaptionTokens(token.tokens)),
 			}),
 		];
@@ -206,7 +207,7 @@ export async function handleParagraph(
 	) {
 		return [
 			new Paragraph({
-				style: 'Normal',
+				style: 'ReferatKeywords',
 				alignment: AlignmentType.JUSTIFIED,
 				spacing: {
 					before: STO_RULES.referat.keywordParagraph.spacingBeforeDxa,
@@ -269,7 +270,7 @@ export async function handleList(
 
 		elements.push(
 			new Paragraph({
-				style: 'Normal',
+				style: 'ListParagraph',
 				numbering: token.ordered
 					? {
 							reference: 'ordered-numbering',

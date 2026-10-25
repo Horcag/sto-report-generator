@@ -1,12 +1,22 @@
-import { AlignmentType, INumberingOptions, IStylesOptions } from 'docx';
+import {
+	AlignmentType,
+	DocumentDefaults,
+	INumberingOptions,
+	IStylesOptions,
+} from 'docx';
 
 import { APPENDIX_STYLES } from './sto-appendix-styles';
+import { ELEMENT_STYLES } from './sto-element-styles';
 import {
 	createNumberedHeadingStyle,
 	HEADING_NUMBERING_REFERENCE,
 	NUMBERED_HEADING_STYLE_IDS,
 } from './sto-heading-styles';
 import { STO_RULES } from './sto-rules';
+import {
+	getTemplateStyleNames,
+	importSamaraTemplateStyles,
+} from './sto-template-styles';
 import {
 	createTocHeadingStyle,
 	TOC_ENTRY_STYLES,
@@ -37,27 +47,7 @@ export type StoStylePreset = (typeof STO_STYLE_PRESET_NAMES)[number];
 
 type ParagraphStyle = NonNullable<IStylesOptions['paragraphStyles']>[number];
 
-const SAMARA_TEMPLATE_2022_STYLE_NAMES: Record<string, string> = {
-	Normal: '+Абзац с отступом 1-ой строки',
-	[STRUCTURAL_HEADING_STYLE_ID]: '+ЗАГОЛОВОК по центру',
-	[STRUCTURAL_HEADING_NO_TOC_STYLE_ID]: '+ЗаголРеферСодерж',
-	AppendixHeading: '+Заголовок приложения',
-	AppendixSectionHeading: '+Раздел приложения',
-	FigureCaption: '+№ - Название рисунка',
-	TableCaption: '+№ - Название таблицы',
-	TableText: '+Текст в таблице',
-	TitlePageText: '+Тит_Абзац по центру',
-	TOC1: '+Оглавление 1',
-	TOC2: '+Оглавление 2',
-	TOC3: '+Оглавление 3',
-	TOC4: '+Оглавление 4',
-	StoHeading1: '+Заголовок 1 уровня',
-	StoHeading2: '+Заголовок 2 уровня',
-	StoHeading3: '+Заголовок 3 уровня',
-	StoHeading4: '+Заголовок 4 уровня',
-	StoHeading5: 'heading 5',
-	StoHeading6: 'heading 6',
-};
+const SAMARA_TEMPLATE_2022_STYLE_NAMES = getTemplateStyleNames();
 
 export function isStoStylePreset(value: unknown): value is StoStylePreset {
 	return (
@@ -245,6 +235,7 @@ export const STO_STYLES: IStylesOptions = {
 			},
 		},
 		...TOC_ENTRY_STYLES,
+		...ELEMENT_STYLES,
 	],
 };
 
@@ -255,14 +246,21 @@ export function getStoStyles(
 		return STO_STYLES;
 	}
 
+	const paragraphStyles = [
+		...(STO_STYLES.paragraphStyles?.map(
+			applySamaraTemplate2022StyleNames,
+		) ?? []),
+		...WORD_TOC_ENTRY_STYLES,
+	];
 	return {
 		...STO_STYLES,
-		paragraphStyles: [
-			...(STO_STYLES.paragraphStyles?.map(
-				applySamaraTemplate2022StyleNames,
-			) ?? []),
-			...WORD_TOC_ENTRY_STYLES,
+		importedStyles: [
+			new DocumentDefaults(STO_STYLES.default?.document ?? {}),
+			...importSamaraTemplateStyles(paragraphStyles),
 		],
+		paragraphStyles: paragraphStyles.filter(
+			style => !getSamaraTemplate2022StyleName(style.id),
+		),
 	};
 }
 

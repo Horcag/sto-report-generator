@@ -188,7 +188,7 @@ async function run(): Promise<void> {
 	);
 	assert.match(
 		figureXml,
-		/<w:pPr>[^<]*<w:pStyle w:val="Normal"\/>[\s\S]*?<w:keepNext\/>[\s\S]*?<\/w:pPr>[\s\S]*?<w:drawing\b/,
+		/<w:pPr>[^<]*<w:pStyle w:val="Figure"\/>[\s\S]*?<w:keepNext\/>[\s\S]*?<\/w:pPr>[\s\S]*?<w:drawing\b/,
 		'Figure paragraph must keep with its following caption',
 	);
 

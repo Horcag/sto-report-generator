@@ -64,7 +64,7 @@ export function createVkrTitlePage(metadata: ReportMetadata): Paragraph[] {
 		p('ВЫПУСКНАЯ КВАЛИФИКАЦИОННАЯ РАБОТА', {
 			spacing: { before: 360, after: 180, line: 240, lineRule: 'auto' },
 		}),
-		p(metadata.topic),
+		p(metadata.topic, { style: 'TitlePageTopic' }),
 		p(''),
 		p('по направлению подготовки'),
 		p(`${metadata.specialtyCode} ${metadata.specialtyName} (${level})`),

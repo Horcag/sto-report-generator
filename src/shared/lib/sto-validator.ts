@@ -1,18 +1,17 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import {
-	getNumberedHeadingStyleId,
-	STO_RULES,
-	STRUCTURAL_HEADING_STYLE_ID,
-} from '../config';
+import { STO_RULES, STRUCTURAL_HEADING_STYLE_ID } from '../config';
 import {
 	getEffectiveBodyParagraphAttribute,
 	getEffectiveParagraphAttribute,
 	resolveWordStyleId,
 } from './docx/styles';
 import { validateFormulaLayout } from './math/formula-layout-validator';
-import { validateTemplateStyleConformance } from './sto-template-style-validator';
+import {
+	activeHeading1StyleIds,
+	validateTemplateStyleConformance,
+} from './sto-template-style-validator';
 import { validateBibliographyPresentation } from './sto-validator/bibliography-xml';
 import {
 	extractWordText,
@@ -34,6 +33,7 @@ import {
 	countTableCellsWithInsufficientPadding,
 	countTableHeaderFinalPeriods,
 	countTablesWithDiagonalBorders,
+	countUncenteredImageParagraphs,
 } from './sto-validator/layout-xml';
 import { isMathLayoutTable } from './sto-validator/math-layout-table';
 import {
@@ -191,16 +191,6 @@ function hasOversizedImages(docXml: string): boolean {
 	);
 }
 
-function hasUncenteredImageParagraphs(docXml: string): boolean {
-	const imageParagraphs = docXml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? [];
-
-	return imageParagraphs.some(
-		paragraphXml =>
-			paragraphXml.includes('<w:drawing') &&
-			!regexMatches(/<w:jc\b[^>]*w:val="center"[^>]*\/>/, paragraphXml),
-	);
-}
-
 function hasExpectedPageMargins(docXml: string): boolean {
 	const margins = STO_RULES.page.marginsDxa;
 	const marginTags = docXml.match(/<w:pgMar\b[^>]*\/>/g) ?? [];
@@ -258,10 +248,8 @@ function countTablesWithoutAdjacentCaption(
 
 	for (let index = 0; index < elements.length; index++) {
 		const elementXml = elements[index];
-		if (!isTableXml(elementXml) || isMathLayoutTable(elementXml)) {
-			continue;
-		}
-
+		if (!isTableXml(elementXml)) continue;
+		if (isMathLayoutTable(elementXml, stylesXml)) continue;
 		const previous = findPreviousVisibleParagraph(elements, index);
 		const previousText = previous ? extractWordText(previous).trim() : '';
 		if (
@@ -712,7 +700,8 @@ function validatePageNumbering(input: ValidationInput): ValidationResult[] {
 	];
 }
 
-function validateMathAndCitations(docXml: string): ValidationResult[] {
+function validateMathAndCitations(input: ValidationInput): ValidationResult[] {
+	const { docXml, stylesXml } = input;
 	const mathStructures = inspectMathStructures(docXml);
 	const documentText = extractWordText(docXml);
 	const citationNumbers = extractCitationNumbers(documentText);
@@ -765,35 +754,35 @@ function validateMathAndCitations(docXml: string): ValidationResult[] {
 			regexMatches(/<m:t>[^<]*\d+\.\d+[^<]*<\/m:t>/, docXml),
 			'Detected dot (.) as decimal separator in formula. Russian typography requires a comma (,).',
 		),
-		...validateFormulaPunctuation(docXml),
-		...validateFormulaLayout(docXml),
+		...validateFormulaPunctuation(docXml, stylesXml),
+		...validateFormulaLayout(docXml, stylesXml),
 	];
 }
 function validateFieldsTablesAndImages(
 	input: ValidationInput,
 ): ValidationResult[] {
-	const continuation = getContinuationFailures(input.docXml, input.stylesXml);
-	const notes = getNoteFailures(input.docXml);
-	const emptyTableCells = countEmptyTableCells(input.docXml);
-	const tableHeaderFinalPeriods = countTableHeaderFinalPeriods(input.docXml);
+	const { docXml: doc, stylesXml: styles } = input;
+	const continuation = getContinuationFailures(doc, styles);
+	const notes = getNoteFailures(doc);
+	const emptyTableCells = countEmptyTableCells(doc, styles);
+	const tableHeaderFinalPeriods = countTableHeaderFinalPeriods(doc, styles);
 	const tableCellsWithInsufficientPadding =
-		countTableCellsWithInsufficientPadding(input.docXml);
+		countTableCellsWithInsufficientPadding(doc, styles);
 	const tablesWithoutHeaderRepeat = countTablesWithoutHeaderRepeat(
-		input.docXml,
+		doc,
+		styles,
 	);
 	const tablesWithoutAdjacentCaption = countTablesWithoutAdjacentCaption(
-		input.docXml,
-		input.stylesXml,
+		doc,
+		styles,
 	);
 	const imagesWithoutFollowingCaption = countImagesWithoutFollowingCaption(
-		input.docXml,
-		input.stylesXml,
+		doc,
+		styles,
 	);
-	const tablesWithDiagonalBorders = countTablesWithDiagonalBorders(
-		input.docXml,
-	);
+	const diagonalTables = countTablesWithDiagonalBorders(doc, styles);
 	return [
-		...validateTableLayout(input.docXml, input.stylesXml),
+		...validateTableLayout(doc, styles),
 		resultFromPass(
 			'Table Continuation Label',
 			continuation.label === 0,
@@ -802,7 +791,7 @@ function validateFieldsTablesAndImages(
 		resultFromPass(
 			'Table Continuation Bottom Border',
 			continuation.border === 0,
-			`Detected ${continuation.border} continued table segment(s) with a bottom border.`,
+			`Detected ${continuation.border} continued table segment(s) with a visible or unverified bottom border.`,
 		),
 		resultFromPass(
 			'Note Placement',
@@ -817,16 +806,16 @@ function validateFieldsTablesAndImages(
 		resultFromPass(
 			'Table Note End',
 			notes.tableEnd === 0,
-			`Detected ${notes.tableEnd} table note(s) placed before another table segment.`,
+			`Detected ${notes.tableEnd} table note(s) placed before final data or another table segment.`,
 		),
 		resultFromFailure(
 			'Dirty Field Flags',
-			regexMatches(/<w:fldChar\b[^>]*w:dirty="(?:true|1)"/, input.docXml),
+			regexMatches(/<w:fldChar\b[^>]*w:dirty="(?:true|1)"/, doc),
 			'Detected dirty Word fields. Run post_build.py so Word does not ask to update fields on open.',
 		),
 		resultFromFailure(
 			'Tab Characters',
-			hasForbiddenTabCharacters(input.docXml, input.stylesXml),
+			hasForbiddenTabCharacters(doc, styles),
 			'Detected body tab characters. Use paragraph indentation and styles instead of manual tabs.',
 		),
 		resultFromPass(
@@ -856,17 +845,17 @@ function validateFieldsTablesAndImages(
 		),
 		resultFromPass(
 			'Table Diagonal Borders',
-			tablesWithDiagonalBorders === 0,
-			`Detected ${tablesWithDiagonalBorders} table(s) with diagonal cell borders.`,
+			diagonalTables === 0,
+			`Detected ${diagonalTables} table(s) with diagonal cell borders.`,
 		),
 		resultFromFailure(
 			'Image Width Limit',
-			hasOversizedImages(input.docXml),
+			hasOversizedImages(doc),
 			'Detected image width above 14 cm. Run post_build.py to scale large figures.',
 		),
 		resultFromFailure(
 			'Image Paragraph Alignment',
-			hasUncenteredImageParagraphs(input.docXml),
+			countUncenteredImageParagraphs(doc, styles) > 0,
 			'Detected an image paragraph without center alignment.',
 		),
 		resultFromPass(
@@ -912,7 +901,7 @@ function createValidationInput(
 	numberingXml: string | null,
 	footerXmlByType: Partial<Record<string, string>>,
 ): ValidationInput {
-	const heading1StyleIds = [getNumberedHeadingStyleId(1), 'Heading1', '1'];
+	const heading1StyleIds = activeHeading1StyleIds(stylesXml, docXml);
 	const resolvedHeading1StyleIds = heading1StyleIds
 		.map(styleId => resolveWordStyleId(stylesXml, styleId))
 		.filter((styleId): styleId is string => styleId !== null);
@@ -978,7 +967,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 		...validateHeadingText(input),
 		...validateTypography(input),
 		...validatePageNumbering(input),
-		...validateMathAndCitations(input.docXml),
+		...validateMathAndCitations(input),
 		...validateNumbering(input.numberingXml),
 		...validateFieldsTablesAndImages(input),
 		...validateTemplateStyleConformance(

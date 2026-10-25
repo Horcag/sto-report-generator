@@ -72,6 +72,9 @@ export function runTableCaptionRulesTests(): void {
 		['caption-final-period'],
 		5,
 	);
+	check('Таблица 1 – данные (@tab:sample)', ['table-caption-capitalization']);
+	check('Таблица 1 – pH (@tab:sample)', []);
+	check('Таблица 1 – рН (@tab:sample)', []);
 	console.log(
 		`Table and figure caption rules tests passed (${count} cases).`,
 	);

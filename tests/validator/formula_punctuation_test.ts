@@ -40,7 +40,12 @@ export function runFormulaPunctuationTests(): void {
 		name: string,
 		body: string,
 		failed: readonly string[] = [],
+		styles = '',
 	) => {
+		fs.writeFileSync(
+			path.join(wordDir, 'styles.xml'),
+			`<w:styles ${namespaces}>${styles}</w:styles>`,
+		);
 		fs.writeFileSync(
 			path.join(wordDir, 'document.xml'),
 			`<w:document ${namespaces}><w:body>${body}</w:body></w:document>`,
@@ -60,6 +65,25 @@ export function runFormulaPunctuationTests(): void {
 	try {
 		const [beforeWhere, colon, consecutive, separators, finalPeriod] =
 			checkNames;
+		const remappedStyles =
+			'<w:style w:styleId="a42"><w:basedOn w:val="equation-base"/></w:style><w:style w:styleId="equation-base"><w:pPr><w:jc w:val="center"/></w:pPr></w:style>';
+		const remapped = (text: string) =>
+			layout(layoutRow(text)).replace(
+				'<w:jc w:val="center"/>',
+				'<w:pStyle w:val="a42"/>',
+			);
+		check(
+			'remapped style preserves missing comma and where-colon diagnostics',
+			remapped('x=1') + paragraph('где: x – переменная.'),
+			[beforeWhere, colon],
+			remappedStyles,
+		);
+		check(
+			'remapped style with valid punctuation passes',
+			remapped('x=1,') + where,
+			[],
+			remappedStyles,
+		);
 		check('period before where', mathParagraph('x=1.') + where, [
 			beforeWhere,
 		]);

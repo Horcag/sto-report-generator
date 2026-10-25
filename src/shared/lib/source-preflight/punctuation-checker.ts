@@ -62,6 +62,20 @@ export function validateSourcePunctuation(
 				),
 			);
 		}
+		if (
+			caption[1] === STO_RULES.validation.tableCaptionPrefix &&
+			/^–\s+[а-яё]{2}/u.test(title)
+		) {
+			issues.push(
+				issue(
+					'table-caption-capitalization',
+					'A table title starts with a capital letter. Check the wording while preserving established symbol notation.',
+					file,
+					line,
+					'warning',
+				),
+			);
+		}
 
 		if (title && !/^\s+–(?:\s|$)/.test(caption[2])) {
 			issues.push(

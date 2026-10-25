@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom';
 import { STO_RULES } from '../../config';
 import type { ValidationResult } from '../sto-validator';
 import { isMathLayoutTable } from './math-layout-table';
+import { validateTableCaptionDirectFormatting } from './table-caption-layout';
 
 const NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
@@ -289,7 +290,7 @@ export function validateTableLayout(
 		const defaults = styles.root;
 		const resolveStyle = styleResolver(defaults);
 		reportTables(document.root).forEach((table, tableIndex) => {
-			if (isMathLayoutTable(table.outerHTML)) return;
+			if (isMathLayoutTable(table.outerHTML, stylesXml)) return;
 			const rows = children(table, 'tr');
 			const grid = children(child(table, 'tblGrid'), 'gridCol');
 			let headerEnded = false;
@@ -366,15 +367,18 @@ export function validateTableLayout(
 					failures['Table Grid Structure'].push(location);
 			});
 		});
-		return Object.entries(failures).map(([check, locations]) => ({
-			check,
-			passed: locations.length === 0,
-			...(locations.length
-				? {
-						error: `${locations.length} violation(s): ${locations.join('; ')}`,
-					}
-				: {}),
-		}));
+		return [
+			...Object.entries(failures).map(([check, locations]) => ({
+				check,
+				passed: locations.length === 0,
+				...(locations.length
+					? {
+							error: `${locations.length} violation(s): ${locations.join('; ')}`,
+						}
+					: {}),
+			})),
+			validateTableCaptionDirectFormatting(docXml, stylesXml),
+		];
 	} finally {
 		document.close();
 		styles.close();
@@ -382,11 +386,14 @@ export function validateTableLayout(
 }
 
 /** Repeating is a boolean property; an explicit false flag does not enable repetition. */
-export function countTablesWithoutHeaderRepeat(docXml: string): number {
+export function countTablesWithoutHeaderRepeat(
+	docXml: string,
+	stylesXml = '',
+): number {
 	const document = parse(docXml);
 	try {
 		return reportTables(document.root).filter(table => {
-			if (isMathLayoutTable(table.outerHTML)) return false;
+			if (isMathLayoutTable(table.outerHTML, stylesXml)) return false;
 			const rows = children(table, 'tr');
 			return (
 				rows.length > 1 &&

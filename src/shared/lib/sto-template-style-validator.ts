@@ -1,9 +1,11 @@
 import {
+	getNumberedHeadingStyleId,
 	STO_RULES,
 	STRUCTURAL_HEADING_NO_TOC_STYLE_ID,
 	STRUCTURAL_HEADING_STYLE_ID,
 } from '../config';
 import {
+	getEffectiveBodyParagraphAttribute,
 	getEffectiveParagraphAttribute,
 	getEffectiveRunAttribute,
 	hasEffectiveParagraphTag,
@@ -160,6 +162,23 @@ function findHeadingNumberingLevel(
 	return null;
 }
 
+/** Imported built-ins are available for editing; only used aliases are report headings. */
+export function activeHeading1StyleIds(
+	stylesXml: string,
+	docXml: string,
+): string[] {
+	const candidates = [getNumberedHeadingStyleId(1), 'Heading1', '1'];
+	if (!resolveWordStyleId(stylesXml, candidates[0])) return candidates;
+	return candidates.filter((id, index) => {
+		if (index === 0) return true;
+		const resolved = resolveWordStyleId(stylesXml, id);
+		return (
+			resolved !== null &&
+			docXml.includes(`<w:pStyle w:val="${resolved}"`)
+		);
+	});
+}
+
 export function validateTemplateStyleConformance(
 	stylesXml: string,
 	numberingXml: string | null,
@@ -186,8 +205,10 @@ export function validateTemplateStyleConformance(
 			}) &&
 				heading1StyleIds.some(
 					styleId =>
-						getEffectiveParagraphAttribute(
+						getEffectiveBodyParagraphAttribute(
+							'',
 							stylesXml,
+							numberingXml,
 							styleId,
 							'ind',
 							'firstLine',
@@ -219,7 +240,7 @@ export function validateTemplateStyleConformance(
 			!hasStyleProperty(
 				stylesXml,
 				heading1StyleIds,
-				/<w:jc\b[^>]*w:val="center"[^>]*\/>/,
+				/<w:jc\b[^>]*w:val="center"[^>]*>/,
 			),
 			'Numbered headings (Heading1) must not be centered.',
 		),
@@ -298,7 +319,7 @@ export function validateTemplateStyleConformance(
 			hasStyleProperty(
 				stylesXml,
 				['FigureCaption'],
-				/<w:jc\b[^>]*w:val="center"[^>]*\/>/,
+				/<w:jc\b[^>]*w:val="center"[^>]*>/,
 			) &&
 				hasStyleProperty(
 					stylesXml,
@@ -322,7 +343,7 @@ export function validateTemplateStyleConformance(
 			hasStyleProperty(
 				stylesXml,
 				['TableCaption'],
-				/<w:jc\b[^>]*w:val="left"[^>]*\/>/,
+				/<w:jc\b[^>]*w:val="left"[^>]*>/,
 			) &&
 				hasStyleProperty(
 					stylesXml,

@@ -6,6 +6,9 @@ import {
 	validateTableLayout,
 } from '@/shared/lib/sto-validator/table-layout';
 
+import { runTableBodyElementsTests } from './table_body_elements_test';
+import { runTableBottomBorderTests } from './table_bottom_border_test';
+import { runTableCaptionLayoutTests } from './table_caption_layout_test';
 import {
 	cell,
 	documentXml,
@@ -14,12 +17,14 @@ import {
 	style,
 	table,
 } from './table_layout_fixtures';
+import { runTableNoteLayoutTests } from './table_note_layout_test';
 import { runTableStyleCascadeCases } from './table_style_cases';
 
 const CHECKS = [
 	'Table Header Horizontal Alignment',
 	'Table Grid Structure',
 	'Table Header Repeat Order',
+	'Table Caption Direct Formatting',
 ];
 
 export function runTableLayoutTests(): void {
@@ -471,9 +476,13 @@ export function runTableLayoutTests(): void {
 			table(),
 	);
 	runTableStyleCascadeCases(check);
+	runTableCaptionLayoutTests();
+	runTableBottomBorderTests();
+	runTableBodyElementsTests();
+	runTableNoteLayoutTests();
 	assert.equal(cases, 54, 'all table layout cases executed');
 	console.log(
-		`Table layout regressions: ${cases} cases passed; all 3 checks executed per case. Fixtures remained in memory.`,
+		`Table layout regressions: ${cases} cases passed; all 4 checks executed per case. Fixtures remained in memory.`,
 	);
 }
 

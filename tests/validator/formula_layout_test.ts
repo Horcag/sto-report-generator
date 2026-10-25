@@ -58,6 +58,50 @@ export async function runFormulaLayoutTests(): Promise<void> {
 		cases++;
 	};
 	const valid = table(row());
+	const styleOnly = valid
+		.replace(
+			'<w:jc w:val="center"/>',
+			'<w:pStyle w:val="equation-remapped"/>',
+		)
+		.replace(
+			'<w:jc w:val="right"/>',
+			'<w:pStyle w:val="number-remapped"/>',
+		);
+	const styles = `<w:styles ${NAMESPACES}><w:style w:styleId="equation-remapped"><w:basedOn w:val="equation-parent"/></w:style><w:style w:styleId="equation-parent"><w:pPr><w:jc w:val="center"/></w:pPr></w:style><w:style w:styleId="number-remapped"><w:pPr><w:jc w:val="right"/></w:pPr></w:style></w:styles>`;
+	for (const [body, stylePart, failed] of [
+		[styleOnly, styles, []],
+		[
+			styleOnly,
+			styles.replace('w:val="center"', 'w:val="left"'),
+			['Formula Horizontal Alignment'],
+		],
+		[
+			styleOnly,
+			styles.replace('w:val="right"', 'w:val="left"'),
+			['Formula Number Horizontal Alignment'],
+		],
+		[
+			styleOnly.replace(
+				'<w:pStyle w:val="equation-remapped"/>',
+				'<w:pStyle w:val="equation-remapped"/><w:jc w:val="left"/>',
+			),
+			styles,
+			['Formula Horizontal Alignment'],
+		],
+	] as const) {
+		const results = validateFormulaLayout(documentXml(body), stylePart);
+		assert.deepEqual(
+			results.map(result => result.check),
+			CHECKS,
+		);
+		assert.deepEqual(
+			results
+				.filter(result => !result.passed)
+				.map(result => result.check),
+			failed,
+		);
+		cases++;
+	}
 	check('ordinary equation', valid);
 	check('tall fraction', table(row('(2)', fraction)));
 	check('section equation number', table(row('(2.1)')));
@@ -240,7 +284,7 @@ export async function runFormulaLayoutTests(): Promise<void> {
 			'',
 		),
 	);
-	assert.equal(cases, 37, 'all synthetic cases discovered');
+	assert.equal(cases, 41, 'all synthetic cases discovered');
 	const children = await parseMarkdownToDocx(
 		String.raw`$$x=1 (1)$$
 

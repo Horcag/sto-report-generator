@@ -34,7 +34,17 @@ try {
 	write(accepted);
 	const manifest: Record<string, unknown> = {};
 	verifyAcceptedDocxIntegrity(source, accepted, manifestPath, manifest);
-	assert.equal((manifest.tableChecks as { passed: boolean }[]).length, 3);
+	assert.deepEqual(
+		(manifest.tableChecks as { check: string }[]).map(
+			result => result.check,
+		),
+		[
+			'Table Header Horizontal Alignment',
+			'Table Grid Structure',
+			'Table Header Repeat Order',
+			'Table Caption Direct Formatting',
+		],
+	);
 	assert.ok(
 		(manifest.tableChecks as { passed: boolean }[]).every(
 			check => check.passed,

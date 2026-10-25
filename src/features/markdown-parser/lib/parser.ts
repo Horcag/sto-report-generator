@@ -23,9 +23,11 @@ import {
 import { parseInline } from './parser/handlers/inline-parser';
 import { handleStoFlag } from './parser/handlers/sto-handler';
 import { ReferenceRegistry } from './parser/reference-registry';
+import { readTableNotes } from './parser/table-notes';
 import {
 	BibItem,
 	DocxElement,
+	InlineDocxElement,
 	ParserContext,
 	ProcessTokensContext,
 	StoFlagToken,
@@ -319,12 +321,38 @@ class MarkdownParser {
 					);
 					break;
 				case 'table': {
+					const notes: InlineDocxElement[][] = [];
+					const noteBlock = readTableNotes(
+						tokensToProcess,
+						tokenIndex,
+					);
+					for (const text of noteBlock.texts) {
+						notes.push(
+							await parseInline(
+								marked.Lexer.lexInline(text),
+								this.context,
+								this.getCitationNum,
+								this.replaceRefs,
+							),
+						);
+					}
+					tokenIndex = noteBlock.lastIndex;
 					const nextContent = tokensToProcess
 						.slice(tokenIndex + 1)
 						.find(
 							next =>
 								next.type !== 'space' && next.type !== 'html',
 						);
+					const hasContinuationCaption =
+						nextContent?.type === 'paragraph' &&
+						/^Продолжение таблицы\s+(?:[А-Я]\.)?\d+(?:\.\d+)?$/u.test(
+							(nextContent as Tokens.Paragraph).text.trim(),
+						);
+					if (notes.length && hasContinuationCaption) {
+						throw new Error(
+							'Table notes must follow the final table segment.',
+						);
+					}
 					elements.push(
 						await handleTable(
 							token as Tokens.Table,
@@ -337,12 +365,8 @@ class MarkdownParser {
 									opts,
 								),
 							pendingTableWidths,
-							nextContent?.type === 'paragraph' &&
-								/^Продолжение таблицы\s+(?:[А-Я]\.)?\d+(?:\.\d+)?$/u.test(
-									(
-										nextContent as Tokens.Paragraph
-									).text.trim(),
-								),
+							hasContinuationCaption,
+							notes,
 						),
 					);
 					pendingTableWidths = undefined;

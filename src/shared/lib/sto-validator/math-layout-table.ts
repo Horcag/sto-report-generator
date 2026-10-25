@@ -1,7 +1,44 @@
-import { extractWordText } from './body-xml';
+import { getEffectiveParagraphAttribute } from '../docx/styles';
+import { extractWordText, getParagraphStyleId } from './body-xml';
+
+function hasCenteredMathParagraphs(
+	cellXml: string,
+	stylesXml: string,
+): boolean {
+	const paragraphs =
+		cellXml.match(/<w:p\b(?![^>]*\/>)[^>]*>[\s\S]*?<\/w:p>/g) ?? [];
+	const mathParagraphs = paragraphs.filter(paragraph =>
+		paragraph.includes('<m:oMath'),
+	);
+	return (
+		mathParagraphs.length > 0 &&
+		mathParagraphs.every(paragraph => {
+			const properties =
+				/<w:pPr\b[^>]*>([\s\S]*?)<\/w:pPr>/.exec(paragraph)?.[1] ?? '';
+			const direct = /<w:jc\b[^>]*\bw:val="([^"]+)"/.exec(
+				properties,
+			)?.[1];
+			if (direct !== undefined) return direct === 'center';
+			const styleId = getParagraphStyleId(paragraph);
+			if (!styleId) return false;
+			if (stylesXml)
+				return (
+					getEffectiveParagraphAttribute(
+						stylesXml,
+						styleId,
+						'jc',
+						'val',
+					) === 'center'
+				);
+			// These generator-owned IDs center display formulas. A supplied styles part
+			// always takes precedence, so a changed style cannot inherit this shortcut.
+			return /^(?:Formula|MTDisplayEquation)$/i.test(styleId);
+		})
+	);
+}
 
 /** Recognize formula wrappers, including adjacent wrappers merged by Word. */
-export function isMathLayoutTable(tableXml: string): boolean {
+export function isMathLayoutTable(tableXml: string, stylesXml = ''): boolean {
 	if (
 		(tableXml.match(/<w:tbl\b/g)?.length ?? 0) !== 1 ||
 		/<w:tblHeader\b/.test(tableXml) ||
@@ -19,7 +56,7 @@ export function isMathLayoutTable(tableXml: string): boolean {
 			extractWordText(left).trim() !== '' ||
 			!/^[,;.]?$/u.test(extractWordText(formula).trim()) ||
 			!formula.includes('<m:oMath') ||
-			!/<w:jc\b[^>]*\bw:val="center"/.test(formula) ||
+			!hasCenteredMathParagraphs(formula, stylesXml) ||
 			left.includes('<m:oMath') ||
 			right.includes('<m:oMath')
 		) {
