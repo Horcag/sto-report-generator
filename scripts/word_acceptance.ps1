@@ -400,6 +400,12 @@ function Copy-TableHeaderRow($SourceTable, $TargetTable) {
         $targetContent = $targetCell.Range.Duplicate
         $targetContent.End = [int]$targetContent.End - 1
         $targetContent.FormattedText = $sourceContent.FormattedText
+        # The excluded cell mark carries the last paragraph's formatting.
+        # Restore each paragraph independently, including alignment and spacing.
+        for ($paragraphIndex = 1; $paragraphIndex -le $sourceParagraphCount; $paragraphIndex++) {
+            $targetCell.Range.Paragraphs.Item($paragraphIndex).Format =
+                $sourceCell.Range.Paragraphs.Item($paragraphIndex).Format.Duplicate
+        }
     }
     $targetHeader.HeadingFormat = -1
 }

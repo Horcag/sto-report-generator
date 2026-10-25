@@ -235,4 +235,5 @@ if ($markerSpan[0] -ne 4 -or $markerSpan[1] -ne 4) {
     throw 'The Word end-of-cell marker was counted as visible table content on the next page.'
 }
 
+& (Join-Path $PSScriptRoot 'word_table_header_test.ps1')
 Write-Output 'Word table pagination decision tests passed.'
