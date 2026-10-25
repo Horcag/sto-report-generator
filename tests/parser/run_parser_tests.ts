@@ -12,6 +12,7 @@ import { runAppendixParserTests } from './appendix_parser_tests';
 import { runCitationLocatorTests } from './citation_locator_tests';
 import { runEntityParserTests } from './entity_parser_tests';
 import { runSemanticParserTests } from './semantic_parser_tests';
+import { runTableParserTests } from './table_parser_tests';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'parser-tests');
 
@@ -318,99 +319,11 @@ async function main(): Promise<void> {
 		/Citation source not found/,
 	);
 
-	const tableElements = await parseMarkdownToDocx(
-		String.raw`<!-- widths: 30, 70 -->
-| Заголовок 1 | Заголовок 2 <br> вторая строка |
-| :---: | ---: |
-| Ячейка 1 | Текст <br> с переносом |
-`,
-		{},
-		{ sourceDir: tempRoot },
-	);
-	const { documentXml: tableDocXml } = await packAndReadXml(
-		tableElements,
-		path.join(tempRoot, 'table-test.docx'),
-	);
-	assert.match(tableDocXml, /<w:tblHeader\/>/);
-	assert.match(tableDocXml, /<w:cantSplit\/>/);
-	assert.doesNotMatch(
-		tableDocXml,
-		/<w:b\/>/,
-		'Table headers must not be made bold implicitly',
-	);
-	assert.match(
-		tableDocXml,
-		/<w:jc w:val="center"\/>/,
-		'Markdown center alignment must be preserved in the header',
-	);
-	assert.match(tableDocXml, /<w:br\/>/);
-	assert.match(tableDocXml, /w:w="2807"/);
-
-	const tableCaptionElements = await parseMarkdownToDocx(
-		String.raw`<!-- widths: 40, 60 -->
-Таблица 1 – Тестовая таблица
-| Кол 1 | Кол 2 |
-| :--- | :--- |
-| Данные 1 | Данные 2 |
-
-## Следующий раздел
-`,
-		{},
-		{ sourceDir: tempRoot },
-	);
-	const { documentXml: tableCaptionDocXml } = await packAndReadXml(
-		tableCaptionElements,
-		path.join(tempRoot, 'table-caption-test.docx'),
-	);
-	assert.match(
-		tableCaptionDocXml,
-		/w:w="3742"/,
-		'Explicit widths before a table caption must be preserved',
-	);
-	const tableCaptionTableEnd = tableCaptionDocXml.indexOf('</w:tbl>');
-	const followingHeadingIndex = tableCaptionDocXml.indexOf(
-		paragraphContaining(tableCaptionDocXml, 'Следующий раздел'),
-	);
-	assert.ok(
-		tableCaptionTableEnd >= 0 &&
-			followingHeadingIndex > tableCaptionTableEnd,
-	);
-	assert.match(
-		tableCaptionDocXml.slice(tableCaptionTableEnd, followingHeadingIndex),
-		/<w:p><w:pPr><w:pStyle w:val="Normal"\/><w:spacing[^>]*w:line="360"[^>]*\/>[\s\S]*?<\/w:p>/,
-		'Data tables must have a blank line before the following heading',
-	);
-	const continuationElements = await parseMarkdownToDocx(
-		'Таблица 1 – Данные\n\n| Поле | Значение |\n| --- | --- |\n| A | B |\n\nПродолжение таблицы 1\n\n| Поле | Значение |\n| --- | --- |\n| C | D |',
-		{},
-		{ sourceDir: tempRoot },
-	);
-	const { documentXml: continuationXml } = await packAndReadXml(
-		continuationElements,
-		path.join(tempRoot, 'table-continuation-test.docx'),
-	);
-	assert.match(
-		paragraphContaining(continuationXml, 'Продолжение таблицы 1'),
-		/<w:pStyle w:val="TableCaption"\/>/,
-	);
-	const firstContinuedTable = continuationXml.match(
-		/<w:tbl\b[\s\S]*?<\/w:tbl>/,
-	)?.[0];
-	assert.ok(firstContinuedTable);
-	assert.match(firstContinuedTable, /<w:bottom w:val="none"/);
-	const firstContinuedTableEnd = continuationXml.indexOf('</w:tbl>');
-	const continuationCaptionIndex = continuationXml.indexOf(
-		paragraphContaining(continuationXml, 'Продолжение таблицы 1'),
-	);
-	assert.ok(
-		continuationCaptionIndex > firstContinuedTableEnd,
-		'Continuation caption must follow the first table segment',
-	);
-	assert.doesNotMatch(
-		continuationXml.slice(firstContinuedTableEnd, continuationCaptionIndex),
-		/<w:p><w:pPr><w:pStyle w:val="Normal"/,
-		'Continuation captions must remain adjacent to the preceding table segment',
-	);
+	await runTableParserTests({
+		tempRoot,
+		packAndReadXml,
+		paragraphContaining,
+	});
 
 	const headingElements = await parseMarkdownToDocx(
 		'# 1 Основной раздел\n\n## 1.1 Подраздел\n\n# 2026 год\n\n# 12 причин',

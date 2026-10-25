@@ -1,5 +1,6 @@
 import { JSDOM } from 'jsdom';
 
+import { getEffectiveBodyParagraphAttribute } from '../docx/styles';
 import type { ValidationResult } from '../sto-validator';
 
 const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
@@ -93,15 +94,31 @@ function formulaRows(table: Element): Element[][] {
 		: [];
 }
 
-function centeredFormula(cell: Element): boolean {
+function paragraphAlignment(
+	paragraph: Element,
+	stylesXml: string,
+): string | null {
+	const properties = children(paragraph, WORD_NS, 'pPr')[0];
+	const styleId =
+		wordAttribute(
+			properties && children(properties, WORD_NS, 'pStyle')[0],
+			'val',
+		) ?? 'Normal';
+	return getEffectiveBodyParagraphAttribute(
+		paragraph.outerHTML,
+		stylesXml,
+		null,
+		styleId,
+		'jc',
+		'val',
+	);
+}
+
+function centeredFormula(cell: Element, stylesXml: string): boolean {
 	return children(cell, WORD_NS, 'p').every(paragraph => {
 		if (!descendants(paragraph, MATH_NS, 'oMath').length) return true;
-		const properties = children(paragraph, WORD_NS, 'pPr')[0];
 		return (
-			wordAttribute(
-				properties && children(properties, WORD_NS, 'jc')[0],
-				'val',
-			) === 'center' &&
+			paragraphAlignment(paragraph, stylesXml) === 'center' &&
 			descendants(paragraph, MATH_NS, 'oMathPara').every(math => {
 				const mathProperties = children(
 					math,
@@ -179,13 +196,16 @@ function rightMarginIsZero(table: Element, cell: Element): boolean {
 }
 
 /** Validate identifiable equation wrappers, including rows merged into one table by Word. */
-export function validateFormulaLayout(docXml: string): ValidationResult[] {
+export function validateFormulaLayout(
+	docXml: string,
+	stylesXml = '',
+): ValidationResult[] {
 	const document = new JSDOM(docXml, { contentType: 'text/xml' }).window
 		.document;
 	const rules: [string, string, string[]][] = [
 		[
 			'Formula Horizontal Alignment',
-			'Formula paragraphs and display math must be explicitly centered.',
+			'Formula paragraphs and display math must be centered by direct or inherited formatting.',
 			[],
 		],
 		[
@@ -195,7 +215,7 @@ export function validateFormulaLayout(docXml: string): ValidationResult[] {
 		],
 		[
 			'Formula Number Horizontal Alignment',
-			'Equation number paragraphs must be explicitly right aligned.',
+			'Equation number paragraphs must be right aligned by direct or inherited formatting.',
 			[],
 		],
 		[
@@ -222,22 +242,16 @@ export function validateFormulaLayout(docXml: string): ValidationResult[] {
 		).entries()) {
 			const numberProperties = children(number, WORD_NS, 'tcPr')[0];
 			const valid = [
-				centeredFormula(formula),
+				centeredFormula(formula, stylesXml),
 				wordAttribute(
 					numberProperties &&
 						children(numberProperties, WORD_NS, 'vAlign')[0],
 					'val',
 				) === 'center',
-				children(number, WORD_NS, 'p').every(paragraph => {
-					const properties = children(paragraph, WORD_NS, 'pPr')[0];
-					return (
-						wordAttribute(
-							properties &&
-								children(properties, WORD_NS, 'jc')[0],
-							'val',
-						) === 'right'
-					);
-				}),
+				children(number, WORD_NS, 'p').every(
+					paragraph =>
+						paragraphAlignment(paragraph, stylesXml) === 'right',
+				),
 				!hasNonzeroIndent(formula) && !hasNonzeroIndent(number),
 				numberIsUpright(number),
 				rightMarginIsZero(table, number),

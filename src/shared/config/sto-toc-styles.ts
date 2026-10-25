@@ -11,6 +11,25 @@ export function createTocHeadingStyle(baseStyleId: string) {
 		basedOn: baseStyleId,
 		next: 'Normal',
 		quickFormat: true,
+		run: {
+			font: STO_RULES.typography.fontFamily,
+			size: STO_RULES.typography.fontSizeHalfPoints,
+			color: STO_RULES.typography.fontColor,
+			bold: true,
+			allCaps: true,
+		},
+		paragraph: {
+			alignment: AlignmentType.CENTER,
+			indent: { firstLine: 0 },
+			spacing: {
+				before: 0,
+				after: 240,
+				line: STO_RULES.typography.captionLineSpacingDxa,
+				lineRule: 'auto' as const,
+			},
+			outlineLevel: 9,
+			pageBreakBefore: true,
+		},
 	};
 }
 

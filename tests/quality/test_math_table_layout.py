@@ -2,7 +2,7 @@ import unittest
 from typing import ClassVar
 
 from lxml import etree
-from scripts.sto_post_build.constants import MATH_NS, TABLE_BLANK_LINE_TWIPS, WORD_NS
+from scripts.sto_post_build.constants import MATH_NS, TABLE_AFTER_SPACING_TWIPS, WORD_NS
 from scripts.sto_post_build.xml_layout import (
     add_spacing_after_data_tables,
     is_data_table,
@@ -17,7 +17,8 @@ class MathTableLayoutTests(unittest.TestCase):
     def document(self, table: str) -> etree._Element:
         return etree.fromstring(
             f'<w:document xmlns:w="{WORD_NS}" xmlns:m="{MATH_NS}"><w:body>'
-            f"{table}<w:p><w:r><w:t>Explanation</w:t></w:r></w:p>"
+            f"<w:p><w:r><w:t>Таблица 1</w:t></w:r></w:p>{table}"
+            "<w:p><w:r><w:t>Explanation</w:t></w:r></w:p>"
             "</w:body></w:document>"
         )
 
@@ -42,31 +43,19 @@ class MathTableLayoutTests(unittest.TestCase):
         self.assertTrue(is_data_table(table_element, self.namespace))
         self.assertEqual(add_spacing_after_data_tables(document), 1)
         self.assertEqual(
-            document.xpath("./w:body/w:p[1]/w:pPr/w:spacing/@w:line", namespaces=self.namespace),
-            [TABLE_BLANK_LINE_TWIPS],
+            document.xpath("./w:body/w:p[2]/w:pPr/w:spacing/@w:before", namespaces=self.namespace),
+            [TABLE_AFTER_SPACING_TWIPS],
         )
         self.assertEqual(
             "".join(document.xpath("./w:body/w:p[2]//w:t/text()", namespaces=self.namespace)),
             "Explanation",
         )
 
-    def test_existing_empty_paragraph_is_reused_as_table_spacing(self) -> None:
-        table = (
-            "<w:tbl><w:tr><w:tc><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:tc></w:tr>"
-            "<w:tr><w:tc><w:p><w:r><w:t>Value</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
-            "<w:p/>"
-        )
-        document = etree.fromstring(
-            f'<w:document xmlns:w="{WORD_NS}" xmlns:m="{MATH_NS}"><w:body>'
-            f"{table}<w:p><w:r><w:t>Heading</w:t></w:r></w:p>"
-            "</w:body></w:document>"
-        )
-        self.assertEqual(add_spacing_after_data_tables(document), 1)
-        self.assertEqual(
-            document.xpath("./w:body/w:p[1]/w:pPr/w:spacing/@w:line", namespaces=self.namespace),
-            [TABLE_BLANK_LINE_TWIPS],
-        )
-        self.assertEqual(len(document.xpath("./w:body/w:p", namespaces=self.namespace)), 2)
+    def test_existing_empty_paragraph_is_preserved(self) -> None:
+        document = self.document("<w:tbl/><w:p/>")
+        before = etree.tostring(document)
+        self.assertEqual(add_spacing_after_data_tables(document), 0)
+        self.assertEqual(etree.tostring(document), before)
 
     def test_display_wrappers_do_not_get_data_table_spacing(self) -> None:
         for borders in (
@@ -83,6 +72,26 @@ class MathTableLayoutTests(unittest.TestCase):
         table = self.layout_table().replace("<w:pPr>", '<w:pPr><w:pStyle w:val="a42"/>')
         document = self.document(table)
         self.assertEqual(add_spacing_after_data_tables(document), 0)
+
+    def test_named_formula_alignment_survives_word_removal_of_direct_jc(self) -> None:
+        for style in ("Formula", "MTDisplayEquation"):
+            with self.subTest(style=style):
+                table = self.layout_table().replace(
+                    '<w:jc w:val="center"/>', f'<w:pStyle w:val="{style}"/>'
+                )
+                document = self.document(table)
+                self.assertEqual(add_spacing_after_data_tables(document), 0)
+                wrong = self.document(table.replace("</w:pPr>", '<w:jc w:val="left"/></w:pPr>'))
+                self.assertEqual(add_spacing_after_data_tables(wrong), 1)
+
+    def test_remapped_formula_alignment_resolves_the_saved_style_graph(self) -> None:
+        table = self.layout_table().replace(
+            '<w:jc w:val="center"/>', '<w:pStyle w:val="equation-remapped"/>'
+        )
+        styles = etree.fromstring(
+            f'<w:styles xmlns:w="{WORD_NS}"><w:style w:styleId="equation-remapped"><w:basedOn w:val="equation-parent"/></w:style><w:style w:styleId="equation-parent"><w:pPr><w:jc w:val="center"/></w:pPr></w:style></w:styles>'
+        )
+        self.assertEqual(add_spacing_after_data_tables(self.document(table), styles), 0)
 
     def test_word_merged_display_rows_do_not_get_data_table_spacing(self) -> None:
         document = self.document(self.layout_table(rows=2))

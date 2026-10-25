@@ -146,6 +146,7 @@
 		}
 	},
 	"tables": {
+		"afterSpacingDxa": 120,
 		"headerAlignment": "center",
 		"headerAlignmentSource": "ГОСТ 7.32-2017, п. 6.6.6",
 		"discouragedOrdinalHeaders": ["№ п/п", "Номер по порядку"]

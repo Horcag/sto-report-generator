@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 
-import { validateTemplateStyleConformance } from '@/shared/lib/sto-template-style-validator';
+import {
+	activeHeading1StyleIds,
+	validateTemplateStyleConformance,
+} from '@/shared/lib/sto-template-style-validator';
+import { countUncenteredImageParagraphs } from '@/shared/lib/sto-validator/layout-xml';
 
 const stylesXml = `<w:styles>
 	<w:style w:styleId="Normal"><w:pPr><w:spacing w:line="360"/></w:pPr></w:style>
@@ -73,3 +77,137 @@ assert.equal(
 );
 
 console.log('Template style conformance tests passed.');
+
+const withImportedBuiltIn = stylesXml.replace(
+	'</w:styles>',
+	'<w:style w:styleId="Heading1"><w:pPr><w:jc w:val="center"/></w:pPr></w:style></w:styles>',
+);
+assert.deepEqual(activeHeading1StyleIds(withImportedBuiltIn, '<w:document/>'), [
+	'StoHeading1',
+]);
+assert.ok(
+	activeHeading1StyleIds(
+		withImportedBuiltIn,
+		'<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr></w:p>',
+	).includes('Heading1'),
+);
+for (const check of ['Figure Caption Style', 'Table Caption Style']) {
+	assert.equal(
+		hasPassed(
+			stylesXml.replace(
+				/<w:jc w:val="(center|left)"\/>/g,
+				'<w:jc w:val="$1"></w:jc>',
+			),
+			check,
+		),
+		true,
+		'Expanded XML tags must retain their effective properties',
+	);
+}
+
+const normalizedHeadings = stylesXml
+	.replace(
+		'<w:styles>',
+		'<w:styles><w:docDefaults><w:pPrDefault><w:pPr><w:spacing w:line="360"/></w:pPr></w:pPrDefault></w:docDefaults>',
+	)
+	.replace(
+		'<w:style w:styleId="Normal"><w:pPr><w:spacing w:line="360"/></w:pPr></w:style>',
+		'<w:style w:styleId="Normal"><w:pPr/></w:style>',
+	)
+	.replace(
+		'<w:spacing w:before="0" w:after="120" w:line="360"/><w:ind w:firstLine="709"/>',
+		'<w:spacing w:after="120"/>',
+	);
+assert.equal(
+	hasPassed(normalizedHeadings, 'Numbered Heading Template Style'),
+	true,
+	'Word may omit heading spacing supplied by defaults and indent supplied by numbering',
+);
+assert.equal(
+	hasPassed(
+		normalizedHeadings.replace(
+			'<w:spacing w:after="120"/>',
+			'<w:spacing w:before="120" w:after="120"/>',
+		),
+		'Numbered Heading Template Style',
+	),
+	false,
+	'direct wrong heading spacing overrides defaults',
+);
+assert.equal(
+	hasPassed(
+		normalizedHeadings.replace('w:line="360"', 'w:line="240"'),
+		'Numbered Heading Template Style',
+	),
+	false,
+	'wrong inherited heading line spacing rejected',
+);
+assert.equal(
+	hasPassed(
+		normalizedHeadings,
+		'Numbered Heading Template Style',
+		numberingXml.replace('w:firstLine="709"', 'w:firstLine="708"'),
+	),
+	false,
+	'wrong effective heading numbering indent rejected',
+);
+
+const image = (properties: string) =>
+	`<w:p><w:pPr>${properties}</w:pPr><w:r><w:drawing/></w:r></w:p>`;
+const figureStyle =
+	'<w:style w:styleId="Figure"><w:pPr><w:jc w:val="center"/></w:pPr></w:style>';
+const imageCases: Array<[string, string, string, number]> = [
+	['direct image center', image('<w:jc w:val="center"/>'), '', 0],
+	[
+		'Word normalized Figure style',
+		image('<w:pStyle w:val="Figure"/>'),
+		figureStyle,
+		0,
+	],
+	[
+		'remapped Figure style',
+		image('<w:pStyle w:val="a42"/>'),
+		figureStyle.replace('w:styleId="Figure"', 'w:styleId="a42"'),
+		0,
+	],
+	[
+		'inherited Figure center',
+		image('<w:pStyle w:val="Figure"/>'),
+		'<w:style w:styleId="Figure"><w:basedOn w:val="Base"/></w:style><w:style w:styleId="Base"><w:pPr><w:jc w:val="center"/></w:pPr></w:style>',
+		0,
+	],
+	[
+		'direct image left overrides style center',
+		image('<w:pStyle w:val="Figure"/><w:jc w:val="left"/>'),
+		figureStyle,
+		1,
+	],
+	[
+		'wrong Figure alignment',
+		image('<w:pStyle w:val="Figure"/>'),
+		figureStyle.replace('w:val="center"', 'w:val="right"'),
+		1,
+	],
+	['missing image alignment rejected', image(''), '', 1],
+	[
+		'empty paragraph cannot hide wrong image alignment',
+		'<w:p/>' + image('<w:jc w:val="left"/>'),
+		figureStyle,
+		1,
+	],
+	[
+		'nonimage paragraphs unaffected',
+		'<w:p><w:r><w:t>Text</w:t></w:r></w:p>',
+		'',
+		0,
+	],
+];
+for (const [name, paragraph, styles, expected] of imageCases)
+	assert.equal(
+		countUncenteredImageParagraphs(paragraph, styles),
+		expected,
+		name,
+	);
+console.log(
+	`Word-normalized inheritance: 4 heading and ${imageCases.length} image cases passed.`,
+);

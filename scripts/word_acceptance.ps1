@@ -400,6 +400,12 @@ function Copy-TableHeaderRow($SourceTable, $TargetTable) {
         $targetContent = $targetCell.Range.Duplicate
         $targetContent.End = [int]$targetContent.End - 1
         $targetContent.FormattedText = $sourceContent.FormattedText
+        # The excluded cell mark carries the last paragraph's formatting.
+        # Restore each paragraph independently, including alignment and spacing.
+        for ($paragraphIndex = 1; $paragraphIndex -le $sourceParagraphCount; $paragraphIndex++) {
+            $targetCell.Range.Paragraphs.Item($paragraphIndex).Format =
+                $sourceCell.Range.Paragraphs.Item($paragraphIndex).Format.Duplicate
+        }
     }
     $targetHeader.HeadingFormat = -1
 }
@@ -664,21 +670,50 @@ function Test-StyleExists($Document, $DisplayName) {
             return $true
         }
     } catch {
-        # Fall through to the built-in heading lookup below.
+        # Built-in COM names are localized; canonical OOXML names are not.
     }
 
-    # Word localizes built-in heading names in the COM model even when OOXML
-    # stores the canonical DOTM name (for example, "heading 5"). Resolve that
-    # case through WdBuiltinStyle: Heading 1 is -2, Heading 9 is -10.
-    if ($DisplayName -match '^heading ([1-9])$') {
-        $headingLevel = [int]$Matches[1]
-        $builtInStyleId = -($headingLevel + 1)
+    # WdBuiltinStyle IDs are independent of the Word UI language:
+    # https://learn.microsoft.com/en-us/office/vba/api/word.wdbuiltinstyle
+    # TOC Heading: https://learn.microsoft.com/en-us/dotnet/api/microsoft.office.interop.word.wdbuiltinstyle
+    $builtInIds = @{
+        'Normal' = -1; 'Default Paragraph Font' = -66; 'Normal Table' = -106
+        'footer' = -33; 'header' = -32; 'page number' = -42
+        'Plain Text' = -91; 'List Paragraph' = -180; 'Subtitle' = -75
+        'TOC Heading' = -267; 'footnote text' = -30; 'footnote reference' = -39
+        'Body Text' = -67; 'Hyperlink' = -86
+    }
+    $builtInStyleId = $null
+    if ($builtInIds.ContainsKey([string]$DisplayName)) {
+        $builtInStyleId = [int]$builtInIds[[string]$DisplayName]
+    } elseif ($DisplayName -match '^heading ([1-9])$') {
+        $builtInStyleId = -([int]$Matches[1] + 1)
+    } elseif ($DisplayName -match '^toc ([1-9])$') {
+        $builtInStyleId = -([int]$Matches[1] + 19)
+    }
+    if ($null -ne $builtInStyleId) {
         try {
-            $builtInStyle = $Document.Styles.Item($builtInStyleId)
-            return $builtInStyle -ne $null -and [bool]$builtInStyle.BuiltIn
+            $builtInStyle = $Document.Styles.Item([int]$builtInStyleId)
+            if ($builtInStyle -ne $null -and [bool]$builtInStyle.BuiltIn) { return $true }
         } catch {
-            return $false
+            # Check the actual persisted canonical style identity below.
         }
+    }
+
+    # Some canonical styles (for example, Table Grid and No List) have no
+    # documented WdBuiltinStyle entry. Require their exact saved style name,
+    # rather than guessing a COM ID or accepting any imported style as present.
+    try {
+        [xml]$package = [string]$Document.WordOpenXML
+        $namespaces = New-Object System.Xml.XmlNamespaceManager($package.NameTable)
+        $namespaces.AddNamespace('pkg', 'http://schemas.microsoft.com/office/2006/xmlPackage')
+        $wordNamespace = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+        $namespaces.AddNamespace('w', $wordNamespace)
+        foreach ($name in $package.SelectNodes('/pkg:package/pkg:part[@pkg:name="/word/styles.xml"]/pkg:xmlData/w:styles/w:style/w:name', $namespaces)) {
+            if ($name.GetAttribute('val', $wordNamespace) -eq [string]$DisplayName) { return $true }
+        }
+    } catch {
+        # A missing style or unavailable saved XML cannot prove existence.
     }
 
     return $false
@@ -688,10 +723,26 @@ function Get-StyleChecks($Document, $ExpectedStyles) {
     $checks = @()
     foreach ($expected in @($ExpectedStyles)) {
         $exists = Test-StyleExists $Document $expected.displayName
+        $effectiveBold = $null
+        if ($exists -and [string]$expected.styleId -in @('StoHeading1', 'StoHeading2', 'StoHeading3', 'StoHeading4', 'StoHeading5', 'StoHeading6', 'AppendixHeading', 'TOCHeading')) {
+            $headingStyle = $null
+            try { $headingStyle = $Document.Styles.Item([string]$expected.displayName) } catch {
+                if ([string]$expected.displayName -match '^heading ([1-9])$') {
+                    $headingStyle = $Document.Styles.Item(-([int]$Matches[1] + 1))
+                } elseif ([string]$expected.displayName -eq 'TOC Heading') {
+                    $headingStyle = $Document.Styles.Item(-267)
+                } else { throw }
+            }
+            $effectiveBold = [int]$headingStyle.Font.Bold
+            if ($effectiveBold -ne -1) {
+                throw "Required heading style '$($expected.displayName)' does not render bold in Word (Font.Bold=$effectiveBold)."
+            }
+        }
         $checks += [ordered]@{
             styleId = $expected.styleId
             displayName = $expected.displayName
             exists = $exists
+            effectiveBold = $effectiveBold
         }
     }
     return $checks

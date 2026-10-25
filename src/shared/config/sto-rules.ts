@@ -75,6 +75,7 @@ export interface StoRules {
 		};
 	};
 	tables: {
+		afterSpacingDxa: number;
 		headerAlignment: 'center';
 		headerAlignmentSource: string;
 		discouragedOrdinalHeaders: string[];

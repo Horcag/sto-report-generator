@@ -151,7 +151,7 @@ export function validateObjectReferences(
 			if (appendix) appendixCounters.set(appendix, counters);
 
 			const caption =
-				/^(Рисунок|Рис\.|Таблица)\s+([А-Я]\.\d+|\d+\.\d+|\d+)(?:\s+–\s+|$)/i.exec(
+				/^(Рисунок|Рис\.|Таблица)\s+([А-Я]\.\d+|\d+\.\d+|\d+)(?:\s+–\s+|\s+\(@(?:fig|tab):[a-zA-Z0-9_-]+\)\s*$|$)/i.exec(
 					line,
 				);
 			if (caption) {
@@ -313,7 +313,9 @@ export function validateObjectReferences(
 					);
 				}
 			}
-			precedingText += `${line}\n`;
+			// Captions and continuation labels are object metadata, not textual references.
+			if (!caption && !/^Продолжение\s+таблицы(?:\s|$)/iu.test(line))
+				precedingText += `${line}\n`;
 		}
 	}
 	for (const kind of ['fig', 'tab'] as const) {

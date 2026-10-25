@@ -33,7 +33,13 @@ export function createNumberedHeadingStyle(level: number): ParagraphStyle {
 		basedOn: 'Normal',
 		next: 'Normal',
 		quickFormat: true,
-		run: { bold: true, size: typography.fontSizeHalfPoints },
+		run: {
+			font: typography.fontFamily,
+			color: typography.fontColor,
+			bold: true,
+			italics: false,
+			size: typography.fontSizeHalfPoints,
+		},
 		paragraph: {
 			spacing: {
 				before: 0,

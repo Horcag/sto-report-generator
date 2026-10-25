@@ -1,4 +1,6 @@
 import { resolveWordStyleId } from '../docx/styles';
+import { hasVisibleOrUnverifiedTableBottom } from './table-bottom-border';
+import { inspectTableNoteRows } from './table-note-rows';
 
 export function decodeXmlText(value: string): string {
 	return value
@@ -15,11 +17,69 @@ export function extractWordText(xml: string): string {
 		.join('');
 }
 
+function getBalancedWordElements(xml: string, names: string): string[] {
+	const elements: string[] = [];
+	// Preserve paragraphs in wrappers such as TOC content controls, but consume a
+	// complete table before continuing so its cells never become body paragraphs.
+	const ignored = '<!--[\\s\\S]*?-->|<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';
+	const openings = new RegExp(`${ignored}|<w:(${names})\\b[^>]*>`, 'g');
+	let opening: RegExpExecArray | null;
+	while ((opening = openings.exec(xml))) {
+		if (!opening[1]) continue;
+		const start = opening.index;
+		if (opening[0].endsWith('/>')) {
+			elements.push(opening[0]);
+			continue;
+		}
+		const tags = new RegExp(
+			`${ignored}|<\\/?w:${opening[1]}\\b[^>]*>`,
+			'g',
+		);
+		tags.lastIndex = openings.lastIndex;
+		let depth = 1;
+		let tag: RegExpExecArray | null;
+		while (depth && (tag = tags.exec(xml))) {
+			if (tag[0].startsWith('<!')) continue;
+			if (tag[0].startsWith('</')) depth--;
+			else if (!tag[0].endsWith('/>')) depth++;
+		}
+		if (depth)
+			throw new Error(`Unclosed Word body element w:${opening[1]}.`);
+		elements.push(xml.slice(start, tags.lastIndex));
+		openings.lastIndex = tags.lastIndex;
+	}
+	return elements;
+}
+
 export function getBodyElements(docXml: string): string[] {
 	const bodyXml = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/.exec(docXml)?.[1];
-	return (
-		bodyXml?.match(/<w:p\b[\s\S]*?<\/w:p>|<w:tbl\b[\s\S]*?<\/w:tbl>/g) ?? []
-	);
+	return bodyXml ? getBalancedWordElements(bodyXml, 'p|tbl') : [];
+}
+
+function inspectTableNotes(table: string): {
+	form: number;
+	tableEnd: number;
+	hasNote: boolean;
+} {
+	let form = 0;
+	let tableEnd = 0;
+	const texts: string[] = [];
+	for (const row of getBalancedWordElements(table, 'tr')) {
+		let content = row;
+		for (const nested of getBalancedWordElements(row, 'tbl')) {
+			const result = inspectTableNotes(nested);
+			form += result.form;
+			tableEnd += result.tableEnd;
+			content = content.replace(nested, '');
+		}
+		texts.push(extractWordText(content).trim());
+	}
+	const notes = inspectTableNoteRows(texts);
+	return {
+		form: form + notes.invalidForms.length,
+		tableEnd: tableEnd + notes.beforeData.length,
+		hasNote: notes.noteRows.length > 0,
+	};
 }
 
 export function getReportBodyElements(docXml: string): string[] {
@@ -114,19 +174,12 @@ export function getContinuationFailures(
 			(alignment !== undefined && alignment !== 'left')
 		)
 			label++;
-		if (previousTable && isTableXml(previousTable)) {
-			const lastRow =
-				previousTable.match(/<w:tr\b[\s\S]*?<\/w:tr>/g)?.at(-1) ?? '';
-			const tableBorders =
-				/<w:tblBorders\b[\s\S]*?<\/w:tblBorders>/.exec(
-					previousTable,
-				)?.[0] ?? '';
-			const bottomBorder =
-				/<w:bottom\b[^>]*w:val="(?!nil|none)[^"]+"/.test(
-					tableBorders,
-				) || /<w:bottom\b[^>]*w:val="(?!nil|none)[^"]+"/.test(lastRow);
-			if (bottomBorder) border++;
-		}
+		if (
+			previousTable &&
+			isTableXml(previousTable) &&
+			hasVisibleOrUnverifiedTableBottom(previousTable, stylesXml, docXml)
+		)
+			border++;
 	}
 	return { label, border };
 }
@@ -142,6 +195,20 @@ export function getNoteFailures(docXml: string): {
 	let tableEnd = 0;
 	for (let index = 0; index < elements.length; index++) {
 		const element = elements[index];
+		if (isTableXml(element)) {
+			const notes = inspectTableNotes(element);
+			form += notes.form;
+			tableEnd += notes.tableEnd;
+			const next = elements[index + 1];
+			if (
+				notes.hasNote &&
+				next &&
+				isParagraphXml(next) &&
+				/^Продолжение таблицы\s+/u.test(extractWordText(next).trim())
+			)
+				tableEnd++;
+			continue;
+		}
 		if (!isParagraphXml(element)) continue;
 		const text = extractWordText(element).trim();
 		if (!/^Примечани[ея](?:\s|:|$)/iu.test(text)) continue;

@@ -1,0 +1,76 @@
+[
+	{
+		"name": "normal-text",
+		"paragraph": "<w:p><w:r><w:t>Text</w:t></w:r></w:p>",
+		"before": "120"
+	},
+	{
+		"name": "heading",
+		"paragraph": "<w:p><w:pPr><w:pStyle w:val=\"Heading2\"/></w:pPr><w:r><w:t>Section</w:t></w:r></w:p>",
+		"before": "120"
+	},
+	{
+		"name": "direct-spacing-preserved",
+		"paragraph": "<w:p><w:pPr><w:spacing w:before=\"360\" w:after=\"240\" w:line=\"360\"/></w:pPr><w:r><w:t>Text</w:t></w:r></w:p>",
+		"before": "360",
+		"unchanged": true
+	},
+	{
+		"name": "small-spacing-raised",
+		"paragraph": "<w:p><w:pPr><w:spacing w:before=\"60\" w:after=\"240\" w:line=\"360\"/></w:pPr><w:r><w:t>Text</w:t></w:r></w:p>",
+		"before": "120"
+	},
+	{
+		"name": "inherited-spacing-preserved",
+		"paragraph": "<w:p><w:pPr><w:pStyle w:val=\"WideGap\"/></w:pPr><w:r><w:t>Text</w:t></w:r></w:p>",
+		"before": null,
+		"unchanged": true
+	},
+	{
+		"name": "continuation",
+		"paragraph": "<w:p><w:pPr><w:pStyle w:val=\"TableCaption\"/></w:pPr><w:r><w:t>Продолжение таблицы 1</w:t></w:r></w:p>",
+		"before": null,
+		"unchanged": true
+	},
+	{
+		"name": "appendix-continuation-remapped",
+		"paragraph": "<w:p><w:r><w:t>Продолжение таблицы А.1</w:t></w:r></w:p>",
+		"before": null,
+		"unchanged": true
+	},
+	{
+		"name": "next-table-caption",
+		"paragraph": "<w:p><w:pPr><w:pStyle w:val=\"TableCaption\"/></w:pPr><w:r><w:t>Таблица 2 – Next</w:t></w:r></w:p>",
+		"before": "120"
+	},
+	{
+		"name": "existing-blank",
+		"paragraph": "<w:p/>",
+		"before": null,
+		"unchanged": true
+	},
+	{
+		"name": "page-break",
+		"paragraph": "<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>",
+		"before": null,
+		"unchanged": true
+	},
+	{
+		"name": "terminal-table",
+		"paragraph": "",
+		"before": null,
+		"unchanged": true
+	},
+	{
+		"name": "line-spacing-preserved",
+		"paragraph": "<w:p><w:pPr><w:spacing w:beforeLines=\"100\"/></w:pPr><w:r><w:t>Text</w:t></w:r></w:p>",
+		"before": null,
+		"unchanged": true
+	},
+	{
+		"name": "auto-spacing-preserved",
+		"paragraph": "<w:p><w:pPr><w:spacing w:beforeAutospacing=\"on\"/></w:pPr><w:r><w:t>Text</w:t></w:r></w:p>",
+		"before": null,
+		"unchanged": true
+	}
+]

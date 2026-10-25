@@ -170,7 +170,7 @@ export async function handleStoFlag(
 					const docxText = addUrlBreakOpportunities(text);
 					bibElements.push(
 						new Paragraph({
-							style: 'Normal',
+							style: 'Bibliography',
 							alignment: AlignmentType.JUSTIFIED,
 							spacing: {
 								before: 0,
@@ -240,12 +240,16 @@ export async function handleStoFlag(
 								children: [
 									new TableCell({
 										children: [
-											new Paragraph({ text: entry.term }),
+											new Paragraph({
+												style: 'TableText',
+												text: entry.term,
+											}),
 										],
 									}),
 									new TableCell({
 										children: [
 											new Paragraph({
+												style: 'TableText',
 												text: `– ${entry.explanation}${entry.unit ? `, ${entry.unit}` : ''}`,
 											}),
 										],

@@ -1,4 +1,6 @@
+import json
 import re
+from pathlib import Path
 
 WD_ALIGN_PARAGRAPH_CENTER = 1
 WD_FIND_CONTINUE = 1
@@ -11,6 +13,12 @@ DIRTY_TRUE_RE = re.compile(r'w:dirty="(?:true|1)"')
 MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 MATH_PATTERN = re.compile(r"\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$")
-TABLE_BLANK_LINE_TWIPS = "360"
+TABLE_AFTER_SPACING_TWIPS = str(
+    json.loads(
+        (Path(__file__).resolve().parents[2] / "src/shared/config/sto-rules.json").read_text(
+            encoding="utf-8"
+        )
+    )["tables"]["afterSpacingDxa"]
+)
 SMALL_TILDE = "\u02dc"
 BROKEN_REFERENCE_MARKERS = ("Источник не найден", "NOT FOUND")

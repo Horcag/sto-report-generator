@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { validateSTO } from '@/shared/lib/sto-validator';
+import { isMathLayoutTable } from '@/shared/lib/sto-validator/math-layout-table';
 
 export function runMathLayoutTableTests(): void {
 	const fixtureDir = fs.mkdtempSync(
@@ -35,7 +36,11 @@ export function runMathLayoutTableTests(): void {
 	const layoutRow = /<w:tr\b[\s\S]*?<\/w:tr>/.exec(layout)?.[0];
 	assert.ok(layoutRow);
 	const mergedLayout = layout.replace('</w:tbl>', layoutRow + '</w:tbl>');
-	const validate = (body: string) => {
+	const validate = (body: string, styles = '') => {
+		fs.writeFileSync(
+			path.join(wordDir, 'styles.xml'),
+			`<w:styles ${namespaces}>${styles}</w:styles>`,
+		);
 		fs.writeFileSync(
 			path.join(wordDir, 'document.xml'),
 			`<w:document ${namespaces}><w:body>${body}</w:body></w:document>`,
@@ -50,6 +55,88 @@ export function runMathLayoutTableTests(): void {
 		'Table Diagonal Borders',
 	];
 	try {
+		const named = layout.replace(
+			'<w:jc w:val="center"/>',
+			'<w:pStyle w:val="Formula"/>',
+		);
+		const namedStyle =
+			'<w:style w:styleId="Formula"><w:name w:val="MTDisplayEquation"/><w:pPr><w:jc w:val="center"/></w:pPr></w:style>';
+		for (const id of ['Formula', 'MTDisplayEquation']) {
+			assert.equal(
+				isMathLayoutTable(
+					named.replace('w:val="Formula"', `w:val="${id}"`),
+				),
+				true,
+				`${id} stable styleless fallback`,
+			);
+		}
+		for (const [name, wrapper, styles] of [
+			['Word named formula', named, namedStyle],
+			[
+				'Word remapped formula',
+				named.replace('w:val="Formula"', 'w:val="a42"'),
+				namedStyle.replace('w:styleId="Formula"', 'w:styleId="a42"'),
+			],
+			[
+				'inherited formula center',
+				named,
+				'<w:style w:styleId="Formula"><w:basedOn w:val="Base"/></w:style><w:style w:styleId="Base"><w:pPr><w:jc w:val="center"/></w:pPr></w:style>',
+			],
+		] as const) {
+			assert.equal(isMathLayoutTable(wrapper, styles), true, name);
+			const results = validate(wrapper, styles);
+			for (const check of [
+				...checks,
+				'Empty Table Cells',
+				'Table Header Horizontal Alignment',
+				'Table Grid Structure',
+				'Table Header Repeat Order',
+			]) {
+				const result = results.find(item => item.check === check);
+				assert.ok(result, `${name}: discover ${check}`);
+				assert.equal(result.passed, true, `${name}: ${check}`);
+			}
+		}
+		for (const [name, wrapper, styles] of [
+			[
+				'changed Formula style is authoritative',
+				named,
+				namedStyle.replace('w:val="center"', 'w:val="right"'),
+			],
+			[
+				'direct alignment overrides Formula',
+				named.replace('<w:pStyle', '<w:jc w:val="right"/><w:pStyle'),
+				namedStyle,
+			],
+			[
+				'unknown remapped style cannot be guessed',
+				named.replace('w:val="Formula"', 'w:val="a42"'),
+				'',
+			],
+			[
+				'another centered paragraph cannot hide left math',
+				layout.replace(
+					'<w:pPr><w:jc w:val="center"/></w:pPr>' + math,
+					'<w:pPr><w:jc w:val="center"/></w:pPr></w:p><w:p><w:pPr><w:jc w:val="left"/></w:pPr>' +
+						math,
+				),
+				'',
+			],
+			[
+				'data text still prevents exemption',
+				named.replace(cell(''), cell(text('Data heading'))),
+				namedStyle,
+			],
+		] as const) {
+			assert.equal(isMathLayoutTable(wrapper, styles), false, name);
+			assert.equal(
+				validate(wrapper, styles).find(
+					item => item.check === 'Table Header Horizontal Alignment',
+				)?.passed,
+				false,
+				`${name}: data header remains checked`,
+			);
+		}
 		const dataTable = table(
 			row(cell(math) + cell(text('Время.'))) +
 				row(cell(text('1')) + cell(text('2'))),

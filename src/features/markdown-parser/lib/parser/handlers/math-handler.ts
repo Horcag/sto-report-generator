@@ -57,6 +57,7 @@ export async function handleBlockMath(
 		displayMath.push(displayProperties);
 		displayMath.push(formulaMath);
 		const formulaParagraph = new Paragraph({
+			style: 'Formula',
 			alignment: AlignmentType.CENTER,
 			indent: { firstLine: 0, left: 0, right: 0 },
 			spacing: { before: 0, after: 0, line: 240 },
@@ -77,6 +78,7 @@ export async function handleBlockMath(
 					margins,
 					children: [
 						new Paragraph({
+							style: 'Formula',
 							indent: { firstLine: 0, left: 0, right: 0 },
 							spacing: { before: 0, after: 0, line: 240 },
 							keepNext,
@@ -94,6 +96,7 @@ export async function handleBlockMath(
 					margins,
 					children: [
 						new Paragraph({
+							style: 'TableTextRight',
 							alignment: AlignmentType.RIGHT,
 							indent: { firstLine: 0, left: 0, right: 0 },
 							spacing: { before: 0, after: 0, line: 240 },

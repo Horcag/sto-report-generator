@@ -27,6 +27,7 @@ import {
 	StoStylePreset,
 } from '@/shared/config';
 import {
+	applyDataTableSpacing,
 	applyFigureDocumentPolicy,
 	clearDirtyFieldFlags,
 } from '@/shared/lib/docx';
@@ -184,9 +185,18 @@ export async function buildReport(
 					default: new Footer({
 						children: [
 							new Paragraph({
+								style:
+									stylePreset === 'samara-template-2022'
+										? 'a8'
+										: 'Normal',
 								alignment: AlignmentType.CENTER,
 								children: [
 									new TextRun({
+										style:
+											stylePreset ===
+											'samara-template-2022'
+												? 'aa'
+												: undefined,
 										children: [PageNumber.CURRENT],
 									}),
 								],
@@ -215,7 +225,9 @@ export async function buildReport(
 	}
 
 	const buffer = clearDirtyFieldFlags(
-		applyFigureDocumentPolicy(await Packer.toBuffer(doc), figurePlans),
+		applyDataTableSpacing(
+			applyFigureDocumentPolicy(await Packer.toBuffer(doc), figurePlans),
+		),
 	);
 	fs.writeFileSync(outputPath, buffer);
 	fs.writeFileSync(

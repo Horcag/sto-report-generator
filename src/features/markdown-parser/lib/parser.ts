@@ -23,9 +23,11 @@ import {
 import { parseInline } from './parser/handlers/inline-parser';
 import { handleStoFlag } from './parser/handlers/sto-handler';
 import { ReferenceRegistry } from './parser/reference-registry';
+import { readTableNotes } from './parser/table-notes';
 import {
 	BibItem,
 	DocxElement,
+	InlineDocxElement,
 	ParserContext,
 	ProcessTokensContext,
 	StoFlagToken,
@@ -39,21 +41,6 @@ import {
 marked.use({
 	extensions: [stoExtension, mathExtension, stoInlineListExtension],
 });
-
-const TABLE_BLANK_LINE_DXA = 360;
-
-function createTableBlankLine(): Paragraph {
-	return new Paragraph({
-		style: 'Normal',
-		spacing: {
-			before: 0,
-			after: 0,
-			line: TABLE_BLANK_LINE_DXA,
-			lineRule: 'auto',
-		},
-		indent: { firstLine: 0 },
-	});
-}
 
 function stripExpectedHeadingNumber(
 	tokens: Token[] | undefined,
@@ -334,6 +321,22 @@ class MarkdownParser {
 					);
 					break;
 				case 'table': {
+					const notes: InlineDocxElement[][] = [];
+					const noteBlock = readTableNotes(
+						tokensToProcess,
+						tokenIndex,
+					);
+					for (const text of noteBlock.texts) {
+						notes.push(
+							await parseInline(
+								marked.Lexer.lexInline(text),
+								this.context,
+								this.getCitationNum,
+								this.replaceRefs,
+							),
+						);
+					}
+					tokenIndex = noteBlock.lastIndex;
 					const nextContent = tokensToProcess
 						.slice(tokenIndex + 1)
 						.find(
@@ -345,6 +348,11 @@ class MarkdownParser {
 						/^Продолжение таблицы\s+(?:[А-Я]\.)?\d+(?:\.\d+)?$/u.test(
 							(nextContent as Tokens.Paragraph).text.trim(),
 						);
+					if (notes.length && hasContinuationCaption) {
+						throw new Error(
+							'Table notes must follow the final table segment.',
+						);
+					}
 					elements.push(
 						await handleTable(
 							token as Tokens.Table,
@@ -358,11 +366,9 @@ class MarkdownParser {
 								),
 							pendingTableWidths,
 							hasContinuationCaption,
+							notes,
 						),
 					);
-					if (!hasContinuationCaption) {
-						elements.push(createTableBlankLine());
-					}
 					pendingTableWidths = undefined;
 					break;
 				}
