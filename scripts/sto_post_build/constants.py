@@ -11,6 +11,6 @@ DIRTY_TRUE_RE = re.compile(r'w:dirty="(?:true|1)"')
 MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 MATH_PATTERN = re.compile(r"\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$")
-SPACING_AFTER_TABLE_TWIPS = "120"
+TABLE_BLANK_LINE_TWIPS = "360"
 SMALL_TILDE = "\u02dc"
 BROKEN_REFERENCE_MARKERS = ("Источник не найден", "NOT FOUND")

@@ -40,6 +40,21 @@ marked.use({
 	extensions: [stoExtension, mathExtension, stoInlineListExtension],
 });
 
+const TABLE_BLANK_LINE_DXA = 360;
+
+function createTableBlankLine(): Paragraph {
+	return new Paragraph({
+		style: 'Normal',
+		spacing: {
+			before: 0,
+			after: 0,
+			line: TABLE_BLANK_LINE_DXA,
+			lineRule: 'auto',
+		},
+		indent: { firstLine: 0 },
+	});
+}
+
 function stripExpectedHeadingNumber(
 	tokens: Token[] | undefined,
 	expectedNumber: string,
@@ -325,6 +340,11 @@ class MarkdownParser {
 							next =>
 								next.type !== 'space' && next.type !== 'html',
 						);
+					const hasContinuationCaption =
+						nextContent?.type === 'paragraph' &&
+						/^Продолжение таблицы\s+(?:[А-Я]\.)?\d+(?:\.\d+)?$/u.test(
+							(nextContent as Tokens.Paragraph).text.trim(),
+						);
 					elements.push(
 						await handleTable(
 							token as Tokens.Table,
@@ -337,14 +357,12 @@ class MarkdownParser {
 									opts,
 								),
 							pendingTableWidths,
-							nextContent?.type === 'paragraph' &&
-								/^Продолжение таблицы\s+(?:[А-Я]\.)?\d+(?:\.\d+)?$/u.test(
-									(
-										nextContent as Tokens.Paragraph
-									).text.trim(),
-								),
+							hasContinuationCaption,
 						),
 					);
+					if (!hasContinuationCaption) {
+						elements.push(createTableBlankLine());
+					}
 					pendingTableWidths = undefined;
 					break;
 				}

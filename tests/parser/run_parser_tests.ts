@@ -352,6 +352,8 @@ async function main(): Promise<void> {
 | Кол 1 | Кол 2 |
 | :--- | :--- |
 | Данные 1 | Данные 2 |
+
+## Следующий раздел
 `,
 		{},
 		{ sourceDir: tempRoot },
@@ -364,6 +366,19 @@ async function main(): Promise<void> {
 		tableCaptionDocXml,
 		/w:w="3742"/,
 		'Explicit widths before a table caption must be preserved',
+	);
+	const tableCaptionTableEnd = tableCaptionDocXml.indexOf('</w:tbl>');
+	const followingHeadingIndex = tableCaptionDocXml.indexOf(
+		paragraphContaining(tableCaptionDocXml, 'Следующий раздел'),
+	);
+	assert.ok(
+		tableCaptionTableEnd >= 0 &&
+			followingHeadingIndex > tableCaptionTableEnd,
+	);
+	assert.match(
+		tableCaptionDocXml.slice(tableCaptionTableEnd, followingHeadingIndex),
+		/<w:p><w:pPr><w:pStyle w:val="Normal"\/><w:spacing[^>]*w:line="360"[^>]*\/>[\s\S]*?<\/w:p>/,
+		'Data tables must have a blank line before the following heading',
 	);
 	const continuationElements = await parseMarkdownToDocx(
 		'Таблица 1 – Данные\n\n| Поле | Значение |\n| --- | --- |\n| A | B |\n\nПродолжение таблицы 1\n\n| Поле | Значение |\n| --- | --- |\n| C | D |',
@@ -383,6 +398,19 @@ async function main(): Promise<void> {
 	)?.[0];
 	assert.ok(firstContinuedTable);
 	assert.match(firstContinuedTable, /<w:bottom w:val="none"/);
+	const firstContinuedTableEnd = continuationXml.indexOf('</w:tbl>');
+	const continuationCaptionIndex = continuationXml.indexOf(
+		paragraphContaining(continuationXml, 'Продолжение таблицы 1'),
+	);
+	assert.ok(
+		continuationCaptionIndex > firstContinuedTableEnd,
+		'Continuation caption must follow the first table segment',
+	);
+	assert.doesNotMatch(
+		continuationXml.slice(firstContinuedTableEnd, continuationCaptionIndex),
+		/<w:p><w:pPr><w:pStyle w:val="Normal"/,
+		'Continuation captions must remain adjacent to the preceding table segment',
+	);
 
 	const headingElements = await parseMarkdownToDocx(
 		'# 1 Основной раздел\n\n## 1.1 Подраздел\n\n# 2026 год\n\n# 12 причин',

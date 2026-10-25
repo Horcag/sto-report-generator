@@ -2,7 +2,7 @@ import unittest
 from typing import ClassVar
 
 from lxml import etree
-from scripts.sto_post_build.constants import MATH_NS, SPACING_AFTER_TABLE_TWIPS, WORD_NS
+from scripts.sto_post_build.constants import MATH_NS, TABLE_BLANK_LINE_TWIPS, WORD_NS
 from scripts.sto_post_build.xml_layout import (
     add_spacing_after_data_tables,
     is_data_table,
@@ -42,9 +42,31 @@ class MathTableLayoutTests(unittest.TestCase):
         self.assertTrue(is_data_table(table_element, self.namespace))
         self.assertEqual(add_spacing_after_data_tables(document), 1)
         self.assertEqual(
-            document.xpath("./w:body/w:p/w:pPr/w:spacing/@w:before", namespaces=self.namespace),
-            [SPACING_AFTER_TABLE_TWIPS],
+            document.xpath("./w:body/w:p[1]/w:pPr/w:spacing/@w:line", namespaces=self.namespace),
+            [TABLE_BLANK_LINE_TWIPS],
         )
+        self.assertEqual(
+            "".join(document.xpath("./w:body/w:p[2]//w:t/text()", namespaces=self.namespace)),
+            "Explanation",
+        )
+
+    def test_existing_empty_paragraph_is_reused_as_table_spacing(self) -> None:
+        table = (
+            "<w:tbl><w:tr><w:tc><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:tc></w:tr>"
+            "<w:tr><w:tc><w:p><w:r><w:t>Value</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
+            "<w:p/>"
+        )
+        document = etree.fromstring(
+            f'<w:document xmlns:w="{WORD_NS}" xmlns:m="{MATH_NS}"><w:body>'
+            f"{table}<w:p><w:r><w:t>Heading</w:t></w:r></w:p>"
+            "</w:body></w:document>"
+        )
+        self.assertEqual(add_spacing_after_data_tables(document), 1)
+        self.assertEqual(
+            document.xpath("./w:body/w:p[1]/w:pPr/w:spacing/@w:line", namespaces=self.namespace),
+            [TABLE_BLANK_LINE_TWIPS],
+        )
+        self.assertEqual(len(document.xpath("./w:body/w:p", namespaces=self.namespace)), 2)
 
     def test_display_wrappers_do_not_get_data_table_spacing(self) -> None:
         for borders in (

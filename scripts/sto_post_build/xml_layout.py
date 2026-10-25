@@ -4,17 +4,11 @@ from typing import Any
 
 from lxml import etree
 
-from .constants import MATH_NS, SPACING_AFTER_TABLE_TWIPS, WORD_NS
+from .constants import MATH_NS, TABLE_BLANK_LINE_TWIPS, WORD_NS
 from .docx_package import read_docx_part, rewrite_docx_part
 
 WORD = f"{{{WORD_NS}}}"
 SIGNATURE_COLUMN_WIDTHS = ("4263", "2916", "1675")
-
-
-def paragraph_style(paragraph: Any) -> str:
-    namespace = {"w": WORD_NS}
-    values = paragraph.xpath("./w:pPr/w:pStyle/@w:val", namespaces=namespace)
-    return values[0] if values else ""
 
 
 def paragraph_has_visible_content(paragraph: Any) -> bool:
@@ -22,6 +16,12 @@ def paragraph_has_visible_content(paragraph: Any) -> bool:
     text = "".join(paragraph.xpath(".//w:t/text()", namespaces=namespace)).strip()
     has_drawing = bool(paragraph.xpath(".//w:drawing", namespaces=namespace))
     return bool(text or has_drawing)
+
+
+def paragraph_style(paragraph: Any) -> str:
+    namespace = {"w": WORD_NS}
+    values = paragraph.xpath("./w:pPr/w:pStyle/@w:val", namespaces=namespace)
+    return values[0] if values else ""
 
 
 def element_text(element: Any) -> str:
@@ -36,21 +36,10 @@ def report_body_elements(elements: list[Any]) -> list[Any]:
     return elements
 
 
-def set_paragraph_space_before(paragraph: Any, value: str) -> None:
-    paragraph_properties = paragraph.find(f"{{{WORD_NS}}}pPr")
-    if paragraph_properties is None:
-        paragraph_properties = etree.Element(f"{{{WORD_NS}}}pPr")
-        paragraph.insert(0, paragraph_properties)
-
-    spacing = paragraph_properties.find(f"{{{WORD_NS}}}spacing")
-    if spacing is None:
-        spacing = etree.Element(f"{{{WORD_NS}}}spacing")
-        paragraph_properties.append(spacing)
-
-    before_key = f"{{{WORD_NS}}}before"
-    current = spacing.get(before_key)
-    if current is None or int(current) < int(value):
-        spacing.set(before_key, value)
+def is_continuation_caption(paragraph: Any) -> bool:
+    return paragraph_style(paragraph) == "TableCaption" and element_text(paragraph).startswith(
+        "Продолжение таблицы "
+    )
 
 
 def is_math_layout_table(element: Any, namespace: dict[str, str]) -> bool:
@@ -91,21 +80,53 @@ def is_data_table(element: Any, namespace: dict[str, str]) -> bool:
     return element.tag == f"{WORD}tbl" and not is_math_layout_table(element, namespace)
 
 
-def find_next_visible_paragraph(elements: list[Any], table_index: int) -> Any | None:
-    for following in elements[table_index + 1 :]:
-        if following.tag == f"{{{WORD_NS}}}tbl":
-            return None
-        if following.tag == f"{{{WORD_NS}}}p" and paragraph_has_visible_content(following):
-            return following
-    return None
+def make_table_blank_line() -> Any:
+    paragraph = etree.Element(f"{WORD}p")
+    properties = etree.SubElement(paragraph, f"{WORD}pPr")
+    style = etree.SubElement(properties, f"{WORD}pStyle")
+    style.set(f"{WORD}val", "Normal")
+    spacing = etree.SubElement(properties, f"{WORD}spacing")
+    spacing.set(f"{WORD}before", "0")
+    spacing.set(f"{WORD}after", "0")
+    spacing.set(f"{WORD}line", TABLE_BLANK_LINE_TWIPS)
+    spacing.set(f"{WORD}lineRule", "auto")
+    indent = etree.SubElement(properties, f"{WORD}ind")
+    indent.set(f"{WORD}firstLine", "0")
+    return paragraph
 
 
-def should_space_after_table(paragraph: Any) -> bool:
-    style = paragraph_style(paragraph)
-    return not style.startswith("Heading") and style not in {
-        "TableCaption",
-        "FigureCaption",
-    }
+def normalize_table_blank_line(paragraph: Any) -> bool:
+    properties = paragraph.find(f"{WORD}pPr")
+    if properties is None:
+        properties = etree.Element(f"{WORD}pPr")
+        paragraph.insert(0, properties)
+
+    spacing = properties.find(f"{WORD}spacing")
+    if spacing is None:
+        spacing = etree.Element(f"{WORD}spacing")
+        properties.append(spacing)
+
+    changed = False
+    for name, value in {
+        "before": "0",
+        "after": "0",
+        "line": TABLE_BLANK_LINE_TWIPS,
+        "lineRule": "auto",
+    }.items():
+        key = f"{WORD}{name}"
+        if spacing.get(key) != value:
+            spacing.set(key, value)
+            changed = True
+
+    indent = properties.find(f"{WORD}ind")
+    if indent is None:
+        indent = etree.Element(f"{WORD}ind")
+        properties.append(indent)
+    first_line_key = f"{WORD}firstLine"
+    if indent.get(first_line_key) != "0":
+        indent.set(first_line_key, "0")
+        changed = True
+    return changed
 
 
 def add_spacing_after_data_tables(document_root: Any) -> int:
@@ -116,14 +137,32 @@ def add_spacing_after_data_tables(document_root: Any) -> int:
 
     elements = report_body_elements(list(body))
     changed = 0
-    for index, element in enumerate(elements):
+    for element in elements:
         if not is_data_table(element, namespace):
             continue
 
-        following = find_next_visible_paragraph(elements, index)
-        if following is not None and should_space_after_table(following):
-            set_paragraph_space_before(following, SPACING_AFTER_TABLE_TWIPS)
-            changed += 1
+        parent = element.getparent()
+        if parent is None:
+            continue
+        element_position = parent.index(element)
+        following = parent[element_position + 1] if element_position + 1 < len(parent) else None
+        if (
+            following is not None
+            and following.tag == f"{WORD}p"
+            and is_continuation_caption(following)
+        ):
+            continue
+        if (
+            following is not None
+            and following.tag == f"{WORD}p"
+            and not paragraph_has_visible_content(following)
+        ):
+            if normalize_table_blank_line(following):
+                changed += 1
+            continue
+
+        parent.insert(element_position + 1, make_table_blank_line())
+        changed += 1
 
     return changed
 

@@ -1440,6 +1440,13 @@
 <w:p>
 <w:pPr>
 <w:pStyle w:val="Normal"/>
+<w:spacing w:after="0" w:before="0" w:line="360" w:lineRule="auto"/>
+<w:ind w:firstLine="0"/>
+</w:pPr>
+</w:p>
+<w:p>
+<w:pPr>
+<w:pStyle w:val="Normal"/>
 </w:pPr>
 <w:r>
 <w:t xml:space="preserve">Пример неупорядоченного списка с правильным отступом:</w:t>
