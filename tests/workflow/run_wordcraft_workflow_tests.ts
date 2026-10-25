@@ -11,6 +11,8 @@ const directory = fs.mkdtempSync(
 	path.join(os.tmpdir(), 'sto-wordcraft-workflow-'),
 );
 const tsx = require.resolve('tsx/cli');
+// Nested CLI processes include instrumented startup and coverage flushing.
+const cliTimeout = 90_000;
 let cases = 0;
 
 function cli(args: string[]) {
@@ -18,7 +20,7 @@ function cli(args: string[]) {
 		cwd: process.cwd(),
 		encoding: 'utf8',
 		shell: false,
-		timeout: 30_000,
+		timeout: cliTimeout,
 	});
 	if (result.error) throw result.error;
 	return result;
@@ -160,7 +162,7 @@ async function main(): Promise<void> {
 			{
 				encoding: 'utf8',
 				shell: false,
-				timeout: 30_000,
+				timeout: cliTimeout,
 				env: {
 					...process.env,
 					WORDCRAFT_CLI: 'sto-missing-wordcraft-cli',
