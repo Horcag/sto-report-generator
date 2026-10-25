@@ -1,3 +1,4 @@
+import { runBibliographyCommand } from '@/app/bibliography-command';
 import { buildReport } from '@/app/builder';
 import {
 	optionBoolean,
@@ -31,6 +32,7 @@ const COMMANDS = new Set([
 	'build',
 	'new',
 	'check',
+	'bibliography',
 	'generate',
 	'audit',
 	'preview',
@@ -127,7 +129,7 @@ function runCheck(args: ParsedArgs): void {
 	}
 
 	const result = runSourcePreflight(reportDir, {
-		strict: optionBoolean(args, 'strict') ?? false,
+		strict: optionBoolean(args, 'strict'),
 	});
 	if (!result.passed) {
 		throw new Error(
@@ -282,6 +284,9 @@ async function main(): Promise<void> {
 			break;
 		case 'check':
 			runCheck(args);
+			break;
+		case 'bibliography':
+			runBibliographyCommand(args);
 			break;
 		case 'generate':
 			await runGenerate(args);

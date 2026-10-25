@@ -116,7 +116,7 @@ function findSymbolicSignIndexes(prose: string): Set<number> {
 	return indexes;
 }
 
-export function createSourceTextContext(content: string): SourceTextContext {
+export function maskCitationLiterals(content: string): string {
 	const chars = maskSourceCodeFences(content).split('');
 	maskPattern(chars, content, /\$\$[\s\S]*?\$\$/g);
 	maskPattern(chars, content, /`[^`\r\n]+`/g);
@@ -124,6 +124,11 @@ export function createSourceTextContext(content: string): SourceTextContext {
 	maskPattern(chars, content, /!\[[^\]\r\n]*]\([^)\r\n]+\)/g);
 	maskMarkdownLinkTargets(chars, content);
 	maskPattern(chars, content, /<!--[\s\S]*?-->/g);
+	return chars.join('');
+}
+
+export function createSourceTextContext(content: string): SourceTextContext {
+	const chars = maskCitationLiterals(content).split('');
 	maskPattern(chars, content, /<br\s*\/?>/gi);
 	maskPattern(chars, content, /^\s*\|.*$/gm);
 	maskPattern(chars, content, /\b(?:https?:\/\/|www\.)[^\s<>)]+/gi);

@@ -58,6 +58,8 @@ const tests = [
 	['tests/scaffold/run_scaffold_tests.ts'],
 	['tests/bibliography/bib-gost.test.ts'],
 	['tests/bibliography/bib-areas.test.ts'],
+	['tests/bibliography/bib-evidence.test.ts'],
+	['tests/bibliography/bib-presentation.test.ts'],
 	['tests/generator/toc_regression.ts'],
 	['tests/generator/run_generator_snapshot_test.ts'],
 	['tests/quality/lcov_gate.test.ts'],

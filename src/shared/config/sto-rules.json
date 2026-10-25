@@ -231,14 +231,14 @@
 				["year"],
 				["address", "location"],
 				["publisher"],
-				["pages", "numpages"]
+				["pages", "numpages", "extent"]
 			],
 			"article": [
 				["title"],
 				["author"],
 				["journal"],
 				["year"],
-				["pages"]
+				["pages", "eid", "articleno"]
 			],
 			"inproceedings": [
 				["title"],
@@ -246,7 +246,7 @@
 				["booktitle"],
 				["address", "location"],
 				["year"],
-				["pages"]
+				["pages", "eid", "articleno"]
 			],
 			"incollection": [
 				["title"],
@@ -254,7 +254,7 @@
 				["booktitle"],
 				["address", "location"],
 				["year"],
-				["pages"]
+				["pages", "eid", "articleno"]
 			],
 			"misc": [["title"], ["url"]],
 			"online": [["title"], ["url"]],
@@ -273,7 +273,7 @@
 				["institution", "school"],
 				["address", "location"],
 				["year"],
-				["pages", "numpages"]
+				["pages", "numpages", "extent"]
 			],
 			"phdthesis": [
 				["title"],
@@ -282,7 +282,7 @@
 				["institution", "school"],
 				["address", "location"],
 				["year"],
-				["pages", "numpages"]
+				["pages", "numpages", "extent"]
 			],
 			"mastersthesis": [
 				["title"],
@@ -291,7 +291,7 @@
 				["institution", "school"],
 				["address", "location"],
 				["year"],
-				["pages", "numpages"]
+				["pages", "numpages", "extent"]
 			],
 			"standard": [["number"], ["title"], ["year"]],
 			"norm": [["title"], ["year"]],

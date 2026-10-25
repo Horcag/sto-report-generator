@@ -51,4 +51,20 @@ export async function runCitationLocatorTests(
 			),
 		/Invalid citation \[@\]: expected a BibTeX key/,
 	);
+	const tableChildren = await parseMarkdownToDocx(
+		'| Источник [@second] | Значение |\n|---|---|\n| Метод [@first] | 1 |\n\n\\begin{sto_bibliography}\n\\end{sto_bibliography}',
+		{ bibliography: bibPath },
+		{ sourceDir: tempRoot },
+	);
+	const tableSerialized = JSON.stringify(tableChildren);
+	assert.match(
+		tableSerialized,
+		/Источник \[1\]/,
+		'The visible header is cited before body cells',
+	);
+	assert.match(tableSerialized, /Метод \[2\]/);
+	assert.ok(
+		tableSerialized.indexOf('Второй источник') <
+			tableSerialized.indexOf('Первый источник'),
+	);
 }

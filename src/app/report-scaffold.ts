@@ -188,6 +188,7 @@ ${profile.startsWith('vkr-') ? 'vkrApprovalName: "Фамилия Имя Отче
 ${options.supervisorRole ? `supervisorRole: "${options.supervisorRole}"\n` : ''}${options.hideSignatures || profile === 'lab' ? 'hideSignatures: true\n' : ''}city: "Самара"
 year: ${year}
 ${bibliographyLine.trimEnd()}
+bibliographyEvidence: required
 ---
 `;
 }
@@ -274,7 +275,7 @@ ${TEX_END}{sto_enum}
 
 Объект исследования – ... . Предмет исследования – ... .
 
-Методическая основа работы включает ... [@example2026].
+Методическая основа работы включает ... .
 `;
 }
 
@@ -364,15 +365,7 @@ ${TEX_END}{sto_bibliography}
 }
 
 function referencesTemplate(): string {
-	return String.raw`@article{example2026,
-  author = {Иванов, И. И.},
-  title = {Пример источника для шаблона отчета},
-  journal = {Вестник примеров},
-  year = {2026},
-  number = {1},
-  pages = {1--10}
-}
-`;
+	return '% Add sources checked against their original publication or repository record.\n';
 }
 
 export function scaffoldReport(

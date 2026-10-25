@@ -267,6 +267,11 @@ for (const entryType of [
 		'series',
 		'seriesnumber',
 	]) {
+		if (
+			['inproceedings', 'incollection'].includes(entryType) &&
+			field === 'series'
+		)
+			continue;
 		assert.throws(
 			() =>
 				formatBibItem({

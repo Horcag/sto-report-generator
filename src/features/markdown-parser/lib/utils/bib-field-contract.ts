@@ -42,6 +42,8 @@ const TYPE_FIELDS: Record<string, string[]> = {
 		'number',
 		'issue',
 		'pages',
+		'eid',
+		'articleno',
 	],
 	inproceedings: [
 		...AUTHOR_FIELDS,
@@ -49,6 +51,12 @@ const TYPE_FIELDS: Record<string, string[]> = {
 		'booktitle',
 		...PLACE_FIELDS,
 		'organization',
+		'editor',
+		'volume',
+		'series',
+		'seriesnumber',
+		'eid',
+		'articleno',
 		'pages',
 	],
 	incollection: [
@@ -57,6 +65,12 @@ const TYPE_FIELDS: Record<string, string[]> = {
 		'booktitle',
 		...PLACE_FIELDS,
 		'organization',
+		'editor',
+		'volume',
+		'series',
+		'seriesnumber',
+		'eid',
+		'articleno',
 		'pages',
 	],
 	book: [
@@ -87,6 +101,7 @@ const TYPE_FIELDS: Record<string, string[]> = {
 		...PHYSICAL_FIELDS,
 	],
 	thesis: [
+		'responsibility',
 		...AUTHOR_FIELDS,
 		'howpublished',
 		'type',
@@ -96,16 +111,24 @@ const TYPE_FIELDS: Record<string, string[]> = {
 		'location',
 		...PHYSICAL_FIELDS,
 	],
-	inonline: [...AUTHOR_FIELDS, 'website', 'booktitle'],
+	inonline: [
+		...AUTHOR_FIELDS,
+		...PLACE_FIELDS,
+		'website',
+		'booktitle',
+		'websiteresponsibility',
+	],
 	report: [
 		...AUTHOR_FIELDS,
 		'howpublished',
 		'type',
 		'institution',
+		'version',
 		'number',
 		...PHYSICAL_FIELDS,
 	],
 	online: [
+		'version',
 		...AUTHOR_FIELDS,
 		'howpublished',
 		'type',
@@ -124,6 +147,9 @@ const KNOWN_FIELDS = new Set([
 	...COMMON_FIELDS,
 	...Object.values(TYPE_FIELDS).flat(),
 	'entrysubtype',
+	'eprint',
+	'archiveprefix',
+	'primaryclass',
 ]);
 
 /** Known BibTeX fields are accepted only where their value is consumed. */
