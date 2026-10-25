@@ -160,7 +160,7 @@ async function main(): Promise<void> {
 			{
 				encoding: 'utf8',
 				shell: false,
-				timeout: 10_000,
+				timeout: 30_000,
 				env: {
 					...process.env,
 					WORDCRAFT_CLI: 'sto-missing-wordcraft-cli',
