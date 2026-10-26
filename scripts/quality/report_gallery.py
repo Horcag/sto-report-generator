@@ -92,6 +92,12 @@ def inputs(root: Path) -> dict[str, str]:
         "uv.lock",
         *(entry[2] for entry in CORPUS),
     ]
+    return {
+        p.relative_to(root).as_posix(): input_digest(p) for p in sorted(source_files(root, paths))
+    }
+
+
+def source_files(root: Path, paths: list[str]) -> set[Path]:
     files: set[Path] = set()
     for name in paths:
         path = root / name
@@ -100,24 +106,21 @@ def inputs(root: Path) -> dict[str, str]:
                 p
                 for p in path.rglob("*")
                 if p.is_file()
+                and not p.name.lower().endswith(
+                    (".figures.json", ".acceptance.json", ".wordcraft.json")
+                )
                 and p.suffix
-                in {
-                    ".ts",
-                    ".py",
-                    ".json",
-                    ".md",
-                    ".bib",
-                    ".svg",
-                    ".png",
-                    ".jpg",
-                    ".jpeg",
-                }
-                and "__pycache__" not in p.parts
-                and "build" not in p.parts
+                in {".ts", ".py", ".json", ".md", ".bib", ".svg", ".png", ".jpg", ".jpeg"}
+                and not any(
+                    part.startswith(".")
+                    or part in {"__pycache__", "build"}
+                    or part.endswith("_unpacked")
+                    for part in p.relative_to(root).parts
+                )
             )
         else:
             files.add(path)
-    return {p.relative_to(root).as_posix(): input_digest(p) for p in sorted(files)}
+    return files
 
 
 def gallery(documents: list[dict]) -> str:
@@ -168,8 +171,19 @@ def gallery(documents: list[dict]) -> str:
 
 def check(root: Path) -> None:
     manifest = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
-    if manifest["inputs"] != inputs(root):
-        raise ValueError("Gallery inputs changed. Run npm run gallery:update on a Word host.")
+    current = inputs(root)
+    if manifest["inputs"] != current:
+        previous = manifest["inputs"]
+        changed = sorted(
+            name
+            for name in previous.keys() | current.keys()
+            if previous.get(name) != current.get(name)
+        )
+        raise ValueError(
+            "Gallery inputs changed: "
+            + ", ".join(changed)
+            + ". Run npm run gallery:update on a Word host."
+        )
     documents = manifest["documents"]
     if [d["id"] for d in documents] != [c[0] for c in CORPUS]:
         raise ValueError("Gallery corpus is incomplete")

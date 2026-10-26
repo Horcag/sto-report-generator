@@ -89,6 +89,34 @@ class GalleryFreshnessTests(unittest.TestCase):
 
 
 class InputHashTests(unittest.TestCase):
+    def test_generated_and_hidden_trees_are_not_source_inputs(self) -> None:
+        with tempfile.TemporaryDirectory(prefix=".gallery-source-") as temporary:
+            root = Path(temporary)
+            public = [
+                "example/00_metadata.md",
+                "example/report.config.json",
+                "example/images/dummy.svg",
+                "example/images/nested/plot.png",
+            ]
+            generated = [
+                "example/.temp_docx/word/media/random.svg",
+                "example/probe_unpacked/word/media/random.png",
+                "example/build/output.json",
+                "example/__pycache__/temporary.py",
+                "example/.private.json",
+                "example/output.figures.json",
+                "example/output.acceptance.json",
+                "example/output.wordcraft.json",
+            ]
+            for name in public + generated:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"synthetic fixture")
+            self.assertEqual(
+                {p.relative_to(root).as_posix() for p in gallery.source_files(root, ["example"])},
+                set(public),
+            )
+
     def test_text_inputs_ignore_checkout_newline_conversion(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             for extension in ("ts", "py", "json", "md", "bib", "svg", "ps1", "toml", "lock"):
