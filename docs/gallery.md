@@ -7,8 +7,9 @@
 [Вернуться в README](../README.md) · [Как обновить галерею](gallery-workflow.md)
 
 - [Демонстрационный отчёт](#example) — страниц: 8.
-- [Формулы](#formulas) — страниц: 3.
+- [Формулы](#formulas) — страниц: 4.
 - [Матрицы](#matrices) — страниц: 4.
+- [Скобки и единичные матрицы](#fences) — страниц: 2.
 - [Стили и структурные элементы](#structure) — страниц: 11.
 
 <a id="example"></a>
@@ -77,7 +78,7 @@
 
 [Исходник](../tests/fixtures/formulas/layout.md)
 
-Страницы: [1](#formulas-1) · [2](#formulas-2) · [3](#formulas-3).
+Страницы: [1](#formulas-1) · [2](#formulas-2) · [3](#formulas-3) · [4](#formulas-4).
 
 <a id="formulas-1"></a>
 
@@ -96,6 +97,12 @@
 ### Страница 3
 
 ![Формулы: страница 3](assets/gallery/formulas-page-3.png)
+
+<a id="formulas-4"></a>
+
+### Страница 4
+
+![Формулы: страница 4](assets/gallery/formulas-page-4.png)
 
 <a id="matrices"></a>
 
@@ -130,6 +137,28 @@
 ### Страница 4
 
 ![Матрицы: страница 4](assets/gallery/matrices-page-4.png)
+
+<a id="fences"></a>
+
+## Скобки и единичные матрицы
+
+Квадратные и круглые скобки, единичные матрицы 2×2–4×4 и вложенные дроби.
+
+[Исходник](../tests/fixtures/formulas/fences.md)
+
+Страницы: [1](#fences-1) · [2](#fences-2).
+
+<a id="fences-1"></a>
+
+### Страница 1
+
+![Скобки и единичные матрицы: страница 1](assets/gallery/fences-page-1.png)
+
+<a id="fences-2"></a>
+
+### Страница 2
+
+![Скобки и единичные матрицы: страница 2](assets/gallery/fences-page-2.png)
 
 <a id="structure"></a>
 

@@ -10,6 +10,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -84,6 +85,7 @@ def inputs(root: Path) -> dict[str, str]:
         "scripts/quality/report_gallery.py",
         "scripts/quality/preserve_pdf_images.py",
         "scripts/quality/inspect_pdf_images.py",
+        "scripts/quality/check_formula_pdf.py",
         "package.json",
         "package-lock.json",
         "pyproject.toml",
@@ -299,6 +301,22 @@ def update(scratch: Path | None) -> None:
                 or not evidence["stablePageCount"]
             ):
                 raise ValueError(f"Word acceptance incomplete: {key}")
+            formula_checks = {}
+            if key == "formulas":
+                geometry = work / "formula-geometry.json"
+                run(
+                    [
+                        sys.executable,
+                        "scripts/quality/check_formula_pdf.py",
+                        str(pdf),
+                        "--receipt",
+                        str(geometry),
+                    ]
+                )
+                checked = json.loads(geometry.read_text(encoding="utf-8"))
+                formula_checks = {
+                    "formulaLayoutCases": [case["equation"] for case in checked["cases"]]
+                }
             pages = []
             with pymupdf.open(pdf) as rendered:
                 if len(rendered) != evidence["pageCountAfterReopen"]:
@@ -322,6 +340,7 @@ def update(scratch: Path | None) -> None:
                     "pdfSha256": digest(pdf),
                     "pageCount": len(pages),
                     "pages": pages,
+                    **formula_checks,
                 }
             )
         after = inputs(ROOT)
