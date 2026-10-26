@@ -147,11 +147,11 @@ class GallerySourceTests(unittest.TestCase):
             work.mkdir()
             with patch.object(gallery, "ROOT", root):
                 copied = gallery.build_source("corpus", "structure", work)
-            body = (copied / "03_body.md").read_text()
+            body = (copied / "03_body.md").read_text(encoding="utf-8")
             self.assertIn("| 90 |", body)
             self.assertEqual(body.count("| 31 |"), 1)
             self.assertEqual((copied / "images/dummy.png").read_bytes(), b"canonical")
-            self.assertNotIn("| 90 |", (original / "03_body.md").read_text())
+            self.assertNotIn("| 90 |", (original / "03_body.md").read_text(encoding="utf-8"))
 
     def test_single_file_keeps_body_and_gets_public_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -169,9 +169,10 @@ class GallerySourceTests(unittest.TestCase):
                 directory = gallery.build_source("example", "example", work)
             self.assertEqual(directory, root / "example")
             self.assertEqual(
-                wrapped.read_text(), "---\nstudentName: Demo\n---\n\n" + source.read_text()
+                wrapped.read_text(encoding="utf-8"),
+                "---\nstudentName: Demo\n---\n\n" + source.read_text(encoding="utf-8"),
             )
-            self.assertEqual(source.read_text(), "# Formula\n\n$$x^2$$\n")
+            self.assertEqual(source.read_text(encoding="utf-8"), "# Formula\n\n$$x^2$$\n")
 
 
 if __name__ == "__main__":
