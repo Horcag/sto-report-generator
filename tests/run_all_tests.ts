@@ -4,6 +4,7 @@ const tsxCliPath = require.resolve('tsx/cli');
 
 const tests = [
 	['tests/figures/planning_tests.ts'],
+	['tests/figures/png_validation.test.ts'],
 	['tests/figures/svg_baseline.test.ts'],
 	['tests/figures/inspector.test.ts'],
 	['tests/figures/document_policy_tests.ts'],

@@ -37,7 +37,7 @@ export interface WordcraftRenderResult {
 	tables: WordcraftTableReport;
 }
 
-const TESTED_VERSION = '0.10.0';
+const TESTED_VERSION = '0.11.0';
 const EXPERIMENTAL_WARNING =
 	'Experimental Wordcraft rendering; Microsoft Word acceptance has not been performed.';
 
@@ -147,7 +147,7 @@ export function createWordcraftPdf(
 				warnings.add(warning);
 			if (prepareWordcraftTocForImport(prepared)) {
 				warnings.add(
-					'Wordcraft 0.10.0 TOC compatibility: rebuilt the semantic TOC control in staging to preserve field-result boundaries; source DOCX unchanged.',
+					'Wordcraft TOC compatibility: rebuilt the semantic TOC control in staging to preserve field-result boundaries; source DOCX unchanged.',
 				);
 			}
 			if (!fonts) {

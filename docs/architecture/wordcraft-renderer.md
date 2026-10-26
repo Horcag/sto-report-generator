@@ -6,8 +6,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.10.0**, release commit `9130181a5fdaee2293e67756fd5458c601489f3c`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.10.0).
+- Supported CLI: **0.11.0**, release commit `e31f2f06a5f8004ceaa88f68c00b47908e321aa4`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.11.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -203,9 +203,9 @@ accepted Word receipts for their exact source DOCX before a new comparison can e
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.10.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.10.0/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.10.0/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.11.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.11.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.11.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.
@@ -224,3 +224,14 @@ large table-heavy documents, followed by its existing interactive fallback.
 
 `background-only` avoids foreground automation; it still uses the installed Word COM server.
 No Computer Use, keyboard/mouse automation or desktop focus is needed.
+
+## 0.11.0 acceptance
+
+The [0.11.0 audit](../audits/2026-10-26-wordcraft-0110.md) uses matched current inputs
+for both engine versions. The raw retained-control TOC defect remains; the staged-only
+workaround and strict field-span checks are retained. Word PDF image modes and rejection
+of nonconforming legacy table headings are explicit comparison boundaries.
+
+The current generator accepts valid PNG decoded rows up to 128 MiB after checking exact
+noninterlaced or Adam7 output size before inflation. Larger inputs fail explicitly;
+images are never silently resized to satisfy this validation budget.
