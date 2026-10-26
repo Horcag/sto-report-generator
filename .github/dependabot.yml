@@ -1,14 +1,23 @@
+# Routine updates are reviewed in batches with native Word gallery acceptance.
+# A zero limit disables version-update PRs; security-update PRs remain enabled.
 version: 2
 updates:
     - package-ecosystem: npm
       directory: /
       schedule:
-          interval: weekly
-      open-pull-requests-limit: 5
+          interval: monthly
+      open-pull-requests-limit: 0
       groups:
-          development-dependencies:
-              dependency-type: development
+          security-updates:
+              applies-to: security-updates
+              patterns:
+                  - '*'
       ignore:
+          # The checked Zod 4 compatibility patch supports exactly Steiger 0.7.0.
+          - dependency-name: steiger
+            update-types:
+                - version-update:semver-minor
+                - version-update:semver-major
           - dependency-name: typescript
             update-types:
                 - version-update:semver-major
@@ -16,11 +25,16 @@ updates:
     - package-ecosystem: pip
       directory: /
       schedule:
-          interval: weekly
-      open-pull-requests-limit: 5
+          interval: monthly
+      open-pull-requests-limit: 0
+      groups:
+          security-updates:
+              applies-to: security-updates
+              patterns:
+                  - '*'
 
     - package-ecosystem: github-actions
       directory: /
       schedule:
-          interval: weekly
-      open-pull-requests-limit: 5
+          interval: monthly
+      open-pull-requests-limit: 0

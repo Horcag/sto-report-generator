@@ -40,4 +40,18 @@ GitHub Actions syntax is checked separately with pinned actionlint. `.github/act
 
 ## Dependency maintenance
 
-Dependabot checks npm, Python, and GitHub Actions dependencies weekly. Security findings remain blocking engineering work even when an automated update is not available.
+Routine version-update PRs are disabled for npm, Python, and GitHub Actions with
+`open-pull-requests-limit: 0`. Review dependency upgrades in batches, run the full
+quality gate, and regenerate the public gallery through native Word acceptance
+before merging. A package or lockfile change invalidates the gallery fingerprint,
+so a dependency PR cannot be automatically merged on portable checks alone.
+
+Dependabot security-update PRs remain enabled; npm and Python security updates
+are grouped per ecosystem.
+Security findings remain blocking engineering work even when an automated update
+is not available. Security updates still require the same quality and gallery checks.
+
+Steiger stays at exactly `0.7.0`: its Zod 4 security compatibility patch validates
+that version and the upstream file hash. Dependabot ignores Steiger minor and major
+version updates until the patch is deliberately ported and its regression tests pass;
+see [the security audit](audits/2026-10-24-steiger-zod.md).

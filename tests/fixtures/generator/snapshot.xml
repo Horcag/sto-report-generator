@@ -1514,7 +1514,7 @@
 <wp:inline distT="0" distB="0" distL="0" distR="0">
 <wp:extent cx="5040000" cy="2520000"/>
 <wp:effectExtent t="0" r="0" b="0" l="0"/>
-<wp:docPr id="1" name="sto-figure:diagram" descr="Пример диаграммы" title=""/>
+<wp:docPr id="1" name="sto-figure:diagram" descr="Пример диаграммы"/>
 <wp:cNvGraphicFramePr>
 <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
 </wp:cNvGraphicFramePr>
