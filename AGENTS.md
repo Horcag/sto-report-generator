@@ -16,3 +16,16 @@
 - Never start hidden or background `powershell.exe`, `WINWORD.EXE`, or Word COM diagnostics directly from an agent command.
 - Any bounded diagnostic exception must have an explicit wall-clock timeout, record every Windows PID it creates, wait for completion, and verify those exact PIDs are absent before deleting scripts or artifacts or ending the task.
 - A yielded terminal/session is still a live process. Always resume it to completion or terminate its exact verified PID; never treat a tool yield or a missing `WINWORD.EXE` as cleanup proof.
+
+## Releases
+
+- Follow `docs/releases.md`: select SemVer deliberately, update `package.json`, both root lockfile
+  versions and `CHANGELOG.md` together. Keep README installation examples current.
+- Use merged pull requests as the source for automatic release notes; label them using
+  `.github/release.yml`. Keep private evidence and operator details out of release notes.
+- Validate metadata with `node scripts/quality/check_release_version.cjs` and its Node test suite,
+  then run the LF check and full quality gate before tagging the verified primary-branch commit.
+- Publish stable `vMAJOR.MINOR.PATCH` tags only. The Release workflow validates, packs and publishes
+  the GitHub Release asset; manual workflow runs validate without publishing. Verify the remote
+  release and exact package version before reporting publication. npm registry publication is separate.
+- Update `ROADMAP.md` when scope changes; distinguish planned work from shipped, verified behavior.

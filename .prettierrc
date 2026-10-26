@@ -17,5 +17,5 @@
 	"importOrderTypeScriptVersion": "6.0.0",
 	"importOrderParserPlugins": ["typescript", "decorators-legacy"],
 	"importOrderCaseSensitive": false,
-	"endOfLine": "auto"
+	"endOfLine": "lf"
 }

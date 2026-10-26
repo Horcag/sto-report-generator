@@ -1,5 +1,9 @@
 # STO Report Generator
 
+[![GitHub release](https://img.shields.io/github/v/release/Horcag/sto-report-generator)](https://github.com/Horcag/sto-report-generator/releases/latest)
+
+[Изменения](CHANGELOG.md) · [Roadmap](ROADMAP.md) · [Правила выпуска](docs/releases.md)
+
 <!-- cspell:ignore entrysubtype paralleltitle paralleledition editionresponsibility editionaddition numpages physicaldetails accompanyingmaterial seriesnumber bibliographicnote contenttype mediatype issn ismn -->
 
 STO Report Generator собирает русскоязычные академические отчеты `.docx` из модульных Markdown-файлов. Базовый продукт -
@@ -22,8 +26,9 @@ PDF через установленный Microsoft Word в Windows.
 Для CLI нужен Node.js 26 или новее. Проверки CI, сборка пакета и Word-приёмка используют ветку 26.x; типы Node
 соответствуют этой ветке.
 
-Для установки CLI без клонирования репозитория соберите пакет один раз командой `npm pack` и установите полученный
-`sto-report-generator-1.0.0.tgz` в отдельном проекте через `npm install <путь-к-tgz>` или `pnpm add <путь-к-tgz>`.
+Для установки CLI без клонирования репозитория скачайте архив из
+[последнего релиза](https://github.com/Horcag/sto-report-generator/releases/latest) или соберите его командой `npm pack`. Установите
+`sto-report-generator-1.1.0.tgz` в отдельном проекте через `npm install <путь-к-tgz>` или `pnpm add <путь-к-tgz>`.
 После установки запускайте `npx sto-report-generator new <slug> --profile lab`,
 `npx sto-report-generator check <dir>` и `npx sto-report-generator generate <dir> --renderer portable --validate`.
 Шаблоны отчёта и TypeScript runtime входят в npm-пакет; для необязательного Python post-build нужен установленный `uv`.
