@@ -22,7 +22,7 @@ PDF images: original (default) preserves source resolution and requires ExportAs
 print/screen explicitly allow Word downsampling. Actual image DPI depends on source and placement.
 
 Wordcraft font controls: --font-dir /path/to/fonts (or WORDCRAFT_FONT_DIR), --strict-fonts.
-Wordcraft is experimental; it requires wordcraft-cli 0.10.0 and uv/Python.
+Wordcraft is experimental; it requires wordcraft-cli 0.11.0 and uv/Python.
 It produces a separate PDF and diagnostic JSON, preserving the generated DOCX.
 
 Backward-compatible form still works:

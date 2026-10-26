@@ -79,8 +79,8 @@ PDF по умолчанию экспортируется в режиме `origin
 
 ### Экспериментальный PDF через Wordcraft
 
-Wordcraft 0.10.0 позволяет получить PDF в Linux, WSL, macOS и Windows без установленного Office.
-Установите `wordcraft-cli` из [официального релиза 0.10.0](https://github.com/storytold/wordcraft/releases/tag/v0.10.0)
+Wordcraft 0.11.0 позволяет получить PDF в Linux, WSL, macOS и Windows без установленного Office.
+Установите `wordcraft-cli` из [официального релиза 0.11.0](https://github.com/storytold/wordcraft/releases/tag/v0.11.0)
 и выполните `uv sync` в каталоге генератора для подготовки Python-инструментов XML.
 
 ```sh

@@ -74,12 +74,17 @@ function sectionStories(number: number) {
 	};
 }
 
-function cell(text: string, columnSpan?: number): TableCell {
+function cell(text: string, columnSpan?: number, isHeader = false): TableCell {
 	return new TableCell({
 		columnSpan,
-		children: text
-			.split('\n')
-			.map(line => new Paragraph({ text: line, style: 'TableText' })),
+		children: text.split('\n').map(
+			line =>
+				new Paragraph({
+					text: line,
+					style: isHeader ? 'TableTextCenter' : 'TableText',
+					alignment: isHeader ? AlignmentType.CENTER : undefined,
+				}),
+		),
 	});
 }
 
@@ -92,9 +97,9 @@ function dataTable(): Table {
 			new TableRow({
 				tableHeader: true,
 				children: [
-					cell('ROW'),
-					cell('SECTION-3-TABLE-HEADER'),
-					cell('VALUE'),
+					cell('ROW', undefined, true),
+					cell('SECTION-3-TABLE-HEADER', undefined, true),
+					cell('VALUE', undefined, true),
 				],
 			}),
 			...Array.from(
@@ -152,8 +157,8 @@ export async function buildWordcraftSectionFixture(
 							new TableRow({
 								tableHeader: true,
 								children: [
-									cell('MERGED-HEADER', 2),
-									cell('VALUE'),
+									cell('MERGED-HEADER', 2, true),
+									cell('VALUE', undefined, true),
 								],
 							}),
 							new TableRow({
