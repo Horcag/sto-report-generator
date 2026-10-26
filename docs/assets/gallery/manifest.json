@@ -12,8 +12,8 @@
     "example/images/dummy.png": "b3a35a79691d416ad6c2e01b2a0a5403d667f75d4cdd5773b4d3e3503d91c776",
     "example/images/dummy.svg": "bafeb4ccc7ef2795f2c2161dc6c9245494c500c9d8a2568c5eb10e12d2c63aa5",
     "example/references.bib": "887bc69b8d5c37b0d918803d822547320438978da00141e81ff7592b9d83b610",
-    "package-lock.json": "ece7b3881531d55e298dc9329e0fb77ac1bc340173efd7069d5ae6761e7cc046",
-    "package.json": "a7eb8877d1aa69cd5e67e5990468694425be8dded683bba58f909dfac02eafdf",
+    "package-lock.json": "fb62df8f098d5ec957abd430ace817e1955ece712260fcea3a2fb188aeaa4aa4",
+    "package.json": "19a950a30342acdcdc3623677e7c49b18a3e1a520dbbcb03e6d1cff025f756fc",
     "pyproject.toml": "0eb1993c9e5c7883827776f4ba3efd6765a1dc9aff33111d691cc30ad8474655",
     "scripts/post_build.py": "ebc753b075107cdcb81b20eb44065fc5941543a7fd6796e22f7373fce5c6ef33",
     "scripts/quality/check_formula_pdf.py": "41e1cf6000f5ae85e9f6084f34235121e58c24f0e73abd4a230ac0c8b0020226",
@@ -206,7 +206,7 @@
     "tests/fixtures/formulas/fences.md": "21cf57a0444ddfcc789d76c31fa4c8d23c5c1585ae813d8d76391528206508c6",
     "tests/fixtures/formulas/layout.md": "c4865cf177cc90577d2d2dfb4b7143bda0bbfcf3056ebc723d6fa8963b25d2e7",
     "tests/fixtures/wordcraft/matrix-controls.md": "2353f04b1d4556bda47819990017c4ceb7a46f8284d81b3834c424f64bc3cbda",
-    "uv.lock": "c7a1e1886e079f2394d843c42ddbafb747859e1836dc9f5c1584238fc8f6422f"
+    "uv.lock": "c57352d8b26a1d9372032912b80e5de3ab996a902b85566fe32796d62c9f828d"
   },
   "documents": [
     {
@@ -218,7 +218,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "b59181a96289288c270180c333d8403811d98f6059576b3df6ded06967a7424a",
+      "pdfSha256": "fc53b1947561f47f97280efd8e8648638514f43c4b9c4f6015eec95d7d539e2a",
       "pageCount": 8,
       "pages": [
         {
@@ -264,7 +264,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "5dd9aae1566b7d34cd73c18ccdbf8face1dfe7341a9c161ccb6870eea6c05f93",
+      "pdfSha256": "a5d4e1257281fce05552773c8b645f2c58a92153d29b5a1d6521d7e13437c68d",
       "pageCount": 4,
       "pages": [
         {
@@ -310,7 +310,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "fd03cf12a50b1e1c2a5af9f59eabbc8b3e5d5f66e428869f503788442d661bbc",
+      "pdfSha256": "f161281a6a740d6b64476f74fbbd3f0f36821b729c3cf1be4124b82ae5b76d4b",
       "pageCount": 4,
       "pages": [
         {
@@ -340,7 +340,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "8eda23c835035d17d3d5a4bd98ca5d01444e35b122e5ccfc916efa1dab826934",
+      "pdfSha256": "82093133209c47c728f6c22b8c6034ed3787a9164d5e5a8fde3114eb033f3da2",
       "pageCount": 2,
       "pages": [
         {
@@ -362,7 +362,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "d9d9079aed4468eecc73b1666053ec309b2e712c7170be194283090381513f55",
+      "pdfSha256": "19b3bbb599089980d94b793594193afb477dc6cf63f8a17e746f0fce2f9a2e93",
       "pageCount": 11,
       "pages": [
         {
