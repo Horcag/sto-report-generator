@@ -105,9 +105,6 @@ export function validatePng(data: Buffer): void {
 		interlace > 1
 	)
 		throw new Error('Invalid PNG pixel format');
-	const decoded = inflateSync(Buffer.concat(chunks), {
-		maxOutputLength: 64 * 1024 * 1024,
-	});
 	const passes = interlace
 		? [
 				[0, 0, 8, 8],
@@ -119,12 +116,34 @@ export function validatePng(data: Buffer): void {
 				[0, 1, 1, 2],
 			]
 		: [[0, 0, 1, 1]];
-	let offset = 0;
+	const scanlines: { rows: number; stride: number }[] = [];
+	const maxDecodedBytes = 128 * 1024 * 1024;
+	let expectedBytes = 0;
 	for (const [x, y, dx, dy] of passes) {
 		const columns = Math.max(0, Math.ceil((width - x) / dx));
 		const rows = Math.max(0, Math.ceil((height - y) / dy));
 		if (!columns || !rows) continue;
 		const stride = 1 + Math.ceil((columns * channels * depth) / 8);
+		const passBytes = rows * stride;
+		if (
+			!Number.isSafeInteger(stride) ||
+			!Number.isSafeInteger(passBytes) ||
+			!Number.isSafeInteger(expectedBytes + passBytes) ||
+			expectedBytes + passBytes > maxDecodedBytes
+		)
+			throw new Error(
+				'PNG decoded scanlines exceed the 128 MiB validation budget; resize the image before using it as a fallback.',
+			);
+		expectedBytes += passBytes;
+		scanlines.push({ rows, stride });
+	}
+	const decoded = inflateSync(Buffer.concat(chunks), {
+		maxOutputLength: expectedBytes + 1,
+	});
+	if (decoded.length !== expectedBytes)
+		throw new Error('Invalid PNG decoded pixel length');
+	let offset = 0;
+	for (const { rows, stride } of scanlines) {
 		for (let row = 0; row < rows; row++) {
 			if (offset >= decoded.length || decoded[offset] > 4)
 				throw new Error('Invalid PNG scanline');

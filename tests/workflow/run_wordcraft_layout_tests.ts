@@ -90,7 +90,7 @@ function positions(filename) {
   return tableOffset(block) + Math.floor(pos.path[1] / 3) + (orphan ? 1 : 0);
  }};
 }
-if (args[0] === '--version') console.log('wordcraft-cli 0.10.0');
+if (args[0] === '--version') console.log('wordcraft-cli 0.11.0');
 else if (args.includes('--script')) {
  const script = JSON.parse(fs.readFileSync(args[args.indexOf('--script') + 1], 'utf8'));
  const state = positions(script.file);
