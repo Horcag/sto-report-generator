@@ -39,6 +39,14 @@ class FormulaFenceTests(unittest.TestCase):
             latex_to_mathml_batch(cls.formulas, repo_root), repo_root
         )
 
+    def visible_text(self, element: Any) -> str:
+        return "".join(
+            element.xpath(
+                ".//m:t[not(ancestor::m:phant[m:phantPr/m:show[@m:val='0']])]/text()",
+                namespaces=self.namespaces,
+            )
+        )
+
     def assert_fence(self, element: Any, begin: str, end: str) -> Any:
         self.assertEqual(element.tag, f"{{{MATH_NS}}}d")
         for name, expected in (("begChr", begin), ("endChr", end), ("grow", "1")):
@@ -53,7 +61,7 @@ class FormulaFenceTests(unittest.TestCase):
     def test_fraction_keeps_dynamic_parentheses(self) -> None:
         expression = self.assert_fence(self.converted[0][0], "(", ")")
         self.assertEqual(len(expression.xpath("./m:f", namespaces=self.namespaces)), 1)
-        self.assertEqual("".join(self.converted[0].itertext()), "ab")
+        self.assertEqual(self.visible_text(self.converted[0]), "ab")
 
     def test_matrix_fence_variants_keep_all_cells(self) -> None:
         for formula, characters in zip(
@@ -78,7 +86,7 @@ class FormulaFenceTests(unittest.TestCase):
         self.assertEqual(len(inner), 2)
         self.assert_fence(inner[0], "(", ")")
         self.assert_fence(inner[1], "[", "]")
-        self.assertEqual("".join(formula.itertext()), "A=ab+1234x+B")
+        self.assertEqual(self.visible_text(formula), "A=ab+1234x+B")
 
     def test_one_sided_fences_remain_invisible(self) -> None:
         for formula, characters in zip(self.converted[7:9], [("", "]"), ("{", "")], strict=True):
