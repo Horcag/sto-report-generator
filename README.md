@@ -1,5 +1,9 @@
 # STO Report Generator
 
+[![GitHub release](https://img.shields.io/github/v/release/Horcag/sto-report-generator)](https://github.com/Horcag/sto-report-generator/releases/latest)
+
+[Изменения](CHANGELOG.md) · [Roadmap](ROADMAP.md) · [Правила выпуска](docs/releases.md)
+
 <!-- cspell:ignore entrysubtype paralleltitle paralleledition editionresponsibility editionaddition numpages physicaldetails accompanyingmaterial seriesnumber bibliographicnote contenttype mediatype issn ismn -->
 
 STO Report Generator собирает русскоязычные академические отчеты `.docx` из модульных Markdown-файлов. Базовый продукт -
@@ -9,17 +13,22 @@ CI и агентных сценариев.
 Word-путь остается отдельным режимом: он нужен, когда требуется авторитетная пагинация, обновление полей Word и экспорт
 PDF через установленный Microsoft Word в Windows.
 
-![Первая страница демонстрационного примера](docs/assets/example-page-1.png)
+![Первая страница демонстрационного примера](docs/assets/gallery/example-page-1.png)
 
-![Пятая страница демонстрационного примера](docs/assets/example-page-5.png)
+![Пятая страница демонстрационного примера](docs/assets/gallery/example-page-5.png)
+
+[**Посмотреть все страницы: отчёт, формулы, матрицы и структурные элементы →**](docs/gallery.md)
+
+![Формулы из проверочного корпуса](docs/assets/gallery/formulas-page-2.png)
 
 ## Быстрый старт
 
 Для CLI нужен Node.js 26 или новее. Проверки CI, сборка пакета и Word-приёмка используют ветку 26.x; типы Node
 соответствуют этой ветке.
 
-Для установки CLI без клонирования репозитория соберите пакет один раз командой `npm pack` и установите полученный
-`sto-report-generator-1.0.0.tgz` в отдельном проекте через `npm install <путь-к-tgz>` или `pnpm add <путь-к-tgz>`.
+Для установки CLI без клонирования репозитория скачайте архив из
+[последнего релиза](https://github.com/Horcag/sto-report-generator/releases/latest) или соберите его командой `npm pack`. Установите
+`sto-report-generator-1.1.0.tgz` в отдельном проекте через `npm install <путь-к-tgz>` или `pnpm add <путь-к-tgz>`.
 После установки запускайте `npx sto-report-generator new <slug> --profile lab`,
 `npx sto-report-generator check <dir>` и `npx sto-report-generator generate <dir> --renderer portable --validate`.
 Шаблоны отчёта и TypeScript runtime входят в npm-пакет; для необязательного Python post-build нужен установленный `uv`.
@@ -464,18 +473,19 @@ npm run quality
 
 ## Preview
 
-Изображения в `docs/assets/example-page-1.png` и `docs/assets/example-page-5.png` получены из PDF на восемь страниц
-после Word-приёмки текущего демонстрационного отчета `example/`. На странице 5 показана таблица с полями ячеек
-по шаблону. В примере используются только демонстрационные имена и placeholder-содержание.
-
-Воспроизводимый renderer-agnostic сценарий:
+В [галерее](docs/gallery.md) доступны все страницы демонстрационного отчёта и публичных тестовых документов:
+формулы, матрицы, заголовки, оглавление, рисунки и продолжение длинной таблицы.
+PNG получены из PDF после Word-приёмки текущих исходников, с проверкой стабильного числа страниц и завершения процессов.
 
 ```bash
-npm run audit:report -- example --renderer portable
+npm run gallery:update
+npm run gallery:check
 ```
 
-После этого можно открыть полученный DOCX в выбранном локальном просмотрщике и экспортировать нужные страницы в PNG. Для
-публичной документации используйте только демонстрационный отчет `example/`, а не страницы частных работ.
+Обновление требует установленного Microsoft Word в Windows; запуск поддерживается из WSL.
+Проверка актуальности работает без Word и входит в CI и проверку перед сборкой выпуска.
+При изменении генератора или исходников корпуса необходимо пересоздать галерею и включить её в тот же коммит.
+Подробности и состав корпуса: [обновление галереи](docs/gallery-workflow.md).
 
 ## Частые проблемы
 

@@ -30,7 +30,13 @@ $$\operatorname{Fences}=\left(\frac{a}{b}\right)^2+\left[\frac{c}{d}\right]. (@e
 
 Векторы, матрицы и функции приведены в формуле @eq:roles:
 
-$$\operatorname{Roles}=\stovec{a}\cdot\stovec{b}+\sin x+\stomat{A}\stovec{x}. (@eq:roles)$$
+$$\operatorname{Roles}=\stovec{a}\cdot\stovec{b}+\sin t+\stovec{x}^{\mathrm{T}}\stomat{A}\stovec{x}, (@eq:roles)$$
+
+где $\stovec{a}$ – вектор;
+$\stovec{b}$ – вектор той же размерности;
+$t$ – скаляр;
+$\stovec{x}$ – вектор той же размерности;
+$\stomat{A}$ – квадратная матрица соответствующего порядка.
 
 Перенос выражения показан в формуле @eq:continuation:
 

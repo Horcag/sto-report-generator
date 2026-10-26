@@ -20,6 +20,13 @@ repos:
 
     - repo: local
       hooks:
+          - id: line-endings
+            name: LF in raw index and worktree
+            entry: uv run python scripts/quality/check_line_endings.py
+            language: system
+            pass_filenames: false
+            always_run: true
+
           - id: prettier
             name: Prettier staged files
             entry: npx prettier --write

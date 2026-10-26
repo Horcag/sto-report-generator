@@ -12,6 +12,10 @@ Run it locally with:
 uv run python scripts/quality/check_markdown_links.py --root .
 ```
 
+## Report gallery freshness
+
+`npm run gallery:check` verifies the public gallery input hashes, every PNG, the corpus inventory and every page in the Markdown index. It runs inside `ci:check`, including the release artifact workflow. Changes to rendering code, dependencies, package version or public corpus require `npm run gallery:update` and committing the resulting gallery. Checking needs neither Word nor PyMuPDF; regeneration uses installed Word through the bounded acceptance launcher. See [the gallery workflow](gallery-workflow.md).
+
 ## Native Word acceptance
 
 `.github/workflows/native-word-acceptance.yml` is started manually before a release or document handoff. Its job is constrained to a runner carrying all of these labels: `self-hosted`, `windows`, and `word`. The `word` label is an operator-maintained assertion that Microsoft Word is installed and permitted for COM automation. License state from `vnextdiag.ps1` and `OSPP.VBS` is diagnostic evidence rather than a gate; the actual capability checks decide acceptance.

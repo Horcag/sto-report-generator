@@ -1,0 +1,415 @@
+{
+  "schemaVersion": 1,
+  "dpi": 120,
+  "inputs": {
+    "example/00_metadata.md": "94c196d37ce4592fea991e57a588837aafdde670d9283b680005850bbdfa3fb7",
+    "example/01_referat.md": "5ab001131fd672bd3eab45beb4b8013957ac03aeff26b803d8bdd070865911f1",
+    "example/02_toc.md": "61338f9e1cfdbae047c77b990d252e91b1303384132d51c6b56dfaec1b65a763",
+    "example/03_intro.md": "a0bf3e41c08bd66731e289f20ab250f1ef0574fb364ddf6ada20aafa53d2fa0e",
+    "example/10_main.md": "2b7ad49434a86d1ffffe6895fd3faf769855dfd9b7244618b1d8165128b4f7fd",
+    "example/90_conclusion.md": "8eb5cc9762ae0732bc347f6ecc673454d3f898a8b54382b5633a6bfd8179d41e",
+    "example/91_sources.md": "065f7c6081539089b0b9126d92324e20d8ff42624f5919dcdf39bc0753638e52",
+    "example/images/dummy.png": "b3a35a79691d416ad6c2e01b2a0a5403d667f75d4cdd5773b4d3e3503d91c776",
+    "example/images/dummy.svg": "bafeb4ccc7ef2795f2c2161dc6c9245494c500c9d8a2568c5eb10e12d2c63aa5",
+    "example/references.bib": "887bc69b8d5c37b0d918803d822547320438978da00141e81ff7592b9d83b610",
+    "package-lock.json": "ece7b3881531d55e298dc9329e0fb77ac1bc340173efd7069d5ae6761e7cc046",
+    "package.json": "a7eb8877d1aa69cd5e67e5990468694425be8dded683bba58f909dfac02eafdf",
+    "pyproject.toml": "0eb1993c9e5c7883827776f4ba3efd6765a1dc9aff33111d691cc30ad8474655",
+    "scripts/post_build.py": "ebc753b075107cdcb81b20eb44065fc5941543a7fd6796e22f7373fce5c6ef33",
+    "scripts/quality/check_formula_pdf.py": "41e1cf6000f5ae85e9f6084f34235121e58c24f0e73abd4a230ac0c8b0020226",
+    "scripts/quality/inspect_pdf_images.py": "3c75bd1cb4c80d8233699b14411169070c98132a6fada66bb5ac39b76ab54996",
+    "scripts/quality/preserve_pdf_images.py": "111ea4cfd664c7b8ae6835b1749546b5cee89f02d8db247819a7ef2e382e8924",
+    "scripts/quality/report_gallery.py": "6da4b0087882d1f2e7f87e02ee0e2fa9bd5c19caff12f42a70cdef3d348a811f",
+    "scripts/sto_post_build/__init__.py": "b613a60043b41da26e0574efa62e41b71b065b62e12f83f2d709d5201e68fe48",
+    "scripts/sto_post_build/acceptance_statistics.py": "3818d850d20f8d80acfeb0937f25033cd67befb69517efe5e8ec6051062f9d0d",
+    "scripts/sto_post_build/cli.py": "1c07665da4d37c1665c8942d6b2d922027a4c6ffdc9d511753701bdc9f774376",
+    "scripts/sto_post_build/constants.py": "69d297335c9080e35f92a5873688e162c3b9b922775aa1455f58f99ad1cbeb2f",
+    "scripts/sto_post_build/docx_package.py": "bb92bf825128388091e3d2dc642b820f8cd7ed9be2719d387c439aac10af3e6e",
+    "scripts/sto_post_build/formula_replacement.py": "09ca41c2ab5e38ef4bed0a4fdb8491004c7be3c91354c2e2a1512e0f50f28e82",
+    "scripts/sto_post_build/fraction_delimiters.py": "dacce1f7e6179fc1535a79cd29ddf67cf9705b029cb8bdb83dbf05c6d37779ca",
+    "scripts/sto_post_build/integral_arguments.py": "7b75596e9981105814dc8e8619c4c7806dc34d12280db8fd0d7b3d31bd2048cb",
+    "scripts/sto_post_build/markdown_formulas.py": "da659dc56391904b59bab65839d5a4ff7fb94768d4d625c9ce661de5e4d580d4",
+    "scripts/sto_post_build/math_conversion.py": "c148e274dc56061c8a446d9509a72568ddf692ec35749145a789873a7838ea41",
+    "scripts/sto_post_build/matrix_spacing.py": "40279282b0afd386ea8257855df326908e914f742001545ef8af821180161bcb",
+    "scripts/sto_post_build/models.py": "f62fdd903783e4ae2d09d72d38bf0f8896a1aece63d55bae49b13b0dea32414c",
+    "scripts/sto_post_build/orchestrator.py": "bb51d66df62b27b318704b64e004cbd13e4e832077ec869ee7cf09377b4123bc",
+    "scripts/sto_post_build/pdf_export.py": "4143c3d6019a84b7504a35b569bad566fa8396ae71533fa359ce23f3087aee0b",
+    "scripts/sto_post_build/statistics.py": "9b99dbf34494c4b642c8c78111a5db1ba651462ced859765c9a9c261390961fb",
+    "scripts/sto_post_build/table_spacing.py": "dfb9f268ad61abe661c3001c42feb1b27a6769b0330154a0d8483cb4ee5a87c1",
+    "scripts/sto_post_build/word_automation.py": "9bed290740d71fd1b83dcbab79109566fba36e8ef7c1c07c1b0af53001c7035e",
+    "scripts/sto_post_build/wordcraft_statistics.py": "7cbd6684778fea6fe191cfa9957764b4d0f2cdd5f3fd4797eb9dde2b6177de0e",
+    "scripts/sto_post_build/xml_layout.py": "ec443a11c89cac3a99911d0e9812354e35e03f2c778be8a95bbf37ac156e1385",
+    "scripts/stop_word_acceptance.ps1": "b0729b1b35e6a745cfbf71c09ae3c80fdf0f74b8690a8fcda4232ec3716bad73",
+    "scripts/word_acceptance.ps1": "9685df06bedde8ef7f05ea70c3e512cd3afa14357bf72b60ab9a51ab0e0e98d8",
+    "src/app/bibliography-audit.ts": "4ffbd9a3c0bebdf72cca6d6edeb9820820a372111069e5505a64f457586bdbd6",
+    "src/app/bibliography-command.ts": "cd0aef2abe18607a91acafea2821e7b3d51372c6c8fd9254c789f63ccdb08ae9",
+    "src/app/builder.ts": "290824a848ce6f6cfe2b798f8b0cdabf3d9825c5c1373136af4074d77d6df243",
+    "src/app/cli-args.ts": "07c305ad66c3c9ac5b15c22f5857b387fc71d06f3b2bf127580313f4214aac33",
+    "src/app/cli-help.ts": "86da30563b62c30534d69f0a9304ab73dda9956af25f45941714e17d8b98baf3",
+    "src/app/cli-preview.ts": "03c5143db35c836682358c88d9f5fec54de3562596ae7f488e7311d966d9f4a5",
+    "src/app/doctor.ts": "d44ae7a661a385c94ee0c3b0b915891e6cefdec7998c80bdfeef85fd2cb134f2",
+    "src/app/figure-command.ts": "c87280b1178e6719702578181663cb5c18e9321dc926378056fa06cbdf27f8b4",
+    "src/app/figure-inspector-html.ts": "ab423f8fe92c85d7c75479ddd76f0971a1871221d4367a639dede44b59544cd1",
+    "src/app/figure-inspector.ts": "0375d914f063e290aa1b108d8bb8f7f2aba1db56b1f2d4b11705a604f9b5eeee",
+    "src/app/libreoffice-preview.ts": "98de1c6c26b9d432093626623367fb1a559754bc856e3df0fb8da0e041454d2b",
+    "src/app/report-scaffold-readme.ts": "aaa6739300895505fd5157fbe6225e2e109daded2b1b3e4e49bdd8c66905ea77",
+    "src/app/report-scaffold.ts": "58e9521f7360414559b1e192d27017d633a4c4baae5151827b85b8f23d5030ab",
+    "src/app/report-workflow.ts": "2f041c59be1e708d349f86f45c1f913c7b7ac50aeaab2e7799fb8d3172ef3329",
+    "src/app/word-acceptance-bold.ts": "d54c63527995d3988faec6e4dbfc2eadfc1df0c8dabafb205c210a79cdb75c37",
+    "src/app/word-acceptance-cleanup.ts": "7348d8406485dcb15da53dfe8a2d67e16300bfdde138fa0d93ad0da36eeb89a1",
+    "src/app/word-acceptance-evidence.ts": "55a7c897f505775c582ca508d0cde8dca631392f2d6c33c5da0d432e15fcf5f8",
+    "src/app/word-acceptance-figure-payloads.ts": "faceb3e53416177e54049fc7d859ab17e9dc82be461b18740b9e02124f902e66",
+    "src/app/word-acceptance-figures.ts": "aa5b17dfaa3fb4e0d3e4db81922f2ed7da6be2f8fcb43df704b8c57cf1259cfb",
+    "src/app/word-acceptance-integrity.ts": "bb92acf842adbde10a5681762db9b64d569bce441fc761e30fbe601acf988d1e",
+    "src/app/word-acceptance-statistics.ts": "78cb40a725b80e9d47c40b124fdf50ae99dc2d95aa6dbb632cb29036222cc02d",
+    "src/app/word-acceptance.ts": "41f9787e7afde47d6ae47d294b257166f3aebbae98f002d0f1245486cca14f06",
+    "src/app/word-pdf-quality.ts": "623a90f5e728d3da7d0225e8466cd985a4c69ac275a8f9ad4cf1505f6b3b29b7",
+    "src/app/wordcraft-command.ts": "228493e96e60f2d6bfbaf9c8bf8b107593dea3ad628c7e9d637f5893d21b404d",
+    "src/app/wordcraft-fields.ts": "a1b844925b1f120226343d57382dcc648b62bdd08387ae61b1640e940df28388",
+    "src/app/wordcraft-font-files.ts": "7ee3a27bea4d71d004eacbc364f8892207af4f3c321f4d2017c46fc1d40080c1",
+    "src/app/wordcraft-fonts.ts": "61597116dd363b66f27bf37fca8c9cb497a030d70ece11f28b7254022f45f0e7",
+    "src/app/wordcraft-layout.ts": "378f10329d292df97d9ae6048806f0cc2613d0e784665598c942aa83e2339876",
+    "src/app/wordcraft-renderer.ts": "32b277269756b92aa01e26118aa59c6d74a6a5676240fba9456acc33e78bd7a2",
+    "src/app/wordcraft-statistics.ts": "d8b6a3524b1f90ae163695bde2022acfd4e020e130c9869de37fdb9e3dff2ae9",
+    "src/app/wordcraft-tables.ts": "9bebd28c7f49abe36bbfe78615bbf05d80c2339b123dca3866abc7d9c36bd4d8",
+    "src/entities/report/index.ts": "aae201a825b0337402b6463fe90727046ed10248da3b9ee1b1aaa370d10aa200",
+    "src/entities/report/model/types.ts": "eb7b988c1e43c991c6ac0d395c4248a26ab22a46d3a2a60895166b1af01879bb",
+    "src/features/markdown-parser/index.ts": "57ecace0388c7729525a397faa394650cc43a6c5c6ddc824138eb7686dd4e458",
+    "src/features/markdown-parser/lib/frontmatter.ts": "1c312603621336672f2161592d9a8eac8c574bdb71eac151933b1f5ccce0d482",
+    "src/features/markdown-parser/lib/parser/bibliography-loader.ts": "9d9d9519751b79b9a2dcbfca542058c318d478bf4dafa52f645dd4f0d1d24d4a",
+    "src/features/markdown-parser/lib/parser/citation-registry.ts": "6e90833e74f26a8683874c34b7f3acc1011fcec6189f475f8a15e7a24a291461",
+    "src/features/markdown-parser/lib/parser/handlers/appendix-toc-field.ts": "ea2103abf06826f5ea9f6bc61013f7259ee4d02c224443697041cec0b0b6521e",
+    "src/features/markdown-parser/lib/parser/handlers/block-handlers.ts": "5cf5599fdec0e63f56c36bbb389b2a789014c3ce5f0b8995b66c3d350253129a",
+    "src/features/markdown-parser/lib/parser/handlers/image-handler.ts": "7f935c91df78e4ac5de03ebbfaf24fa85cda33e3e41511252c77e87b419a931c",
+    "src/features/markdown-parser/lib/parser/handlers/inline-parser.ts": "01667e0e388684c2e90ba5e523571bb572a9bdd8f9f164122f2963fc327727a4",
+    "src/features/markdown-parser/lib/parser/handlers/math-handler.ts": "9f79cc47f739b6f15846ad2522a802f2f9068a9c861c4e5171ee279a09301dc7",
+    "src/features/markdown-parser/lib/parser/handlers/report-table-of-contents.ts": "6b637ecd3b2d02caa4de4f2c02165f6f9026f487ab4bee65950bd96d2667883e",
+    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "9c78c70882ad02623a7ecd3cf674acf6751e66311d3920b4bb5ea92440905b64",
+    "src/features/markdown-parser/lib/parser/handlers/table-handler.ts": "3e65ebdcd28787fd9d245f3b5b1c1b2a177a4e58d08579445eb7cde8e68f93ef",
+    "src/features/markdown-parser/lib/parser/reference-registry.ts": "533eb0e46e7efbcfd568d6e341a9c683c70035f5faf3f563d9eff56947de42fd",
+    "src/features/markdown-parser/lib/parser/table-notes.ts": "c7c428ac9d0afba3349edc74dad105935f5eb38cf1ac5a5b17257a1015b414ff",
+    "src/features/markdown-parser/lib/parser.ts": "a09d87898f59eef2df8c0dae24c7857b8861ddd0ff08757b28eb4309b9abcfc2",
+    "src/features/markdown-parser/lib/types.ts": "9e2847965dae81c4259357d106509262771ad089bee4a4485f8d7aa2890aafce",
+    "src/features/markdown-parser/lib/utils/bib-author-names.ts": "6ed6fd47f8f6f5f96048434c9238016baf9df7dca82136d04b142cea3cb3db0d",
+    "src/features/markdown-parser/lib/utils/bib-component-formatters.ts": "255fb1e4a7118d624026282cf290d9defce980b321ea2707062d2714ab695044",
+    "src/features/markdown-parser/lib/utils/bib-description-areas.ts": "cd6ee6bdb7a79506a5f99269d40006f519c51869e682a7d5d28f9640259b53f3",
+    "src/features/markdown-parser/lib/utils/bib-field-contract.ts": "86ffd179f56a30a0efbc69deddcf2962ad9ef5f8278655fa14bcd379a5da03f5",
+    "src/features/markdown-parser/lib/utils/bib-format-utils.ts": "bee58f0539f9403db0a9437a51e00fd9906fb27a2ac7394b5f077748db458161",
+    "src/features/markdown-parser/lib/utils/bib-formatter.ts": "a857de8d451e71d36cd57ada8539741135ba87136552471dc52159020c880e04",
+    "src/features/markdown-parser/lib/utils/extensions.ts": "10c19738ac438f398b3348680ff0d2bc94aaa8aac6142772211021a0474051e6",
+    "src/index.ts": "a03e509a5d42f3197596007b3add5475751df3a89d636cd391fc186cd8a64a5d",
+    "src/shared/config/index.ts": "830b4f29da03afd520b36544a361bfc1155a23582b3830cba50a62523897b990",
+    "src/shared/config/samara-template-2022-styles.json": "e4518c8a8120c99ff09838948d3f6f311c39e0b3ac0cc1e5624054d01c185900",
+    "src/shared/config/sto-appendix-styles.ts": "ac230508695ad4520a6a02e0c9c9f191524d0914bf00eb6beb53c386f7a3a3cf",
+    "src/shared/config/sto-appendix.ts": "7dce0b24caf347bdebf4a12267a195c7bd64497c48f543854dd6372bd7cdab4f",
+    "src/shared/config/sto-element-styles.ts": "941c5e83255254d82eaa71205336846299f96f4dce511ec9c07796f3cbeecea6",
+    "src/shared/config/sto-heading-styles.ts": "94ac872c33fa666e3f9e026b8baec1b8930bc40abc363136c1771cd8b2ea636c",
+    "src/shared/config/sto-inline-list.ts": "5831a1e5ad89635bb5479edd3c18013ac6a546f1761b0a43dd8e3167aad30075",
+    "src/shared/config/sto-rules.json": "c26282c19df30848267c5828b59fb5f2e7f002ce2e34c2e485730a44c4a85e56",
+    "src/shared/config/sto-rules.ts": "b862ac52ba8b2746a1ce7bab70a40f2efb2f33857b748cd512743d60fab63637",
+    "src/shared/config/sto-styles.ts": "36e03f02a514ca3ce75cc8bd49d7605a7bcde938179b9267b226bca4e0127b03",
+    "src/shared/config/sto-template-bold.ts": "719a71b3a8c7830ffab25a2ca43212909857d58540e85e0c89a9cde3bae444f6",
+    "src/shared/config/sto-template-style-overlay.ts": "ecaadb30421abf3233091b3180f4ccd5256d2db8f2582ba86f56502f089c9f6e",
+    "src/shared/config/sto-template-styles.ts": "7e917e3fd2ce19f7f44dabab605cc2b0ab8834106583587fe713403548f53c79",
+    "src/shared/config/sto-terms.ts": "499869e9d2d9e4894f28e575c7f2cd96448cf01d8cddb92ec7421ade91b720eb",
+    "src/shared/config/sto-toc-styles.ts": "8cc7896517f1c5eb986a2ffcbfcf64126c889b223ea0d4ad017ea74358a4fbfa",
+    "src/shared/lib/bibliography-path.ts": "b9f2293969eb60bfa906bc3594760a0a0d409b7477c3ec3c995acc4cef6af3c8",
+    "src/shared/lib/bibtex-parse-js.d.ts": "c65a5e7a5ee0ad29a6b551fe09445209864b83d384d5bbcb0469a62932dfc020",
+    "src/shared/lib/citation-syntax.ts": "330c556502ee5a23baf59c06d3f87477821c4113a5ea6cfc3831acc17a03ceb9",
+    "src/shared/lib/docx/archive.ts": "a8da9b9e92541b6c64166b8054ef5885d6eb0ce8dcb49699e64408b3da0b6ed0",
+    "src/shared/lib/docx/figure-policy.ts": "69689116f174081e17fd0f8fcc03c70c7c610d6d4ff464ad7c9ee5897e051b45",
+    "src/shared/lib/docx/index.ts": "19804b25e17588b052cccf1e41df4edc85cb410ed577210cc87814ddd534668a",
+    "src/shared/lib/docx/styles.ts": "53c1165ab8c0ff4bd7e211e5a9ad1544b861a48cb0fc3ecb9bc91c619033dd3f",
+    "src/shared/lib/docx/table-spacing.ts": "bdab40fdfb9840e1642a6121080a89f609fc98f34854c99208d952c467affd20",
+    "src/shared/lib/dotm-style-contract.ts": "450d56ac6232ce05e2dfc8be0dde021ebe123943463084ac5810fd99afb6157a",
+    "src/shared/lib/figures/index.ts": "9501df24c24fede5f34caa96031c75a9c4529fb68110b1cba7c2d38090615017",
+    "src/shared/lib/figures/occurrences.ts": "c2e918c5ec19f4f5ed5d9d549ddbf56a1cbc5ce95840587627a52a703ed0b3a8",
+    "src/shared/lib/figures/planning.ts": "def30935cad4fb8de6f396ee0800cb0285fd8899db3f56b57f4da22ff071593a",
+    "src/shared/lib/figures/png.ts": "026fe024d951e28c9c7874bc95dac43e85a7345d8f92690a656425d0bc34c95b",
+    "src/shared/lib/figures/settings.ts": "9993075165822f7ac8110a19be980085edf60a9d49e4d9c35c0c9a3bea06b4a6",
+    "src/shared/lib/figures/svg-baselines.ts": "4b68c298824052295be0e3862633f89c9e4fa69cd595e7a9533420b6739a8b5e",
+    "src/shared/lib/figures/types.ts": "77b16f79c0ddcc76b50c4045ca73c9aa63ec91659913b7e456c0d9cb756c9287",
+    "src/shared/lib/frontmatter.ts": "9bc4582d170fec070067cf4b5099661df4be62e2568092a602e7c3cc01b00c7c",
+    "src/shared/lib/index.ts": "4d0aa9fddc8437016d028dff058f3981ecdce5bc39bf66d23059c3357b97eb94",
+    "src/shared/lib/math/converter-deps.d.ts": "1652e123ba7ddc4d5555770faad638ad645c6a405fe67d57a0d9860e1aa9e03e",
+    "src/shared/lib/math/converter.ts": "5a9aaf5cfd3b75c321c9dd2ed5a356e36cbee5f4451602e6fad50e463634698d",
+    "src/shared/lib/math/display-lines.ts": "1fa65a3edc163ebdfc5f7105233d256409da4c5d5dcb8ef8442dd2969b3b35cd",
+    "src/shared/lib/math/formula-layout-validator.ts": "7e6c7ce78a804b7e2d7fa6223bd1f6c18e89cdc70c15241220c703cf657c8f9c",
+    "src/shared/lib/math/formula-punctuation.ts": "42af88d03512e48693e858e8beb0cb2c5b1cf27dc5ac206afe115367584f15b1",
+    "src/shared/lib/math/fraction-delimiters.ts": "de5b9b17050402513995cdb16f45dab68b227e0a93c1aa630c966cb3ff6ac8da",
+    "src/shared/lib/math/index.ts": "56be142fc96892a1711a7691b72e85f2e040cbbfeadf827960e8265ef87d763f",
+    "src/shared/lib/math/markdown-spans.ts": "8e76364efed66eefb24e2f8a64d3b9d38027bf69ace512c2fe1467b7ced12a71",
+    "src/shared/lib/math/matrix-alignment.ts": "5d40ee7e9fa83fec018c2118f52eccea32abe37fe579c84ad784291c056af581",
+    "src/shared/lib/math/matrix-delimiters.ts": "ea2a289f4aaf98f99a816ca55cdff0f28c6d411157932624d93771e30accd3af",
+    "src/shared/lib/math/matrix-spacing.ts": "24daf2778398457f97f4d57a82b75929b45578115a9b66141df2dd5e76d83b70",
+    "src/shared/lib/math/omml-normalizer.ts": "9724308d7a6c42761ea2588db5100412980c489cc29df5c5dbf56f8235bbfe98",
+    "src/shared/lib/report-config.ts": "59afdcf9678e4337be6612f36ad7f9d2535ba9a6de8c6675d75cc85c10db254a",
+    "src/shared/lib/source-preflight/asset-checker.ts": "723600f4fd7fcfeabd1cef8acefb1378728c77e9b2e5d86155508168cd93320b",
+    "src/shared/lib/source-preflight/bibliography-checker.ts": "80eda8f44e03f1af22752fbdf5f285f260eee5f22a9eab38473beaa10c44b031",
+    "src/shared/lib/source-preflight/bibliography-citations.ts": "990bed7c44ee2b745f4924bfb85a7edc6eb91ce1266471fdfdd6c975817dca38",
+    "src/shared/lib/source-preflight/bibliography-content-checker.ts": "c9c76d1041397e03ff790f47a693fea2b31d3682d23ef9f6fd57466fcf053496",
+    "src/shared/lib/source-preflight/bibliography-context.ts": "ca73bb575ac38e82fb1a0ed0ceedb75bc77f679291f564d60023e6d5afe15bb4",
+    "src/shared/lib/source-preflight/bibliography-date.ts": "bad1f1471b3a8b19ba2101e7e227c0306b5164965d321c72d490d639bcc7630d",
+    "src/shared/lib/source-preflight/bibliography-evidence.ts": "750c0293ce8241232eab2b03d051a24b65dda4e24007071965ec39407625ec14",
+    "src/shared/lib/source-preflight/bibliography-metadata.ts": "292c35868bb3bc705d99d923188a0c439ccff8f26013dc1da16290cd2ffc0f12",
+    "src/shared/lib/source-preflight/bibtex-source.ts": "d6bb59edd3e13645400132b04c735a301c672596c85e3fc9b2bde1b80dc1f67e",
+    "src/shared/lib/source-preflight/environment-checker.ts": "15bf629e0948be35cd2b082448cddf9f462bcf6dcb472219fa2bb167ada90532",
+    "src/shared/lib/source-preflight/formula-checker.ts": "20e3f1d3bf1f82927210ed4b303db28efc6f231c68999cb4b3c01d380a54ca8a",
+    "src/shared/lib/source-preflight/formula-line-break-checker.ts": "1d3c2df72418885d13d7b6109f89b2eb183c4d06469f0a4010b7b3321cbd410c",
+    "src/shared/lib/source-preflight/formula-punctuation-checker.ts": "5b9b4f75be0328e01949ea9a8f159fb4e0f30d462572a22f3711f5bca580e631",
+    "src/shared/lib/source-preflight/heading-checker.ts": "bea6e524237974dcdff96e95c36e4febab8bf180df1e425d4de7a7888e2f94fd",
+    "src/shared/lib/source-preflight/inline-list-checker.ts": "351335e1f88260c12fc23bf55d33b4e68b87cd3b068cfbf64656101c8fc0bba2",
+    "src/shared/lib/source-preflight/list-checker.ts": "3d73cf8d41cc37d1f2ad6700b525840d37cdb138d5ad6d37fb9d65c8b322e988",
+    "src/shared/lib/source-preflight/list-marker-parser.ts": "5bf9d9f1e5da06bd22151b4c9fe1b18eeadeed6a87bef04a29cfc695055a9f78",
+    "src/shared/lib/source-preflight/metadata-checker.ts": "bca5b23386e054c030fc5b174cc32b8026f9f17877e569d809e4de5aeab88117",
+    "src/shared/lib/source-preflight/microtypography-checker.ts": "9a4c7f3d80ca1e9868992c2f0e3d77ad451da5b0eb3d532acf371cf4ad528b00",
+    "src/shared/lib/source-preflight/punctuation-checker.ts": "864fb302d0e353014b28f9e085783e449b4d43767c91e24447ac7e25faac0aea",
+    "src/shared/lib/source-preflight/raw-math-checker.ts": "e1746981e62bd217e6821f766d4658b8199eecafc594e618253a3dd3e3b732d0",
+    "src/shared/lib/source-preflight/referat-checker.ts": "9016697d7cd1f0e5d5c9eade84a47432008f2dff41af2656bb3d5c404c3a715d",
+    "src/shared/lib/source-preflight/reference-checker.ts": "29082346e0ad69f6ec3d104530c889d866570750951125609a33db9922fcc2e0",
+    "src/shared/lib/source-preflight/soft-text-checker.ts": "05853cb0afa1e39ad1e36f338ba8d45c20184d4ec2f2a9ceaf76017571147d9c",
+    "src/shared/lib/source-preflight/structure-checker.ts": "de1892733ae46f466d58131b4c79de1565eed022e78637f80b5ce4147088ee27",
+    "src/shared/lib/source-preflight/table-cell-checker.ts": "bb1d2d6879f0471153f01e1986e5fa982db37c29223fab3a118c31b139d33513",
+    "src/shared/lib/source-preflight/table-figure-checker.ts": "3efcf025b035d9e82759028cf0a60ac99a15be820d6d13df581f712e8032e209",
+    "src/shared/lib/source-preflight/terms-checker.ts": "2cab046910238a7e50698ca1a5f62af624b186c3c990a1c277193a20c1e9a202",
+    "src/shared/lib/source-preflight/text-context.ts": "e966e5694f5d25205f3722381632b321b58dae4054dc814bff645da3463c3410",
+    "src/shared/lib/source-preflight/types.ts": "2cdaaafa23144e5d602ce89c27f9177ddbdc1b3f9bfde9696af0f8527f45244f",
+    "src/shared/lib/source-preflight/utils.ts": "11ec29b8fcd39799f630b373cfa5a8db8dabb87099e604ba70cdcaab7d606d50",
+    "src/shared/lib/source-preflight.ts": "f1386098c3759ed161fb2ab3dd8a1062d0a8054bd879c2c6d631923978d6d354",
+    "src/shared/lib/sto-template-style-validator.ts": "0d893bbbdc5a834f33701c7092966ac3b2eda79de525f14ddf1eb926269ebab7",
+    "src/shared/lib/sto-validator/bibliography-xml.ts": "49a5c4ee614fafc35a57c333e2b091c7defefa22c232f787394c37e7b0454ce2",
+    "src/shared/lib/sto-validator/body-xml.ts": "ae20a1c69d4367d71283b1fefdb0ad82df4eb0fa47f64b4f6ff24a5e725f530b",
+    "src/shared/lib/sto-validator/bold-formatting.ts": "b6506e1f375a5455ba04d2c5a4e9147810162099105623b0fad03ffd64515313",
+    "src/shared/lib/sto-validator/layout-xml.ts": "282e5661463bc328a03a51add18baf652ba63bb623ba5d9166583384060cbf74",
+    "src/shared/lib/sto-validator/math-layout-table.ts": "cb4710e084c0094507cea9282d389e42f73bb0b575b0f1ae7ac15cb82d4dc0b5",
+    "src/shared/lib/sto-validator/math-xml.ts": "5e6dd012c37d5e4140c1dba966d65606af0f82c5c5991e923c5b9f3dc28a6c1b",
+    "src/shared/lib/sto-validator/tab-xml.ts": "0cd23c545fe30e213f39a61416d0500486a8942c122e07732468089c0a78de47",
+    "src/shared/lib/sto-validator/table-bottom-border.ts": "aef04f7555ea47e7b783847fc6a683bee4138e0515a9e45b177fdd2d489b5783",
+    "src/shared/lib/sto-validator/table-caption-layout.ts": "c840bc95993146eb6cc134138942ea8d331da68470e0ce6aa070690c34307758",
+    "src/shared/lib/sto-validator/table-layout.ts": "117f6f4e27d20d3f7a1af51ebc5e61a86de542d1fe2798e66f2852ee7ff53b62",
+    "src/shared/lib/sto-validator/table-note-rows.ts": "0803faa3b186fa34e6517e70a8b47cfb671b94daaeeb86c6edfed206076d72e3",
+    "src/shared/lib/sto-validator.ts": "d4de277b77c78f0bb165e7462012cdb0fe5b85ab90ae23653c2511289b77f6ef",
+    "src/widgets/title-page/index.ts": "d2366f2552c11591cd5ca6e5c9442f22aa303f559c77a7fd6666f728e3f4a3c9",
+    "src/widgets/title-page/lib/compact-lab-title-page.ts": "d3bfdc5bd78b6d6c6ed0e3aedbb36e33635e780376ef5461969bee0d0f84c1e6",
+    "src/widgets/title-page/lib/ssau-course-project-title-page.ts": "3a0e06d53ae46a8b368afab7d198c9bba18864d0d76b10f0181e3f57cd42a7c6",
+    "src/widgets/title-page/lib/title-page-metadata.ts": "5596f742be29851e33095825e260bfe7a00132f8da1c56bce77a4155e4a83160",
+    "src/widgets/title-page/lib/title-page.ts": "6c32a5b952c3846169ee27b9595e75dbf16983999771d104db0afd169a81a771",
+    "src/widgets/title-page/lib/vkr-title-page.ts": "15f04e4cba1fa609d8a8498e8fb01d81f1a2c2189f3545993262c9791d732f54",
+    "tests/fixtures/dotm-word-corpus/00_metadata.md": "de423f0a695d627fc37b63aa5113007e5230d60a38183da03fa2d7a0d718db35",
+    "tests/fixtures/dotm-word-corpus/01_referat.md": "36a40297cf7a90d36c0247a4560a32a88dbf38ceeee0f98c8b86341c3645da03",
+    "tests/fixtures/dotm-word-corpus/02_toc.md": "1d0fb670b7e1c8f57f2fc7e09842e2c1a34e82491fd42e1ca576fed6ab329ea5",
+    "tests/fixtures/dotm-word-corpus/03_body.md": "0015896d6b0ce44b98ee051094415fe46caafe255d150291139d53fd62d94dec",
+    "tests/fixtures/dotm-word-corpus/90_conclusion.md": "a95167888bbc0ccc0b537b7aa2361efa0c02be2bca44f7c450e923f2bd6e453a",
+    "tests/fixtures/dotm-word-corpus/91_sources.md": "065f7c6081539089b0b9126d92324e20d8ff42624f5919dcdf39bc0753638e52",
+    "tests/fixtures/dotm-word-corpus/images/dummy.svg": "7a96e0b8747393124b1e1344dfac4ec5acd0913c0faf18ace06f6ebc0dc631ad",
+    "tests/fixtures/dotm-word-corpus/references.bib": "887bc69b8d5c37b0d918803d822547320438978da00141e81ff7592b9d83b610",
+    "tests/fixtures/formulas/fences.md": "21cf57a0444ddfcc789d76c31fa4c8d23c5c1585ae813d8d76391528206508c6",
+    "tests/fixtures/formulas/layout.md": "c4865cf177cc90577d2d2dfb4b7143bda0bbfcf3056ebc723d6fa8963b25d2e7",
+    "tests/fixtures/wordcraft/matrix-controls.md": "2353f04b1d4556bda47819990017c4ceb7a46f8284d81b3834c424f64bc3cbda",
+    "uv.lock": "c7a1e1886e079f2394d843c42ddbafb747859e1836dc9f5c1584238fc8f6422f"
+  },
+  "documents": [
+    {
+      "id": "example",
+      "title": "Демонстрационный отчёт",
+      "source": "example",
+      "description": "Титульный лист, реферат, оглавление, текст, таблица, рисунок, списки и источники.",
+      "renderer": "word-desktop-interactive",
+      "wordVersion": "16.0",
+      "wordBuild": "16.0.20527",
+      "pdfImageQuality": "print",
+      "pdfSha256": "b59181a96289288c270180c333d8403811d98f6059576b3df6ded06967a7424a",
+      "pageCount": 8,
+      "pages": [
+        {
+          "file": "example-page-1.png",
+          "sha256": "bf9d4c17019e2f10fa8e76c8becc1bc0bce1d586fb7644b1735e0e77b91babb5"
+        },
+        {
+          "file": "example-page-2.png",
+          "sha256": "64a718550235c3fa93240b0c4a2232ee4f5ea36483e20cbf25d919ebe6e39136"
+        },
+        {
+          "file": "example-page-3.png",
+          "sha256": "ff50943f21c515361c8f366ac7c12f2e2614bb375e57b4d7291c6394c71ca73a"
+        },
+        {
+          "file": "example-page-4.png",
+          "sha256": "b8f53310231e92f8d96e740a3c2084718f97cac8f6e7fe6ad8457b9e352817f8"
+        },
+        {
+          "file": "example-page-5.png",
+          "sha256": "ec0a3f3551108b861d8c869a5d24d07b8d270e7e809fb170764b73259ce8ddf9"
+        },
+        {
+          "file": "example-page-6.png",
+          "sha256": "c3023820871b170b5c50e8abfa60019e321f1c0375088bcc2229257d68c48f65"
+        },
+        {
+          "file": "example-page-7.png",
+          "sha256": "2a3b5130503054fdeb66a72c3ac0887ceb0f8430825c87702e7fdea4a3347470"
+        },
+        {
+          "file": "example-page-8.png",
+          "sha256": "c912843f5f806699f796a5623411a37bb3363777b43cfac527504d17a368e486"
+        }
+      ]
+    },
+    {
+      "id": "formulas",
+      "title": "Формулы",
+      "source": "tests/fixtures/formulas/layout.md",
+      "description": "Дроби, суммы, интегралы, системы, кусочные функции, переносы и номера формул.",
+      "renderer": "word-desktop-interactive",
+      "wordVersion": "16.0",
+      "wordBuild": "16.0.20527",
+      "pdfImageQuality": "print",
+      "pdfSha256": "5dd9aae1566b7d34cd73c18ccdbf8face1dfe7341a9c161ccb6870eea6c05f93",
+      "pageCount": 4,
+      "pages": [
+        {
+          "file": "formulas-page-1.png",
+          "sha256": "bf9d4c17019e2f10fa8e76c8becc1bc0bce1d586fb7644b1735e0e77b91babb5"
+        },
+        {
+          "file": "formulas-page-2.png",
+          "sha256": "d4d9e5201448bcce499255a78914a62a5fd315d14da705ddd4259b4bc5fd4dd3"
+        },
+        {
+          "file": "formulas-page-3.png",
+          "sha256": "4addbf2601170e8f2efa670d7c174d53c66d55daeeb59d4abf1f5a98858520b0"
+        },
+        {
+          "file": "formulas-page-4.png",
+          "sha256": "82c94a1aefdd5523bf6e9e52121e399470a30aabc22622ad7fab5b9224439cd5"
+        }
+      ],
+      "formulaLayoutCases": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "id": "matrices",
+      "title": "Матрицы",
+      "source": "tests/fixtures/wordcraft/matrix-controls.md",
+      "description": "Матрицы разных размеров, скобки, определители и вложенные конструкции.",
+      "renderer": "word-desktop-interactive",
+      "wordVersion": "16.0",
+      "wordBuild": "16.0.20527",
+      "pdfImageQuality": "print",
+      "pdfSha256": "fd03cf12a50b1e1c2a5af9f59eabbc8b3e5d5f66e428869f503788442d661bbc",
+      "pageCount": 4,
+      "pages": [
+        {
+          "file": "matrices-page-1.png",
+          "sha256": "bf9d4c17019e2f10fa8e76c8becc1bc0bce1d586fb7644b1735e0e77b91babb5"
+        },
+        {
+          "file": "matrices-page-2.png",
+          "sha256": "69c77c735f2e2b1e35cbd3834312d1c6cdae8fcbbdfe39bd1492f850a7db3f35"
+        },
+        {
+          "file": "matrices-page-3.png",
+          "sha256": "f71f95fbe3ac67bf6bcd45d73d6d136cbc6cfe7753fa7179d0a8ac2bad5f7f6b"
+        },
+        {
+          "file": "matrices-page-4.png",
+          "sha256": "948bf1dcdcf17cb1adee87e0fe1ead4b27f7190083a743ec6a02d0b389d6c09a"
+        }
+      ]
+    },
+    {
+      "id": "fences",
+      "title": "Скобки и единичные матрицы",
+      "source": "tests/fixtures/formulas/fences.md",
+      "description": "Квадратные и круглые скобки, единичные матрицы 2×2–4×4 и вложенные дроби.",
+      "renderer": "word-desktop-interactive",
+      "wordVersion": "16.0",
+      "wordBuild": "16.0.20527",
+      "pdfImageQuality": "print",
+      "pdfSha256": "8eda23c835035d17d3d5a4bd98ca5d01444e35b122e5ccfc916efa1dab826934",
+      "pageCount": 2,
+      "pages": [
+        {
+          "file": "fences-page-1.png",
+          "sha256": "bf9d4c17019e2f10fa8e76c8becc1bc0bce1d586fb7644b1735e0e77b91babb5"
+        },
+        {
+          "file": "fences-page-2.png",
+          "sha256": "aa408c38e0d04a4b258dd2210dc298428c8d340ef076831cc7df978ff092b94b"
+        }
+      ]
+    },
+    {
+      "id": "structure",
+      "title": "Стили и структурные элементы",
+      "source": "tests/fixtures/dotm-word-corpus",
+      "description": "Уровни заголовков, оглавление, рисунок, длинная таблица с продолжением и библиография.",
+      "renderer": "word-desktop-interactive",
+      "wordVersion": "16.0",
+      "wordBuild": "16.0.20527",
+      "pdfImageQuality": "print",
+      "pdfSha256": "d9d9079aed4468eecc73b1666053ec309b2e712c7170be194283090381513f55",
+      "pageCount": 11,
+      "pages": [
+        {
+          "file": "structure-page-1.png",
+          "sha256": "f67fc8a4a27eecfe8c47dd175c9b5676bca6dc758fb90c187959b1528704b35c"
+        },
+        {
+          "file": "structure-page-2.png",
+          "sha256": "f25db9a9946aebc393c8132f71f2471aeb30db5fcd3838fd51b771a326d74a66"
+        },
+        {
+          "file": "structure-page-3.png",
+          "sha256": "c19b432c4ddbbd1275897b5245cc54ecf07a9d5967357aeefd96b48d56ea4baf"
+        },
+        {
+          "file": "structure-page-4.png",
+          "sha256": "ef70f33cf6d57401982ae7e79fb5154ef4db69ab7e566c41b25803cc57329726"
+        },
+        {
+          "file": "structure-page-5.png",
+          "sha256": "87e1a26f79d416827633bfc1ef5c7a8a3cd371151357ad33e7c47655bcb40bc0"
+        },
+        {
+          "file": "structure-page-6.png",
+          "sha256": "68243eddcff90320d597830aebcb1401b384b820704d46efab55628960371ddf"
+        },
+        {
+          "file": "structure-page-7.png",
+          "sha256": "89babad8924f58d2703d9c11ea707062e0fc29042ea098ac19383c1afac9b9ec"
+        },
+        {
+          "file": "structure-page-8.png",
+          "sha256": "ea706d6e65c60f87ec41a80e4050c0cebbc0df65105f2abe1325093f7c043d60"
+        },
+        {
+          "file": "structure-page-9.png",
+          "sha256": "26719c6d890d507430338307f4006e97eb43dda7fad22de59b74623d06ac1d67"
+        },
+        {
+          "file": "structure-page-10.png",
+          "sha256": "29994c34b1e5b1766662305cab9c0d7680a67eaf43a00d3f1ae465d9b4c537bc"
+        },
+        {
+          "file": "structure-page-11.png",
+          "sha256": "c1033bb10fc18474ddccb82cffe585fdd5bdc543d6c7b4ede150cbc97f63d7e0"
+        }
+      ]
+    }
+  ]
+}

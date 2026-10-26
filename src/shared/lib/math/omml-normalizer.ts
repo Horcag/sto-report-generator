@@ -1,3 +1,5 @@
+import { normalizeFractionDelimiters } from './fraction-delimiters';
+
 const MATH_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math';
 const ACCENT_CHARS = new Map([
 	['~', '\u0303'],
@@ -9,6 +11,64 @@ const ACCENT_CHARS = new Map([
 ]);
 const OVERBAR_CHARS = new Set(['¯', '―']);
 const UPRIGHT_LIMIT_OPERATORS = new Set(['min', 'max', 'lim', 'inf', 'sup']);
+
+const INTEGRAL_CHARS = new Set(['∫', '∬', '∭', '∮', '∯', '∰', '∱', '∲', '∳']);
+const SCRIPT_OPERANDS = new Set([
+	'm:sSup',
+	'm:sSub',
+	'm:sSubSup',
+	'm:acc',
+	'm:bar',
+	'm:rad',
+]);
+const GROUP_OPERANDS = new Set(['m:f', 'm:d', 'm:func', 'm:m']);
+
+function isIntegralOperand(element: Element): boolean {
+	if (element.tagName === 'm:r') {
+		return /^[\p{L}\p{N}\p{M}]+$/u.test(element.textContent?.trim() ?? '');
+	}
+	if (GROUP_OPERANDS.has(element.tagName)) {
+		return /[\p{L}\p{N}]/u.test(element.textContent ?? '');
+	}
+	if (SCRIPT_OPERANDS.has(element.tagName) || element.tagName === 'm:nary') {
+		const base = [...element.children].find(
+			child => child.tagName === 'm:e',
+		);
+		return (
+			!!base?.firstElementChild &&
+			isIntegralOperand(base.firstElementChild)
+		);
+	}
+	return false;
+}
+
+function normalizeEmptyIntegralArguments(mathElement: Element): void {
+	// Resolve inner/consecutive integrals first, and consume only one complete atom.
+	for (const integral of [
+		...mathElement.getElementsByTagName('m:nary'),
+	].reverse()) {
+		const properties = [...integral.children].find(
+			child => child.tagName === 'm:naryPr',
+		);
+		const character =
+			properties &&
+			[...properties.children].find(child => child.tagName === 'm:chr');
+		if (!INTEGRAL_CHARS.has(character?.getAttribute('m:val') ?? ''))
+			continue;
+		const argument = [...integral.children].find(
+			child => child.tagName === 'm:e',
+		);
+		const operand = integral.nextElementSibling;
+		if (
+			!argument ||
+			argument.children.length ||
+			argument.textContent?.trim() ||
+			!operand
+		)
+			continue;
+		if (isIntegralOperand(operand)) argument.appendChild(operand);
+	}
+}
 
 function normalizeLimitOperators(mathElement: Element): void {
 	for (const limit of [
@@ -113,4 +173,6 @@ export function normalizeOmmlMath(mathElement: Element): void {
 	normalizeAccents(mathElement);
 	normalizeEmptyAccentScripts(mathElement);
 	normalizeLimitOperators(mathElement);
+	normalizeEmptyIntegralArguments(mathElement);
+	normalizeFractionDelimiters(mathElement);
 }

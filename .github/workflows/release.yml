@@ -1,4 +1,4 @@
-name: Release artifact
+name: Release
 
 on:
     push:
@@ -8,6 +8,10 @@ on:
 
 permissions:
     contents: read
+
+concurrency:
+    group: release-${{ github.ref }}
+    cancel-in-progress: false
 
 jobs:
     package:
@@ -35,15 +39,52 @@ jobs:
             - name: Install Python tooling
               run: uv sync --group dev
 
+            - name: Validate release metadata
+              env:
+                  RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+              run: node scripts/quality/check_release_version.cjs
+
+            - name: Test release validation
+              run: node --test scripts/quality/tests/release_version.test.cjs
+
+            - name: Check LF in raw index and worktree
+              run: uv run python scripts/quality/check_line_endings.py
+
             - name: Run quality gate
               run: npm run quality
 
             - name: Pack npm artifact
-              run: npm pack --pack-destination .agent-work
+              run: |
+                  mkdir -p "$RUNNER_TEMP/release"
+                  npm pack --pack-destination "$RUNNER_TEMP/release"
 
             - name: Upload package artifact
               uses: actions/upload-artifact@v7
               with:
                   name: sto-report-generator-package
-                  path: .agent-work/*.tgz
+                  path: ${{ runner.temp }}/release/*.tgz
                   if-no-files-found: error
+
+    publish:
+        name: Publish GitHub release
+        needs: package
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: write
+        steps:
+            - name: Download verified package
+              uses: actions/download-artifact@v8
+              with:
+                  name: sto-report-generator-package
+                  path: release
+
+            - name: Publish release with merged pull requests
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  GH_REPO: ${{ github.repository }}
+                  RELEASE_TAG: ${{ github.ref_name }}
+              run: |
+                  gh release create "$RELEASE_TAG" release/*.tgz \
+                    --verify-tag --title "$RELEASE_TAG" --generate-notes \
+                    --notes "Highlights and compatibility notes: https://github.com/$GH_REPO/blob/$RELEASE_TAG/CHANGELOG.md"

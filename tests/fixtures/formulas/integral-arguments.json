@@ -1,0 +1,167 @@
+[
+	{
+		"name": "unbounded run",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>x</m:t></m:r><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:r><m:t>x</m:t></m:r></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "bounded run",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e></m:e></m:nary><m:r><m:t>x</m:t></m:r><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e><m:r><m:t>x</m:t></m:r></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "unbounded superscript",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "bounded superscript",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "unbounded fraction",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:f><m:num><m:r><m:t>1</m:t></m:r></m:num><m:den><m:r><m:t>x</m:t></m:r></m:den></m:f><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:f><m:num><m:r><m:t>1</m:t></m:r></m:num><m:den><m:r><m:t>x</m:t></m:r></m:den></m:f></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "bounded fraction",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e></m:e></m:nary><m:f><m:num><m:r><m:t>1</m:t></m:r></m:num><m:den><m:r><m:t>x</m:t></m:r></m:den></m:f><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e><m:f><m:num><m:r><m:t>1</m:t></m:r></m:num><m:den><m:r><m:t>x</m:t></m:r></m:den></m:f></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "unbounded group",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:d><m:dPr><m:grow m:val=\"1\"/></m:dPr><m:e><m:r><m:t>x+1</m:t></m:r></m:e></m:d><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:d><m:dPr><m:grow m:val=\"1\"/></m:dPr><m:e><m:r><m:t>x+1</m:t></m:r></m:e></m:d></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "bounded group",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e></m:e></m:nary><m:d><m:dPr><m:grow m:val=\"1\"/></m:dPr><m:e><m:r><m:t>x+1</m:t></m:r></m:e></m:d><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e><m:d><m:dPr><m:grow m:val=\"1\"/></m:dPr><m:e><m:r><m:t>x+1</m:t></m:r></m:e></m:d></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "differential remains outside",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup><m:r><m:t>dx</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:sub><m:r><m:t>0</m:t></m:r></m:sub><m:sup><m:r><m:t>1</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>dx</m:t></m:r>"
+	},
+	{
+		"name": "reject run '+'",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run '−'",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>−</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>−</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run '='",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>=</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>=</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run ','",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>,</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>,</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run ';'",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>;</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>;</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run '.'",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>.</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>.</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run ')'",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>)</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>)</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run 'x+y'",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>x+y</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>x+y</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run 'x,'",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>x,</m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>x,</m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run ''",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t></m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t></m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "reject run ' '",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t> </m:t></m:r><m:r><m:t>y</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t> </m:t></m:r><m:r><m:t>y</m:t></m:r>"
+	},
+	{
+		"name": "existing nonempty slot",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:r><m:t>f</m:t></m:r></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:r><m:t>f</m:t></m:r></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>"
+	},
+	{
+		"name": "formatted empty run is not empty slot",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:r><m:rPr/><m:t/></m:r></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:r><m:rPr/><m:t/></m:r></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>"
+	},
+	{
+		"name": "absent argument",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>"
+	},
+	{
+		"name": "absent operand",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary>"
+	},
+	{
+		"name": "unknown operand",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:phant><m:r><m:t>x</m:t></m:r></m:phant>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:phant><m:r><m:t>x</m:t></m:r></m:phant>"
+	},
+	{
+		"name": "non integral operator",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>"
+	},
+	{
+		"name": "scripted operator",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>+</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>+</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>"
+	},
+	{
+		"name": "empty structured operand",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:d><m:e/></m:d>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:d><m:e/></m:d>"
+	},
+	{
+		"name": "consecutive integrals",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup><m:r><m:t>dxdy</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:e></m:nary></m:e></m:nary><m:r><m:t>dxdy</m:t></m:r>"
+	},
+	{
+		"name": "nested empty integral",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>dx</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:e></m:nary></m:e></m:nary><m:r><m:t>dx</m:t></m:r>"
+	},
+	{
+		"name": "nested integrals without operand",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary>"
+	},
+	{
+		"name": "contour integral",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∮\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∮\"/></m:naryPr><m:e><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:e></m:nary>"
+	},
+	{
+		"name": "unicode operand",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>α</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:r><m:t>α</m:t></m:r></m:e></m:nary>"
+	}
+]

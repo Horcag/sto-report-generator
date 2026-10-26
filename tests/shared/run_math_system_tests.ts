@@ -9,6 +9,8 @@ import {
 	restoreMatrixAlignments,
 } from '@/shared/lib/math/matrix-alignment';
 
+import { runMatrixSpacingTests } from './matrix_spacing.test';
+
 const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
 const MATH_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math';
 const cases = [
@@ -197,6 +199,7 @@ function runAlignmentGuards(): void {
 async function run(): Promise<void> {
 	assert.equal(cases.length, 7, 'all seven named system controls discovered');
 	runAlignmentGuards();
+	runMatrixSpacingTests();
 	await mathJaxReady();
 	const document = new Document({
 		sections: [
@@ -228,6 +231,23 @@ async function run(): Promise<void> {
 		assert.equal(matrices.length, control.matrices.length, control.name);
 		for (const [matrixIndex, expected] of control.matrices.entries()) {
 			const matrix = matrices[matrixIndex];
+			if (index === 4 || index === 5) {
+				assert.equal(
+					matrix
+						.getElementsByTagName('m:rSp')[0]
+						?.getAttribute('m:val'),
+					'416',
+					'normal and nested MathJax matrices use the minimum baseline',
+				);
+				assert.equal(
+					matrix
+						.getElementsByTagName('m:cGp')[0]
+						?.getAttribute('m:val'),
+					'280',
+					'normal and nested MathJax matrices preserve the 1em column gap',
+				);
+			}
+
 			assert.deepEqual(
 				expandedAlignment(matrix),
 				expected.alignment,

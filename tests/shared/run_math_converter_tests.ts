@@ -12,6 +12,8 @@ import {
 	normalizeMathJaxImportSpecifier,
 } from '../../src/shared/lib/math';
 import { validateSourceFormulas } from '../../src/shared/lib/source-preflight/formula-checker';
+import { testFractionDelimiterConversion } from './fraction_delimiters.test';
+import { testIntegralConversion } from './integral_arguments.test';
 
 assert.equal(
 	normalizeMathJaxImportSpecifier(
@@ -32,6 +34,8 @@ assert.equal(
 
 async function main(): Promise<void> {
 	await mathJaxReady();
+	await testIntegralConversion();
+	await testFractionDelimiterConversion();
 	assert.doesNotThrow(() => convertLatex2Math('\\frac{1}{x^2 - 1}'));
 	const semanticMath = [
 		'\\stovec{a}',
