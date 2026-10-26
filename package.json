@@ -65,14 +65,16 @@
 		"python:lint:fix": "uv run ruff check --fix scripts tests/quality",
 		"python:typecheck": "uv run mypy scripts",
 		"python:quality": "npm run python:format:check && npm run python:lint && npm run python:typecheck",
-		"ci:check": "npm run format:check && npm run lint -- --max-warnings=0 && npm run typecheck && npm run fsd:check && npm run test:quality-policy && npm run test:coverage && npm run check:pack && npm run check:file-size && npm run check:markdown-links && npm run check:spelling && npm run security:audit",
+		"ci:check": "npm run format:check && npm run lint -- --max-warnings=0 && npm run typecheck && npm run fsd:check && npm run test:quality-policy && npm run test:coverage && npm run check:pack && npm run check:file-size && npm run check:markdown-links && npm run check:spelling && npm run security:audit && npm run gallery:check",
 		"quality": "npm run ci:check && npm run python:quality",
 		"quality:clean-index": "uv run python scripts/quality/run_clean_index_quality.py",
 		"hooks:install": "uv run pre-commit install --hook-type pre-commit --hook-type pre-push",
 		"hooks:run": "uv run pre-commit run --all-files",
 		"hooks:push": "uv run pre-commit run --hook-stage pre-push --all-files",
 		"test:wordcraft": "npx tsx tests/workflow/run_wordcraft_live_tests.ts",
-		"postinstall": "node scripts/quality/patch_steiger_zod.cjs"
+		"postinstall": "node scripts/quality/patch_steiger_zod.cjs",
+		"gallery:update": "uv run --with pymupdf==2.0 python scripts/quality/report_gallery.py update",
+		"gallery:check": "uv run python scripts/quality/report_gallery.py check"
 	},
 	"keywords": [],
 	"author": "",

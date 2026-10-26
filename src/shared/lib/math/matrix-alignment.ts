@@ -1,5 +1,12 @@
 import { JSDOM } from 'jsdom';
 
+import {
+	matrixColumnGapTwips,
+	matrixMinRowBaselineTwips,
+	restoreMatrixColumnSpacing,
+	restoreMatrixRowSpacing,
+} from './matrix-spacing';
+
 const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
 const OMML_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math';
 
@@ -7,6 +14,8 @@ export interface MatrixAlignment {
 	columns: string[];
 	rowLengths: number[];
 	parent: number | null;
+	minRowBaselineTwips?: number;
+	columnGapTwips?: number;
 }
 
 function direct(element: Element, namespace: string, name: string): Element[] {
@@ -52,7 +61,13 @@ export function collectMatrixAlignments(document: Document): MatrixAlignment[] {
 		) {
 			throw new Error('Unsupported MathML matrix column alignment.');
 		}
+		const minRowBaselineTwips = matrixMinRowBaselineTwips(matrix);
+		const columnGapTwips = matrixColumnGapTwips(matrix);
 		return {
+			...(minRowBaselineTwips === undefined
+				? {}
+				: { minRowBaselineTwips }),
+			...(columnGapTwips === undefined ? {} : { columnGapTwips }),
 			columns: Array.from(
 				{ length: Math.max(...rowLengths) },
 				(_, index) => alignments[index] ?? alignments.at(-1)!,
@@ -113,6 +128,12 @@ export function restoreMatrixAlignments(
 			group.append(groupProperties);
 			columns.append(group);
 			column = end;
+		}
+		if (expected.minRowBaselineTwips !== undefined) {
+			restoreMatrixRowSpacing(properties, expected.minRowBaselineTwips);
+		}
+		if (expected.columnGapTwips !== undefined) {
+			restoreMatrixColumnSpacing(properties, expected.columnGapTwips);
 		}
 		// mcs precedes the control properties in the OMML matrix property sequence.
 		properties.insertBefore(

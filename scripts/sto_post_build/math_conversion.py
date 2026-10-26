@@ -8,6 +8,9 @@ from typing import Any
 from lxml import etree
 
 from .constants import MATH_NS, SMALL_TILDE, WORD_NS
+from .fraction_delimiters import normalize_fraction_delimiters
+from .integral_arguments import normalize_empty_integral_arguments
+from .matrix_spacing import matrix_spacing_metadata, restore_matrix_spacing
 
 ACCENT_CHARS = {
     "~": "\u0303",  # combining tilde
@@ -189,6 +192,7 @@ def collect_matrix_alignments(mathml: str) -> list[dict[str, Any]]:
         )
         result.append(
             {
+                **matrix_spacing_metadata(matrix),
                 "columns": [
                     alignments[min(index, len(alignments) - 1)] for index in range(max(lengths))
                 ],
@@ -233,6 +237,7 @@ def restore_matrix_alignments(omml: str, source: list[dict[str, Any]]) -> str:
                 property_element = etree.SubElement(group_properties, f"{{{MATH_NS}}}{name}")
                 property_element.set(f"{{{MATH_NS}}}val", value)
             index = end
+        restore_matrix_spacing(properties, expected)
         control = properties.find(f"{{{MATH_NS}}}ctrlPr")
         properties.insert(
             properties.index(control) if control is not None else len(properties), columns
@@ -480,6 +485,8 @@ def convert_mathml_to_omath(mathml_values: Sequence[str], repo_root: Path) -> li
         omath_copy = etree.fromstring(etree.tostring(omath))
         normalize_accents(omath_copy)
         normalize_limit_operators(omath_copy)
+        normalize_empty_integral_arguments(omath_copy)
+        normalize_fraction_delimiters(omath_copy)
         omath_values.append(omath_copy)
 
     return omath_values
