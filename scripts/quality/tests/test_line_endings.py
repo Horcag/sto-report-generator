@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -118,7 +119,7 @@ class LineEndingTests(unittest.TestCase):
         (self.root / "link").symlink_to("untracked.txt")
         self.assertEqual(check(self.root), [])
 
-    @unittest.skipIf(os.name == "nt", "Windows paths cannot contain arbitrary bytes")
+    @unittest.skipUnless(sys.platform == "linux", "Arbitrary-byte filenames require Linux")
     def test_non_utf8_path_is_detected(self) -> None:
         name = os.fsdecode(b"non-utf8-\xff.txt")
         self.raw_index(name, b"text\r\n")
