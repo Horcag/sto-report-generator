@@ -147,7 +147,7 @@ async function main(): Promise<void> {
 		assert.equal(help.status, 0, help.stderr);
 		assert.match(help.stdout, /portable\|word\|wordcraft/);
 		assert.match(help.stdout, /--wordcraft/);
-		assert.match(help.stdout, /wordcraft-cli 0\.11\.0/);
+		assert.match(help.stdout, /wordcraft-cli 0\.12\.0/);
 		const conflict = cli([
 			'generate',
 			report,
@@ -171,7 +171,7 @@ async function main(): Promise<void> {
 		);
 		if (doctor.error) throw doctor.error;
 		assert.match(doctor.stdout, /Wordcraft renderer: unavailable/);
-		assert.match(doctor.stdout, /requires wordcraft-cli 0\.11\.0/);
+		assert.match(doctor.stdout, /requires wordcraft-cli 0\.12\.0/);
 		assert.match(doctor.stdout, /ENOENT/);
 		cases++;
 	} finally {

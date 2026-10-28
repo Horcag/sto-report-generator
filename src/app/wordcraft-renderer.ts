@@ -37,7 +37,7 @@ export interface WordcraftRenderResult {
 	tables: WordcraftTableReport;
 }
 
-const TESTED_VERSION = '0.11.0';
+const TESTED_VERSION = '0.12.0';
 const EXPERIMENTAL_WARNING =
 	'Experimental Wordcraft rendering; Microsoft Word acceptance has not been performed.';
 

@@ -6,8 +6,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.11.0**, release commit `e31f2f06a5f8004ceaa88f68c00b47908e321aa4`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.11.0).
+- Supported CLI: **0.12.0**, release commit `3de6ff95af86c19d67030cd96dba15cd6a45a25e`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.12.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -203,9 +203,9 @@ accepted Word receipts for their exact source DOCX before a new comparison can e
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.11.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.11.0/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.11.0/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.12.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.12.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.12.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.
@@ -235,3 +235,10 @@ of nonconforming legacy table headings are explicit comparison boundaries.
 The current generator accepts valid PNG decoded rows up to 128 MiB after checking exact
 noninterlaced or Adam7 output size before inflation. Larger inputs fail explicitly;
 images are never silently resized to satisfy this validation budget.
+
+## 0.12.0 acceptance
+
+The [0.12.0 audit](../audits/2026-10-28-wordcraft-0120.md) compares frozen current
+inputs with both engine versions and native Word. New public controls exercise NBSP,
+zero-width bookmarks and both explicit `doNotExpandShiftReturn` settings. The semantic
+TOC import workaround remains necessary; no general math-leading fix is assumed.
