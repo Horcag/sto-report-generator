@@ -376,7 +376,7 @@ function testLargeDocumentGetsEnoughBackgroundTime(): void {
 		{ largeDocument: true, deterministicTableFailure: true },
 		(inputDocx, calls) => {
 			assert.throws(() => runWordAcceptance({ inputDocx }));
-			assert.equal(calls[0].timeout, 180_000);
+			assert.equal(calls[0].timeout, 300_000);
 			assert.deepEqual(
 				calls.map(call => call.cleanup),
 				[false, true],
