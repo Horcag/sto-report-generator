@@ -12,7 +12,19 @@ const ACCENT_CHARS = new Map([
 const OVERBAR_CHARS = new Set(['¯', '―']);
 const UPRIGHT_LIMIT_OPERATORS = new Set(['min', 'max', 'lim', 'inf', 'sup']);
 
-const INTEGRAL_CHARS = new Set(['∫', '∬', '∭', '∮', '∯', '∰', '∱', '∲', '∳']);
+const NARY_ARGUMENT_CHARS = new Set([
+	'∫',
+	'∬',
+	'∭',
+	'∮',
+	'∯',
+	'∰',
+	'∱',
+	'∲',
+	'∳',
+	'∑',
+	'∏',
+]);
 const SCRIPT_OPERANDS = new Set([
 	'm:sSup',
 	'm:sSub',
@@ -23,7 +35,7 @@ const SCRIPT_OPERANDS = new Set([
 ]);
 const GROUP_OPERANDS = new Set(['m:f', 'm:d', 'm:func', 'm:m']);
 
-function isIntegralOperand(element: Element): boolean {
+function isNaryOperand(element: Element): boolean {
 	if (element.tagName === 'm:r') {
 		return /^[\p{L}\p{N}\p{M}]+$/u.test(element.textContent?.trim() ?? '');
 	}
@@ -35,30 +47,29 @@ function isIntegralOperand(element: Element): boolean {
 			child => child.tagName === 'm:e',
 		);
 		return (
-			!!base?.firstElementChild &&
-			isIntegralOperand(base.firstElementChild)
+			!!base?.firstElementChild && isNaryOperand(base.firstElementChild)
 		);
 	}
 	return false;
 }
 
-function normalizeEmptyIntegralArguments(mathElement: Element): void {
-	// Resolve inner/consecutive integrals first, and consume only one complete atom.
-	for (const integral of [
+function normalizeEmptyNaryArguments(mathElement: Element): void {
+	// Resolve inner/consecutive operators first, and consume only one complete atom.
+	for (const operator of [
 		...mathElement.getElementsByTagName('m:nary'),
 	].reverse()) {
-		const properties = [...integral.children].find(
+		const properties = [...operator.children].find(
 			child => child.tagName === 'm:naryPr',
 		);
 		const character =
 			properties &&
 			[...properties.children].find(child => child.tagName === 'm:chr');
-		if (!INTEGRAL_CHARS.has(character?.getAttribute('m:val') ?? ''))
+		if (!NARY_ARGUMENT_CHARS.has(character?.getAttribute('m:val') ?? ''))
 			continue;
-		const argument = [...integral.children].find(
+		const argument = [...operator.children].find(
 			child => child.tagName === 'm:e',
 		);
-		const operand = integral.nextElementSibling;
+		const operand = operator.nextElementSibling;
 		if (
 			!argument ||
 			argument.children.length ||
@@ -66,7 +77,7 @@ function normalizeEmptyIntegralArguments(mathElement: Element): void {
 			!operand
 		)
 			continue;
-		if (isIntegralOperand(operand)) argument.appendChild(operand);
+		if (isNaryOperand(operand)) argument.appendChild(operand);
 	}
 }
 
@@ -173,6 +184,6 @@ export function normalizeOmmlMath(mathElement: Element): void {
 	normalizeAccents(mathElement);
 	normalizeEmptyAccentScripts(mathElement);
 	normalizeLimitOperators(mathElement);
-	normalizeEmptyIntegralArguments(mathElement);
+	normalizeEmptyNaryArguments(mathElement);
 	normalizeFractionDelimiters(mathElement);
 }

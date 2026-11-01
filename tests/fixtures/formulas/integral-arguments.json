@@ -125,9 +125,9 @@
 		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:phant><m:r><m:t>x</m:t></m:r></m:phant>"
 	},
 	{
-		"name": "non integral operator",
-		"source": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>",
-		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>"
+		"name": "unsupported operator",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"★\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"★\"/></m:naryPr><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup>"
 	},
 	{
 		"name": "scripted operator",
@@ -163,5 +163,35 @@
 		"name": "unicode operand",
 		"source": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e></m:e></m:nary><m:r><m:t>α</m:t></m:r>",
 		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∫\"/></m:naryPr><m:e><m:r><m:t>α</m:t></m:r></m:e></m:nary>"
+	},
+	{
+		"name": "mean sum keeps superscript summand inside operator and comma outside",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>t</m:t></m:r></m:e><m:sup><m:r><m:t>(m)</m:t></m:r></m:sup></m:sSup><m:r><m:t>, </m:t></m:r><m:r><m:t>M</m:t></m:r><m:r><m:t>=20,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>t</m:t></m:r></m:e><m:sup><m:r><m:t>(m)</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>, </m:t></m:r><m:r><m:t>M</m:t></m:r><m:r><m:t>=20,</m:t></m:r>"
+	},
+	{
+		"name": "bounded sum with subscript operand",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e></m:e></m:nary><m:sSub><m:e><m:r><m:t>v</m:t></m:r></m:e><m:sub><m:r><m:t>j</m:t></m:r></m:sub></m:sSub><m:r><m:t>=</m:t></m:r><m:r><m:t>6i+21</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e><m:sSub><m:e><m:r><m:t>v</m:t></m:r></m:e><m:sub><m:r><m:t>j</m:t></m:r></m:sub></m:sSub></m:e></m:nary><m:r><m:t>=</m:t></m:r><m:r><m:t>6i+21</m:t></m:r>"
+	},
+	{
+		"name": "bounded product with superscript operand",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∏\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e></m:e></m:nary><m:sSup><m:e><m:r><m:t>t</m:t></m:r></m:e><m:sup><m:r><m:t>(m)</m:t></m:r></m:sup></m:sSup><m:r><m:t>+</m:t></m:r><m:r><m:t>1</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∏\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e><m:sSup><m:e><m:r><m:t>t</m:t></m:r></m:e><m:sup><m:r><m:t>(m)</m:t></m:r></m:sup></m:sSup></m:e></m:nary><m:r><m:t>+</m:t></m:r><m:r><m:t>1</m:t></m:r>"
+	},
+	{
+		"name": "consecutive sums attach inner operator first",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e></m:e></m:nary><m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e></m:e></m:nary><m:sSub><m:e><m:r><m:t>v</m:t></m:r></m:e><m:sub><m:r><m:t>j</m:t></m:r></m:sub></m:sSub><m:r><m:t>,</m:t></m:r>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e><m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e><m:sSub><m:e><m:r><m:t>v</m:t></m:r></m:e><m:sub><m:r><m:t>j</m:t></m:r></m:sub></m:sSub></m:e></m:nary></m:e></m:nary><m:r><m:t>,</m:t></m:r>"
+	},
+	{
+		"name": "sum does not consume punctuation",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e></m:e></m:nary><m:r><m:t>,</m:t></m:r><m:sSup><m:e><m:r><m:t>t</m:t></m:r></m:e><m:sup><m:r><m:t>(m)</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e></m:e></m:nary><m:r><m:t>,</m:t></m:r><m:sSup><m:e><m:r><m:t>t</m:t></m:r></m:e><m:sup><m:r><m:t>(m)</m:t></m:r></m:sup></m:sSup>"
+	},
+	{
+		"name": "sum preserves filled argument",
+		"source": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e><m:sSub><m:e><m:r><m:t>v</m:t></m:r></m:e><m:sub><m:r><m:t>j</m:t></m:r></m:sub></m:sSub></m:e></m:nary><m:sSup><m:e><m:r><m:t>t</m:t></m:r></m:e><m:sup><m:r><m:t>(m)</m:t></m:r></m:sup></m:sSup>",
+		"expected": "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/></m:naryPr><m:sub><m:r><m:t>m=1</m:t></m:r></m:sub><m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e><m:sSub><m:e><m:r><m:t>v</m:t></m:r></m:e><m:sub><m:r><m:t>j</m:t></m:r></m:sub></m:sSub></m:e></m:nary><m:sSup><m:e><m:r><m:t>t</m:t></m:r></m:e><m:sup><m:r><m:t>(m)</m:t></m:r></m:sup></m:sSup>"
 	}
 ]
