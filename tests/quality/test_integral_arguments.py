@@ -47,6 +47,33 @@ class IntegralArgumentTests(unittest.TestCase):
             "dx.",
         )
 
+    def test_repairs_sum_and_product_without_consuming_following_expression(self) -> None:
+        cases = [
+            ("∑", "sSup", "sup", "(m)"),
+            ("∏", "sSub", "sub", "m"),
+        ]
+        for character, operand_tag, script_tag, script_text in cases:
+            with self.subTest(operator=character):
+                root = etree.fromstring(
+                    f'<m:oMath xmlns:m="{MATH_NS}">'
+                    f'<m:nary><m:naryPr><m:chr m:val="{character}"/></m:naryPr>'
+                    "<m:sub><m:r><m:t>m=1</m:t></m:r></m:sub>"
+                    "<m:sup><m:r><m:t>M</m:t></m:r></m:sup><m:e/></m:nary>"
+                    f"<m:{operand_tag}><m:e><m:r><m:t>t</m:t></m:r></m:e>"
+                    f"<m:{script_tag}><m:r><m:t>{script_text}</m:t></m:r></m:{script_tag}>"
+                    f"</m:{operand_tag}><m:r><m:t>+y.</m:t></m:r></m:oMath>"
+                )
+                self.assertEqual(normalize_empty_integral_arguments(root), 1)
+                operator = root.find(f"{{{MATH_NS}}}nary")
+                self.assertIsNotNone(operator)
+                argument = operator.find(f"{{{MATH_NS}}}e")
+                self.assertEqual([child.tag for child in argument], [f"{{{MATH_NS}}}{operand_tag}"])
+                self.assertEqual("".join(argument.itertext()), f"t{script_text}")
+                self.assertEqual(
+                    "".join("".join(node.itertext()) for node in operator.itersiblings()).strip(),
+                    "+y.",
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

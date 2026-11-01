@@ -16,7 +16,7 @@
     "package.json": "94877b5bc229efbcee27abc03e0482239105e56f4687bf444a690e69580c22be",
     "pyproject.toml": "0eb1993c9e5c7883827776f4ba3efd6765a1dc9aff33111d691cc30ad8474655",
     "scripts/post_build.py": "ebc753b075107cdcb81b20eb44065fc5941543a7fd6796e22f7373fce5c6ef33",
-    "scripts/quality/check_formula_pdf.py": "41e1cf6000f5ae85e9f6084f34235121e58c24f0e73abd4a230ac0c8b0020226",
+    "scripts/quality/check_formula_pdf.py": "2ebf15040d73f1d49330b55203bb32352c1a3cb6f77866b5135ef5f95b869608",
     "scripts/quality/inspect_pdf_images.py": "3c75bd1cb4c80d8233699b14411169070c98132a6fada66bb5ac39b76ab54996",
     "scripts/quality/preserve_pdf_images.py": "111ea4cfd664c7b8ae6835b1749546b5cee89f02d8db247819a7ef2e382e8924",
     "scripts/quality/report_gallery.py": "6da4b0087882d1f2e7f87e02ee0e2fa9bd5c19caff12f42a70cdef3d348a811f",
@@ -27,7 +27,7 @@
     "scripts/sto_post_build/docx_package.py": "bb92bf825128388091e3d2dc642b820f8cd7ed9be2719d387c439aac10af3e6e",
     "scripts/sto_post_build/formula_replacement.py": "09ca41c2ab5e38ef4bed0a4fdb8491004c7be3c91354c2e2a1512e0f50f28e82",
     "scripts/sto_post_build/fraction_delimiters.py": "dacce1f7e6179fc1535a79cd29ddf67cf9705b029cb8bdb83dbf05c6d37779ca",
-    "scripts/sto_post_build/integral_arguments.py": "7b75596e9981105814dc8e8619c4c7806dc34d12280db8fd0d7b3d31bd2048cb",
+    "scripts/sto_post_build/integral_arguments.py": "0634806c1787a63c75b155b7b2875c5ef3f08a934a2218b07d875d452e528ea9",
     "scripts/sto_post_build/markdown_formulas.py": "da659dc56391904b59bab65839d5a4ff7fb94768d4d625c9ce661de5e4d580d4",
     "scripts/sto_post_build/math_conversion.py": "c148e274dc56061c8a446d9509a72568ddf692ec35749145a789873a7838ea41",
     "scripts/sto_post_build/matrix_spacing.py": "40279282b0afd386ea8257855df326908e914f742001545ef8af821180161bcb",
@@ -142,7 +142,7 @@
     "src/shared/lib/math/matrix-alignment.ts": "5d40ee7e9fa83fec018c2118f52eccea32abe37fe579c84ad784291c056af581",
     "src/shared/lib/math/matrix-delimiters.ts": "ea2a289f4aaf98f99a816ca55cdff0f28c6d411157932624d93771e30accd3af",
     "src/shared/lib/math/matrix-spacing.ts": "24daf2778398457f97f4d57a82b75929b45578115a9b66141df2dd5e76d83b70",
-    "src/shared/lib/math/omml-normalizer.ts": "9724308d7a6c42761ea2588db5100412980c489cc29df5c5dbf56f8235bbfe98",
+    "src/shared/lib/math/omml-normalizer.ts": "ba42c414d6d3695b4b3385d3c9ba7c77b90cb9a4a2bc13b838b4f89b9c326acb",
     "src/shared/lib/report-config.ts": "59afdcf9678e4337be6612f36ad7f9d2535ba9a6de8c6675d75cc85c10db254a",
     "src/shared/lib/source-preflight/asset-checker.ts": "723600f4fd7fcfeabd1cef8acefb1378728c77e9b2e5d86155508168cd93320b",
     "src/shared/lib/source-preflight/bibliography-checker.ts": "80eda8f44e03f1af22752fbdf5f285f260eee5f22a9eab38473beaa10c44b031",
@@ -154,9 +154,8 @@
     "src/shared/lib/source-preflight/bibliography-metadata.ts": "292c35868bb3bc705d99d923188a0c439ccff8f26013dc1da16290cd2ffc0f12",
     "src/shared/lib/source-preflight/bibtex-source.ts": "d6bb59edd3e13645400132b04c735a301c672596c85e3fc9b2bde1b80dc1f67e",
     "src/shared/lib/source-preflight/environment-checker.ts": "15bf629e0948be35cd2b082448cddf9f462bcf6dcb472219fa2bb167ada90532",
-    "src/shared/lib/source-preflight/formula-checker.ts": "056472872dc72f37869fc3bb58a965a167edb7ffa4554d5bef81ba565d7c2bd1",
+    "src/shared/lib/source-preflight/formula-checker.ts": "20e3f1d3bf1f82927210ed4b303db28efc6f231c68999cb4b3c01d380a54ca8a",
     "src/shared/lib/source-preflight/formula-line-break-checker.ts": "1d3c2df72418885d13d7b6109f89b2eb183c4d06469f0a4010b7b3321cbd410c",
-    "src/shared/lib/source-preflight/formula-numbering-checker.ts": "ee84e248f00f7ffe5b8ea48ac236d44cbebb263b2ca9a9afbe5ca5ccf38c5b15",
     "src/shared/lib/source-preflight/formula-punctuation-checker.ts": "5b9b4f75be0328e01949ea9a8f159fb4e0f30d462572a22f3711f5bca580e631",
     "src/shared/lib/source-preflight/heading-checker.ts": "bea6e524237974dcdff96e95c36e4febab8bf180df1e425d4de7a7888e2f94fd",
     "src/shared/lib/source-preflight/inline-list-checker.ts": "351335e1f88260c12fc23bf55d33b4e68b87cd3b068cfbf64656101c8fc0bba2",
@@ -167,7 +166,7 @@
     "src/shared/lib/source-preflight/punctuation-checker.ts": "864fb302d0e353014b28f9e085783e449b4d43767c91e24447ac7e25faac0aea",
     "src/shared/lib/source-preflight/raw-math-checker.ts": "e1746981e62bd217e6821f766d4658b8199eecafc594e618253a3dd3e3b732d0",
     "src/shared/lib/source-preflight/referat-checker.ts": "9016697d7cd1f0e5d5c9eade84a47432008f2dff41af2656bb3d5c404c3a715d",
-    "src/shared/lib/source-preflight/reference-checker.ts": "0d18d8616da9dfaf724d122e62171327edf96b1c15a6c0659f979856b4f63f05",
+    "src/shared/lib/source-preflight/reference-checker.ts": "29082346e0ad69f6ec3d104530c889d866570750951125609a33db9922fcc2e0",
     "src/shared/lib/source-preflight/soft-text-checker.ts": "05853cb0afa1e39ad1e36f338ba8d45c20184d4ec2f2a9ceaf76017571147d9c",
     "src/shared/lib/source-preflight/structure-checker.ts": "de1892733ae46f466d58131b4c79de1565eed022e78637f80b5ce4147088ee27",
     "src/shared/lib/source-preflight/table-cell-checker.ts": "bb1d2d6879f0471153f01e1986e5fa982db37c29223fab3a118c31b139d33513",
@@ -205,7 +204,7 @@
     "tests/fixtures/dotm-word-corpus/images/dummy.svg": "7a96e0b8747393124b1e1344dfac4ec5acd0913c0faf18ace06f6ebc0dc631ad",
     "tests/fixtures/dotm-word-corpus/references.bib": "887bc69b8d5c37b0d918803d822547320438978da00141e81ff7592b9d83b610",
     "tests/fixtures/formulas/fences.md": "21cf57a0444ddfcc789d76c31fa4c8d23c5c1585ae813d8d76391528206508c6",
-    "tests/fixtures/formulas/layout.md": "c4865cf177cc90577d2d2dfb4b7143bda0bbfcf3056ebc723d6fa8963b25d2e7",
+    "tests/fixtures/formulas/layout.md": "752f733487be2c87f9181c81f3a4dbe969444949910047b841ad6c0c0605a702",
     "tests/fixtures/wordcraft/matrix-controls.md": "2353f04b1d4556bda47819990017c4ceb7a46f8284d81b3834c424f64bc3cbda",
     "uv.lock": "c57352d8b26a1d9372032912b80e5de3ab996a902b85566fe32796d62c9f828d"
   },
@@ -219,7 +218,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "76da650c51c58914f957fc6abccc2ec6985148e98ad3a6c87da41d9f45f2fe1a",
+      "pdfSha256": "78867c0d760b0fc00c25b4960528970fc74f353f21c4f53b4a35644bbb2c294b",
       "pageCount": 8,
       "pages": [
         {
@@ -265,7 +264,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "3668b896e9ec4ffce00836972b9c9362d17f8166b3a69dad8da67d3d367d3f18",
+      "pdfSha256": "5f22d27f106ee92b4747137cbf9ae27a1c917ddfb031cad5a044aa6a2335396c",
       "pageCount": 4,
       "pages": [
         {
@@ -282,7 +281,7 @@
         },
         {
           "file": "formulas-page-4.png",
-          "sha256": "82c94a1aefdd5523bf6e9e52121e399470a30aabc22622ad7fab5b9224439cd5"
+          "sha256": "e9baf95d9081ed6d485ebce17cd800ac0a10dea1b9526880cc5eaba5894f2f9e"
         }
       ],
       "formulaLayoutCases": [
@@ -299,7 +298,8 @@
         11,
         12,
         13,
-        14
+        14,
+        15
       ]
     },
     {
@@ -311,7 +311,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "cc5a649dd5d535bac4d99e11049a1b29f89c31f6fa2e9a241f11eccadbde3d67",
+      "pdfSha256": "2314759ebe5c92c61da87a1afbc54858192675d427ea92d59966e8815e1ea031",
       "pageCount": 4,
       "pages": [
         {
@@ -341,7 +341,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "efad9ec3b82e282c013b9ed8451748652c0b99d8b821ea540aeb3f9eb2ebf6da",
+      "pdfSha256": "d74ed2c8436cb93f69b37202c65187ea833f3badab1ab204a9d2f34ec0941b28",
       "pageCount": 2,
       "pages": [
         {
@@ -363,7 +363,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "1c7e053a52a02a5405fc40b3637f8f5bec6f6d69b098b8f245853833b2d78848",
+      "pdfSha256": "d6281da3f52a91abd301aee3f082888f7832c1356c603667903db65c1962f2a9",
       "pageCount": 11,
       "pages": [
         {

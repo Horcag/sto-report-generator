@@ -23,7 +23,35 @@ ANCHORS = {
     12: "System",
     13: "Conditions",
     14: "Array",
+    15: "MeanTime",
 }
+
+
+def inspect_sum_operand(characters: list[dict], baseline: float, anchor_right: float) -> float:
+    sums = [
+        span
+        for span in characters
+        if span["c"] == "∑"
+        and abs(span["origin"][1] - baseline) <= 2
+        and span["bbox"][0] > anchor_right
+    ]
+    if len(sums) != 1:
+        raise AssertionError("MeanTime: expected one sum operator on the formula baseline")
+    operator = sums[0]
+    terms = [
+        span
+        for span in characters
+        if span["c"] == "\U0001d461"
+        and abs(span["origin"][1] - baseline) <= 2
+        and span["bbox"][0] >= operator["bbox"][2]
+    ]
+    if len(terms) != 1:
+        raise AssertionError("MeanTime: expected one superscripted summand after the sum")
+    gap = terms[0]["bbox"][0] - operator["bbox"][2]
+    # Cambria Math 14pt fixture tolerance. The empty-argument defect leaves ~19.5pt.
+    if not 0 <= gap <= 8:
+        raise AssertionError(f"MeanTime: sum-to-summand gap {gap:.2f}pt exceeds 8pt")
+    return round(gap, 3)
 
 
 def inspect_pdf(pdf: Path) -> dict:
@@ -67,9 +95,27 @@ def inspect_pdf(pdf: Path) -> dict:
                         f"Equation {number}: baseline difference {delta:.2f}pt, "
                         f"right-margin difference {right_delta:.2f}pt"
                     )
+                sum_check = (
+                    {
+                        "sum_summand_gap_pt": inspect_sum_operand(
+                            [
+                                character
+                                for block in page.get_text("rawdict")["blocks"]
+                                for line in block.get("lines", [])
+                                for span in line["spans"]
+                                for character in span["chars"]
+                            ],
+                            formula_y,
+                            anchors[0]["bbox"][2],
+                        )
+                    }
+                    if number == 15
+                    else {}
+                )
                 cases.append(
                     {
                         "equation": number,
+                        **sum_check,
                         "anchor": ANCHORS[number],
                         "page": page_number,
                         "number_baseline_pt": round(number_y, 3),

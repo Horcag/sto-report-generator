@@ -65,3 +65,7 @@ $$\operatorname{Conditions}=\begin{cases}x,&x>0,\\x^2+y^2,&x\leq0,\;y>0,\\0,&\te
 Группа с квадратными скобками приведена в формуле @eq:array:
 
 $$\operatorname{Array}:\left[\begin{array}{rl}x+y&=1,\\2x-y&=0.\end{array}\right] (@eq:array)$$
+
+Сумма со степенным слагаемым приведена в формуле @eq:mean_time:
+
+$$\operatorname{MeanTime}=\bar{t}=\frac{1}{M}\sum_{m=1}^{M}t^{(m)},\quad M=20. (@eq:mean_time)$$
