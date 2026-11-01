@@ -24,7 +24,7 @@ const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 export const WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION = 1;
 export const WORD_ACCEPTANCE_TIMEOUT_MS = 600_000;
 export const WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS = 45_000;
-export const WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS = 180_000;
+export const WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS = 300_000;
 export type WordAcceptanceInteractionMode = 'background' | 'interactive';
 
 export interface WordAcceptanceOptions {

@@ -48,7 +48,7 @@ export function testBackgroundOnlyLifecycle(withFakeWord: FakeWord): void {
 					[false, true],
 				);
 				assert.ok(calls.every(call => call.hidden && !call.visible));
-				assert.equal(calls[0].timeout, 180_000);
+				assert.equal(calls[0].timeout, 300_000);
 				assert.equal(
 					fs.existsSync(calls[0].requestPath),
 					outcome === 'cleanup',

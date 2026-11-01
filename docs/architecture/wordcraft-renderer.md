@@ -6,8 +6,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.12.0**, release commit `3de6ff95af86c19d67030cd96dba15cd6a45a25e`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.12.0).
+- Supported CLI: **0.13.2**, release commit `2be33e6dc9c246a57995b131ee85491ce81de328`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.13.2).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -147,6 +147,8 @@ independent PDF/Word acceptance. The controls include `example`, a 90-row extens
 `tests/fixtures/dotm-word-corpus`, and `tests/fixtures/wordcraft/math-controls.md` (fractions, radicals,
 accents, sums, integrals, a matrix and appendix TOC fields). Matrix sizes through 8x8, rectangular/nested matrices, the three-section
 control and release-sensitive run/tab/equation-array controls also run in the live suite.
+The 0.13.2 spanning-cell fixture adds preferred-width, automatic-width and text-minimum
+controls with explicit XML checks and independent PDF width measurements in its audit.
 The normal quality gate separately checks release fixture XML for both style presets, including
 direct OMML placement without synthetic wrapper elements.
 The live suite also injects a stale cached TOC result, marks the TOC dirty, runs the installed
@@ -203,9 +205,9 @@ accepted Word receipts for their exact source DOCX before a new comparison can e
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.12.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.12.0/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.12.0/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.13.2/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.13.2/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.13.2/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.
@@ -216,10 +218,10 @@ The [0.10.0 audit](../audits/2026-10-23-wordcraft-0100.md) separates upstream re
 from measured changes on frozen source documents. Known math spacing and pagination differences remain.
 
 Use `npm run accept:word -- report.docx --background-only` when foreground Word is unwanted.
-This mode makes one background attempt with a 180-second deadline and never retries interactively.
+This mode makes one background attempt with a 300-second deadline and never retries interactively.
 It records the selected mode and exact-process cleanup in the acceptance receipt. Failure to clean up
 retains the request evidence and records `processCleanupVerified: false`.
-The automatic mode retains a 45-second initial deadline for small documents and 180 seconds for
+The automatic mode retains a 45-second initial deadline for small documents and 300 seconds for
 large table-heavy documents, followed by its existing interactive fallback.
 
 `background-only` avoids foreground automation; it still uses the installed Word COM server.
@@ -242,3 +244,23 @@ The [0.12.0 audit](../audits/2026-10-28-wordcraft-0120.md) compares frozen curre
 inputs with both engine versions and native Word. New public controls exercise NBSP,
 zero-width bookmarks and both explicit `doNotExpandShiftReturn` settings. The semantic
 TOC import workaround remains necessary; no general math-leading fix is assumed.
+
+## 0.13.2 acceptance
+
+The [0.13.2 audit](../audits/2026-11-01-wordcraft-0132.md) compares the same frozen
+DOCX bytes with 0.12.0 and 0.13.2, then separates native Word and native Windows
+results from upstream release claims. The historical audits retain their original
+version and input boundaries. MathLeading proposal #2674 is not part of this release;
+a general equation-spacing or matrix fidelity fix is not established by the upgrade.
+The thirteen previous inputs remain byte-identical between engines (235 pages).
+The new spanning-cell control moves preferred column widths closer to Word while
+its two automatic-width controls remain unchanged. All fourteen inputs match
+byte-for-byte between Linux/WSL and native Windows in 0.13.2 (236 pages).
+Twelve fresh Word receipts cover 145 pages versus 144 engine pages; the coursework
+still occupies 69 versus 68 pages. Equal platform output does not establish Word parity.
+
+Large-document and explicit background-only acceptance use a 300-second per-attempt
+budget. The 0.13.2 audit observed the large coursework save/reopen and PDF export
+finish within the previous 180-second budget, but final table verification exceed it,
+including a serial retry. The extended budget covers that final verification; small
+automatic attempts retain 45 seconds and the outer cleanup watchdog remains bounded.
