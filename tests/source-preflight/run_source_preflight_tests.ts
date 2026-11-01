@@ -1163,7 +1163,7 @@ expectIssue(
 	'formula-decimal-dot',
 );
 
-expectIssue(
+expectWarning(
 	'unused-equation-label',
 	validFiles({
 		'03_intro.md': `Нумерованная формула приведена без ссылки в тексте.

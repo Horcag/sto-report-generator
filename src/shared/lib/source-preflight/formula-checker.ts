@@ -1,6 +1,7 @@
 import { STO_RULES } from '@/shared/config';
 
 import { validateFormulaLineBreaks } from './formula-line-break-checker';
+import { hasNumberedDefinitionGroup } from './formula-numbering-checker';
 import {
 	maskFormulaSource,
 	stripEquationLabel,
@@ -234,6 +235,17 @@ export function validateSourceFormulas(
 	}
 	for (const match of blockFormulas) {
 		const formula = match[1];
+		if (hasNumberedDefinitionGroup(formula)) {
+			issues.push(
+				issue(
+					'formula-numbered-definition-group',
+					'Several top-level definitions share one formula number. Review their meaning: use separate labels for independent formulas, omit an unused number, or explicitly format an intended system. This is an editorial warning, not a universal STO prohibition.',
+					file,
+					lineNumberAt(content, match.index ?? 0),
+					'warning',
+				),
+			);
+		}
 		if (hasForbiddenDivisionColon(formula)) {
 			issues.push(
 				issue(

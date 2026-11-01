@@ -105,7 +105,7 @@ export function validateUnusedEquationLabels(
 	}
 }
 
-/** Checks displayed object numbers and the first textual reference in source order. */
+/** Checks object numbers and required preceding references for figures/tables. */
 export function validateObjectReferences(
 	files: SourceFile[],
 	issues: SourcePreflightIssue[],
@@ -258,27 +258,13 @@ export function validateObjectReferences(
 			const formulaLabels = [
 				...line.matchAll(/\(@eq:([a-zA-Z0-9_-]+)\)/g),
 			];
-			for (const formula of formulaLabels) {
+			for (let ordinal = 0; ordinal < formulaLabels.length; ordinal++) {
 				if (!line.includes('$$') && !inMathBlock) continue;
 				counters.eq++;
 				const expected = appendix
 					? `${appendix}.${counters.eq}`
 					: String(counters.eq);
 				knownNumbers.add(`eq:${expected}`);
-				if (
-					!new RegExp(`@eq:${formula[1]}(?![a-zA-Z0-9_-])`).test(
-						precedingText,
-					)
-				) {
-					issues.push(
-						issue(
-							'formula-before-reference',
-							`formula (${expected}) appears before its first reference.`,
-							file,
-							index + 1,
-						),
-					);
-				}
 			}
 			if ((line.match(/\$\$/g)?.length ?? 0) % 2 === 1)
 				inMathBlock = !inMathBlock;
