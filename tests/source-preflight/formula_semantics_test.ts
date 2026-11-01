@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { validateSourceFormulas } from '@/shared/lib/source-preflight/formula-checker';
 import {
 	collectLabelDefinitions,
+	validateObjectReferences,
 	validateUnknownReferences,
 	validateUnusedEquationLabels,
 } from '@/shared/lib/source-preflight/reference-checker';
@@ -53,6 +54,62 @@ export function runFormulaSemanticsTests(): void {
 			['formula-redundant-cdot'],
 		],
 		['label inside display', '$$x=y (@eq:value)$$', []],
+		[
+			'two independent speedups share one number',
+			String.raw`$$ S_{full}=\frac{t_s}{t_{full}},\qquad S_{int}=\frac{t_s}{t_{int}}, (@eq:speedup) $$`,
+			['formula-numbered-definition-group'],
+		],
+		[
+			'two plain definitions',
+			'$$a=b; c=d (@eq:pair)$$',
+			['formula-numbered-definition-group'],
+		],
+		['unnumbered definitions need no reference', '$$a=b, c=d$$', []],
+		['one equality chain', '$$a=b=c (@eq:chain)$$', []],
+		[
+			'an auxiliary numeric parameter',
+			String.raw`$$\bar t=\frac{1}{M}\sum t_i,\quad M=20 (@eq:mean)$$`,
+			[],
+		],
+		[
+			'index range is not a second definition',
+			String.raw`$$v_j[i]=i+j,\quad j=1,\ldots,6 (@eq:init)$$`,
+			[],
+		],
+		['nested function arguments', '$$a=f(x=y,z=w) (@eq:nested)$$', []],
+		['decimal comma', '$$a=1,5 (@eq:decimal)$$', []],
+		[
+			'numeric parameter before a final period',
+			String.raw`$$a=b,\quad M=20. (@eq:mean)$$`,
+			[],
+		],
+		[
+			'numeric parameter with braced decimal comma',
+			String.raw`$$a=b,\quad \alpha=1{,}5 (@eq:ratio)$$`,
+			[],
+		],
+		[
+			'numeric parameter with grouping braces',
+			String.raw`$$a=b,\quad N={20} (@eq:size)$$`,
+			[],
+		],
+		['escaped set braces', String.raw`$$A=\{x=y,z=w\} (@eq:set)$$`, []],
+		[
+			'sized escaped set braces',
+			String.raw`$$A=\left\{x=y,z=w\right\} (@eq:set)$$`,
+			[],
+		],
+		[
+			'explicit system retains a common number',
+			String.raw`$$\begin{cases}a=b,\\c=d\end{cases} (@eq:system)$$`,
+			[],
+		],
+		[
+			'aligned group needs author review',
+			String.raw`$$\begin{aligned}a&=b,\\c&=d\end{aligned} (@eq:aligned)$$`,
+			[],
+		],
+		['literal numbered pair stays code', '`$$a=b, c=d (@eq:code)$$`', []],
 		[
 			'multiline display with surrounding blanks',
 			'Текст.\n\n$$\nx=y\n$$\n\nТекст.',
@@ -119,7 +176,35 @@ export function runFormulaSemanticsTests(): void {
 		'formula-line-break-operator-not-repeated',
 		'formula-empty-continuation',
 		'formula-missing-surrounding-blank-line',
+		'formula-numbered-definition-group',
 	]);
+	for (const files of [
+		[
+			{
+				file: 'math.md',
+				content: 'По формуле @eq:value.\n\n$$x=y (@eq:value)$$',
+			},
+		],
+		[
+			{
+				file: 'math.md',
+				content:
+					'$$x=y (@eq:value)$$\n\nДалее используется формула @eq:value.',
+			},
+		],
+		[
+			{ file: '10_math.md', content: '$$x=y (@eq:value)$$' },
+			{ file: '20_use.md', content: 'Используется формула @eq:value.' },
+		],
+	]) {
+		const issues: SourcePreflightIssue[] = [];
+		validateObjectReferences(files, issues);
+		assert.deepEqual(
+			issues,
+			[],
+			'a formula reference may precede or follow its definition',
+		);
+	}
 	const references = 'По формуле (@eq:value).\n\n$$x=y (@eq:value)$$';
 	const definitions: LabelDefinitions = new Map();
 	const referenceIssues: SourcePreflightIssue[] = [];
@@ -192,7 +277,7 @@ export function runFormulaSemanticsTests(): void {
 		'inline diagnostics retain source file and line',
 	);
 	console.log(
-		`Formula source semantics regressions: ${cases.length + 3} cases passed.`,
+		`Formula source semantics regressions: ${cases.length + 6} cases passed.`,
 	);
 }
 
