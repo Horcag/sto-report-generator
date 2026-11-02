@@ -1,13 +1,15 @@
 # Experimental Wordcraft PDF renderer
 
+<!-- cspell:words PAGEREF -->
+
 Wordcraft is an optional local renderer. The TypeScript generator remains the owner of DOCX structure,
 STO styles, bibliography and OMML. Wordcraft does not replace the Markdown parser, XML validator or
 the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.13.2**, release commit `2be33e6dc9c246a57995b131ee85491ce81de328`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.13.2).
+- Supported CLI: **0.14.0**, release commit `5cd53f184aab11def13b7fced18727159b9bc96a`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.14.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -205,9 +207,9 @@ accepted Word receipts for their exact source DOCX before a new comparison can e
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.13.2/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.13.2/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.13.2/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.14.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.14.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.14.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.
@@ -264,3 +266,29 @@ budget. The 0.13.2 audit observed the large coursework save/reopen and PDF expor
 finish within the previous 180-second budget, but final table verification exceed it,
 including a serial retry. The extended budget covers that final verification; small
 automatic attempts retain 45 seconds and the outer cleanup watchdog remains bounded.
+
+## 0.14.0 comparison boundary
+
+The [0.14.0 audit](../audits/2026-11-02-wordcraft-0140.md) separates upstream
+pagination, TOC/PAGEREF and footer changes from measured behavior on frozen DOCX
+inputs. The heading pagination change targets a three-line following paragraph;
+it does not establish a heading-to-table fix. The release does not change the
+math/matrix layout, table or font implementations. MathLeading proposal #2674
+remains outside the release. The historical audits retain their original input
+and version boundaries.
+
+Release controls independently measure the three-line heading boundary with widow
+control on/off and one fewer filler paragraph, plus undefined/defined/direct footer
+style sizes. A direct TOC probe verifies two bookmark-targeting PAGEREF fields,
+including persistence after save/reopen and field update. The raw TOC field-span
+defect persists in both versions; strict prepared-copy checks still require the
+existing staging workaround. The Word launcher updates the whole TOC, so it does
+not prove isolated PAGEREF-only refresh behavior after a heading moves.
+
+The nineteen-input comparison has 248 pages per engine version. Only the positive
+widow and undefined-style PDFs change; the other seventeen remain byte-identical.
+All nineteen 0.14.0 PDFs match byte-for-byte between Linux/WSL and native Windows.
+Seventeen fresh Word acceptances cover 157 pages versus 156 engine pages; the two
+legacy inputs remain outside fresh Word acceptance. Linux loaded-font hashes agree
+between versions. Native Windows catalog font-file hashes are not independently
+verified. Current generator fixes are shared by both compared engine versions.
