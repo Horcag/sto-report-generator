@@ -8,8 +8,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.14.0**, release commit `5cd53f184aab11def13b7fced18727159b9bc96a`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.14.0).
+- Supported CLI: **0.15.0**, release commit `b47079fc791595fd84bb499d64dcd3f0624ef35a`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.15.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -207,9 +207,9 @@ accepted Word receipts for their exact source DOCX before a new comparison can e
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.14.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.14.0/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.14.0/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.15.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.15.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.15.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.
@@ -292,3 +292,38 @@ Seventeen fresh Word acceptances cover 157 pages versus 156 engine pages; the tw
 legacy inputs remain outside fresh Word acceptance. Linux loaded-font hashes agree
 between versions. Native Windows catalog font-file hashes are not independently
 verified. Current generator fixes are shared by both compared engine versions.
+
+## 0.15.0 comparison boundary
+
+The [0.15.0 audit](../audits/2026-11-03-wordcraft-0150.md) distinguishes upstream
+changes to tab leaders, split table rows, header placement and DOCX import from
+measured behavior. The official release is used without an engine fork. Its
+comparison has no math/matrix implementation changes; the same-font change in
+#5167 affects tests only. Neither change establishes a formula or font-selection
+improvement.
+
+The picture-row fix still permits oversized rows to split. The oversized-picture
+control regresses from four to five pages in 0.15.0 on both measured platforms,
+versus three in accepted Word output: its 700-pt image exceeds the 648-pt body
+area. Resize table-cell images to the available body height and rebuild; the
+integration introduces no engine fork or oversized-row repair. The split-row
+vertical-alignment fix uses the first page fragment and does not replace the
+adapter's safe-boundary checks or establish parity for all table structures.
+Upstream `altChunk` import does not add HTML/RTF input or `altChunk` generation to
+this project. Native macOS remains untested; upstream CI is a separate boundary.
+
+The direct TOC probe retains two bookmark-targeting PAGEREF fields and their
+save/reopen/update behavior in both versions. The raw field-span defect remains;
+prepared-copy checks pass while preserving the source, so the TOC staging
+workaround is retained. The header-anchor change uses the rendered body top for
+`relativeFrom=Margin` header objects; it does not relocate the body boundary.
+
+The final thirty-input corpus has 269 pages in 0.14.0 and 270 in 0.15.0:
+twelve PDFs are byte-identical and eighteen change. All thirty 0.15.0 PDFs match
+byte-for-byte between Linux/WSL and native Windows. Twenty-eight fresh accepted
+Word inputs cover 177 Word pages versus 177 old-engine and 178 new-engine pages;
+two legacy inputs remain outside fresh Word acceptance. The extra engine page is
+the oversized-picture regression. Page-wide raster means are not quality scores;
+unmatched pages contribute zero and can conceal a pagination regression.
+Historical acceptance counts remain specific to their original versions and
+source hashes.
