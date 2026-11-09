@@ -1,6 +1,6 @@
 # Experimental Wordcraft PDF renderer
 
-<!-- cspell:words PAGEREF -->
+<!-- cspell:words PAGEREF STYLEREF -->
 
 Wordcraft is an optional local renderer. The TypeScript generator remains the owner of DOCX structure,
 STO styles, bibliography and OMML. Wordcraft does not replace the Markdown parser, XML validator or
@@ -8,8 +8,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.15.0**, release commit `b47079fc791595fd84bb499d64dcd3f0624ef35a`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.15.0).
+- Supported CLI: **0.16.0**, release commit `02a802cbafe45b5c8fecc00490c8f6b78c5ba251`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.16.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -207,9 +207,9 @@ accepted Word receipts for their exact source DOCX before a new comparison can e
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.15.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.15.0/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.15.0/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.16.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.16.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.16.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.
@@ -327,3 +327,31 @@ the oversized-picture regression. Page-wide raster means are not quality scores;
 unmatched pages contribute zero and can conceal a pagination regression.
 Historical acceptance counts remain specific to their original versions and
 source hashes.
+
+## 0.16.0 comparison boundary
+
+The [0.16.0 audit](../audits/2026-11-09-wordcraft-0160.md) covers the full official
+0.15.0-to-0.16.0 gap, including 0.15.1 and 0.15.2. The renderer uses the official
+stable engine without a local fork. Upstream field, section, tab and image fixes
+require separate rendering evidence for the generator's actual DOCX inputs.
+Paragraph vertical alignment round-tripping is distinct from layout support;
+MATH-record reuse and matrix limits do not establish formula fidelity.
+The direct field control confirms output-only SEQ/STYLEREF/plain-REF refresh and,
+after explicit update, corrected numeric REF `\n`/`\w` results beyond the prior
+adapter call. Relative `\r` still returns full context where Word returns `(a)`.
+The math-layout implementation is unchanged; the formula, math-and-appendix and
+matrix controls have zero measured text, geometry and raster differences between
+engines despite different PDF bytes.
+
+The existing TOC staging workaround and source-preservation checks remain in
+place. The fresh direct TOC probe retains two PAGEREF fields through reopen/update,
+but the raw field-span check still fails while prepared-copy checks pass.
+The fresh oversized-picture control remains five pages in both engines versus
+three in Word; the prior regression is not fixed.
+
+The fresh thirty-six-input corpus has 280 pages per engine; twenty inputs have
+unchanged observed text, geometry and raster output, although all PDF bytes differ.
+All thirty-six 0.16.0 PDFs match byte-for-byte between Linux/WSL and native Windows.
+Thirty-four fresh accepted Word inputs have 187 Word pages versus 188 per engine;
+two legacy inputs remain engine-only. Matching platform output does not establish
+Word parity. Native macOS rendering remains untested; upstream code and CI coverage are separate evidence.

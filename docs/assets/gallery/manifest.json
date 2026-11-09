@@ -45,9 +45,9 @@
     "src/app/bibliography-command.ts": "cd0aef2abe18607a91acafea2821e7b3d51372c6c8fd9254c789f63ccdb08ae9",
     "src/app/builder.ts": "290824a848ce6f6cfe2b798f8b0cdabf3d9825c5c1373136af4074d77d6df243",
     "src/app/cli-args.ts": "07c305ad66c3c9ac5b15c22f5857b387fc71d06f3b2bf127580313f4214aac33",
-    "src/app/cli-help.ts": "1842d7bc7b400dc21793ece4e39460306011edfd7a41d304ae3a4c21449f7353",
+    "src/app/cli-help.ts": "ff7362391bd1c2a3b49dc6ba82bb0ad15060b40ec9a94d65407d76108425936d",
     "src/app/cli-preview.ts": "03c5143db35c836682358c88d9f5fec54de3562596ae7f488e7311d966d9f4a5",
-    "src/app/doctor.ts": "0b172a637391c08cf4994a9694d57c2ebae7500c92de28f4043c15a7a4374c79",
+    "src/app/doctor.ts": "95ff222bc337ce5ccbe5d89e354d680446f4ae3c54dd5b9e850c1e1113480d55",
     "src/app/figure-command.ts": "c87280b1178e6719702578181663cb5c18e9321dc926378056fa06cbdf27f8b4",
     "src/app/figure-inspector-html.ts": "ab423f8fe92c85d7c75479ddd76f0971a1871221d4367a639dede44b59544cd1",
     "src/app/figure-inspector.ts": "0375d914f063e290aa1b108d8bb8f7f2aba1db56b1f2d4b11705a604f9b5eeee",
@@ -69,7 +69,7 @@
     "src/app/wordcraft-font-files.ts": "7ee3a27bea4d71d004eacbc364f8892207af4f3c321f4d2017c46fc1d40080c1",
     "src/app/wordcraft-fonts.ts": "61597116dd363b66f27bf37fca8c9cb497a030d70ece11f28b7254022f45f0e7",
     "src/app/wordcraft-layout.ts": "378f10329d292df97d9ae6048806f0cc2613d0e784665598c942aa83e2339876",
-    "src/app/wordcraft-renderer.ts": "bb553592b3237d2578ea680ca578ab584fc15b3c8b710e377f16f75b384902c4",
+    "src/app/wordcraft-renderer.ts": "7d3cd62add5be394fac26246ee419ce39e3749736f009a2cb872b924d27485d8",
     "src/app/wordcraft-statistics.ts": "d8b6a3524b1f90ae163695bde2022acfd4e020e130c9869de37fdb9e3dff2ae9",
     "src/app/wordcraft-tables.ts": "9bebd28c7f49abe36bbfe78615bbf05d80c2339b123dca3866abc7d9c36bd4d8",
     "src/entities/report/index.ts": "aae201a825b0337402b6463fe90727046ed10248da3b9ee1b1aaa370d10aa200",
@@ -219,7 +219,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "7a92b4891faef7f8ea3721815d64996a93dfed37ff1e2a732e871448851a45b5",
+      "pdfSha256": "53fd05585880b378b9630f99867dab230d5363367d6f9dbf306468813a47a8a3",
       "pageCount": 8,
       "pages": [
         {
@@ -265,7 +265,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "1421d6af8f50209c57d699800d7c4cab9e8e4438f041af2c0560764cdbeae0b2",
+      "pdfSha256": "0fb1326763bb27c80f22b42eedff9b353dcf5bc68e60cd58e51a355fd330e766",
       "pageCount": 4,
       "pages": [
         {
@@ -312,7 +312,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "1910ce19dfa2c7e725235cf6ccad0351a0734942574a38a662435c86a840c8b6",
+      "pdfSha256": "e3a070155d1df672c23f10d3549133d5c74ae937a883f695b49d76959f459053",
       "pageCount": 4,
       "pages": [
         {
@@ -342,7 +342,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "5d6365dd994935642acdb91dd8f704f78a47155152eaaf5434044dd02038a071",
+      "pdfSha256": "afba954a5fbf7b3b117b9f6cf2e911c862f9b3a3a8d8e502ec2c5a18eb76df4c",
       "pageCount": 2,
       "pages": [
         {
@@ -364,7 +364,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "2ba85392083df9a1f84c16e51e09b2c426f9cba0b60b4147ecb131a261023d81",
+      "pdfSha256": "7cb5135db3ed52576d04d668371842b81b9e028ca700da032ad8d7b2c1706c90",
       "pageCount": 11,
       "pages": [
         {
