@@ -8,8 +8,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.16.0**, release commit `02a802cbafe45b5c8fecc00490c8f6b78c5ba251`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.16.0).
+- Supported CLI: **0.17.0**, release commit `5574b32600aa7d782c64f5a6c6bb24696152220d`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.17.0).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -69,6 +69,11 @@ bounded JSON scripts, avoiding the Windows command-line length limit.
 Strict mode proves only the supported family requirements and their availability. It does not
 certify font selection for every glyph, mathematical metrics, embedded/SVG fonts or Word layout parity.
 Keep licensed font files local and inspect the resulting PDF resources when comparing renderers.
+
+Wordcraft 0.17.0 can resolve semicolon-separated LibreOffice family lists during DOCX import.
+The adapter still treats an `rFonts` family value as a literal family in preflight and local-file
+selection; it does not explicitly resolve those lists. That upstream feature is untested through
+strict adapter font checks. Use an explicit verified family for that contract.
 
 ## Table continuation controls
 
@@ -207,9 +212,9 @@ accepted Word receipts for their exact source DOCX before a new comparison can e
 
 ## Upstream evidence
 
-- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.16.0/crates/engine/src/cmd/references.rs).
-- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.16.0/docs/gaps.md).
-- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.16.0/docs/layout-parity.md).
+- [Versioned field update implementation](https://github.com/storytold/wordcraft/blob/v0.17.0/crates/engine/src/cmd/references.rs).
+- [Wordcraft known gaps](https://github.com/storytold/wordcraft/blob/v0.17.0/docs/gaps.md).
+- [Layout compatibility](https://github.com/storytold/wordcraft/blob/v0.17.0/docs/layout-parity.md).
 
 Wordcraft is MIT OR Apache-2.0; bundled assets retain their own licenses. No Wordcraft source or
 binary is included in this repository. Native libraries and resources are not a guarantee of fidelity.
@@ -355,3 +360,36 @@ All thirty-six 0.16.0 PDFs match byte-for-byte between Linux/WSL and native Wind
 Thirty-four fresh accepted Word inputs have 187 Word pages versus 188 per engine;
 two legacy inputs remain engine-only. Matching platform output does not establish
 Word parity. Native macOS rendering remains untested; upstream code and CI coverage are separate evidence.
+
+## 0.17.0 comparison boundary
+
+The [0.17.0 audit](../audits/2026-11-09-wordcraft-0170.md) compares the exact
+0.16.0 and 0.17.0 source trees. The release body is cumulative from 0.15.1;
+the divergent GitHub comparison's 329 ahead commits are not 329 newly introduced
+fixes. Production blob differences determine the scope of this upgrade.
+The official engine is used without a local fork.
+
+Source changes cover Word TOC gallery imports, ordinary superscript/subscript
+sizing, final Normal paragraphs in table cells, nested row split prevention,
+continuous-section page breaks, sequence-field output counting, lowered pictures,
+dot/parenthesis wrapping, fallback fonts and PDF author privacy. Each needs a
+representative rendering control before claiming Word parity.
+
+Core math layout and DOCX math reading/writing are unchanged. Ordinary run sizing
+can indirectly affect runs that host math; this is not a new matrix algorithm or
+a general equation-spacing fix. Previous 0.16.0 measurements remain historical.
+Fresh formula-layout, math-and-appendix and matrix PDFs are byte-identical
+between 0.16.0 and 0.17.0, with 4, 5 and 4 pages respectively in both engines
+and Word. The coursework remains 68 engine pages versus 69 in Word; the
+oversized-picture control remains five versus three. The forty-two-input corpus
+has 291 old-engine pages and 293 new-engine pages: thirty-five PDFs are
+byte-identical and seven change. The two extra pages correct continuous-section
+and nested-table pagination to match Word. All forty-two new-engine PDFs match
+byte-for-byte between Linux/WSL and native Windows. Forty fresh accepted Word
+inputs cover 200 Word pages versus 199 old-engine and 201 new-engine pages;
+two legacy inputs remain engine-only. The audit records exact-process cleanup
+and a separate five-document Word gallery refresh; neither expands the measured
+corpus or establishes general Word identity.
+The fresh direct TOC probe still fails the raw field-span check while the
+prepared copy passes. The existing TOC preparation remains in the adapter.
+Native macOS rendering remains untested; upstream CI is separate evidence.

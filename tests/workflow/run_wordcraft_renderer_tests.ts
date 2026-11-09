@@ -89,7 +89,7 @@ const mode = process.env.WORDCRAFT_TEST_MODE || 'ok';
 const log = ${JSON.stringify(log)};
 const calls = fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\\n').filter(Boolean).map(JSON.parse) : [];
 fs.appendFileSync(log, JSON.stringify(args) + '\\n');
-if (args[0] === '--version') { console.log(mode === 'version' ? 'wordcraft-cli 0.15.0' : mode === 'future-version' ? 'wordcraft-cli 0.17.0' : 'wordcraft-cli 0.16.0'); }
+if (args[0] === '--version') { console.log(mode === 'version' ? 'wordcraft-cli 0.16.0' : mode === 'future-version' ? 'wordcraft-cli 0.18.0' : 'wordcraft-cli 0.17.0'); }
 else if (args[0] === 'run' && args.includes('font.list={"all":true}')) {
  if (mode === 'bad-font-json') console.log('font.list: invalid');
  else if (mode === 'missing-font-catalog') console.log('font.list: {"fonts":[]}');
@@ -125,12 +125,12 @@ else if (args[0] === 'run') {
 		mode('version');
 		throws(
 			() => readWordcraftVersion(fakeCli),
-			/Untested Wordcraft version.*0\.15\.0.*expected 0\.16\.0/,
+			/Untested Wordcraft version.*0\.16\.0.*expected 0\.17\.0/,
 		);
 		mode('future-version');
 		throws(
 			() => readWordcraftVersion(fakeCli),
-			/Untested Wordcraft version.*0\.17\.0.*expected 0\.16\.0/,
+			/Untested Wordcraft version.*0\.18\.0.*expected 0\.17\.0/,
 		);
 		mode('ok');
 		process.env.WORDCRAFT_CLI = fakeCli;
@@ -139,9 +139,9 @@ else if (args[0] === 'run') {
 			result.outputPdf === outputPdf &&
 				result.manifestPath === manifestPath,
 		);
-		check(result.pageCount === 2 && result.version === '0.16.0');
+		check(result.pageCount === 2 && result.version === '0.17.0');
 		console.log(
-			'PASS version gate: accepts 0.16.0, rejects prior 0.15.0 and future 0.17.0.',
+			'PASS version gate: accepts 0.17.0, rejects prior 0.16.0 and future 0.18.0.',
 		);
 		check(
 			result.warnings.some(warning =>
