@@ -8,8 +8,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.17.0**, release commit `5574b32600aa7d782c64f5a6c6bb24696152220d`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.17.0).
+- Supported CLI: **0.18.1**, release commit `079f478bd85df7bcc567e3bafa7d7219096f9c3c`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.18.1).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -20,6 +20,14 @@ the separate Microsoft Word acceptance command.
 - `--font-dir /path/to/fonts` or `WORDCRAFT_FONT_DIR` supplies local font files for `generate`, `audit`
   and `preview`. `--strict-fonts` rejects unavailable families or font requirements that preflight
   cannot verify. These controls apply only to the Wordcraft renderer.
+- Adapter `--strict-fonts` checks font families; it is distinct from upstream CLI `--strict`
+  on `convert` and `render`. The adapter does not claim upstream strict checks for `run` or `script`.
+
+The 0.18.1 upstream patch changes packaging, CI and Flatpak files, not rendering code relative
+to 0.18.0. See the [0.18.1 audit](../audits/2026-11-12-wordcraft-0181.md) for the
+comparison boundary and remaining limitations. Across 46 tested inputs, 43 PDFs match 0.17.0
+byte for byte; all 46 outputs match between Linux/WSL and native Windows. Fresh Word exports
+cover 44 of those inputs and do not establish full layout parity.
 
 ## Render sequence
 

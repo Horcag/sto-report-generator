@@ -32,7 +32,7 @@ export function runDoctor(): void {
 		);
 	} catch (error) {
 		console.log(
-			'Wordcraft renderer: unavailable (requires wordcraft-cli 0.17.0)',
+			'Wordcraft renderer: unavailable (requires wordcraft-cli 0.18.1)',
 		);
 		console.log(
 			`  ${String(error instanceof Error ? error.message : error).slice(0, 300)}`,
