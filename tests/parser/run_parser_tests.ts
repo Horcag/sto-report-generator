@@ -241,6 +241,43 @@ async function main(): Promise<void> {
 		/<w:ind\b(?=[^>]*w:left="720")(?=[^>]*w:hanging="360")/,
 	);
 	assert.match(bibliographyNumberingLevel, /<w:suff\b[^>]*w:val="tab"/);
+	const longUrl = `https://example.org/${'unbroken'.repeat(32)}/literal-hyphen_under_score?q=1&n=2`;
+	fs.appendFileSync(
+		bibPath,
+		`\n@online{long-url, title={Foreign source 中文}, url={${longUrl}}, urldate={2026-11-13}}\n@online{another-url, title={Second source}, url={https://example.org/second-url_path}, urldate={2026-11-13}}`,
+	);
+	const literalElements = await parseMarkdownToDocx(
+		String.raw`Sources [@long-url; @another-url].
+
+\sto_structural_heading{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
+
+\begin{sto_bibliography}
+\end{sto_bibliography}`,
+		{ bibliography: bibPath },
+		{ sourceDir: tempRoot },
+	);
+	const { documentXml: literalXml } = await packAndReadXml(
+		literalElements,
+		path.join(tempRoot, 'literal-bibliography.docx'),
+	);
+	const literalParagraphs = literalXml
+		.match(/<w:p\b[\s\S]*?<\/w:p>/g)!
+		.filter(paragraph => /<w:pStyle w:val="Bibliography"/.test(paragraph));
+	assert.equal(literalParagraphs.length, 2, 'One paragraph per cited source');
+	assert.ok(getWordText(literalParagraphs[0]).includes(longUrl));
+	assert.ok(
+		getWordText(literalParagraphs[1]).includes(
+			'https://example.org/second-url_path',
+		),
+	);
+	for (const paragraph of literalParagraphs) {
+		assert.match(paragraph, /<w:wordWrap w:val="0"\/>/);
+		assert.match(paragraph, /<w:numPr>/, 'Keep native automatic numbering');
+		assert.doesNotMatch(
+			paragraph,
+			/[\u00AD\u200B\u2060\uFEFF]|<w:hyperlink\b|<w:br\b/,
+		);
+	}
 
 	const referatElements = await parseMarkdownToDocx(
 		String.raw`\sto_structural_heading{РЕФЕРАТ}
