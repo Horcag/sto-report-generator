@@ -74,6 +74,7 @@ const tests = [
 	['tests/bibliography/bib-areas.test.ts'],
 	['tests/bibliography/bib-evidence.test.ts'],
 	['tests/bibliography/bib-reconciliation.test.ts'],
+	['tests/bibliography/bib-dataset-lookup.test.ts'],
 	['tests/bibliography/bib-presentation.test.ts'],
 	['tests/generator/toc_regression.ts'],
 	['tests/generator/run_generator_snapshot_test.ts'],

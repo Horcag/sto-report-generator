@@ -51,6 +51,15 @@ assert.equal(
 	true,
 );
 assert.equal(compare([strings.join(' ')]).references[0].status, 'merged');
+const mergedConflict = compare([
+	`${strings[0]} ${strings[1].replace('https://data.example/record/river', 'https://typo.example/record/river')}`,
+]);
+assert.equal(mergedConflict.references[0].status, 'merged');
+assert.equal(mergedConflict.references[0].identifierConflict, true);
+assert.deepEqual(
+	mergedConflict.references[0].candidates.map(candidate => candidate.key),
+	['paper', 'data'],
+);
 assert.equal(compare([strings[0], strings[0]]).references[0].status, 'split');
 assert.equal(compare([strings[0], strings[0]]).references[1].status, 'split');
 assert.equal(

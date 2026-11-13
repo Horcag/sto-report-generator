@@ -152,7 +152,9 @@ export function reconcileBibliography(
 			...(idMatches.length ? ['identifier'] : []),
 		];
 		const conflictTargets =
-			idMatches.length === 1 && titleMatches.includes(idMatches[0])
+			idMatches.length === 1 &&
+			titleMatches.includes(idMatches[0]) &&
+			new Set(titleMatches.map(entry => entry.title)).size === 1
 				? idMatches
 				: titleMatches;
 		const conflicts = ids.some(
@@ -165,7 +167,9 @@ export function reconcileBibliography(
 				!conflictTargets.some(entry => entry.identifiers.includes(id)),
 		);
 		let status: MatchStatus = 'matched';
-		if (conflicts) status = 'identifier-conflict';
+		if (new Set(titleMatches.map(entry => entry.title)).size > 1)
+			status = 'merged';
+		else if (conflicts) status = 'identifier-conflict';
 		else if (candidates.length > 1) {
 			const identicalTitles =
 				titleMatches.length > 1 &&
@@ -199,6 +203,7 @@ export function reconcileBibliography(
 			referenceNumber,
 			status: status as MatchStatus,
 			matchedBy,
+			identifierConflict: conflicts,
 			candidates: candidates.map(({ key, referenceNumber }) => ({
 				key,
 				referenceNumber,

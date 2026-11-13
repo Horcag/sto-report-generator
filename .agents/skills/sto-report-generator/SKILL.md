@@ -138,6 +138,8 @@ match is not proof that a source is fictitious. For external findings, first com
 with the final list, then assess each matched publication. The workflow documents the optional offline `--extracted`
 comparison; it does not contact or validate the external service.
 
+For a published dataset, the optional `--lookup-dataset <bibkey>` queries DataCite for that one record. Compare the candidate version and creators with the release page before recording a DOI. The regular audit works offline.
+
 Record field-level results in `bibliography-evidence.json`, including unresolved fields. After actual verification,
 enable `bibliographyEvidence: required` when bringing an existing report into this workflow. Run
 `npm run audit:bibliography -- <report-dir> --require-evidence`, source preflight and DOCX validation. Inspect the
