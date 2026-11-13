@@ -237,8 +237,22 @@ class GitScopeTests(unittest.TestCase):
         self.assertTrue(collect_plan(self.root, self.base, head).full)
 
     def test_pushed_crlf_cannot_be_hidden_by_clean_staged_text(self):
-        (self.root / "README.md").write_bytes(b"# Committed CRLF\r\n")
-        pushed = self.commit()
+        raw = b"# Committed CRLF\r\n"
+        (self.root / "README.md").write_bytes(raw)
+        # Bypass Git clean filters deliberately: this tests a bad committed blob,
+        # even on hosts whose global attributes normalize ordinary `git add`.
+        blob = (
+            subprocess.check_output(
+                ["git", "hash-object", "-w", "--stdin"],
+                cwd=self.root,
+                input=raw,
+            )
+            .decode()
+            .strip()
+        )
+        self.git("update-index", "--cacheinfo", "100644", blob, "README.md")
+        self.git("-c", "commit.gpgsign=false", "commit", "-qm", "raw CRLF fixture")
+        pushed = self.git("rev-parse", "HEAD")
         (self.root / "README.md").write_bytes(b"# Clean staged text\n")
         self.git("add", "README.md")
         self.assertEqual(check_line_endings(self.root), [])
