@@ -60,6 +60,13 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 						: undefined,
 				});
 				fs.copyFileSync(input, job.inputDocx);
+				fs.writeFileSync(
+					path.join(
+						path.dirname(job.inputDocx),
+						'input.figures.json',
+					),
+					'{"schemaVersion":1,"figures":[]}',
+				);
 				if (outcome === 'success') {
 					job.render();
 					const result = job.publish();

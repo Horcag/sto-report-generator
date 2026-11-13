@@ -24,19 +24,21 @@ export function createWordRenderJob(options: {
 	const outputDocx = path.resolve(options.outputDocx);
 	const stem = outputDocx.replace(/\.docx$/i, '');
 	const manifestPath = `${stem}.acceptance.json`;
+	const figuresPath = `${stem}.figures.json`;
 	const pdfPath = options.exportPdf
 		? (options.outputPdf ?? `${stem}.pdf`)
 		: undefined;
 	const destinations = [
 		outputDocx,
 		manifestPath,
+		figuresPath,
 		...(pdfPath ? [pdfPath] : []),
 	];
 	if (
 		new Set(destinations.map(destination => destination.toLowerCase()))
 			.size !== destinations.length
 	) {
-		throw new Error('Word DOCX, PDF, and manifest paths must be distinct.');
+		throw new Error('Word DOCX, PDF, and sidecar paths must be distinct.');
 	}
 	const locks: string[] = [];
 	let directory: string | undefined;
@@ -79,6 +81,7 @@ export function createWordRenderJob(options: {
 	const staging = directory;
 	const inputDocx = path.join(staging, 'input.docx');
 	const acceptedDocx = path.join(staging, 'accepted.docx');
+	const inputFigures = path.join(staging, 'input.figures.json');
 	const pdf = path.join(staging, 'accepted.pdf');
 	const manifest = path.join(staging, 'acceptance.json');
 	let cleanupSafe = true;
@@ -117,6 +120,10 @@ export function createWordRenderJob(options: {
 			}
 		},
 		publish(): WordRenderResult {
+			if (!fs.statSync(inputFigures).isFile())
+				throw new Error(
+					'Word figure plan sidecar must be a regular file.',
+				);
 			const evidence = JSON.parse(fs.readFileSync(manifest, 'utf8'));
 			if (
 				evidence.status !== 'accepted' ||
@@ -144,6 +151,7 @@ export function createWordRenderJob(options: {
 			);
 			const outputs = [
 				[acceptedDocx, outputDocx],
+				[inputFigures, figuresPath],
 				...(pdfPath ? [[pdf, pdfPath]] : []),
 				[manifest, manifestPath],
 			];

@@ -12,6 +12,7 @@ mock.method(os, 'release', () => 'microsoft-wsl');
 const outputDocx = path.join(root, 'final.docx');
 const pdf = path.join(root, 'final.pdf');
 const manifest = path.join(root, 'final.acceptance.json');
+const figures = path.join(root, 'final.figures.json');
 const options = {
 	outputDocx,
 	exportPdf: true,
@@ -23,6 +24,10 @@ const hash = (value: string) =>
 function prepare(job: ReturnType<typeof createWordRenderJob>) {
 	const stage = path.dirname(job.inputDocx);
 	fs.writeFileSync(job.acceptedDocx, 'verified-docx');
+	fs.writeFileSync(
+		path.join(stage, 'input.figures.json'),
+		'{"schemaVersion":1,"figures":[]}',
+	);
 	fs.writeFileSync(path.join(stage, 'accepted.pdf'), '%PDF-verified');
 	fs.writeFileSync(
 		path.join(stage, 'acceptance.json'),
@@ -65,6 +70,10 @@ try {
 	assert.equal(evidence.pdf.path, pdf);
 	assert.equal(evidence.pdf.sha256, hash(fs.readFileSync(pdf, 'utf8')));
 	assert.ok(!fs.existsSync(`${outputDocx}.word.lock`));
+	assert.deepEqual(JSON.parse(fs.readFileSync(figures, 'utf8')), {
+		schemaVersion: 1,
+		figures: [],
+	});
 
 	fs.writeFileSync(pdf, 'unrelated-stale-pdf');
 	job = createWordRenderJob({ ...options, exportPdf: false });
@@ -78,7 +87,10 @@ try {
 	assert.equal(evidence.internalPdfVerified, true);
 
 	const previous = new Map(
-		[outputDocx, pdf, manifest].map(file => [file, fs.readFileSync(file)]),
+		[outputDocx, pdf, manifest, figures].map(file => [
+			file,
+			fs.readFileSync(file),
+		]),
 	);
 	job = createWordRenderJob(options);
 	prepare(job);
@@ -105,6 +117,21 @@ try {
 			}),
 		/must be distinct/,
 	);
+	assert.throws(
+		() =>
+			createWordRenderJob({
+				...options,
+				outputPdf: figures.toUpperCase(),
+			}),
+		/must be distinct/,
+	);
+	job = createWordRenderJob(options);
+	prepare(job);
+	fs.unlinkSync(path.join(path.dirname(job.inputDocx), 'input.figures.json'));
+	assert.throws(() => job.publish(), /ENOENT/);
+	job.close();
+	for (const [file, bytes] of previous)
+		assert.deepEqual(fs.readFileSync(file), bytes);
 	const customPdf = path.join(root, 'preview', 'custom.pdf');
 	job = createWordRenderJob({ ...options, outputPdf: customPdf });
 	prepare(job);
