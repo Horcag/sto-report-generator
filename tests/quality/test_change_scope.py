@@ -261,6 +261,24 @@ class GitScopeTests(unittest.TestCase):
         export_snapshot(self.root, snapshot, "git", pushed)
         self.assertTrue(check_line_endings(snapshot))
 
+    def test_snapshot_keeps_committed_files_even_when_ignored(self):
+        self.write(".gitignore", "docs/retained.md\n")
+        self.write("docs/retained.md", "# Tracked despite ignore rule\n")
+        self.git("add", "--force", "docs/retained.md")
+        pushed = self.commit()
+        snapshot = Path(self.temporary.name) / "ignored-snapshot"
+        snapshot.mkdir()
+        export_snapshot(self.root, snapshot, "git", pushed)
+        tracked = (
+            subprocess.check_output(
+                ["git", "ls-files", "--", "docs/retained.md"],
+                cwd=snapshot,
+            )
+            .decode()
+            .strip()
+        )
+        self.assertEqual(tracked, "docs/retained.md")
+
     def test_snapshot_checks_actual_push_not_dirty_index(self):
         self.write("README.md", "# Committed docs\n")
         pushed = self.commit()

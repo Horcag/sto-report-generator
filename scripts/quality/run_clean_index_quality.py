@@ -61,7 +61,7 @@ def export_snapshot(repository: Path, snapshot: Path, git: str, revision: str) -
     env = isolated_git_environment(repository, git)
     run([git, "init", "--quiet"], cwd=snapshot, env=env)
     run([git, "config", "core.autocrlf", "false"], cwd=snapshot, env=env)
-    run([git, "add", "--all"], cwd=snapshot, env=env)
+    run([git, "add", "--all", "--force"], cwd=snapshot, env=env)
 
 
 def main() -> int:
