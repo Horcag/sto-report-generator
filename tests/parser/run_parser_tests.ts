@@ -271,7 +271,11 @@ async function main(): Promise<void> {
 		),
 	);
 	for (const paragraph of literalParagraphs) {
-		assert.match(paragraph, /<w:wordWrap w:val="0"\/>/);
+		assert.doesNotMatch(
+			paragraph,
+			/<w:wordWrap\b/,
+			'Keep normal word wrapping for titles and names',
+		);
 		assert.match(paragraph, /<w:numPr>/, 'Keep native automatic numbering');
 		assert.doesNotMatch(
 			paragraph,

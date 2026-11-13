@@ -22,7 +22,7 @@ function hasSegmentedIdentifier(paragraph: string): boolean {
 	);
 	return [
 		...text.matchAll(
-			/(?:https?:\/\/|\b(?:URL|DOI|ISBN|ISSN|ISMN)\s*:[ \t]*)(?:\S|\uFEFF)+/gi,
+			/(?:https?:\/\/|\b(?:URL|DOI|ISBN(?:-1[03])?|ISSN|ISMN)[ \t]*:[ \t]*|\b(?:DOI|ISBN(?:-1[03])?|ISSN|ISMN)[ \t]+(?=[\d\u00AD\u200B\u2060\uFEFF])|\b10\.\d{4,9}\/)(?:\S|\uFEFF)+/gi,
 		),
 	].some(match => /[\u00AD\u200B\u2060\uFEFF]/u.test(match[0]));
 }

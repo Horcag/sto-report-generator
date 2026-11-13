@@ -157,9 +157,6 @@ export async function handleStoFlag(
 					bibElements.push(
 						new Paragraph({
 							style: 'Bibliography',
-							// docx emits w:wordWrap=0: allow character-level wrapping
-							// without adding invisible characters to literal URLs.
-							wordWrap: true,
 							alignment: AlignmentType.JUSTIFIED,
 							spacing: {
 								before: 0,

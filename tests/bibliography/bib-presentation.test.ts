@@ -99,6 +99,12 @@ for (const separator of [
 		'URL: https://example.org/a-',
 		'DOI: 10.1234/a-',
 		'ISBN: 978-',
+		'DOI 10.1234/a-',
+		'ISBN 978-',
+		'ISBN-13 978-',
+		'ISSN 1234-',
+		'ISMN 979-',
+		'10.1234/a-',
 	]) {
 		assert.equal(
 			literalIdentifiersPass(
@@ -158,6 +164,28 @@ assert.equal(
 	true,
 	'Escaped literal entity text is not an invisible character',
 );
+assert.equal(
+	literalIdentifiersPass(
+		heading +
+			paragraph(
+				text(
+					'DOI 10.1234/ab-c_d. ISBN 978-1-2345-6789-0. ISSN 1234-5678. ISMN 979-0-1234-5678-9. 10.5678/plain_doi.',
+				),
+			),
+	),
+	true,
+	'Plain DOI and identifiers without colons remain literal',
+);
+assert.equal(
+	literalIdentifiersPass(
+		heading +
+			paragraph(
+				text('A DOI study\u200Btitle and ISBN reference\u200Bguide.'),
+			),
+	),
+	true,
+	'Words DOI and ISBN in titles do not label arbitrary prose as identifiers',
+);
 const citationIssues = (content: string) => {
 	const issues: SourcePreflightIssue[] = [];
 	validateCitationContext([{ file: 'text.md', content }], issues);
@@ -205,7 +233,7 @@ console.log(
 	'PASS bibliography presentation: 8 scenarios including black unstyled hyperlinks, field codes, split instructions, and section boundaries.',
 );
 console.log(
-	'PASS bibliography literal identifiers: 22 scenarios including split runs, invisible characters, numeric references, soft hyphens, foreign prose, and section boundaries.',
+	'PASS bibliography literal identifiers: 60 scenarios including colonless labels, plain DOI, split runs, invisible characters, numeric references, soft hyphens, foreign prose, and section boundaries.',
 );
 console.log(
 	'PASS bibliography citation context: 7 scenarios including sentence punctuation, manual numbering, code and formula exclusions.',
