@@ -8,6 +8,7 @@
 	},
 	"files": [
 		".agents/skills/humanizer-ru",
+		".agents/skills/sto-report-generator",
 		"bin",
 		"src",
 		"scripts",

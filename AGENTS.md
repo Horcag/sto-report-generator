@@ -8,6 +8,9 @@
 
 ## Russian report prose
 
+- When drafting Russian scientific prose or comparing stylistic variants, follow the existing
+  [project skill](.agents/skills/sto-report-generator/SKILL.md) and its
+  [authoring protocol](.agents/skills/sto-report-generator/references/scientific-prose.md) before the editorial pass.
 - When drafting or editing connected Russian prose in report Markdown, use the bundled [`humanizer-ru`](.agents/skills/humanizer-ru/SKILL.md) skill as a required editorial pass before source preflight. Read its academic-genre exceptions and rewrite guide. Review the actual prose, make only justified edits, and inspect the diff.
 - Apply this to text the agent authors or is explicitly asked to edit. For a review-only request, report findings without rewriting. Do not silently alter existing user prose during `check`, `generate`, or validation.
 - Preserve claims, citations, figures, terminology, formulas, STO macros, YAML, BibTeX, and the author's voice. A style signal alone does not establish AI authorship. If the skill cannot be loaded, perform the same editorial pass using [`docs/report-authoring.md`](docs/report-authoring.md) and disclose that limitation.

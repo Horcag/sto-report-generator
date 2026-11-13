@@ -101,7 +101,8 @@ function runPortableExampleAudit(): void {
 function isForbiddenPath(filePath: string): boolean {
 	return (
 		(filePath.startsWith('.agents/') &&
-			!filePath.startsWith('.agents/skills/humanizer-ru/')) ||
+			!filePath.startsWith('.agents/skills/humanizer-ru/') &&
+			!filePath.startsWith('.agents/skills/sto-report-generator/')) ||
 		forbiddenExactPaths.has(filePath) ||
 		forbiddenPrefixes.some(prefix => filePath.startsWith(prefix)) ||
 		filePath.startsWith('.temp') ||
@@ -115,6 +116,11 @@ function isForbiddenPath(filePath: string): boolean {
 function assertRequiredFiles(packedFiles: PackedFile[]): void {
 	const packedPaths = new Set(packedFiles.map(file => file.path));
 	const requiredPaths = [
+		'.agents/skills/sto-report-generator/SKILL.md',
+		'.agents/skills/sto-report-generator/references/scientific-prose.md',
+		'.agents/skills/sto-report-generator/references/repository-map.md',
+		'.agents/skills/sto-report-generator/references/vkr-author-adapted-features.md',
+		'docs/report-authoring.md',
 		'.agents/skills/humanizer-ru/SKILL.md',
 		'.agents/skills/humanizer-ru/LICENSE',
 		'.agents/skills/humanizer-ru/references/rewrite-guide.md',

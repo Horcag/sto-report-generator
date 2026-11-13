@@ -46,6 +46,10 @@ assert.match(
 	/humanizer-ru из \.agents\/skills\/humanizer-ru\/SKILL\.md/,
 );
 assert.match(
+	fs.readFileSync(path.join(result.targetDir, 'README.md'), 'utf8'),
+	/\.agents\/skills\/sto-report-generator\/SKILL\.md и его references\/scientific-prose\.md/,
+);
+assert.match(
 	fs.readFileSync(path.join(result.targetDir, '01_referat.md'), 'utf8'),
 	/Пояснительная записка: \{\{PAGES\}\} с\., \{\{FIGURES\}\}, \{\{TABLES\}\}, \{\{SOURCES\}\}, \{\{APPENDICES\}\}\./,
 );
