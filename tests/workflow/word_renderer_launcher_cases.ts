@@ -13,6 +13,7 @@ type FakeWord = (
 		backgroundSucceeds?: boolean;
 		exportFails?: boolean;
 		cleanupFails?: boolean;
+		cleanupFailsAfterAcceptance?: boolean;
 	},
 	test: (
 		input: string,
@@ -25,6 +26,7 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 		'success',
 		'failure',
 		'cleanup',
+		'interactive-cleanup',
 		'quality',
 		'budget',
 		'override',
@@ -32,7 +34,7 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 		withFakeWord(
 			{
 				sourceDrivenRenderer: true,
-				backgroundSucceeds: true,
+				backgroundSucceeds: outcome !== 'interactive-cleanup',
 				exportFails: [
 					'failure',
 					'quality',
@@ -43,6 +45,7 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 				deterministicQualityFailure: outcome === 'quality',
 				rendererQuality: 'print',
 				cleanupFails: outcome === 'cleanup',
+				cleanupFailsAfterAcceptance: outcome === 'interactive-cleanup',
 			},
 			(input, calls) => {
 				const outputDocx = path.join(path.dirname(input), 'final.docx');
@@ -73,7 +76,7 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 				} else {
 					assert.throws(
 						() => job.render(),
-						outcome === 'cleanup'
+						['cleanup', 'interactive-cleanup'].includes(outcome)
 							? /cleanup could not prove/
 							: outcome === 'budget'
 								? /exhausted its time budget/
@@ -111,8 +114,25 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 					path.dirname(path.dirname(journal)),
 					path.dirname(job.inputDocx),
 				);
-				assert.equal(fs.existsSync(journal), outcome === 'cleanup');
-				if (outcome === 'cleanup') {
+				assert.equal(
+					fs.existsSync(journal),
+					['cleanup', 'interactive-cleanup'].includes(outcome),
+				);
+				if (['cleanup', 'interactive-cleanup'].includes(outcome)) {
+					const failed = JSON.parse(
+						fs.readFileSync(
+							path.join(
+								path.dirname(job.inputDocx),
+								'acceptance.json',
+							),
+							'utf8',
+						),
+					);
+					assert.equal(failed.status, 'failed');
+					assert.equal(
+						failed.execution.processCleanupVerified,
+						false,
+					);
 					const request = JSON.parse(
 						fs.readFileSync(journal, 'utf8'),
 					);
@@ -128,11 +148,11 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 				job.close();
 				assert.equal(
 					fs.existsSync(`${outputDocx}.word.lock`),
-					outcome === 'cleanup',
+					['cleanup', 'interactive-cleanup'].includes(outcome),
 				);
 				assert.equal(
 					fs.existsSync(path.dirname(job.inputDocx)),
-					outcome === 'cleanup',
+					['cleanup', 'interactive-cleanup'].includes(outcome),
 				);
 				assert.equal(
 					calls[0].timeout,
