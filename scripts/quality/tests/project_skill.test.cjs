@@ -168,8 +168,15 @@ test('an OS-style ancestor alias is allowed but a linked node_modules is rejecte
 	const alias = path.join(aliasRoot, 'system alias');
 	fs.symlinkSync(path.dirname(root), alias, 'junction');
 	const requested = path.join(alias, path.basename(root));
+	const packageAlias = path.join(aliasRoot, 'package system alias');
+	fs.symlinkSync(path.dirname(root), packageAlias, 'junction');
+	const aliasedPackage = path.join(
+		packageAlias,
+		path.basename(root),
+		'node_modules/sto-report-generator',
+	);
 	assert.equal(
-		installProjectSkill(packageRoot, {
+		installProjectSkill(aliasedPackage, {
 			...env,
 			INIT_CWD: requested,
 			npm_config_local_prefix: requested,
@@ -186,6 +193,15 @@ test('an OS-style ancestor alias is allowed but a linked node_modules is rejecte
 		'junction',
 	);
 	assert.equal(installProjectSkill(packageRoot, env), false);
+});
+
+test('a linked package basename is rejected even when it resolves inside the owner project', t => {
+	const { root, packageRoot, env } = installed(t);
+	const physicalPackage = path.join(root, 'node_modules/physical-package');
+	fs.renameSync(packageRoot, physicalPackage);
+	fs.symlinkSync(physicalPackage, packageRoot, 'junction');
+	assert.equal(installProjectSkill(packageRoot, env), false);
+	assert.ok(!fs.existsSync(path.join(root, '.agents')));
 });
 
 test('report folder gets its own relative entry even outside the package checkout', t => {

@@ -119,15 +119,22 @@ function installProjectSkill(
 			)
 	)
 		return false;
+	const candidate = path.resolve(packageRoot);
+	const modules = path.dirname(candidate);
 	if (
-		![project, requestedProject].some(
-			root =>
-				packageRoot === path.join(root, 'node_modules', PACKAGE_NAME),
-		)
+		path.basename(candidate) !== PACKAGE_NAME ||
+		path.basename(modules) !== 'node_modules' ||
+		!existsWithoutSymlink(candidate, 'isDirectory') ||
+		!existsWithoutSymlink(modules, 'isDirectory') ||
+		fs.realpathSync(path.dirname(modules)) !== project
 	)
 		return false;
-	packageRoot = path.join(project, 'node_modules', PACKAGE_NAME);
-	if (!safeAncestors(packageRoot, project)) return false;
+	packageRoot = fs.realpathSync(candidate);
+	if (
+		packageRoot !== path.join(project, 'node_modules', PACKAGE_NAME) ||
+		!safeAncestors(packageRoot, project)
+	)
+		return false;
 	const manifest = path.join(project, 'package.json');
 	if (fs.existsSync(manifest) && !existsWithoutSymlink(manifest, 'isFile'))
 		return false;
