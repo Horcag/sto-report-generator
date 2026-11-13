@@ -74,6 +74,44 @@ def run(args: list[str], root: Path) -> None:
     subprocess.run(args, cwd=root, check=True)
 
 
+def check_markdown_formatting(root: Path, tools: Path, files: list[str]) -> None:
+    # Resolve policy at each snapshot file, but use only Prettier's built-in
+    # Markdown support. Code-import plugins are irrelevant here and must not be
+    # resolved relative to the dependency-free snapshot.
+    script = r"""
+const prettier = require(process.argv[1]);
+const fs = require('node:fs');
+const path = require('node:path');
+(async () => {
+    const known = new Set((await prettier.getSupportInfo()).options.map(option => option.name));
+    for (const name of JSON.parse(fs.readFileSync(0, 'utf8'))) {
+        const filename = path.resolve(name);
+        const info = await prettier.getFileInfo(filename, {
+            ignorePath: path.resolve('.prettierignore'), resolveConfig: false,
+        });
+        if (info.ignored) continue;
+        const resolved = await prettier.resolveConfig(filename, { editorconfig: true }) || {};
+        const policy = Object.fromEntries(Object.entries(resolved)
+            .filter(([key]) => known.has(key) && key !== 'plugins'));
+        if (!await prettier.check(fs.readFileSync(filename, 'utf8'), {
+            ...policy, filepath: filename, plugins: [],
+        })) {
+            console.error(`Markdown formatting differs: ${name}`);
+            process.exitCode = 1;
+        }
+    }
+})().catch(error => { console.error(error); process.exitCode = 1; });
+"""
+    subprocess.run(
+        ["node", "-e", script, str(tools / "prettier")],
+        input=json.dumps(files),
+        text=True,
+        cwd=root,
+        check=True,
+    )
+    print(f"Markdown formatting passed for {len(files)} file(s) using snapshot policy.")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tool-root", type=Path, default=Path.cwd())
@@ -99,7 +137,7 @@ def main() -> int:
         raise ValueError("\n".join(issues))
     formatted = [name for name in existing if name.endswith(".md")]
     if formatted:
-        run(["node", str(tools / "prettier/bin/prettier.cjs"), "--check", "--", *formatted], root)
+        check_markdown_formatting(root, tools, formatted)
     frontmatter_script = r"""
 const yaml = require(process.argv[1]);
 const fs = require('node:fs');
