@@ -13,7 +13,7 @@
     "example/images/dummy.svg": "bafeb4ccc7ef2795f2c2161dc6c9245494c500c9d8a2568c5eb10e12d2c63aa5",
     "example/references.bib": "887bc69b8d5c37b0d918803d822547320438978da00141e81ff7592b9d83b610",
     "package-lock.json": "a8c4ba395734c49b89229230b9c7446f7397774f976e594e7672cb7bedd731a5",
-    "package.json": "c4c7fd6cc9dc07cb2a360aac3337cf3e4af2b41490f2b4f13cfc75b237ba642a",
+    "package.json": "75c2a5912cc4e9b87fdd9c4c7831f41b4b046e45977f15b71fa6df13790b1927",
     "pyproject.toml": "0eb1993c9e5c7883827776f4ba3efd6765a1dc9aff33111d691cc30ad8474655",
     "scripts/post_build.py": "ebc753b075107cdcb81b20eb44065fc5941543a7fd6796e22f7373fce5c6ef33",
     "scripts/quality/check_formula_pdf.py": "2ebf15040d73f1d49330b55203bb32352c1a3cb6f77866b5135ef5f95b869608",
@@ -46,11 +46,14 @@
     "scripts/sto_post_build/xml_layout.py": "ec443a11c89cac3a99911d0e9812354e35e03f2c778be8a95bbf37ac156e1385",
     "scripts/stop_word_acceptance.ps1": "b1ea9976683a8cc0013e93ef86b1060b852e251a1ea32017412ab3401b1f7759",
     "scripts/word_acceptance.ps1": "589ac4c9c15f580b88cb6a31d4905fa7336fbf7ac84c01c32a290cc5735b820f",
-    "src/app/bibliography-audit.ts": "4ffbd9a3c0bebdf72cca6d6edeb9820820a372111069e5505a64f457586bdbd6",
-    "src/app/bibliography-command.ts": "cd0aef2abe18607a91acafea2821e7b3d51372c6c8fd9254c789f63ccdb08ae9",
+    "src/app/bibliography-audit.ts": "26f907f89d318074dbcc9b3b5df6f58f2b70de944b3ff4b4e6cfdbc81c50991a",
+    "src/app/bibliography-command.ts": "daffb024120fa14b22bd34bffff65d13f676442bbe3698acce0e079ff30806d0",
+    "src/app/bibliography-dataset-lookup.ts": "90ed60fbf77cf4aad92f494756f02e3f16b4efc027586a7fb9b1e204afbdcb67",
+    "src/app/bibliography-lookup.ts": "60c8a86cdf915d90502612ee780bcfb965bff22b57fbaab70be34fac93d4c076",
+    "src/app/bibliography-reconciliation.ts": "386e654c6fbf0c3d8e8507c2fb9a2a04a285829671c2a9ddb321521c24b209ac",
     "src/app/builder.ts": "290824a848ce6f6cfe2b798f8b0cdabf3d9825c5c1373136af4074d77d6df243",
     "src/app/cli-args.ts": "07c305ad66c3c9ac5b15c22f5857b387fc71d06f3b2bf127580313f4214aac33",
-    "src/app/cli-help.ts": "523068448f2fa59a82325fa4f31b540c7338ff28ee63b4d96fb1375ac6752bfc",
+    "src/app/cli-help.ts": "b847b8b7100d8c0df4ec1c9989e4ae7ce8540117f30f0d52b8b126b2cfa173b0",
     "src/app/cli-preview.ts": "03c5143db35c836682358c88d9f5fec54de3562596ae7f488e7311d966d9f4a5",
     "src/app/doctor.ts": "e515f271e3c28bd09af9991815632025b366c8862e83e2d68f0088716553a597",
     "src/app/figure-command.ts": "c87280b1178e6719702578181663cb5c18e9321dc926378056fa06cbdf27f8b4",
@@ -91,7 +94,7 @@
     "src/features/markdown-parser/lib/parser/handlers/inline-parser.ts": "01667e0e388684c2e90ba5e523571bb572a9bdd8f9f164122f2963fc327727a4",
     "src/features/markdown-parser/lib/parser/handlers/math-handler.ts": "9f79cc47f739b6f15846ad2522a802f2f9068a9c861c4e5171ee279a09301dc7",
     "src/features/markdown-parser/lib/parser/handlers/report-table-of-contents.ts": "6b637ecd3b2d02caa4de4f2c02165f6f9026f487ab4bee65950bd96d2667883e",
-    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "9c78c70882ad02623a7ecd3cf674acf6751e66311d3920b4bb5ea92440905b64",
+    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "943ee0c5ef9fc4808075d3608f131547564a10a8b8221f6396c657efe994f71d",
     "src/features/markdown-parser/lib/parser/handlers/table-handler.ts": "3e65ebdcd28787fd9d245f3b5b1c1b2a177a4e58d08579445eb7cde8e68f93ef",
     "src/features/markdown-parser/lib/parser/reference-registry.ts": "533eb0e46e7efbcfd568d6e341a9c683c70035f5faf3f563d9eff56947de42fd",
     "src/features/markdown-parser/lib/parser/table-notes.ts": "c7c428ac9d0afba3349edc74dad105935f5eb38cf1ac5a5b17257a1015b414ff",
@@ -104,7 +107,7 @@
     "src/features/markdown-parser/lib/utils/bib-format-utils.ts": "bee58f0539f9403db0a9437a51e00fd9906fb27a2ac7394b5f077748db458161",
     "src/features/markdown-parser/lib/utils/bib-formatter.ts": "a857de8d451e71d36cd57ada8539741135ba87136552471dc52159020c880e04",
     "src/features/markdown-parser/lib/utils/extensions.ts": "10c19738ac438f398b3348680ff0d2bc94aaa8aac6142772211021a0474051e6",
-    "src/index.ts": "61342f683b3a809f0b98a95d91b3bfa4a10326b33c9136d2abeaa107354579c5",
+    "src/index.ts": "ae3d1750a45e4aab446a3f4f08b751b981e4206b0c060108262181ab65880bb9",
     "src/shared/config/index.ts": "0819647ea2f98da046857e4b9fd9f8b7e5d6d3565da49a34a3387142892760ff",
     "src/shared/config/report-workflow.ts": "f6d6e09e3e68fdaf8f11b45ba723ebff1a290f8618d84e69b45b7771b9cbd009",
     "src/shared/config/samara-template-2022-styles.json": "e4518c8a8120c99ff09838948d3f6f311c39e0b3ac0cc1e5624054d01c185900",
@@ -186,7 +189,7 @@
     "src/shared/lib/source-preflight/utils.ts": "11ec29b8fcd39799f630b373cfa5a8db8dabb87099e604ba70cdcaab7d606d50",
     "src/shared/lib/source-preflight.ts": "f1386098c3759ed161fb2ab3dd8a1062d0a8054bd879c2c6d631923978d6d354",
     "src/shared/lib/sto-template-style-validator.ts": "0d893bbbdc5a834f33701c7092966ac3b2eda79de525f14ddf1eb926269ebab7",
-    "src/shared/lib/sto-validator/bibliography-xml.ts": "49a5c4ee614fafc35a57c333e2b091c7defefa22c232f787394c37e7b0454ce2",
+    "src/shared/lib/sto-validator/bibliography-xml.ts": "576983992f5703baea32476e7668789d17c68e7c0c3d72c918daeda33dc46a96",
     "src/shared/lib/sto-validator/body-xml.ts": "ae20a1c69d4367d71283b1fefdb0ad82df4eb0fa47f64b4f6ff24a5e725f530b",
     "src/shared/lib/sto-validator/bold-formatting.ts": "b6506e1f375a5455ba04d2c5a4e9147810162099105623b0fad03ffd64515313",
     "src/shared/lib/sto-validator/layout-xml.ts": "282e5661463bc328a03a51add18baf652ba63bb623ba5d9166583384060cbf74",
@@ -227,7 +230,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "5069cd57f35fb24542e01f7a287c14b7a507d631c8767f3635f825f41732188e",
+      "pdfSha256": "4a56dc516e1a86280577ba2bd02e3b3b7aaddcf9d163017cea1e97e2ea9d1fc4",
       "pageCount": 8,
       "pages": [
         {
@@ -273,7 +276,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "431ad50b3e9db82d78b3637b8b8b1e96f9c3820ee9d4c2a072caad2a577e1958",
+      "pdfSha256": "7248afef33a0972803977a0a2fc5ab319874ddee916a5003c148b863b480adab",
       "pageCount": 4,
       "pages": [
         {
@@ -320,7 +323,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "82ed15edd81c7906d3f5936fe35966b07335cd692598302e8723fc0dd23277c6",
+      "pdfSha256": "6abd67338eacb8f2966180ed5377bf86b6412b9b7cebf839195bbb5ca8d50746",
       "pageCount": 4,
       "pages": [
         {
@@ -350,7 +353,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "04a8c73ebab41785c89f749272b568d534cb39aa34a5d9393108a24a69a7a51e",
+      "pdfSha256": "ccb68fb35d5095568eb33b6e9636f08765e9a2cd13d7192f655f2951d2555a79",
       "pageCount": 2,
       "pages": [
         {
@@ -372,7 +375,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "8e5a91b54697504d370e91a6d51de39d9b214a01a0a4c720bb60cf2061753453",
+      "pdfSha256": "14ed8674d8d11e94ccf0e62f98fd948b964ad925b92c76ed74a17f26501a9f7e",
       "pageCount": 11,
       "pages": [
         {

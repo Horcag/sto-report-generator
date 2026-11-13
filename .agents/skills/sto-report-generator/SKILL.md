@@ -1,9 +1,11 @@
 ---
 name: sto-report-generator
-description: 'Use this skill when working with the STO Report Generator repository: building or updating Russian academic .docx/.pdf reports from modular Markdown, scaffolding report folders, fixing СТО/ГОСТ formatting issues, synchronizing report figures from notebooks, validating generated DOCX files, adapting the generator code, or applying lessons from vkr-author without switching to its Pandoc pipeline.'
+description: 'Use this skill when writing, reviewing, or building academic reports with STO Report Generator: checking bibliography sources and citations, updating modular Markdown, fixing СТО/ГОСТ formatting, synchronizing figures, validating DOCX/PDF output, or adapting the generator.'
 ---
 
 # STO Report Generator
+
+<!-- cspell:words inonline websiteresponsibility Crossref DataCite Pandoc -->
 
 ## Purpose
 
@@ -61,6 +63,9 @@ citations require them. `--type` changes title-page text only; it is not a profi
 
 - Inspect the target report directory and edit the smallest relevant `.md` modules. Do not rewrite a whole report in one
   file.
+- When writing with sources, adding citations, reviewing a bibliography, or investigating an external checker's
+  findings, follow [the bibliography workflow](../../../docs/bibliography-workflow.md) before accepting metadata or
+  changing the publication type. A build-only request does not authorize rewriting the report or its bibliography.
 - For drafting or improving connected Russian prose in any educational report profile (lab, coursework, NIR,
   or another supported profile), first follow
   [the report prose workflow](references/scientific-prose.md). Use its ordinary authoring pass for short edits;
@@ -97,7 +102,6 @@ npm run generate:report -- reports/<report_name> --renderer word --validate
 - Use lower-level commands only when debugging a specific step. The Python command below requires
   **native Windows Python**; on WSL use normal `generate --renderer word` instead:
 
-
 ```powershell
 npx tsx src/index.ts build reports/<report_name> reports/<report_name>/build/<output>.docx
 uv run python scripts/post_build.py reports/<report_name>/build/<output>.docx reports/<report_name>
@@ -115,6 +119,31 @@ npm run quality
 ```powershell
 uv run python reports/coursework_sad/scripts/verify_docx_figures.py reports/coursework_sad/coursework_sad.docx
 ```
+
+## Bibliography during writing and review
+
+Identify the source actually used: printed edition, published article, conference paper, repository preprint,
+dataset version, or website page. Open the publisher/repository record and available source PDF; inspect its title
+page, author list, publication details and pagination. Keep private PDFs, acquisition URLs, hashes and page-level
+notes with the report, outside public Git. A PDF download alone does not establish which version it contains.
+
+Use `@inonline` with `website` and verified `websiteresponsibility` for a preprint described as part of a repository
+website; use `@techreport` for an actual report/series, or `@article` for the published journal version actually used.
+Do not choose a type just to satisfy a parser. Article pages may be replaced by a verified article number;
+publication place is not the conference venue. Print-only descriptions do not require an invented URL or access date.
+
+An arXiv DOI identifies the work and resolves to its latest version; preserve the used revision in a versioned URL
+and `version`. Distinguish it from the publisher DOI. Crossref/DataCite matches are metadata candidates, and a missing
+match is not proof that a source is fictitious. For external findings, first compare recognized entries and numbering
+with the final list, then assess each matched publication. The workflow documents the optional offline `--extracted`
+comparison; it does not contact or validate the external service.
+
+For a published dataset, the optional `--lookup-dataset <bibkey>` queries DataCite for that one record. Compare the candidate version and creators with the release page before recording a DOI. The regular audit works offline.
+
+Record field-level results in `bibliography-evidence.json`, including unresolved fields. After actual verification,
+enable `bibliographyEvidence: required` when bringing an existing report into this workflow. Run
+`npm run audit:bibliography -- <report-dir> --require-evidence`, source preflight and DOCX validation. Inspect the
+final bibliography and citations after Word acceptance. Hash/status checks do not replace source inspection.
 
 ## Supported STO Markdown Elements
 
@@ -136,12 +165,11 @@ local absolute paths there.
 - Use BibTeX cite keys in text: `[@key]` or `[@key1; @key2]`. Do not write source numbers like `[1]` manually in source Markdown.
 - Do not use `[0]` citations.
 - Keep `91_sources.md` as an empty `sto_bibliography` container; unused entries may remain in `references.bib`.
-- For cited BibTeX entries, keep required fields complete enough for GOST/STO formatting: books need author/editor,
-  title, place, publisher, year and pages; articles need journal/year/pages; conference or collection parts need
-  `booktitle`, place, year and pages. Electronic sources need `url` with `http`, `https` or `ftp` and `urldate` as
-  `YYYY-MM-DD`.
-- Store DOI values without `https://doi.org/`; English sources should normally have `langid = {english}`. If a source is
-  a working paper, preprint, SSRN, arXiv or NBER item, prefer `techreport`, `misc` or `online` over `article`.
+- Choose fields by source type and the applicable description scheme in the bibliography workflow. Books use total
+  extent; articles and collection parts use page ranges or a verified article number. Explain genuinely missing
+  conditional data after checking the source; do not invent place, publisher or year.
+- Store DOI values without `https://doi.org/`; English descriptions should have `langid = {english}`. Network resources
+  need their actual URL and access date (`urldate = {YYYY-MM-DD}`); online access does not erase the publication type.
 - For `lab`, sources are optional until the first `[@key]` citation. After adding a citation, add `references.bib` and a
   `СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ` structural section unless config explicitly says otherwise.
 - Keep title-page frontmatter aligned with the selected profile: `lab` should say laboratory work, `coursework` should

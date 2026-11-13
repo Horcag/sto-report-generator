@@ -467,7 +467,7 @@ async function testSpecialTypeCitations(): Promise<void> {
 			{ bibliography: bibPath },
 			{ sourceDir: tempDir },
 		);
-		const actual = JSON.stringify(elements).replaceAll('\u200B', '');
+		const actual = JSON.stringify(elements);
 		assert.match(
 			actual,
 			/Патент \[1\], диссертация \[2\], стандарт \[3\], часть сайта \[4\]/,

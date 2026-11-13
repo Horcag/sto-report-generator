@@ -32,19 +32,6 @@ import { formatBibItem } from '../../utils/bib-formatter';
 import { appendixTocFieldRuns } from './appendix-toc-field';
 import { ReportTableOfContents } from './report-table-of-contents';
 
-const URL_PATTERN = /https?:\/\/[^\s)]+/g;
-const URL_BREAK_OPPORTUNITY = '\u200B';
-
-function addUrlBreakOpportunities(text: string): string {
-	return text.replace(URL_PATTERN, url =>
-		url.replace(
-			/^(https?:\/\/)(.+)$/i,
-			(_match, protocol, rest) =>
-				`${protocol}${rest.replace(/([/.?&=#_-])/g, `$1${URL_BREAK_OPPORTUNITY}`)}`,
-		),
-	);
-}
-
 /**
  * Handles STO-specific flags like structural headings and bibliography.
  */
@@ -167,7 +154,6 @@ export async function handleStoFlag(
 				const item = context.bibDb.find(b => b.citationKey === citKey);
 				if (item) {
 					const text = formatBibItem(item);
-					const docxText = addUrlBreakOpportunities(text);
 					bibElements.push(
 						new Paragraph({
 							style: 'Bibliography',
@@ -196,7 +182,7 @@ export async function handleStoFlag(
 								reference: 'bib-numbering',
 								level: 0,
 							},
-							children: [new TextRun({ text: docxText })],
+							children: [new TextRun({ text })],
 						}),
 					);
 				} else {

@@ -83,6 +83,109 @@ assert.equal(
 	)[0].passed,
 	false,
 );
+const literalIdentifiersPass = (body: string) =>
+	validateBibliographyPresentation(doc(body)).find(
+		item => item.check === 'Bibliography Literal Identifiers',
+	)!.passed;
+for (const separator of [
+	'\u200B',
+	'\u00AD',
+	'\u2060',
+	'\uFEFF',
+	'&#8203;',
+	'&#x200B;',
+]) {
+	for (const prefix of [
+		'URL: https://example.org/a-',
+		'DOI: 10.1234/a-',
+		'ISBN: 978-',
+		'DOI 10.1234/a-',
+		'ISBN 978-',
+		'ISBN-13 978-',
+		'ISSN 1234-',
+		'ISMN 979-',
+		'10.1234/a-',
+	]) {
+		assert.equal(
+			literalIdentifiersPass(
+				heading + paragraph(text(prefix) + text(separator + 'b_2')),
+			),
+			false,
+			`Reject invisible separator ${JSON.stringify(separator)} in ${prefix}`,
+		);
+	}
+}
+assert.equal(
+	literalIdentifiersPass(
+		heading +
+			paragraph(
+				text('https://example.org/a') +
+					'<w:r><w:softHyphen/></w:r>' +
+					text('b'),
+			),
+	),
+	false,
+);
+assert.equal(
+	literalIdentifiersPass(
+		heading +
+			paragraph(
+				text('URL: https://example.org/a-') +
+					text('b_c?q=1&amp;n=2. – DOI: 10.1234/a-b_c.'),
+			) +
+			paragraph(text('ISBN: 978-1-2345-6789-0.')),
+	),
+	true,
+	'Word run boundaries do not segment literal identifiers',
+);
+assert.equal(
+	literalIdentifiersPass(
+		paragraph(text('https://example.org/\u200Boutside')) +
+			heading +
+			paragraph(
+				text(
+					'فارسی می\u200Cشود. 中文。 Long foreign\u200Btitle. URL: https://example.org/plain',
+				),
+			) +
+			paragraph(
+				'<w:pPr><w:pStyle w:val="AppendixHeading"/></w:pPr>' +
+					text('Приложение А'),
+			) +
+			paragraph(text('https://example.org/\u200Bappendix')),
+	),
+	true,
+	'Foreign prose and content outside the bibliography keep existing behavior',
+);
+assert.equal(
+	literalIdentifiersPass(
+		heading +
+			paragraph(text('URL: https://example.org/?literal=&amp;#8203;')),
+	),
+	true,
+	'Escaped literal entity text is not an invisible character',
+);
+assert.equal(
+	literalIdentifiersPass(
+		heading +
+			paragraph(
+				text(
+					'DOI 10.1234/ab-c_d. ISBN 978-1-2345-6789-0. ISSN 1234-5678. ISMN 979-0-1234-5678-9. 10.5678/plain_doi.',
+				),
+			),
+	),
+	true,
+	'Plain DOI and identifiers without colons remain literal',
+);
+assert.equal(
+	literalIdentifiersPass(
+		heading +
+			paragraph(
+				text('A DOI study\u200Btitle and ISBN reference\u200Bguide.'),
+			),
+	),
+	true,
+	'Words DOI and ISBN in titles do not label arbitrary prose as identifiers',
+);
 const citationIssues = (content: string) => {
 	const issues: SourcePreflightIssue[] = [];
 	validateCitationContext([{ file: 'text.md', content }], issues);
@@ -128,6 +231,9 @@ assert.deepEqual(
 );
 console.log(
 	'PASS bibliography presentation: 8 scenarios including black unstyled hyperlinks, field codes, split instructions, and section boundaries.',
+);
+console.log(
+	'PASS bibliography literal identifiers: 60 scenarios including colonless labels, plain DOI, split runs, invisible characters, numeric references, soft hyphens, foreign prose, and section boundaries.',
 );
 console.log(
 	'PASS bibliography citation context: 7 scenarios including sentence punctuation, manual numbering, code and formula exclusions.',

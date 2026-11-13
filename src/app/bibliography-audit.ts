@@ -16,7 +16,14 @@ import {
 	validateBibliography,
 } from '@/shared/lib/source-preflight';
 
-export function auditBibliography(reportDir: string, requireEvidence = false) {
+import { bibliographySearchQueries } from './bibliography-lookup';
+import { reconcileBibliography } from './bibliography-reconciliation';
+
+export function auditBibliography(
+	reportDir: string,
+	requireEvidence = false,
+	extracted?: string[],
+) {
 	const absoluteDir = path.resolve(reportDir);
 	const resolved = resolveReportConfig(absoluteDir);
 	const sourceDir = resolveReportPath(absoluteDir, resolved.config.sourceDir);
@@ -79,14 +86,20 @@ export function auditBibliography(reportDir: string, requireEvidence = false) {
 					fields: entry.tags,
 					formatted,
 					entryHash: bibliographyEntryHash(entry),
-					searchQueries: [
-						`"${(entry.tags.title ?? '').replace(/[{}]/g, '')}" publisher bibliographic metadata`,
-						`"${(entry.tags.title ?? '').replace(/[{}]/g, '')}" DOI Crossref`,
-					],
+					searchQueries: bibliographySearchQueries({
+						key,
+						type: entry.entryType,
+						fields: entry.tags,
+					}),
 				};
 			}),
 	);
+	const reconciliation =
+		extracted === undefined
+			? undefined
+			: reconcileBibliography(inventory, extracted);
 	return {
+		...(reconciliation ? { reconciliation } : {}),
 		passed: issues.length === 0,
 		citationOrder: citationKeys,
 		evidenceFile: bibPath

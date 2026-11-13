@@ -301,7 +301,7 @@ async function main(): Promise<void> {
 			runCheck(args);
 			break;
 		case 'bibliography':
-			runBibliographyCommand(args);
+			await runBibliographyCommand(args);
 			break;
 		case 'generate':
 			await runGenerate(args);
