@@ -23,6 +23,27 @@ assert.match(
 	/^\s{4}group: .*github\.event_name.*github\.event\.pull_request\.head\.repo\.full_name.*github\.event\.pull_request\.head\.ref/m,
 	'push and pull_request runs must use distinct concurrency groups',
 );
+assert.match(
+	portableWorkflow,
+	/branches: \[master, main, release, 'release\/\*\*'\]/,
+);
+assert.doesNotMatch(portableWorkflow, /^\s{4}paths(?:-ignore)?:/m);
+assert.doesNotMatch(portableWorkflow, /pull_request_target/);
+assert.match(portableWorkflow, /fetch-depth: 0/);
+assert.match(portableWorkflow, /name: Documentation checks/);
+assert.match(portableWorkflow, /needs: \[changes, documentation\]/);
+assert.match(portableWorkflow, /test "?\$DOCS_RESULT"? = success/);
+assert.match(
+	portableWorkflow,
+	/needs\.changes\.outputs\.full == 'false' && 'ubuntu-24\.04' \|\| matrix\.os/,
+);
+assert.match(portableWorkflow, /name: Quality gate \(\$\{\{ matrix\.os \}\}\)/);
+assert.match(portableWorkflow, /name: Workflow lint/);
+assert.match(
+	portableWorkflow,
+	/if: needs\.changes\.outputs\.workflow_lint == 'true'/,
+);
+
 assert.doesNotMatch(
 	portableWorkflow,
 	/\$\{\{\s*secrets\./,
