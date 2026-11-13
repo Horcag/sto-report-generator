@@ -1,10 +1,10 @@
 {
   "files": {
-    "scripts/sto_post_build/word_automation.py": 498,
+    "scripts/sto_post_build/word_automation.py": 478,
     "src/app/report-scaffold.ts": 438,
     "src/shared/config/sto-styles.ts": 441,
     "src/shared/lib/docx/archive.ts": 806,
-    "src/shared/lib/report-config.ts": 682,
+    "src/shared/lib/report-config.ts": 679,
     "src/shared/lib/source-preflight/bibliography-checker.ts": 448,
     "src/shared/lib/source-preflight/list-checker.ts": 361,
     "src/shared/lib/sto-validator.ts": 988,

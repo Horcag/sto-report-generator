@@ -15,6 +15,13 @@ import { stopOwnedWordAcceptanceProcesses } from './word-acceptance-cleanup';
 import { writeWordAcceptanceFailureManifest } from './word-acceptance-evidence';
 import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
 import {
+	assertFullWordBudget,
+	createWordRequestJsonPath,
+	isDeterministicDocumentFailure,
+	wordTimeoutMilliseconds,
+	writeFullWordFailure,
+} from './word-acceptance-policy';
+import {
 	readAcceptanceStatistics,
 	StatisticCounts,
 } from './word-acceptance-statistics';
@@ -35,6 +42,8 @@ export interface WordAcceptanceOptions {
 	manifest?: string;
 	stylePreset?: StoStylePreset;
 	backgroundOnly?: boolean;
+	postBuildSourceDir?: string;
+	timeoutSeconds?: number;
 }
 export interface WordAcceptanceExpectedStyle {
 	styleId: string;
@@ -58,6 +67,8 @@ export interface WordAcceptanceRequest {
 	statisticReplacements: Record<string, string>;
 	statisticCounts: StatisticCounts;
 	pageWordForms: [string, string, string];
+	postBuildSourceDir?: string;
+	timeoutSeconds?: number;
 }
 export type WordAcceptanceHostKind = 'windows' | 'wsl';
 export interface WordAcceptancePlan {
@@ -150,17 +161,11 @@ function toHostPath(
 		: absolutePath;
 }
 
-function createRequestJsonPath(): string {
-	const tempDir = fs.mkdtempSync(
-		path.join(os.tmpdir(), 'sto-word-acceptance-'),
-	);
-	return path.join(tempDir, 'request.json');
-}
-
 export function createWordAcceptancePlan(
 	options: WordAcceptanceOptions,
 	environment: CreatePlanEnvironment,
 ): WordAcceptancePlan {
+	wordTimeoutMilliseconds(options.timeoutSeconds);
 	const inputDocx = path.resolve(options.inputDocx);
 	const acceptedDocx = resolveDefaultOutputPath(
 		inputDocx,
@@ -193,7 +198,12 @@ export function createWordAcceptancePlan(
 			path.join(PACKAGE_ROOT, 'scripts/word_acceptance.ps1'),
 	);
 	const requestJsonPath = path.resolve(
-		environment.requestJsonPath ?? createRequestJsonPath(),
+		environment.requestJsonPath ??
+			createWordRequestJsonPath(
+				options.postBuildSourceDir
+					? path.dirname(inputDocx)
+					: undefined,
+			),
 	);
 	const request: WordAcceptanceRequest = {
 		schemaVersion: WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION,
@@ -219,6 +229,20 @@ export function createWordAcceptancePlan(
 		statisticReplacements: {},
 		statisticCounts: { figures: 0, tables: 0, sources: 0, appendices: 0 },
 		pageWordForms: ['страницу', 'страницы', 'страниц'],
+		...(options.timeoutSeconds !== undefined || options.postBuildSourceDir
+			? {
+					timeoutSeconds:
+						options.timeoutSeconds ??
+						WORD_ACCEPTANCE_TIMEOUT_MS / 1000,
+				}
+			: {}),
+		...(options.postBuildSourceDir
+			? {
+					postBuildSourceDir: environment.toHostPath(
+						path.resolve(options.postBuildSourceDir),
+					),
+				}
+			: {}),
 	};
 	const command =
 		environment.hostKind === 'wsl' ? 'powershell.exe' : 'powershell.exe';
@@ -260,10 +284,14 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 	const statistics = readAcceptanceStatistics(options.inputDocx);
 	// Large reports and background-only runs need time for native layout,
 	// save/reopen, PDF export, final verification, and Word quit.
+	const timeoutOverride = wordTimeoutMilliseconds(options.timeoutSeconds);
 	const backgroundTimeout =
-		plan.backgroundOnly || statistics.tables >= 10
-			? WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS
-			: WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS;
+		timeoutOverride ??
+		(options.postBuildSourceDir
+			? WORD_ACCEPTANCE_TIMEOUT_MS
+			: plan.backgroundOnly || statistics.tables >= 10
+				? WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS
+				: WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS);
 	plan.request.statisticReplacements = statistics.replacements;
 	plan.request.statisticCounts = {
 		figures: statistics.figures,
@@ -286,7 +314,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 				},
 			);
 		} catch (error) {
-			if (plan.backgroundOnly) {
+			if (plan.backgroundOnly || options.postBuildSourceDir) {
 				writeWordAcceptanceFailureManifest(
 					plan,
 					error instanceof Error ? error.message : String(error),
@@ -298,6 +326,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 			throw error;
 		}
 		if (!backgroundFailure) return;
+		assertFullWordBudget(plan, backgroundFailure);
 		if (isDeterministicDocumentFailure(backgroundFailure)) {
 			writeWordAcceptanceFailureManifest(plan, backgroundFailure, null);
 			throw new Error(
@@ -321,7 +350,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		writeWordAcceptanceRequest(plan);
 		const interactiveFailure = runWordAcceptanceAttempt(
 			plan,
-			WORD_ACCEPTANCE_TIMEOUT_MS,
+			timeoutOverride ?? WORD_ACCEPTANCE_TIMEOUT_MS,
 			() => {
 				cleanupVerified = true;
 			},
@@ -336,6 +365,9 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 				`Word desktop acceptance failed in both background and interactive modes.\nBackground attempt:\n${backgroundFailure}\nInteractive attempt:\n${interactiveFailure}`,
 			);
 		}
+	} catch (error) {
+		writeFullWordFailure(plan, error, cleanupVerified);
+		throw error;
 	} finally {
 		if (cleanupVerified) {
 			fs.rmSync(path.dirname(plan.requestJsonPath), {
@@ -345,13 +377,6 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		}
 	}
 }
-
-function isDeterministicDocumentFailure(evidence: string): boolean {
-	return /Word acceptance failed: (?:Table .+ spans pages \d+-\d+\.|Required Word styles are missing:)/s.test(
-		evidence,
-	);
-}
-
 function writeWordAcceptanceRequest(plan: WordAcceptancePlan): void {
 	fs.writeFileSync(
 		plan.requestJsonPath,
@@ -359,7 +384,6 @@ function writeWordAcceptanceRequest(plan: WordAcceptancePlan): void {
 		'utf8',
 	);
 }
-
 function runWordAcceptanceAttempt(
 	plan: WordAcceptancePlan,
 	timeout: number,
@@ -403,6 +427,16 @@ function runWordAcceptanceAttempt(
 			);
 		}
 		manifest.execution.processCleanupVerified = true;
+		manifest.execution.attemptTimeoutSeconds = timeout / 1000;
+		const postBuildResult = path.join(
+			path.dirname(plan.requestJsonPath),
+			'post-build-result.json',
+		);
+		if (plan.request.postBuildSourceDir) {
+			manifest.postBuild = JSON.parse(
+				fs.readFileSync(postBuildResult, 'utf8'),
+			);
+		}
 		if (plan.backgroundOnly) {
 			manifest.execution.requestedMode = 'background-only';
 		}

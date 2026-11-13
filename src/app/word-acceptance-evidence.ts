@@ -38,7 +38,9 @@ export function writeWordAcceptanceFailureManifest(
 					existing.failure?.stage,
 				)
 			) {
-				existing.execution.requestedMode = 'background-only';
+				existing.execution.requestedMode = plan.backgroundOnly
+					? 'background-only'
+					: 'auto';
 				existing.execution.processCleanupVerified = cleanupVerified;
 				fs.writeFileSync(
 					plan.localManifest,
@@ -76,6 +78,7 @@ export function writeWordAcceptanceFailureManifest(
 		renderer: 'word-desktop-interactive',
 		status: 'failed',
 		execution: {
+			attemptTimeoutSeconds: plan.request.timeoutSeconds,
 			requestedMode: plan.backgroundOnly ? 'background-only' : 'auto',
 			completedMode: null,
 			attemptedModes: plan.request.attemptedModes,

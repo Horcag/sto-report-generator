@@ -52,9 +52,9 @@ export function runDoctor(): void {
 		return;
 	}
 	if (platform === 'Linux/WSL') {
-		console.log('Word renderer: unavailable');
+		console.log('Word renderer: optional');
 		console.log(
-			'  The legacy full post-build requires native Windows Python and pywin32.',
+			'  Requires Windows Microsoft Word, Node.js, uv.exe and PowerShell; the launcher runs native Python post-build and Word acceptance.',
 		);
 		console.log(
 			'Word acceptance: available when Windows PowerShell and Microsoft Word are installed on the host.',

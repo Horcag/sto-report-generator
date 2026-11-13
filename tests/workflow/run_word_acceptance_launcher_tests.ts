@@ -12,8 +12,16 @@ import {
 } from '@/app/word-acceptance';
 
 import { testBackgroundOnlyLifecycle } from './word_acceptance_background_only_test';
+import {
+	testSourceDrivenRendererLauncher,
+	timeoutSpawnResult,
+} from './word_renderer_launcher_cases';
 
 interface Scenario {
+	timeoutAfterNative?: boolean;
+	deterministicQualityFailure?: boolean;
+	rendererQuality?: string;
+	sourceDrivenRenderer?: boolean;
 	backgroundSucceeds?: boolean;
 	cleanupFails?: boolean;
 	cleanupFailsAfterAcceptance?: boolean;
@@ -108,7 +116,8 @@ function withFakeWord(
 					'-m',
 					'scripts.sto_post_build.acceptance_statistics',
 				]);
-				assert.equal(args[4], input);
+				if (!scenario.sourceDrivenRenderer)
+					assert.equal(args[4], input);
 				return {
 					...result,
 					stdout: JSON.stringify({
@@ -149,6 +158,19 @@ function withFakeWord(
 							: 0,
 				};
 			const request = JSON.parse(fs.readFileSync(requestPath, 'utf8'));
+			if (request.postBuildSourceDir) {
+				assert.equal(
+					request.pdfImageQuality,
+					scenario.rendererQuality ?? 'original',
+				);
+				fs.writeFileSync(
+					path.join(
+						path.dirname(requestPath),
+						'post-build-result.json',
+					),
+					JSON.stringify({ formula_replacements: 2 }),
+				);
+			}
 			assert.deepEqual(request.statisticCounts, {
 				figures: 1,
 				tables: scenario.largeDocument ? 14 : 1,
@@ -163,12 +185,15 @@ function withFakeWord(
 				return {
 					...result,
 					status: 1,
+					...timeoutSpawnResult(scenario.timeoutAfterNative),
 					stdout: scenario.hungAtStage
 						? `Word acceptance stage: ${scenario.hungAtStage}.`
 						: '',
-					stderr: scenario.deterministicTableFailure
-						? "Word acceptance failed: Table 'Table 4' spans pages 12-14."
-						: 'simulated export failure',
+					stderr: scenario.deterministicQualityFailure
+						? 'Word renderer deterministic failure [pdf-image-quality]: unsupported source image layout'
+						: scenario.deterministicTableFailure
+							? "Word acceptance failed: Table 'Table 4' spans pages 12-14."
+							: 'simulated export failure',
 				};
 			}
 			if (!scenario.missingManifest)
@@ -177,6 +202,10 @@ function withFakeWord(
 					scenario.malformedManifest
 						? '{malformed manifest'
 						: JSON.stringify({
+								stablePageCount: true,
+								inputDocx: {},
+								acceptedDocx: {},
+								capabilityChecks: {},
 								status: scenario.unexpectedManifest
 									? 'unexpected'
 									: 'pendingCleanup',
@@ -184,7 +213,9 @@ function withFakeWord(
 								pdf: { sha256: 'old', export: {} },
 							}),
 				);
-			fs.copyFileSync(input, input.replace(/\.docx$/, '.accepted.docx'));
+			fs.copyFileSync(input, request.acceptedDocx);
+			if (request.pdfImageQuality !== 'original')
+				fs.writeFileSync(request.pdf, '%PDF-fixture');
 			if (scenario.corruptAcceptedText) {
 				const accepted = new AdmZip(
 					input.replace(/\.docx$/, '.accepted.docx'),
@@ -451,6 +482,7 @@ function testUnsupportedStyleRejectedBeforeWord(): void {
 }
 
 testSuccessfulAcceptance();
+testSourceDrivenRendererLauncher(withFakeWord);
 testIntegrityFailurePersistsVerifiedCleanup();
 testCleanupFailureAfterAcceptanceStaysUnverified();
 testUnverifiedCleanup();

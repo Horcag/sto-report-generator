@@ -85,6 +85,9 @@ namespace WordAcceptance {
     public static class NativeMethods {
         [DllImport("user32.dll")]
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetExitCodeProcess(IntPtr process, out uint exitCode);
         [DllImport("winspool.drv", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetDefaultPrinter(string printerName);
@@ -411,7 +414,9 @@ function Copy-TableHeaderRow($SourceTable, $TargetTable) {
 }
 
 function Split-LongCaptionedTables($Document) {
+    $initialLayoutClock = [System.Diagnostics.Stopwatch]::StartNew()
     $Document.Repaginate()
+    [Console]::WriteLine("Word split timing: initial repaginate $($initialLayoutClock.ElapsedMilliseconds) ms")
     $tableIndex = 1
     $splitCount = 0
     while ($tableIndex -le [int]$Document.Tables.Count) {
@@ -462,8 +467,8 @@ function Split-LongCaptionedTables($Document) {
         $originalIndex = $tableIndex
         $originalRowCount = [int]$table.Rows.Count
         $originalTableCount = [int]$Document.Tables.Count
+        $splitClock = [System.Diagnostics.Stopwatch]::StartNew()
         $secondSegment = $table.Split($table.Rows.Item($splitRow))
-        $Document.Repaginate()
         if ([int]$Document.Tables.Count -ne ($originalTableCount + 1)) {
             throw 'Word did not create a second table segment after SplitTable.'
         }
@@ -476,7 +481,6 @@ function Split-LongCaptionedTables($Document) {
             throw 'Word split the table at an unexpected row boundary; refusing to publish changed table content.'
         }
         Copy-TableHeaderRow $firstSegment $secondSegment
-        $Document.Repaginate()
         $expectedSecondRows = $originalRowCount - $splitRow + 2
         if ([int]$Document.Tables.Count -ne ($originalTableCount + 1) -or
             [int]$firstSegment.Rows.Count -ne ($splitRow - 1) -or
@@ -484,7 +488,12 @@ function Split-LongCaptionedTables($Document) {
             throw "Table $number changed structure while copying its header (tables=$([int]$Document.Tables.Count); first rows=$([int]$firstSegment.Rows.Count); continuation rows=$([int]$secondSegment.Rows.Count))."
         }
         Add-TableContinuationCaption $Document $secondSegment $number $caption.Range.Style
+        # Structural checks above do not read pagination. Refresh once, after all
+        # edits, before any page-position query below.
+        [Console]::WriteLine("Word split timing: table $number edits $($splitClock.ElapsedMilliseconds) ms")
+        $splitClock.Restart()
         $Document.Repaginate()
+        [Console]::WriteLine("Word split timing: table $number repaginate $($splitClock.ElapsedMilliseconds) ms")
         if ([int]$Document.Tables.Count -ne ($originalTableCount + 1) -or
             [int]$firstSegment.Rows.Count -ne ($splitRow - 1) -or
             [int]$secondSegment.Rows.Count -ne $expectedSecondRows) {
@@ -796,6 +805,9 @@ try {
     New-Item -ItemType Directory -Force -Path $stagingDirectory | Out-Null
     Copy-Item -LiteralPath $request.inputDocx -Destination $stagedInputDocx
     Write-Output "Word acceptance: staged input in a short local path."
+
+    . (Join-Path $PSScriptRoot 'word_renderer_post_build.ps1')
+    Invoke-RendererPostBuild $request $stagedInputDocx
 
     $licenseDiagnostic = Get-LicenseDiagnostic
 

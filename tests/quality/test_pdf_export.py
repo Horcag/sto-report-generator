@@ -53,6 +53,29 @@ class PdfExportTests(unittest.TestCase):
             self.assertTrue(self.process.call_args.kwargs["check"])
             self.assertEqual(list(Path(directory).glob(".pdf-images-*")), [])
 
+    def test_explicit_print_and_screen_skip_original_pixel_restoration(self):
+        for quality, optimize in [("print", 0), ("screen", 1)]:
+            with self.subTest(quality=quality), tempfile.TemporaryDirectory() as directory:
+                doc = SimpleNamespace(ExportAsFixedFormat2=Mock(), ExportAsFixedFormat=Mock())
+                with patch.dict("os.environ", {"STO_WORD_PDF_IMAGE_QUALITY": quality}):
+                    target = export_pdf(doc, Path(directory) / "report.docx")
+                doc.ExportAsFixedFormat.assert_called_once_with(
+                    OutputFileName=target, ExportFormat=17, OptimizeFor=optimize
+                )
+                doc.ExportAsFixedFormat2.assert_not_called()
+                self.process.assert_not_called()
+
+    def test_unsupported_original_image_layout_is_a_typed_deterministic_failure(self):
+        from scripts.sto_post_build.pdf_export import PdfImageQualityError
+
+        self.process.side_effect = subprocess.CalledProcessError(
+            1, ["helper"], stderr="Original PDF quality cannot be verified for this image layout"
+        )
+        with tempfile.TemporaryDirectory() as directory, self.assertRaises(PdfImageQualityError):
+            export_pdf(
+                SimpleNamespace(ExportAsFixedFormat2=Mock()), Path(directory) / "report.docx"
+            )
+
     def test_missing_api_reports_explicit_print_option_and_preserves_existing_pdf(self):
         with tempfile.TemporaryDirectory() as directory:
             docx = Path(directory) / "report.docx"
