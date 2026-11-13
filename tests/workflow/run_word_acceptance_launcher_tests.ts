@@ -15,6 +15,8 @@ import { testBackgroundOnlyLifecycle } from './word_acceptance_background_only_t
 import { testSourceDrivenRendererLauncher } from './word_renderer_launcher_cases';
 
 interface Scenario {
+	deterministicQualityFailure?: boolean;
+	rendererQuality?: string;
 	sourceDrivenRenderer?: boolean;
 	backgroundSucceeds?: boolean;
 	cleanupFails?: boolean;
@@ -153,6 +155,10 @@ function withFakeWord(
 				};
 			const request = JSON.parse(fs.readFileSync(requestPath, 'utf8'));
 			if (request.postBuildSourceDir) {
+				assert.equal(
+					request.pdfImageQuality,
+					scenario.rendererQuality ?? 'original',
+				);
 				fs.writeFileSync(
 					path.join(
 						path.dirname(requestPath),
@@ -178,9 +184,11 @@ function withFakeWord(
 					stdout: scenario.hungAtStage
 						? `Word acceptance stage: ${scenario.hungAtStage}.`
 						: '',
-					stderr: scenario.deterministicTableFailure
-						? "Word acceptance failed: Table 'Table 4' spans pages 12-14."
-						: 'simulated export failure',
+					stderr: scenario.deterministicQualityFailure
+						? 'Word renderer deterministic failure [pdf-image-quality]: unsupported source image layout'
+						: scenario.deterministicTableFailure
+							? "Word acceptance failed: Table 'Table 4' spans pages 12-14."
+							: 'simulated export failure',
 				};
 			}
 			if (!scenario.missingManifest)
@@ -201,6 +209,8 @@ function withFakeWord(
 							}),
 				);
 			fs.copyFileSync(input, request.acceptedDocx);
+			if (request.pdfImageQuality !== 'original')
+				fs.writeFileSync(request.pdf, '%PDF-fixture');
 			if (scenario.corruptAcceptedText) {
 				const accepted = new AdmZip(
 					input.replace(/\.docx$/, '.accepted.docx'),

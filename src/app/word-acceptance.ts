@@ -358,7 +358,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 
 function isDeterministicDocumentFailure(evidence: string): boolean {
 	if (
-		/Formula replacement aborted:|Cannot uniquely restore the referat page template/.test(
+		/Word renderer deterministic failure \[(?:pdf-image-quality|preparation)\]|Formula replacement aborted:|Cannot uniquely restore the referat page template/.test(
 			evidence,
 		)
 	)

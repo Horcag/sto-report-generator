@@ -4,9 +4,20 @@ import path from 'node:path';
 import {
 	DEFAULT_STO_STYLE_PRESET,
 	isStoStylePreset,
+	ReportPostBuildConfig,
+	ReportPreflightConfig,
+	ReportValidateConfig,
+	resolveWordPdfQuality,
 	STO_RULES,
 	STO_STYLE_PRESET_NAMES,
 	StoStylePreset,
+} from '@/shared/config';
+
+export type {
+	ReportPreflightConfig,
+	ReportPostBuildConfig,
+	ReportValidateConfig,
+	SoftTextRulesMode,
 } from '@/shared/config';
 
 export const REPORT_PROFILE_NAMES = [
@@ -21,28 +32,12 @@ export const REPORT_RENDERERS = ['portable', 'word', 'wordcraft'] as const;
 export type ReportProfile = (typeof REPORT_PROFILE_NAMES)[number];
 export type ReportRenderer = (typeof REPORT_RENDERERS)[number];
 export type RequireSourcesMode = boolean | 'when-cited';
-export type SoftTextRulesMode = 'warning' | 'off';
 
 export interface ReportDocumentConfig {
 	requiredStructuralHeadings: string[];
 	optionalStructuralHeadings: string[];
 	requireReferat: boolean;
 	requireSources: RequireSourcesMode;
-}
-
-export interface ReportPreflightConfig {
-	strict: boolean;
-	softTextRules: SoftTextRulesMode;
-}
-
-export interface ReportPostBuildConfig {
-	enabled: boolean;
-	exportPdf: boolean;
-}
-
-export interface ReportValidateConfig {
-	enabled: boolean;
-	unpackDir: string;
 }
 
 export interface ReportConfig {
@@ -67,6 +62,7 @@ export interface ReportConfigDiagnostic {
 }
 
 export interface ResolveReportConfigOptions {
+	pdfImageQuality?: string;
 	cwd?: string;
 	outputPath?: string;
 	renderer?: ReportRenderer;
@@ -627,6 +623,7 @@ export function resolveReportConfig(
 					: 'warning',
 		},
 		postBuild: {
+			...resolveWordPdfQuality(options.pdfImageQuality, raw.postBuild),
 			enabled: renderer === 'word',
 			exportPdf:
 				(isObject(raw.postBuild)

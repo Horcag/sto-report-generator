@@ -22,6 +22,7 @@ import {
 } from './wordcraft-renderer';
 
 export interface GenerateReportOptions {
+	pdfImageQuality?: string;
 	reportDir: string;
 	outputPath?: string;
 	renderer?: ReportRenderer;
@@ -66,6 +67,7 @@ export async function generateReport(
 	const reportDir = path.resolve(options.reportDir);
 	const { config, diagnostics } = resolveReportConfig(reportDir, {
 		outputPath: options.outputPath,
+		pdfImageQuality: options.pdfImageQuality,
 		renderer: options.renderer,
 		postBuild: options.postBuild,
 		validate: options.validate,
@@ -92,6 +94,12 @@ export async function generateReport(
 			'PDF override requires a PDF-enabled word or wordcraft renderer.',
 		);
 	}
+	if (
+		config.renderer !== 'word' &&
+		(options.pdfImageQuality || config.postBuild.pdfImageQuality)
+	) {
+		throw new Error('--pdf-image-quality requires renderer word.');
+	}
 	if (config.renderer !== 'word' && options.postBuild) {
 		throw new Error('Word COM post-build requires renderer "word".');
 	}
@@ -114,6 +122,7 @@ export async function generateReport(
 						? resolveReportPath(reportDir, options.outputPdf)
 						: undefined,
 					exportPdf: config.postBuild.exportPdf,
+					pdfImageQuality: config.postBuild.pdfImageQuality,
 					sourceDir,
 					stylePreset: config.stylePreset,
 				})

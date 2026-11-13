@@ -11,6 +11,10 @@ from typing import Any
 from .constants import WD_EXPORT_FORMAT_PDF
 
 
+class PdfImageQualityError(RuntimeError):
+    """The chosen PDF quality cannot represent this document's image layout."""
+
+
 def get_default_pdf_path(docx_path: str | Path) -> str:
     return str(Path(docx_path).with_suffix(".pdf"))
 
@@ -64,9 +68,11 @@ def preserve_original_pdf_images(docx_path: str | Path, pdf_path: str) -> None:
                 timeout=120,
             )
         except subprocess.CalledProcessError as error:
+            diagnostic = helper_diagnostic(error)
+            if "Original PDF quality cannot be verified for this image layout" in diagnostic:
+                raise PdfImageQualityError(diagnostic) from error
             raise RuntimeError(
-                f"PDF original image restoration failed (exit {error.returncode}): "
-                f"{helper_diagnostic(error)}"
+                f"PDF original image restoration failed (exit {error.returncode}): {diagnostic}"
             ) from error
         except subprocess.TimeoutExpired as error:
             raise RuntimeError(
@@ -81,10 +87,17 @@ def preserve_original_pdf_images(docx_path: str | Path, pdf_path: str) -> None:
 
 
 def export_pdf(doc: Any, docx_path: str | Path, pdf_output_path: str | Path | None = None) -> str:
+    quality = os.environ.get("STO_WORD_PDF_IMAGE_QUALITY", "original")
+    if quality not in {"original", "print", "screen"}:
+        raise ValueError("Word PDF image quality must be original, print or screen.")
     try:
-        export = doc.ExportAsFixedFormat2
+        export = doc.ExportAsFixedFormat2 if quality == "original" else doc.ExportAsFixedFormat
     except AttributeError as error:
-        raise RuntimeError(
+        if quality != "original":
+            raise PdfImageQualityError(
+                f"Word Document.ExportAsFixedFormat is unavailable for explicit {quality} quality."
+            ) from error
+        raise PdfImageQualityError(
             "Original PDF image quality requires Word Document.ExportAsFixedFormat2. "
             "Use a supported Word version or explicitly choose print quality with "
             "npm run accept:word -- <docx> --pdf-image-quality print."
@@ -102,11 +115,14 @@ def export_pdf(doc: Any, docx_path: str | Path, pdf_output_path: str | Path | No
             ) from error
 
     # https://learn.microsoft.com/en-us/office/vba/api/word.document.exportasfixedformat2
-    export(
+    arguments = dict(
         OutputFileName=pdf_path,
         ExportFormat=WD_EXPORT_FORMAT_PDF,
-        OptimizeFor=0,  # wdExportOptimizeForPrint
-        OptimizeForImageQuality=True,
+        OptimizeFor=1 if quality == "screen" else 0,
     )
-    preserve_original_pdf_images(docx_path, pdf_path)
+    if quality == "original":
+        arguments["OptimizeForImageQuality"] = True
+    export(**arguments)
+    if quality == "original":
+        preserve_original_pdf_images(docx_path, pdf_path)
     return pdf_path

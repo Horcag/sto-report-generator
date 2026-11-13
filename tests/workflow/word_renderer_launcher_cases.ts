@@ -7,6 +7,8 @@ import { createWordRenderJob } from '@/app/word-renderer';
 type FakeWord = (
 	scenario: {
 		sourceDrivenRenderer?: boolean;
+		deterministicQualityFailure?: boolean;
+		rendererQuality?: string;
 		backgroundSucceeds?: boolean;
 		exportFails?: boolean;
 		cleanupFails?: boolean;
@@ -18,12 +20,19 @@ type FakeWord = (
 ) => void;
 
 export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
-	for (const outcome of ['success', 'failure', 'cleanup'] as const) {
+	for (const outcome of [
+		'success',
+		'failure',
+		'cleanup',
+		'quality',
+	] as const) {
 		withFakeWord(
 			{
 				sourceDrivenRenderer: true,
 				backgroundSucceeds: true,
-				exportFails: outcome === 'failure',
+				exportFails: outcome === 'failure' || outcome === 'quality',
+				deterministicQualityFailure: outcome === 'quality',
+				rendererQuality: 'print',
 				cleanupFails: outcome === 'cleanup',
 			},
 			(input, calls) => {
@@ -33,6 +42,7 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 					sourceDir: path.dirname(input),
 					exportPdf: true,
 					stylePreset: 'default',
+					pdfImageQuality: 'print',
 				});
 				fs.copyFileSync(input, job.inputDocx);
 				if (outcome === 'success') {
@@ -52,10 +62,14 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 						() => job.render(),
 						outcome === 'cleanup'
 							? /cleanup could not prove/
-							: /failed in both/,
+							: outcome === 'quality'
+								? /rejected the document/
+								: /failed in both/,
 					);
 					assert.ok(!fs.existsSync(outputDocx));
 				}
+				if (outcome === 'quality')
+					assert.equal(calls.filter(call => !call.cleanup).length, 1);
 				job.close();
 				assert.equal(
 					fs.existsSync(`${outputDocx}.word.lock`),

@@ -14,6 +14,7 @@ if __package__ in {None, ""}:
 from scripts.sto_post_build.constants import WORD_NS
 from scripts.sto_post_build.docx_package import read_docx_part, rewrite_docx_part
 from scripts.sto_post_build.orchestrator import create_replacements, post_build
+from scripts.sto_post_build.pdf_export import PdfImageQualityError
 from scripts.sto_post_build.process_ownership import record_process
 from scripts.sto_post_build.statistics import get_counts_from_docx
 from scripts.sto_post_build.word_automation import normalize_replacement_text, page_replacements
@@ -62,8 +63,33 @@ def main() -> None:
     )
     replacements.update(page_replacements(result.pages))
     restore_page_templates(sys.argv[1], templates, replacements)
-    Path(sys.argv[4]).write_text(json.dumps(asdict(result)), encoding="utf-8")
+    evidence = {
+        **asdict(result),
+        "pdf_image_quality": os.environ.get("STO_WORD_PDF_IMAGE_QUALITY", "original"),
+    }
+    Path(sys.argv[4]).write_text(json.dumps(evidence), encoding="utf-8")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as error:
+        kind = (
+            "pdf-image-quality"
+            if isinstance(error, PdfImageQualityError)
+            else (
+                "preparation"
+                if str(error).startswith(
+                    ("Formula replacement aborted:", "Cannot uniquely restore")
+                )
+                else None
+            )
+        )
+        if kind is None:
+            raise
+        Path(sys.argv[4]).write_text(
+            json.dumps({"status": "failed", "failureKind": kind, "message": str(error)}),
+            encoding="utf-8",
+        )
+        print(f"Word renderer deterministic failure [{kind}]: {error}", file=sys.stderr)
+        sys.exit(1)

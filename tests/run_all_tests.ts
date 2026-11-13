@@ -37,6 +37,7 @@ const tests = [
 	['tests/generator/table_spacing_test.ts'],
 	['tests/workflow/run_portability_tests.ts'],
 	['tests/workflow/run_word_renderer_tests.ts'],
+	['tests/workflow/word_pdf_quality_config_test.ts'],
 	['tests/workflow/formula_punctuation_generate_test.ts'],
 	['tests/workflow/run_libreoffice_preview_tests.ts'],
 	['tests/workflow/run_wordcraft_fonts_tests.ts'],

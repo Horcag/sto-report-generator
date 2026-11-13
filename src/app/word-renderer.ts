@@ -15,6 +15,7 @@ export function createWordRenderJob(options: {
 	outputDocx: string;
 	outputPdf?: string;
 	exportPdf: boolean;
+	pdfImageQuality?: string;
 	sourceDir: string;
 	stylePreset: StoStylePreset;
 }) {
@@ -93,6 +94,7 @@ export function createWordRenderJob(options: {
 					manifest,
 					stylePreset: options.stylePreset,
 					postBuildSourceDir: options.sourceDir,
+					pdfImageQuality: options.pdfImageQuality,
 				});
 				cleanupSafe = true;
 			} catch (error) {
@@ -132,6 +134,8 @@ export function createWordRenderJob(options: {
 			}
 			evidence.postBuild.pdf_path = pdfPath ?? null;
 			evidence.internalPdfVerified = true;
+			evidence.internalPdfImageQuality =
+				options.pdfImageQuality ?? 'original';
 			fs.writeFileSync(
 				manifest,
 				`${JSON.stringify(evidence, null, 2)}\n`,
