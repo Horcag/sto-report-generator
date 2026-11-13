@@ -8,6 +8,10 @@ import { mock } from 'node:test';
 import { createWordRenderJob } from '@/app/word-renderer';
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sto-word-publication-'));
+const platform = Object.getOwnPropertyDescriptor(process, 'platform')!;
+Object.defineProperty(process, 'platform', {
+	value: process.platform === 'win32' ? 'win32' : 'linux',
+});
 mock.method(os, 'release', () => 'microsoft-wsl');
 const outputDocx = path.join(root, 'final.docx');
 const pdf = path.join(root, 'final.pdf');
@@ -172,5 +176,6 @@ try {
 	);
 } finally {
 	mock.restoreAll();
+	Object.defineProperty(process, 'platform', platform);
 	fs.rmSync(root, { recursive: true, force: true });
 }
