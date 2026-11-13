@@ -134,15 +134,21 @@ def classify(changes: list[Change], contents: dict[str, str] | None = None) -> P
     )
 
 
-def collect_plan(root: Path, base: str, head: str) -> Plan:
+def collect_plan(root: Path, base: str, head: str, *, exact_range: bool = False) -> Plan:
     try:
         if not base or not head or set(base) == {"0"} or set(head) == {"0"}:
             return Plan(True, "Missing or zero revision")
         base_sha = git(root, "rev-parse", "--verify", f"{base}^{{commit}}").decode().strip()
         head_sha = git(root, "rev-parse", "--verify", f"{head}^{{commit}}").decode().strip()
         merge_base = git(root, "merge-base", base_sha, head_sha).decode().strip()
+        if exact_range and (base_sha != base or head_sha != head):
+            return Plan(True, "Push endpoints are not exact commit identifiers")
+        if exact_range and merge_base != base_sha:
+            return Plan(True, "Push is not a forward ancestor range")
+        # PRs compare their merge base; proven pushes compare the exact endpoints.
+        diff_base = base_sha if exact_range else merge_base
         changes = parse_changes(
-            git(root, "diff", "--name-status", "-z", "--find-renames", merge_base, head_sha)
+            git(root, "diff", "--name-status", "-z", "--find-renames", diff_base, head_sha)
         )
         contents = {}
         for change in changes:
@@ -150,7 +156,7 @@ def collect_plan(root: Path, base: str, head: str) -> Plan:
                 if not documentation_path(name):
                     continue
                 values = []
-                for revision in (merge_base, head_sha):
+                for revision in (diff_base, head_sha):
                     entry = git(root, "ls-tree", "-z", revision, "--", name)
                     if not entry:
                         continue
@@ -171,12 +177,46 @@ def collect_plan(root: Path, base: str, head: str) -> Plan:
         return Plan(True, f"Change discovery unavailable: {type(error).__name__}")
 
 
+def github_push_plan(root: Path, payload: dict) -> Plan:
+    repository = payload.get("repository")
+    default = repository.get("default_branch") if isinstance(repository, dict) else None
+    if (
+        not isinstance(default, str)
+        or default not in {"master", "main"}
+        or payload.get("ref") != f"refs/heads/{default}"
+    ):
+        return Plan(True, "Only the configured master/main default branch may use push scoping")
+    if any(payload.get(flag) is not False for flag in ("created", "deleted", "forced")):
+        return Plan(True, "Created, deleted, forced, or unproven push requires full validation")
+    before, after = payload.get("before"), payload.get("after")
+    if (
+        not isinstance(before, str)
+        or not isinstance(after, str)
+        or not re.fullmatch(r"[0-9a-f]{40}", before)
+        or not re.fullmatch(r"[0-9a-f]{40}", after)
+    ):
+        return Plan(True, "Push endpoints are missing or not exact SHA-1 identifiers")
+    return collect_plan(root, before, after, exact_range=True)
+
+
 def github_plan(root: Path, event: str, payload: dict) -> Plan:
+    if not isinstance(payload, dict):
+        return Plan(True, "GitHub event payload is not an object")
+    if event == "push":
+        return github_push_plan(root, payload)
     if event != "pull_request":
         return Plan(True, f"{event or 'unknown'} event requires full validation")
     try:
         pr = payload["pull_request"]
-        if pr["base"]["ref"] != "master":
+        repository = payload.get("repository", {})
+        if not isinstance(repository, dict):
+            return Plan(True, "Pull request repository evidence is incomplete")
+        default = repository.get("default_branch", "master")
+        if (
+            not isinstance(default, str)
+            or default not in {"master", "main"}
+            or pr["base"]["ref"] != default
+        ):
             return Plan(True, "Non-default PR target requires full validation")
         return collect_plan(root, pr["base"]["sha"], pr["head"]["sha"])
     except (KeyError, TypeError):
