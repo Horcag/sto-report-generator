@@ -38,7 +38,9 @@ export function writeWordAcceptanceFailureManifest(
 					existing.failure?.stage,
 				)
 			) {
-				existing.execution.requestedMode = 'background-only';
+				existing.execution.requestedMode = plan.backgroundOnly
+					? 'background-only'
+					: 'auto';
 				existing.execution.processCleanupVerified = cleanupVerified;
 				fs.writeFileSync(
 					plan.localManifest,

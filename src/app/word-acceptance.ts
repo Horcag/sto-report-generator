@@ -16,8 +16,10 @@ import { writeWordAcceptanceFailureManifest } from './word-acceptance-evidence';
 import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
 import {
 	assertFullWordBudget,
+	createWordRequestJsonPath,
 	isDeterministicDocumentFailure,
 	wordTimeoutMilliseconds,
+	writeFullWordFailure,
 } from './word-acceptance-policy';
 import {
 	readAcceptanceStatistics,
@@ -159,13 +161,6 @@ function toHostPath(
 		: absolutePath;
 }
 
-function createRequestJsonPath(): string {
-	const tempDir = fs.mkdtempSync(
-		path.join(os.tmpdir(), 'sto-word-acceptance-'),
-	);
-	return path.join(tempDir, 'request.json');
-}
-
 export function createWordAcceptancePlan(
 	options: WordAcceptanceOptions,
 	environment: CreatePlanEnvironment,
@@ -203,7 +198,12 @@ export function createWordAcceptancePlan(
 			path.join(PACKAGE_ROOT, 'scripts/word_acceptance.ps1'),
 	);
 	const requestJsonPath = path.resolve(
-		environment.requestJsonPath ?? createRequestJsonPath(),
+		environment.requestJsonPath ??
+			createWordRequestJsonPath(
+				options.postBuildSourceDir
+					? path.dirname(inputDocx)
+					: undefined,
+			),
 	);
 	const request: WordAcceptanceRequest = {
 		schemaVersion: WORD_ACCEPTANCE_REQUEST_SCHEMA_VERSION,
@@ -314,7 +314,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 				},
 			);
 		} catch (error) {
-			if (plan.backgroundOnly) {
+			if (plan.backgroundOnly || options.postBuildSourceDir) {
 				writeWordAcceptanceFailureManifest(
 					plan,
 					error instanceof Error ? error.message : String(error),
@@ -365,6 +365,9 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 				`Word desktop acceptance failed in both background and interactive modes.\nBackground attempt:\n${backgroundFailure}\nInteractive attempt:\n${interactiveFailure}`,
 			);
 		}
+	} catch (error) {
+		writeFullWordFailure(plan, error, cleanupVerified);
+		throw error;
 	} finally {
 		if (cleanupVerified) {
 			fs.rmSync(path.dirname(plan.requestJsonPath), {
@@ -374,7 +377,6 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		}
 	}
 }
-
 function writeWordAcceptanceRequest(plan: WordAcceptancePlan): void {
 	fs.writeFileSync(
 		plan.requestJsonPath,
@@ -382,7 +384,6 @@ function writeWordAcceptanceRequest(plan: WordAcceptancePlan): void {
 		'utf8',
 	);
 }
-
 function runWordAcceptanceAttempt(
 	plan: WordAcceptancePlan,
 	timeout: number,

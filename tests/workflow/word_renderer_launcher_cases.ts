@@ -16,7 +16,7 @@ type FakeWord = (
 	},
 	test: (
 		input: string,
-		calls: { cleanup: boolean; timeout?: number }[],
+		calls: { cleanup: boolean; timeout?: number; requestPath: string }[],
 	) => void,
 ) => void;
 
@@ -104,6 +104,25 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 						calls
 							.filter(call => !call.cleanup)
 							.every(call => call.timeout === 1_200_000),
+					);
+				}
+				const journal = calls[0].requestPath;
+				assert.equal(
+					path.dirname(path.dirname(journal)),
+					path.dirname(job.inputDocx),
+				);
+				assert.equal(fs.existsSync(journal), outcome === 'cleanup');
+				if (outcome === 'cleanup') {
+					const request = JSON.parse(
+						fs.readFileSync(journal, 'utf8'),
+					);
+					assert.equal(
+						path.dirname(request.wordPidPath),
+						path.dirname(journal),
+					);
+					assert.equal(
+						path.dirname(request.runnerPidPath),
+						path.dirname(journal),
 					);
 				}
 				job.close();
