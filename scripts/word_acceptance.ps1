@@ -85,6 +85,9 @@ namespace WordAcceptance {
     public static class NativeMethods {
         [DllImport("user32.dll")]
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetExitCodeProcess(IntPtr process, out uint exitCode);
         [DllImport("winspool.drv", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetDefaultPrinter(string printerName);
@@ -796,6 +799,9 @@ try {
     New-Item -ItemType Directory -Force -Path $stagingDirectory | Out-Null
     Copy-Item -LiteralPath $request.inputDocx -Destination $stagedInputDocx
     Write-Output "Word acceptance: staged input in a short local path."
+
+    . (Join-Path $PSScriptRoot 'word_renderer_post_build.ps1')
+    Invoke-RendererPostBuild $request $stagedInputDocx
 
     $licenseDiagnostic = Get-LicenseDiagnostic
 

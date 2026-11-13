@@ -1,6 +1,5 @@
 import contextlib
 import os
-import platform
 import re
 from collections.abc import Mapping
 from pathlib import Path
@@ -17,6 +16,8 @@ from .constants import (
 from .models import WordPostBuildResult
 from .pdf_export import export_pdf
 from .pdf_export import get_default_pdf_path as get_default_pdf_path
+from .word_application import create_word_application
+from .word_tables import is_word_math_layout_table
 
 
 def normalize_tables(doc: Any) -> int:
@@ -26,6 +27,8 @@ def normalize_tables(doc: Any) -> int:
         try:
             table = doc.Tables(index)
             if table.Range.Start < report_start:
+                continue
+            if is_word_math_layout_table(table):
                 continue
             table.Rows(1).HeadingFormat = True
             changed += 1
@@ -392,26 +395,6 @@ def replace_placeholders(doc: Any, replacements: Mapping[str, str]) -> None:
         ",",
         WD_REPLACE_ALL,
     )
-
-
-def create_word_application() -> Any:
-    if platform.system() != "Windows":
-        raise RuntimeError(
-            "Word renderer requires native Windows with Microsoft Word and pywin32. "
-            "Use --renderer portable on Linux, WSL, or macOS, or rerun --renderer word on native Windows."
-        )
-    try:
-        import win32com.client
-    except ModuleNotFoundError as error:
-        raise RuntimeError(
-            "Word renderer requires pywin32. Install Python dependencies with uv sync on native Windows, "
-            "then rerun --renderer word."
-        ) from error
-
-    word = win32com.client.DispatchEx("Word.Application")
-    word.Visible = False
-    word.DisplayAlerts = False
-    return word
 
 
 def run_word_post_build(

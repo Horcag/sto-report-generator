@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { mock } from 'node:test';
 
 import { generateReport } from '@/app/report-workflow';
 
@@ -68,6 +70,7 @@ async function main(): Promise<void> {
 	assert.match(rendererConflict.stderr, /legacy Word COM renderer path/);
 
 	if (process.platform !== 'win32') {
+		mock.method(os, 'release', () => 'plain-linux');
 		const wordResult = await generateReport({
 			reportDir: tempReport,
 			renderer: 'word',
@@ -76,12 +79,11 @@ async function main(): Promise<void> {
 			(error: unknown) =>
 				error instanceof Error ? error.message : String(error),
 		);
-		assert.match(
-			wordResult,
-			/Word renderer requires native Windows with Microsoft Word and pywin32/,
-		);
+		assert.match(wordResult, /Word acceptance requires WSL/);
 	}
 
+	mock.restoreAll();
+	fs.rmSync(tempRoot, { recursive: true, force: true });
 	console.log('Portability workflow tests passed.');
 }
 

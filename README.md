@@ -55,7 +55,7 @@ npm run generate:report -- reports/my_report --renderer portable --validate
 npm run audit:report -- reports/my_report --renderer portable
 ```
 
-Для финальной Word/PDF-проверки в Windows с установленным Microsoft Word:
+Для окончательной сборки в Microsoft Word из Windows или WSL:
 
 ```powershell
 npm run audit:report -- reports/my_report --renderer word
@@ -71,7 +71,22 @@ npm run accept:word -- reports/my_report/build/my_report.docx
 запускает LibreOffice и по умолчанию сохраняет отдельные файлы
 `*.accepted.docx`, `*.accepted.pdf`, `*.acceptance.json` рядом с исходным DOCX.
 
-Для финального PDF через Microsoft Word в WSL: сначала `generate --renderer portable --validate`, затем `accept-word` для полученного DOCX.
+Обычная окончательная сборка: `generate --renderer word --validate` либо `audit --renderer word`.
+Обе команды учитывают `renderer: "word"` из `report.config.json`, если CLI не задаёт другой renderer.
+В Windows должны быть доступны Microsoft Word, Windows Node.js, `uv.exe` и Windows PowerShell;
+из WSL используются эти же программы Windows-хоста. Полная обработка по исходному Markdown
+выполняется нативным Windows Python через `uv`, затем тот же безопасный launcher проверяет
+сохранение, повторное открытие и стабильное число страниц в Word.
+
+Итоговые файлы имеют обычные имена `report.docx`, `report.pdf` и `report.acceptance.json`.
+Сырая заготовка не публикуется. Манифест содержит хеши итоговых файлов, `pageCountAfterReopen`
+и `execution.processCleanupVerified`. При ошибке прежний комплект сохраняется; конкурентная
+сборка в те же выходы отклоняется блокировкой. При неподтверждённом cleanup временные файлы
+и блокировки сохраняются для безопасного восстановления, а не удаляются вслепую.
+
+`postBuild.exportPdf: false` оставляет только DOCX и манифест: соседний существующий PDF
+не меняется. Для проверки пагинации используется внутренний временный PDF. `--pdf` может
+задать другой путь итогового PDF на той же файловой системе; другой том отклоняется до Word.
 Word работает на Windows-хосте; временная копия документа размещается в Windows TEMP. Экспорт использует небольшой
 C#-адаптер с явно типизированными аргументами COM. Итоговый статус `accepted` записывается только после проверки
 завершения принадлежащих запуску процессов. При неудачной очистке каталог запроса сохраняется для восстановления.
@@ -100,7 +115,7 @@ npx tsx src/index.ts preview build/report.docx --renderer wordcraft --font-dir /
 
 Если CLI отсутствует в `PATH`, передайте `--wordcraft /path/to/wordcraft-cli` или задайте `WORDCRAFT_CLI`.
 `generate` и `audit` поддерживают `--renderer wordcraft`; режим также задаётся в `report.config.json`.
-Для `audit` указывайте renderer явно. `--pdf` меняет путь PDF: в `generate` и `audit` он считается от каталога отчёта,
+`audit` использует renderer из конфигурации, если он не задан явно. `--pdf` меняет путь PDF: в `generate` и `audit` он считается от каталога отчёта,
 в `preview` — от текущего каталога.
 
 `--font-dir` или `WORDCRAFT_FONT_DIR` задаёт каталог файлов шрифтов для Wordcraft.
@@ -140,7 +155,7 @@ SVG сохраняется в DOCX вместе с проверенным PNG-к
 | Авторитетная пагинация и PDF                                  | Нет               | Да         | Да            |
 
 Переносимый режим означает кроссплатформенную OOXML-сборку и структурную проверку. Это не авторитетная пагинация.
-Доказательство прохождения Word-приёмки - принятые `*.accepted.docx` и `*.accepted.pdf`, созданные целевым Microsoft Word, плюс
+Доказательство прохождения Word-приёмки — итоговые DOCX/PDF (обычные имена при `generate`, `*.accepted.*` при отдельном `accept-word`), созданные целевым Microsoft Word, плюс
 JSON-манифест `*.acceptance.json` с версией Word, числом страниц, хешами файлов, проверкой Times New Roman и проверкой
 ожидаемых стилей. LibreOffice не является поддерживаемым финальным renderer.
 
@@ -425,7 +440,7 @@ npm run accept:word -- reports/my_report/build/my_report.docx \
 использует обычный Word. Команда не меняет default printer. Recovery-код остаётся только для безопасной очистки старого
 незавершённого запуска, если тот успел записать printer-state до обновления этого workflow.
 
-`accept-word` не заменяет `--renderer word`: он не выполняет Python/pywin32 post-build, не чинит формулы и не делает
+Отдельный `accept-word` не заменяет `--renderer word`: без обычной сборки он не выполняет Python/pywin32 post-build, не чинит формулы и не делает
 format-repair из `scripts/sto_post_build/`. Это только финальная приемка уже сгенерированного DOCX в Microsoft Word.
 
 Пути в `report.config.json` должны быть относительными к папке отчета. Локальные абсолютные пути, личные каталоги,
@@ -489,15 +504,15 @@ npm run gallery:check
 
 ## Частые проблемы
 
-| Симптом                                  | Что проверить                                                                                                                                                                                   |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `audit` пропускает post-build            | Проверьте `--renderer`: portable сознательно не запускает Word.                                                                                                                                 |
-| Нужен PDF с точной пагинацией            | Для полной post-build обработки запустите `npm run audit:report -- reports/<slug> --renderer word` в Windows; для уже собранного DOCX запустите `npm run accept:word -- <docx>` из WSL/Windows. |
-| Preflight отклоняет список               | Используйте `sto_list` или `sto_enum` в исходниках отчета.                                                                                                                                      |
-| Preflight отклоняет `\begin{...}`        | Проверьте список окружений в `src/shared/config/sto-rules.json`.                                                                                                                                |
-| Не найден рисунок                        | Укажите путь относительно папки отчета, например `images/chart.png`.                                                                                                                            |
-| Цитата осталась как `[@key]`             | Добавьте запись в `references.bib` и проверьте поле `bibliography`.                                                                                                                             |
-| Нужны старые нейтральные названия стилей | Укажите `stylePreset: "default"`; штатный режим уже использует имена из DOTM.                                                                                                                   |
+| Симптом                                  | Что проверить                                                                                                                                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `audit` пропускает post-build            | Проверьте `--renderer`: portable сознательно не запускает Word.                                                                                                                                         |
+| Нужен PDF с точной пагинацией            | Для полной post-build обработки запустите `npm run audit:report -- reports/<slug> --renderer word` в Windows или WSL; для уже собранного DOCX запустите `npm run accept:word -- <docx>` из WSL/Windows. |
+| Preflight отклоняет список               | Используйте `sto_list` или `sto_enum` в исходниках отчета.                                                                                                                                              |
+| Preflight отклоняет `\begin{...}`        | Проверьте список окружений в `src/shared/config/sto-rules.json`.                                                                                                                                        |
+| Не найден рисунок                        | Укажите путь относительно папки отчета, например `images/chart.png`.                                                                                                                                    |
+| Цитата осталась как `[@key]`             | Добавьте запись в `references.bib` и проверьте поле `bibliography`.                                                                                                                                     |
+| Нужны старые нейтральные названия стилей | Укажите `stylePreset: "default"`; штатный режим уже использует имена из DOTM.                                                                                                                           |
 
 ## Документация
 

@@ -78,7 +78,7 @@ async function main(): Promise<void> {
 				renderer: 'portable',
 				outputPdf: 'other.pdf',
 			}),
-			/PDF overrides require/,
+			/PDF override requires/,
 		);
 		cases++;
 

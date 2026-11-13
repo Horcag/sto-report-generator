@@ -35,6 +35,7 @@ export interface WordAcceptanceOptions {
 	manifest?: string;
 	stylePreset?: StoStylePreset;
 	backgroundOnly?: boolean;
+	postBuildSourceDir?: string;
 }
 export interface WordAcceptanceExpectedStyle {
 	styleId: string;
@@ -58,6 +59,7 @@ export interface WordAcceptanceRequest {
 	statisticReplacements: Record<string, string>;
 	statisticCounts: StatisticCounts;
 	pageWordForms: [string, string, string];
+	postBuildSourceDir?: string;
 }
 export type WordAcceptanceHostKind = 'windows' | 'wsl';
 export interface WordAcceptancePlan {
@@ -219,6 +221,13 @@ export function createWordAcceptancePlan(
 		statisticReplacements: {},
 		statisticCounts: { figures: 0, tables: 0, sources: 0, appendices: 0 },
 		pageWordForms: ['страницу', 'страницы', 'страниц'],
+		...(options.postBuildSourceDir
+			? {
+					postBuildSourceDir: environment.toHostPath(
+						path.resolve(options.postBuildSourceDir),
+					),
+				}
+			: {}),
 	};
 	const command =
 		environment.hostKind === 'wsl' ? 'powershell.exe' : 'powershell.exe';
@@ -260,8 +269,9 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 	const statistics = readAcceptanceStatistics(options.inputDocx);
 	// Large reports and background-only runs need time for native layout,
 	// save/reopen, PDF export, final verification, and Word quit.
-	const backgroundTimeout =
-		plan.backgroundOnly || statistics.tables >= 10
+	const backgroundTimeout = options.postBuildSourceDir
+		? WORD_ACCEPTANCE_TIMEOUT_MS
+		: plan.backgroundOnly || statistics.tables >= 10
 			? WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS
 			: WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS;
 	plan.request.statisticReplacements = statistics.replacements;
@@ -347,6 +357,12 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 }
 
 function isDeterministicDocumentFailure(evidence: string): boolean {
+	if (
+		/Formula replacement aborted:|Cannot uniquely restore the referat page template/.test(
+			evidence,
+		)
+	)
+		return true;
 	return /Word acceptance failed: (?:Table .+ spans pages \d+-\d+\.|Required Word styles are missing:)/s.test(
 		evidence,
 	);
@@ -403,6 +419,15 @@ function runWordAcceptanceAttempt(
 			);
 		}
 		manifest.execution.processCleanupVerified = true;
+		const postBuildResult = path.join(
+			path.dirname(plan.requestJsonPath),
+			'post-build-result.json',
+		);
+		if (plan.request.postBuildSourceDir) {
+			manifest.postBuild = JSON.parse(
+				fs.readFileSync(postBuildResult, 'utf8'),
+			);
+		}
 		if (plan.backgroundOnly) {
 			manifest.execution.requestedMode = 'background-only';
 		}

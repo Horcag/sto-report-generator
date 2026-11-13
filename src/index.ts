@@ -179,6 +179,10 @@ async function runGenerate(args: ParsedArgs): Promise<void> {
 	console.log(`Renderer: ${result.renderer}`);
 	console.log(`Post-build: ${result.postBuildRan ? 'ran' : 'skipped'}`);
 	if (result.wordcraft) printWordcraftResult(result.wordcraft);
+	if (result.word) {
+		console.log(`Word acceptance: ${result.word.manifest}`);
+		if (result.word.pdf) console.log(`PDF: ${result.word.pdf}`);
+	}
 	if (result.renderer === 'portable') {
 		console.log('PDF pagination: not authoritative in portable renderer.');
 	}
@@ -195,7 +199,7 @@ async function runAudit(args: ParsedArgs): Promise<void> {
 	if (!reportDir) {
 		throw new Error('audit command requires a report directory.');
 	}
-	const renderer = optionRenderer(args) ?? 'portable';
+	const renderer = optionRenderer(args);
 
 	const result = await generateReport({
 		reportDir,
@@ -222,6 +226,10 @@ async function runAudit(args: ParsedArgs): Promise<void> {
 	console.log(`Renderer: ${result.renderer}`);
 	console.log(`Post-build: ${result.postBuildRan ? 'ran' : 'skipped'}`);
 	if (result.wordcraft) printWordcraftResult(result.wordcraft);
+	if (result.word) {
+		console.log(`Word acceptance: ${result.word.manifest}`);
+		if (result.word.pdf) console.log(`PDF: ${result.word.pdf}`);
+	}
 	console.log('DOCX validation passed.');
 }
 

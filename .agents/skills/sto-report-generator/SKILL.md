@@ -82,10 +82,17 @@ npm run check:source -- reports/<report_name>
   relative, with no personal absolute paths. `check` and `generate` both use the same resolved profile/config:
 
 ```powershell
-npm run generate:report -- reports/<report_name> --post-build --validate
+npm run generate:report -- reports/<report_name> --renderer word --validate
 ```
 
-- Use lower-level commands only when debugging a specific step:
+- Word generation works on Windows and WSL with Windows Word, Node.js, `uv.exe` and PowerShell.
+  It runs source-driven formula/layout repair and final Word acceptance in one bounded workflow,
+  then publishes the configured DOCX, optional sibling PDF, and `<basename>.acceptance.json`.
+  With `postBuild.exportPdf: false`, an existing sibling PDF is untouched. Never submit a raw
+  DOCX from a failed Word build. `portable` remains the scaffold default.
+- Use lower-level commands only when debugging a specific step. The Python command below requires
+  **native Windows Python**; on WSL use normal `generate --renderer word` instead:
+
 
 ```powershell
 npx tsx src/index.ts build reports/<report_name> reports/<report_name>/build/<output>.docx

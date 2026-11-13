@@ -3,6 +3,7 @@
 import json
 import os
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -29,13 +30,24 @@ def preserve_original_pdf_images(docx_path: str | Path, pdf_path: str) -> None:
         restored = Path(directory) / "original.pdf"
         receipt = Path(directory) / "images.json"
         try:
-            subprocess.run(
-                [
+            from .process_ownership import run_owned_subprocess
+
+            managed = bool(os.environ.get("STO_WORD_OWNERSHIP_DIR"))
+            command = (
+                [sys.executable]
+                if managed
+                else [
                     "uv",
                     "run",
                     "--with",
                     "pymupdf==2.0",
                     "python",
+                ]
+            )
+            run = run_owned_subprocess if managed else subprocess.run
+            run(
+                [
+                    *command,
                     str(helper),
                     str(Path(docx_path).resolve()),
                     pdf_path,

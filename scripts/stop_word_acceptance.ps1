@@ -82,7 +82,7 @@ function Stop-OwnedProcess($PidPath, $ExpectedName, $ExpectedCommandFragments) {
     throw "Owned $ExpectedName PID $processId is still running after cleanup."
 }
 
-function Stop-OwnedWordProcess($PidPath, $IdentityPath) {
+function Stop-OwnedWordProcess($PidPath, $IdentityPath, $ExpectedProcessName = "WINWORD") {
     if (-not (Test-Path -LiteralPath $PidPath)) {
         return $true
     }
@@ -103,7 +103,7 @@ function Stop-OwnedWordProcess($PidPath, $IdentityPath) {
     $actualExecutablePath = [string]$process.Path
     if (
         [int]$identity.pid -ne $processId -or
-        [string]$process.ProcessName -ine "WINWORD" -or
+        [string]$process.ProcessName -ine $ExpectedProcessName -or
         [string]$identity.startTimeUtcTicks -cne $actualStartTimeUtcTicks -or
         [string]$identity.executablePath -ine $actualExecutablePath
     ) {
@@ -238,11 +238,48 @@ $requestDirectory = Split-Path -Parent $RequestJson
 $wordIdentityPath = Join-Path $requestDirectory "word-process.json"
 $stagingPathFile = Join-Path $requestDirectory "staging.path"
 $wordPreservationMessage = Get-WordPreservationMessage $request.wordPidPath
+Stop-OwnedProcess $request.runnerPidPath "powershell.exe" @("word_acceptance.ps1", $RequestJson) | Out-Null
+foreach ($entry in @(@('post-build-uv', 'uv'), @('post-build-python', 'python'))) {
+    Stop-OwnedWordProcess (Join-Path $requestDirectory "$($entry[0]).pid") (Join-Path $requestDirectory "$($entry[0]).json") $entry[1] | Out-Null
+}
+foreach ($childPidFile in @(Get-ChildItem -LiteralPath $requestDirectory -Filter 'post-build-child-*.pid')) {
+    $identityPath = [System.IO.Path]::ChangeExtension($childPidFile.FullName, '.json')
+    $identity = [System.IO.File]::ReadAllText($identityPath) | ConvertFrom-Json
+    $name = [System.IO.Path]::GetFileNameWithoutExtension([string]$identity.executablePath)
+    if ($name -notin @('node', 'python')) { throw "Unexpected owned post-build helper process: $name" }
+    Stop-OwnedWordProcess $childPidFile.FullName $identityPath $name | Out-Null
+}
+$knownWordPids = @()
+if (Test-Path -LiteralPath $request.wordPidPath) {
+    $knownWordPids += [int]([System.IO.File]::ReadAllText($request.wordPidPath).Trim())
+}
+foreach ($pidFile in @(Get-ChildItem -LiteralPath $requestDirectory -Filter 'post-build-word-*.pid')) {
+    $knownWordPids += [int]([System.IO.File]::ReadAllText($pidFile.FullName).Trim())
+}
+# Recover the same single-new-process proof used by the main COM launcher if
+# activation hung before Python could journal its HWND-derived identity.
+foreach ($snapshot in @(Get-ChildItem -LiteralPath $requestDirectory -Filter 'post-build-before-*.json')) {
+    $before = [int[]](ConvertFrom-Json -InputObject ([System.IO.File]::ReadAllText($snapshot.FullName)))
+    $unrecorded = @(Get-Process WINWORD -ErrorAction SilentlyContinue | Where-Object { $_.Id -notin $before -and $_.Id -notin $knownWordPids })
+    if ($unrecorded.Count -gt 1) { throw 'Native Word activation ownership is ambiguous; refusing broad cleanup.' }
+    if ($unrecorded.Count -eq 1) {
+        $owned = $unrecorded[0]
+        $name = "post-build-word-$($owned.Id)"
+        $identity = @{ pid = $owned.Id; startTimeUtcTicks = $owned.StartTime.ToUniversalTime().Ticks.ToString(); executablePath = $owned.Path }
+        [System.IO.File]::WriteAllText((Join-Path $requestDirectory "$name.json"), ($identity | ConvertTo-Json))
+        [System.IO.File]::WriteAllText((Join-Path $requestDirectory "$name.pid"), [string]$owned.Id)
+        $knownWordPids += $owned.Id
+    }
+}
+foreach ($ownedPidFile in @(Get-ChildItem -LiteralPath $requestDirectory -Filter 'post-build-word-*.pid')) {
+    $preservation = Get-WordPreservationMessage $ownedPidFile.FullName
+    if ($preservation) { throw $preservation }
+    Stop-OwnedWordProcess $ownedPidFile.FullName ([System.IO.Path]::ChangeExtension($ownedPidFile.FullName, '.json')) | Out-Null
+}
 if (-not $wordPreservationMessage) {
     Stop-OwnedWordProcess $request.wordPidPath $wordIdentityPath | Out-Null
 }
 Restore-DefaultPrinter $request.printerStatePath
-Stop-OwnedProcess $request.runnerPidPath "powershell.exe" @("word_acceptance.ps1", $RequestJson) | Out-Null
 if ($wordPreservationMessage) {
     throw $wordPreservationMessage
 }

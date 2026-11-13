@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
 import { insertDocxBodyBeforeText, unpackDocx } from '@/shared/lib/docx';
@@ -15,13 +14,12 @@ import {
 import { validateSTO, ValidationResult } from '@/shared/lib/sto-validator';
 
 import { buildReport } from './builder';
+import { createWordRenderJob, WordRenderResult } from './word-renderer';
 import { readWordcraftFontDirectory } from './wordcraft-fonts';
 import {
 	createWordcraftPdf,
 	WordcraftRenderResult,
 } from './wordcraft-renderer';
-
-const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 
 export interface GenerateReportOptions {
 	reportDir: string;
@@ -44,6 +42,7 @@ export interface GenerateReportResult {
 	renderer: ReportRenderer;
 	postBuildRan: boolean;
 	wordcraft?: WordcraftRenderResult;
+	word?: WordRenderResult;
 }
 
 function formatValidationFailures(results: ValidationResult[]): string {
@@ -51,37 +50,6 @@ function formatValidationFailures(results: ValidationResult[]): string {
 		.filter(result => !result.passed)
 		.map(result => `${result.check}: ${result.error ?? 'failed'}`)
 		.join('\n');
-}
-
-function runPostBuild(
-	outputDocx: string,
-	sourceDir: string,
-	exportPdf: boolean,
-): void {
-	const args = [
-		'run',
-		'python',
-		path.join(PACKAGE_ROOT, 'scripts/post_build.py'),
-		outputDocx,
-		sourceDir,
-	];
-	if (!exportPdf) {
-		args.push('');
-	}
-
-	const result = spawnSync('uv', args, {
-		cwd: PACKAGE_ROOT,
-		encoding: 'utf8',
-		shell: false,
-	});
-	if (result.error) {
-		throw result.error;
-	}
-	if (result.status !== 0) {
-		throw new Error(
-			result.stderr || result.stdout || 'post_build.py failed',
-		);
-	}
 }
 
 export function validateDocxFile(
@@ -108,13 +76,21 @@ export async function generateReport(
 		);
 	}
 	if (
-		(options.outputPdf ||
-			options.wordcraftExecutable ||
+		(options.wordcraftExecutable ||
 			options.wordcraftFontDirectory ||
 			options.strictFonts) &&
 		config.renderer !== 'wordcraft'
 	) {
-		throw new Error('PDF overrides require renderer "wordcraft".');
+		throw new Error('Wordcraft overrides require renderer "wordcraft".');
+	}
+	if (
+		options.outputPdf &&
+		(config.renderer === 'portable' ||
+			(config.renderer === 'word' && !config.postBuild.exportPdf))
+	) {
+		throw new Error(
+			'PDF override requires a PDF-enabled word or wordcraft renderer.',
+		);
 	}
 	if (config.renderer !== 'word' && options.postBuild) {
 		throw new Error('Word COM post-build requires renderer "word".');
@@ -130,60 +106,81 @@ export async function generateReport(
 		);
 	}
 
-	await buildReport(sourceDir, outputDocx, {
-		stylePreset: config.stylePreset,
-	});
-
-	if (config.frontMatterDocx) {
-		insertDocxBodyBeforeText({
-			targetDocxPath: outputDocx,
-			sourceDocxPath: resolveReportPath(
-				reportDir,
-				config.frontMatterDocx,
-			),
-			beforeText: 'Реферат',
-		});
-	}
-
-	if (config.postBuild.enabled) {
-		runPostBuild(outputDocx, sourceDir, config.postBuild.exportPdf);
-	}
-
-	let validation: ValidationResult[] | undefined;
-	if (config.validate.enabled) {
-		const unpackDir = resolveReportPath(
-			reportDir,
-			config.validate.unpackDir,
-		);
-		validation = validateDocxFile(outputDocx, unpackDir);
-		if (!validation.every(result => result.passed)) {
-			throw new Error(formatValidationFailures(validation));
-		}
-	}
-	const wordcraft =
-		config.renderer === 'wordcraft'
-			? createWordcraftPdf({
-					inputDocx: outputDocx,
+	const wordJob =
+		config.renderer === 'word'
+			? createWordRenderJob({
+					outputDocx,
 					outputPdf: options.outputPdf
 						? resolveReportPath(reportDir, options.outputPdf)
 						: undefined,
-					executable: options.wordcraftExecutable,
-					fontFiles: readWordcraftFontDirectory(
-						options.wordcraftFontDirectory ??
-							process.env.WORDCRAFT_FONT_DIR,
-					),
-					strictFonts: options.strictFonts,
+					exportPdf: config.postBuild.exportPdf,
+					sourceDir,
+					stylePreset: config.stylePreset,
 				})
 			: undefined;
+	try {
+		const buildDocx = wordJob?.inputDocx ?? outputDocx;
+		await buildReport(sourceDir, buildDocx, {
+			stylePreset: config.stylePreset,
+		});
 
-	return {
-		reportDir,
-		sourceDir,
-		outputDocx,
-		preflight,
-		validation,
-		renderer: config.renderer,
-		postBuildRan: config.postBuild.enabled,
-		wordcraft,
-	};
+		if (config.frontMatterDocx) {
+			insertDocxBodyBeforeText({
+				targetDocxPath: buildDocx,
+				sourceDocxPath: resolveReportPath(
+					reportDir,
+					config.frontMatterDocx,
+				),
+				beforeText: 'Реферат',
+			});
+		}
+
+		if (config.postBuild.enabled) {
+			wordJob!.render();
+		}
+
+		let validation: ValidationResult[] | undefined;
+		if (config.validate.enabled) {
+			const unpackDir = resolveReportPath(
+				reportDir,
+				config.validate.unpackDir,
+			);
+			validation = validateDocxFile(
+				wordJob?.acceptedDocx ?? outputDocx,
+				unpackDir,
+			);
+			if (!validation.every(result => result.passed)) {
+				throw new Error(formatValidationFailures(validation));
+			}
+		}
+		const wordcraft =
+			config.renderer === 'wordcraft'
+				? createWordcraftPdf({
+						inputDocx: outputDocx,
+						outputPdf: options.outputPdf
+							? resolveReportPath(reportDir, options.outputPdf)
+							: undefined,
+						executable: options.wordcraftExecutable,
+						fontFiles: readWordcraftFontDirectory(
+							options.wordcraftFontDirectory ??
+								process.env.WORDCRAFT_FONT_DIR,
+						),
+						strictFonts: options.strictFonts,
+					})
+				: undefined;
+
+		return {
+			reportDir,
+			sourceDir,
+			outputDocx,
+			preflight,
+			validation,
+			renderer: config.renderer,
+			postBuildRan: config.postBuild.enabled,
+			wordcraft,
+			word: wordJob?.publish(),
+		};
+	} finally {
+		wordJob?.close();
+	}
 }

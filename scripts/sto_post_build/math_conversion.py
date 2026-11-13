@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 from collections.abc import Sequence
 from copy import deepcopy
@@ -251,7 +252,10 @@ def run_node_json_batch(
     repo_root: Path,
     conversion_name: str,
 ) -> list[dict[str, Any]]:
-    completed = subprocess.run(
+    from .process_ownership import run_owned_subprocess
+
+    run = run_owned_subprocess if os.environ.get("STO_WORD_OWNERSHIP_DIR") else subprocess.run
+    completed = run(
         ["node", "-e", node_script],
         input=json.dumps(list(values), ensure_ascii=False),
         capture_output=True,
