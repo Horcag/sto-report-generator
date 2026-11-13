@@ -1,0 +1,20 @@
+id,series,series_order,scope,method,artifact,format,stage,registered_reference,comparison_reference,same_bytes_as_comparison,same_account_as_comparison,raw_generated_fraction,plagiarism_fraction,legal_fraction,self_citation_fraction,ai_percent,index_ai_percent,originality_percent,ai_delta_pp,description
+U01,format_control,1,full,url_wrap,U01,DOCX,existing_docx_modified,,,,,0.6082403,0.0350781,0,0,60.82403,60.82403,96.49219,,"Удалены 104 возможности переноса URL, видимый текст сохранён"
+T01,client_control,1,synthetic,control,T01,TXT,plain_text,,,,,0.9280924,0,0,0,92.80924,92.80924,100,,Синтетический контроль клиента
+T02,client_control,2,synthetic,one_phrase,T02,TXT,plain_text,T01,T01,false,true,0.9280924,0,0,0,92.80924,92.80924,100,0,В синтетическом тексте изменено одно числительное
+F01,native_rebuild,1,full,native_rebuild,W01,DOCX,native_saved,R41,R41,false,false,0,0.04271858,0.0014850566,0,0,0,95.57963634,0,"Тот же принятый текст, полная нативная пересборка"
+F02,native_rebuild,2,full,exact_repeat,W01,DOCX,native_saved,,F01,true,false,0,0.04271858,0.0014850566,0,0,0,95.57963634,0,Точный повтор пересобранного Word
+K01,coursework_blind,1,full,control,K01,DOCX,existing_docx,,,,,0.27247766,0.016359264,0.00039227365,0,27.247766,27.247766,98.324846235,,Свежая подача исходного принятого Word
+K02,coursework_blind,2,full,control,K02,DOCX,before_native_save,K01,K01,false,true,0.33809343,0.018580394,0.00039223663,0,33.809343,33.809343,98.102736937,6.561577,Исходный текст в контрольной промежуточной сборке
+K03,coursework_blind,3,full,editorial,K03,DOCX,before_native_save,K01,K02,false,false,0.2870264,0.016955394,0.0003977373,0,28.70264,28.70264,98.26468687,-5.106703,Полная редактура в той же промежуточной сборке
+K04,coursework_blind,4,full,paragraph_order,K04,DOCX,before_native_save,K01,K03,false,false,0.28114873,0.016955394,0.0003977373,0,28.114873,28.114873,98.26468687,-0.587767,Перестановка дословных абзацев редакции K03
+K05,coursework_blind,5,full,editorial,K05,DOCX,native_saved,K01,K01,false,true,0.23108476,0.014868547,0.00039767288,0,23.108476,23.108476,98.473378012,-4.13929,Заранее выбранная полная редактура после Word
+K06,coursework_blind,6,full,exact_repeat,K05,DOCX,native_saved,K05,K05,true,false,0.23108476,0.014868547,0.00039767288,0,23.108476,23.108476,98.473378012,0,Точный повтор полной редактуры
+K07,coursework_blind,7,full,paragraph_order,K06,DOCX,native_saved,K01,K05,false,false,0.2305619,0.014868547,0.00039767288,0,23.05619,23.05619,98.473378012,-0.052286,Та же редактура с перестановкой после Word
+K08,coursework_blind,8,full,partial,K07,DOCX,native_saved,K01,K01,false,false,0.22189547,0.017246336,0.00039799235,0,22.189547,22.189547,98.235567165,-5.058219,"Частичная редактура с сохранёнными спецификациями, исправлена граница диапазона по модели"
+K09,coursework_blind,9,full,exact_repeat,K07,DOCX,native_saved,K01,K08,true,false,0.22189547,0.017246336,0.00039799235,0,22.189547,22.189547,98.235567165,0,Точный повтор частичной редакции
+K10,coursework_blind,10,full,exact_repeat,K06,DOCX,native_saved,K01,K07,true,false,0.2305619,0.014868547,0.00039767288,0,23.05619,23.05619,98.473378012,0,Точный повтор редакции с перестановкой
+K11,coursework_adaptive,1,full,project_prose,K08,DOCX,native_saved,K08,K08,false,false,0.19636771,0.017042276,0.00039244472,0,19.636771,19.636771,98.256527928,-2.552776,"Постановка задачи, требования, демонстратор и выводы"
+K12,coursework_adaptive,2,full,architecture_prose,K09,DOCX,native_saved,K08,K11,false,true,0.17607798,0.017732546,0.00038058724,0,17.607798,17.607798,98.188686676,-2.028973,К редакции K11 добавлены пояснения архитектуры и условия отказа
+K13,coursework_adaptive,3,full,table_prose,K10,DOCX,native_saved,K08,K12,false,true,0.16318141,0.010619543,0.00037628302,0,16.318141,16.318141,98.900417398,-1.289657,Текст K12 и 84 проверенные описательные ячейки в 17 таблицах
+K14,coursework_adaptive,4,full,exact_repeat,K10,DOCX,native_saved,K08,K13,true,false,0.16318141,0.010619543,0.00037628302,0,16.318141,16.318141,98.900417398,0,Точный повтор финальной редакции с табличными правками
