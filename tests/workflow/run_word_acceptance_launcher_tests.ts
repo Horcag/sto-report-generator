@@ -12,9 +12,13 @@ import {
 } from '@/app/word-acceptance';
 
 import { testBackgroundOnlyLifecycle } from './word_acceptance_background_only_test';
-import { testSourceDrivenRendererLauncher } from './word_renderer_launcher_cases';
+import {
+	testSourceDrivenRendererLauncher,
+	timeoutSpawnResult,
+} from './word_renderer_launcher_cases';
 
 interface Scenario {
+	timeoutAfterNative?: boolean;
 	deterministicQualityFailure?: boolean;
 	rendererQuality?: string;
 	sourceDrivenRenderer?: boolean;
@@ -181,6 +185,7 @@ function withFakeWord(
 				return {
 					...result,
 					status: 1,
+					...timeoutSpawnResult(scenario.timeoutAfterNative),
 					stdout: scenario.hungAtStage
 						? `Word acceptance stage: ${scenario.hungAtStage}.`
 						: '',

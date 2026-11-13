@@ -15,6 +15,11 @@ import { stopOwnedWordAcceptanceProcesses } from './word-acceptance-cleanup';
 import { writeWordAcceptanceFailureManifest } from './word-acceptance-evidence';
 import { verifyAcceptedDocxIntegrity } from './word-acceptance-integrity';
 import {
+	assertFullWordBudget,
+	isDeterministicDocumentFailure,
+	wordTimeoutMilliseconds,
+} from './word-acceptance-policy';
+import {
 	readAcceptanceStatistics,
 	StatisticCounts,
 } from './word-acceptance-statistics';
@@ -36,6 +41,7 @@ export interface WordAcceptanceOptions {
 	stylePreset?: StoStylePreset;
 	backgroundOnly?: boolean;
 	postBuildSourceDir?: string;
+	timeoutSeconds?: number;
 }
 export interface WordAcceptanceExpectedStyle {
 	styleId: string;
@@ -60,6 +66,7 @@ export interface WordAcceptanceRequest {
 	statisticCounts: StatisticCounts;
 	pageWordForms: [string, string, string];
 	postBuildSourceDir?: string;
+	timeoutSeconds?: number;
 }
 export type WordAcceptanceHostKind = 'windows' | 'wsl';
 export interface WordAcceptancePlan {
@@ -163,6 +170,7 @@ export function createWordAcceptancePlan(
 	options: WordAcceptanceOptions,
 	environment: CreatePlanEnvironment,
 ): WordAcceptancePlan {
+	wordTimeoutMilliseconds(options.timeoutSeconds);
 	const inputDocx = path.resolve(options.inputDocx);
 	const acceptedDocx = resolveDefaultOutputPath(
 		inputDocx,
@@ -221,6 +229,13 @@ export function createWordAcceptancePlan(
 		statisticReplacements: {},
 		statisticCounts: { figures: 0, tables: 0, sources: 0, appendices: 0 },
 		pageWordForms: ['страницу', 'страницы', 'страниц'],
+		...(options.timeoutSeconds !== undefined || options.postBuildSourceDir
+			? {
+					timeoutSeconds:
+						options.timeoutSeconds ??
+						WORD_ACCEPTANCE_TIMEOUT_MS / 1000,
+				}
+			: {}),
 		...(options.postBuildSourceDir
 			? {
 					postBuildSourceDir: environment.toHostPath(
@@ -269,11 +284,14 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 	const statistics = readAcceptanceStatistics(options.inputDocx);
 	// Large reports and background-only runs need time for native layout,
 	// save/reopen, PDF export, final verification, and Word quit.
-	const backgroundTimeout = options.postBuildSourceDir
-		? WORD_ACCEPTANCE_TIMEOUT_MS
-		: plan.backgroundOnly || statistics.tables >= 10
-			? WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS
-			: WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS;
+	const timeoutOverride = wordTimeoutMilliseconds(options.timeoutSeconds);
+	const backgroundTimeout =
+		timeoutOverride ??
+		(options.postBuildSourceDir
+			? WORD_ACCEPTANCE_TIMEOUT_MS
+			: plan.backgroundOnly || statistics.tables >= 10
+				? WORD_ACCEPTANCE_LARGE_BACKGROUND_TIMEOUT_MS
+				: WORD_ACCEPTANCE_BACKGROUND_TIMEOUT_MS);
 	plan.request.statisticReplacements = statistics.replacements;
 	plan.request.statisticCounts = {
 		figures: statistics.figures,
@@ -308,6 +326,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 			throw error;
 		}
 		if (!backgroundFailure) return;
+		assertFullWordBudget(plan, backgroundFailure);
 		if (isDeterministicDocumentFailure(backgroundFailure)) {
 			writeWordAcceptanceFailureManifest(plan, backgroundFailure, null);
 			throw new Error(
@@ -331,7 +350,7 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 		writeWordAcceptanceRequest(plan);
 		const interactiveFailure = runWordAcceptanceAttempt(
 			plan,
-			WORD_ACCEPTANCE_TIMEOUT_MS,
+			timeoutOverride ?? WORD_ACCEPTANCE_TIMEOUT_MS,
 			() => {
 				cleanupVerified = true;
 			},
@@ -354,18 +373,6 @@ export function runWordAcceptance(options: WordAcceptanceOptions): void {
 			});
 		}
 	}
-}
-
-function isDeterministicDocumentFailure(evidence: string): boolean {
-	if (
-		/Word renderer deterministic failure \[(?:pdf-image-quality|preparation)\]|Formula replacement aborted:|Cannot uniquely restore the referat page template/.test(
-			evidence,
-		)
-	)
-		return true;
-	return /Word acceptance failed: (?:Table .+ spans pages \d+-\d+\.|Required Word styles are missing:)/s.test(
-		evidence,
-	);
 }
 
 function writeWordAcceptanceRequest(plan: WordAcceptancePlan): void {
@@ -419,6 +426,7 @@ function runWordAcceptanceAttempt(
 			);
 		}
 		manifest.execution.processCleanupVerified = true;
+		manifest.execution.attemptTimeoutSeconds = timeout / 1000;
 		const postBuildResult = path.join(
 			path.dirname(plan.requestJsonPath),
 			'post-build-result.json',

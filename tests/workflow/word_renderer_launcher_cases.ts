@@ -7,6 +7,7 @@ import { createWordRenderJob } from '@/app/word-renderer';
 type FakeWord = (
 	scenario: {
 		sourceDrivenRenderer?: boolean;
+		timeoutAfterNative?: boolean;
 		deterministicQualityFailure?: boolean;
 		rendererQuality?: string;
 		backgroundSucceeds?: boolean;
@@ -25,12 +26,20 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 		'failure',
 		'cleanup',
 		'quality',
+		'budget',
+		'override',
 	] as const) {
 		withFakeWord(
 			{
 				sourceDrivenRenderer: true,
 				backgroundSucceeds: true,
-				exportFails: outcome === 'failure' || outcome === 'quality',
+				exportFails: [
+					'failure',
+					'quality',
+					'budget',
+					'override',
+				].includes(outcome),
+				timeoutAfterNative: outcome === 'budget',
 				deterministicQualityFailure: outcome === 'quality',
 				rendererQuality: 'print',
 				cleanupFails: outcome === 'cleanup',
@@ -43,6 +52,9 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 					exportPdf: true,
 					stylePreset: 'default',
 					pdfImageQuality: 'print',
+					wordTimeoutSeconds: ['budget', 'override'].includes(outcome)
+						? 1200
+						: undefined,
 				});
 				fs.copyFileSync(input, job.inputDocx);
 				if (outcome === 'success') {
@@ -52,6 +64,7 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 						fs.readFileSync(result.manifest, 'utf8'),
 					);
 					assert.equal(manifest.postBuild.formula_replacements, 2);
+					assert.equal(manifest.execution.attemptTimeoutSeconds, 600);
 					assert.equal(manifest.acceptedDocx.path, outputDocx);
 					assert.equal(
 						manifest.execution.processCleanupVerified,
@@ -62,14 +75,37 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 						() => job.render(),
 						outcome === 'cleanup'
 							? /cleanup could not prove/
-							: outcome === 'quality'
-								? /rejected the document/
-								: /failed in both/,
+							: outcome === 'budget'
+								? /exhausted its time budget/
+								: outcome === 'quality'
+									? /rejected the document/
+									: /failed in both/,
 					);
 					assert.ok(!fs.existsSync(outputDocx));
 				}
-				if (outcome === 'quality')
+				if (outcome === 'quality' || outcome === 'budget')
 					assert.equal(calls.filter(call => !call.cleanup).length, 1);
+				if (outcome === 'budget') {
+					const failed = JSON.parse(
+						fs.readFileSync(
+							path.join(
+								path.dirname(job.inputDocx),
+								'acceptance.json',
+							),
+							'utf8',
+						),
+					);
+					assert.equal(failed.execution.attemptTimeoutSeconds, 1200);
+					assert.equal(failed.execution.processCleanupVerified, true);
+				}
+				if (outcome === 'override') {
+					assert.equal(calls.filter(call => !call.cleanup).length, 2);
+					assert.ok(
+						calls
+							.filter(call => !call.cleanup)
+							.every(call => call.timeout === 1_200_000),
+					);
+				}
 				job.close();
 				assert.equal(
 					fs.existsSync(`${outputDocx}.word.lock`),
@@ -81,10 +117,24 @@ export function testSourceDrivenRendererLauncher(withFakeWord: FakeWord): void {
 				);
 				assert.equal(
 					calls[0].timeout,
-					600_000,
+					['budget', 'override'].includes(outcome)
+						? 1_200_000
+						: 600_000,
 					'full native post-build must not inherit a 45 second deadline',
 				);
 			},
 		);
 	}
+}
+
+export function timeoutSpawnResult(enabled?: boolean): {
+	error?: Error & { code: string };
+} {
+	return enabled
+		? {
+				error: Object.assign(new Error('mock deadline'), {
+					code: 'ETIMEDOUT',
+				}),
+			}
+		: {};
 }

@@ -90,6 +90,9 @@ npm run generate:report -- reports/<report_name> --renderer word --validate
   then publishes the configured DOCX, optional sibling PDF, and `<basename>.acceptance.json`.
   With `postBuild.exportPdf: false`, an existing sibling PDF is untouched. Never submit a raw
   DOCX from a failed Word build. `portable` remains the scaffold default.
+- For a large Word report, set `--word-timeout-seconds 1200` on `generate` or `audit`
+  (integer 30–3600; full-render default 600 seconds). A full-render deadline failure cleans up
+  owned processes and stops instead of repeating the same source pipeline interactively.
 - Use lower-level commands only when debugging a specific step. The Python command below requires
   **native Windows Python**; on WSL use normal `generate --renderer word` instead:
 

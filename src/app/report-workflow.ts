@@ -14,6 +14,7 @@ import {
 import { validateSTO, ValidationResult } from '@/shared/lib/sto-validator';
 
 import { buildReport } from './builder';
+import { wordTimeoutMilliseconds } from './word-acceptance-policy';
 import { createWordRenderJob, WordRenderResult } from './word-renderer';
 import { readWordcraftFontDirectory } from './wordcraft-fonts';
 import {
@@ -23,6 +24,7 @@ import {
 
 export interface GenerateReportOptions {
 	pdfImageQuality?: string;
+	wordTimeoutSeconds?: number;
 	reportDir: string;
 	outputPath?: string;
 	renderer?: ReportRenderer;
@@ -100,6 +102,13 @@ export async function generateReport(
 	) {
 		throw new Error('--pdf-image-quality requires renderer word.');
 	}
+	if (
+		options.wordTimeoutSeconds !== undefined &&
+		config.renderer !== 'word'
+	) {
+		throw new Error('--word-timeout-seconds requires renderer word.');
+	}
+	wordTimeoutMilliseconds(options.wordTimeoutSeconds);
 	if (config.renderer !== 'word' && options.postBuild) {
 		throw new Error('Word COM post-build requires renderer "word".');
 	}
@@ -123,6 +132,7 @@ export async function generateReport(
 						: undefined,
 					exportPdf: config.postBuild.exportPdf,
 					pdfImageQuality: config.postBuild.pdfImageQuality,
+					wordTimeoutSeconds: options.wordTimeoutSeconds,
 					sourceDir,
 					stylePreset: config.stylePreset,
 				})

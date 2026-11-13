@@ -76,6 +76,7 @@ export function writeWordAcceptanceFailureManifest(
 		renderer: 'word-desktop-interactive',
 		status: 'failed',
 		execution: {
+			attemptTimeoutSeconds: plan.request.timeoutSeconds,
 			requestedMode: plan.backgroundOnly ? 'background-only' : 'auto',
 			completedMode: null,
 			attemptedModes: plan.request.attemptedModes,

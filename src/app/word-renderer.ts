@@ -16,6 +16,7 @@ export function createWordRenderJob(options: {
 	outputPdf?: string;
 	exportPdf: boolean;
 	pdfImageQuality?: string;
+	wordTimeoutSeconds?: number;
 	sourceDir: string;
 	stylePreset: StoStylePreset;
 }) {
@@ -95,6 +96,7 @@ export function createWordRenderJob(options: {
 					stylePreset: options.stylePreset,
 					postBuildSourceDir: options.sourceDir,
 					pdfImageQuality: options.pdfImageQuality,
+					timeoutSeconds: options.wordTimeoutSeconds,
 				});
 				cleanupSafe = true;
 			} catch (error) {
