@@ -1,11 +1,16 @@
 import os
 from pathlib import Path
 
-from .docx_package import assert_no_statistic_placeholders, clear_dirty_fields
+from lxml import etree
+
+from .constants import WORD_NS
+from .docx_package import assert_no_statistic_placeholders, clear_dirty_fields, read_docx_part
 from .formula_replacement import replace_formulas_from_markdown
 from .models import PostBuildResult
 from .statistics import get_counts_from_docx
+from .timing import timed_stage
 from .word_automation import (
+    count_pdf_pages,
     export_docx_to_pdf,
     resync_docx_page_count_from_pdf,
     run_word_post_build,
@@ -50,6 +55,17 @@ def create_replacements(
     }
 
 
+def has_legacy_page_count(docx_path: str | Path) -> bool:
+    """Retain legacy plain-text referat correction, even without template tokens."""
+    root = etree.fromstring(read_docx_part(docx_path, "word/document.xml"))
+    return any(
+        "".join(node.text or "" for node in paragraph.iter(f"{{{WORD_NS}}}t")).startswith(
+            "Отчет по практике содержит "
+        )
+        for paragraph in root.iter(f"{{{WORD_NS}}}p")
+    )
+
+
 def post_build(
     docx_path: str | Path,
     report_source_dir: str | Path | None = None,
@@ -61,14 +77,18 @@ def post_build(
 
     source_dir = select_source_dir(absolute_docx_path, report_source_dir)
     formula_replacements = (
-        replace_formulas_from_markdown(absolute_docx_path, source_dir)
+        timed_stage(
+            "source-formulas", replace_formulas_from_markdown, absolute_docx_path, source_dir
+        )
         if source_dir is not None
         else 0
     )
-    table_spacing_changes = normalize_docx_xml_layout(absolute_docx_path)
-    counts = get_counts_from_docx(absolute_docx_path)
+    table_spacing_changes = timed_stage("xml-layout", normalize_docx_xml_layout, absolute_docx_path)
+    counts = timed_stage("xml-counts", get_counts_from_docx, absolute_docx_path)
 
-    word_result = run_word_post_build(
+    word_result = timed_stage(
+        "native-post-build",
+        run_word_post_build,
         absolute_docx_path,
         create_replacements(counts.figures, counts.tables, counts.sources, counts.appendices),
         pdf_output_path,
@@ -79,11 +99,24 @@ def post_build(
     pdf_path = word_result.pdf_path
     if front_matter_table_changes:
         pdf_path = export_docx_to_pdf(absolute_docx_path, pdf_output_path)
-    final_pages, pdf_path = resync_docx_page_count_from_pdf(
-        absolute_docx_path,
-        pdf_path,
-        pdf_output_path,
-    )
+    final_pages = count_pdf_pages(pdf_path)
+    if (
+        front_matter_table_changes
+        or final_pages != word_result.pages
+        or has_legacy_page_count(absolute_docx_path)
+    ):
+        final_pages, pdf_path = timed_stage(
+            "post-xml-page-resync",
+            resync_docx_page_count_from_pdf,
+            absolute_docx_path,
+            pdf_path,
+            pdf_output_path,
+        )
+    else:
+        print(
+            "Word post-build: saved DOCX/PDF pages agree; no post-XML layout resync needed.",
+            flush=True,
+        )
     assert_no_statistic_placeholders(absolute_docx_path)
 
     return PostBuildResult(

@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 from .constants import (
-    BROKEN_REFERENCE_MARKERS,
     WD_ACTIVE_END_PAGE_NUMBER,
     WD_ALIGN_PARAGRAPH_CENTER,
     WD_FIND_CONTINUE,
@@ -16,7 +15,13 @@ from .constants import (
 from .models import WordPostBuildResult
 from .pdf_export import export_pdf
 from .pdf_export import get_default_pdf_path as get_default_pdf_path
+from .timing import timed_stage
 from .word_application import create_word_application
+from .word_ranges import (
+    collect_page_placeholder_paragraphs,
+    find_broken_references,
+    previous_paragraph_before,
+)
 from .word_tables import is_word_math_layout_table
 
 
@@ -68,15 +73,6 @@ def page_replacements(pages: int) -> dict[str, str]:
 
 def normalize_replacement_text(text: str) -> str:
     return text.replace(" ,", "").replace(", ,", ",")
-
-
-def collect_page_placeholder_paragraphs(doc: Any) -> list[tuple[Any, str]]:
-    paragraphs = []
-    for paragraph in doc.Paragraphs:
-        text = paragraph.Range.Text.rstrip("\r\x07")
-        if "{{PAGES}}" in text or "{{PAGES_WORD}}" in text:
-            paragraphs.append((paragraph, text))
-    return paragraphs
 
 
 def render_page_placeholder_text(
@@ -229,21 +225,9 @@ def normalize_inline_images(doc: Any) -> tuple[int, int]:
     return centered, 0
 
 
-def previous_paragraph_before(doc: Any, position: int) -> Any | None:
-    previous = None
-    for paragraph in doc.Paragraphs:
-        try:
-            if paragraph.Range.End <= position:
-                previous = paragraph
-                continue
-        except Exception:
-            continue
-        break
-    return previous
-
-
 def keep_small_tables_on_one_page(doc: Any) -> int:
     moved = 0
+    caption_lookups = 0
 
     doc.Repaginate()
     for index in range(1, doc.Tables.Count + 1):
@@ -261,6 +245,7 @@ def keep_small_tables_on_one_page(doc: Any) -> int:
             if start_page == end_page:
                 continue
 
+            caption_lookups += 1
             caption = previous_paragraph_before(doc, table.Range.Start)
             if caption is None:
                 continue
@@ -277,6 +262,7 @@ def keep_small_tables_on_one_page(doc: Any) -> int:
     if moved:
         doc.Repaginate()
 
+    print(f"Word small-table caption lookups: {caption_lookups}; moved: {moved}", flush=True)
     return moved
 
 
@@ -314,7 +300,9 @@ def resync_docx_page_count_from_pdf(
     doc = None
     try:
         word = create_word_application()
-        doc = word.Documents.Open(os.path.abspath(str(docx_path)), ReadOnly=False)
+        doc = timed_stage(
+            "open", word.Documents.Open, os.path.abspath(str(docx_path)), ReadOnly=False
+        )
         current_pdf_path = str(pdf_path)
         for _ in range(3):
             update_toc(doc)
@@ -322,7 +310,9 @@ def resync_docx_page_count_from_pdf(
             update_toc(doc)
             doc.Repaginate()
             doc.Save()
-            current_pdf_path = export_pdf(doc, docx_path, pdf_output_path)
+            current_pdf_path = timed_stage(
+                "export-pdf", export_pdf, doc, docx_path, pdf_output_path
+            )
             exported_pages = count_pdf_pages(current_pdf_path)
             if exported_pages == pages:
                 return pages, current_pdf_path
@@ -335,15 +325,6 @@ def resync_docx_page_count_from_pdf(
         if word is not None:
             with contextlib.suppress(Exception):
                 word.Quit()
-
-
-def find_broken_references(doc: Any) -> list[str]:
-    errors: list[str] = []
-    for paragraph in doc.Paragraphs:
-        text = paragraph.Range.Text
-        if any(marker in text for marker in BROKEN_REFERENCE_MARKERS):
-            errors.append(f"CRITICAL: Broken reference or source found: {text.strip()}")
-    return errors
 
 
 def replace_placeholders(doc: Any, replacements: Mapping[str, str]) -> None:
@@ -406,36 +387,52 @@ def run_word_post_build(
     doc = None
     try:
         word = create_word_application()
-        doc = word.Documents.Open(os.path.abspath(str(docx_path)), ReadOnly=False)
+        doc = timed_stage(
+            "open", word.Documents.Open, os.path.abspath(str(docx_path)), ReadOnly=False
+        )
 
-        update_toc(doc)
+        timed_stage("update-toc", update_toc, doc)
 
-        normalized_tables = normalize_tables(doc)
-        centered_images, scaled_images = normalize_inline_images(doc)
-        moved_small_tables = keep_small_tables_on_one_page(doc)
-        page_placeholder_paragraphs = collect_page_placeholder_paragraphs(doc)
+        normalized_tables = timed_stage("normalize-tables", normalize_tables, doc)
+        centered_images, scaled_images = timed_stage(
+            "normalize-images", normalize_inline_images, doc
+        )
+        moved_small_tables = timed_stage("keep-small-tables", keep_small_tables_on_one_page, doc)
+        page_placeholder_paragraphs = timed_stage(
+            "page-templates", collect_page_placeholder_paragraphs, doc
+        )
         replace_placeholders(doc, replacements)
 
         pages = (
-            stabilize_page_replacements(doc, page_placeholder_paragraphs, replacements)
+            timed_stage(
+                "stabilize-pages",
+                stabilize_page_replacements,
+                doc,
+                page_placeholder_paragraphs,
+                replacements,
+            )
             if page_placeholder_paragraphs
             else doc.ComputeStatistics(WD_STATISTIC_PAGES)
         )
 
-        broken_references = find_broken_references(doc)
+        broken_references = timed_stage("broken-references", find_broken_references, doc)
         if broken_references:
             raise RuntimeError("\n".join(broken_references))
 
-        doc.Save()
-        pages = resync_saved_page_replacements(
+        timed_stage("save", doc.Save)
+        pages = timed_stage(
+            "saved-page-resync",
+            resync_saved_page_replacements,
             doc,
             page_placeholder_paragraphs,
             replacements,
             pages,
         )
-        doc.Save()
-        pdf_path = export_pdf(doc, docx_path, pdf_output_path)
-        pages, pdf_path = resync_pdf_page_replacements(
+        timed_stage("save", doc.Save)
+        pdf_path = timed_stage("export-pdf", export_pdf, doc, docx_path, pdf_output_path)
+        pages, pdf_path = timed_stage(
+            "pdf-page-resync",
+            resync_pdf_page_replacements,
             doc,
             docx_path,
             pdf_path,
