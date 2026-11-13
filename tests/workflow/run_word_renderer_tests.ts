@@ -105,6 +105,32 @@ try {
 			}),
 		/must be distinct/,
 	);
+	const customPdf = path.join(root, 'preview', 'custom.pdf');
+	job = createWordRenderJob({ ...options, outputPdf: customPdf });
+	prepare(job);
+	assert.equal(job.publish().pdf, customPdf);
+	job.close();
+	assert.equal(fs.readFileSync(customPdf, 'utf8'), '%PDF-verified');
+	const stat = fs.statSync;
+	const otherVolume = mock.method(fs, 'statSync', (file: fs.PathLike) => {
+		const value = stat(file);
+		if (String(file) === path.dirname(customPdf))
+			return { ...value, dev: value.dev + 1 };
+		return value;
+	});
+	assert.throws(
+		() => createWordRenderJob({ ...options, outputPdf: customPdf }),
+		/same filesystem/,
+	);
+	otherVolume.mock.restore();
+	assert.equal(fs.readFileSync(customPdf, 'utf8'), '%PDF-verified');
+	const directoryTarget = path.join(root, 'directory.docx');
+	fs.mkdirSync(directoryTarget);
+	assert.throws(
+		() => createWordRenderJob({ ...options, outputDocx: directoryTarget }),
+		/regular files/,
+	);
+	assert.ok(fs.statSync(directoryTarget).isDirectory());
 	assert.ok(
 		fs
 			.readdirSync(root)

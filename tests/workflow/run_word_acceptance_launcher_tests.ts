@@ -12,8 +12,10 @@ import {
 } from '@/app/word-acceptance';
 
 import { testBackgroundOnlyLifecycle } from './word_acceptance_background_only_test';
+import { testSourceDrivenRendererLauncher } from './word_renderer_launcher_cases';
 
 interface Scenario {
+	sourceDrivenRenderer?: boolean;
 	backgroundSucceeds?: boolean;
 	cleanupFails?: boolean;
 	cleanupFailsAfterAcceptance?: boolean;
@@ -108,7 +110,8 @@ function withFakeWord(
 					'-m',
 					'scripts.sto_post_build.acceptance_statistics',
 				]);
-				assert.equal(args[4], input);
+				if (!scenario.sourceDrivenRenderer)
+					assert.equal(args[4], input);
 				return {
 					...result,
 					stdout: JSON.stringify({
@@ -149,6 +152,15 @@ function withFakeWord(
 							: 0,
 				};
 			const request = JSON.parse(fs.readFileSync(requestPath, 'utf8'));
+			if (request.postBuildSourceDir) {
+				fs.writeFileSync(
+					path.join(
+						path.dirname(requestPath),
+						'post-build-result.json',
+					),
+					JSON.stringify({ formula_replacements: 2 }),
+				);
+			}
 			assert.deepEqual(request.statisticCounts, {
 				figures: 1,
 				tables: scenario.largeDocument ? 14 : 1,
@@ -177,6 +189,10 @@ function withFakeWord(
 					scenario.malformedManifest
 						? '{malformed manifest'
 						: JSON.stringify({
+								stablePageCount: true,
+								inputDocx: {},
+								acceptedDocx: {},
+								capabilityChecks: {},
 								status: scenario.unexpectedManifest
 									? 'unexpected'
 									: 'pendingCleanup',
@@ -184,7 +200,7 @@ function withFakeWord(
 								pdf: { sha256: 'old', export: {} },
 							}),
 				);
-			fs.copyFileSync(input, input.replace(/\.docx$/, '.accepted.docx'));
+			fs.copyFileSync(input, request.acceptedDocx);
 			if (scenario.corruptAcceptedText) {
 				const accepted = new AdmZip(
 					input.replace(/\.docx$/, '.accepted.docx'),
@@ -451,6 +467,7 @@ function testUnsupportedStyleRejectedBeforeWord(): void {
 }
 
 testSuccessfulAcceptance();
+testSourceDrivenRendererLauncher(withFakeWord);
 testIntegrityFailurePersistsVerifiedCleanup();
 testCleanupFailureAfterAcceptanceStaysUnverified();
 testUnverifiedCleanup();
