@@ -61,9 +61,10 @@ citations require them. `--type` changes title-page text only; it is not a profi
 
 - Inspect the target report directory and edit the smallest relevant `.md` modules. Do not rewrite a whole report in one
   file.
-- For new connected Russian scientific prose or requested stylistic variants, first follow
-  [the scientific prose workflow](references/scientific-prose.md): evidence and author observations → independent
-  drafts → semantic comparison → accepted Markdown. Keep trial drafts outside the report input directory.
+- For drafting or improving connected Russian prose in any educational report profile (lab, coursework, NIR,
+  or another supported profile), first follow
+  [the report prose workflow](references/scientific-prose.md). Use its ordinary authoring pass for short edits;
+  prepare variants only when needed. Keep trial drafts outside the report input directory.
 - Before source preflight, apply the bundled [`humanizer-ru`](../humanizer-ru/SKILL.md) skill to connected Russian prose
   that you draft or are asked to edit. Read its academic-genre exceptions and rewrite guide, remove actual chatbot
   artifacts and formulaic wording, then inspect the source diff. For a review-only request, report findings without
