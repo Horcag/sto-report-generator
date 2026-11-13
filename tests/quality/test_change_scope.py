@@ -176,7 +176,7 @@ class GitScopeTests(unittest.TestCase):
     def write(self, name, text):
         path = self.root / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text)
+        path.write_text(text, encoding="utf-8", newline="\n")
 
     def commit(self):
         self.git("add", "--all")

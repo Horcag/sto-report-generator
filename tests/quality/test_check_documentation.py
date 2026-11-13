@@ -18,12 +18,12 @@ class DocumentationTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
-        (self.root / "README.md").write_text("# Guide\n")
+        (self.root / "README.md").write_text("# Guide\n", newline="\n")
 
     def write(self, name, content):
         path = self.root / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
+        path.write_text(content, encoding="utf-8", newline="\n")
         return path
 
     def test_changed_skill_missing_resource_is_rejected(self):
@@ -69,7 +69,7 @@ class DocumentationTests(unittest.TestCase):
             "docs/case-studies/data.csv", "id,source_url\n1,https://example.invalid/document\n"
         )
         validate_csv(path, self.root)
-        path.write_text("id,source_path\n1,missing.md\n")
+        path.write_text("id,source_path\n1,missing.md\n", newline="\n")
         with self.assertRaisesRegex(ValueError, "resource link"):
             validate_csv(path, self.root)
 
