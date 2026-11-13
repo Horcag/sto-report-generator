@@ -2,7 +2,9 @@ name: CI
 
 on:
     push:
+        branches: [master, main, release, 'release/**']
     pull_request:
+    merge_group:
     workflow_dispatch:
 
 permissions:
@@ -13,35 +15,37 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    workflow-lint:
-        name: Workflow lint
+    changes:
+        name: Change scope
+        runs-on: ubuntu-24.04
+        outputs:
+            full: ${{ steps.scope.outputs.full }}
+            workflow_lint: ${{ steps.scope.outputs.workflow_lint }}
+            plan: ${{ steps.scope.outputs.plan }}
+        steps:
+            - name: Checkout complete merge history
+              uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - name: Test change discovery and conservative fallback
+              run: python3 -m unittest discover -s tests/quality -p test_change_scope.py -v
+
+            - name: Classify changed paths and contents
+              id: scope
+              run: python3 scripts/quality/change_scope.py --github
+
+    documentation:
+        name: Documentation checks
+        needs: changes
+        if: needs.changes.outputs.full == 'false'
         runs-on: ubuntu-24.04
         steps:
             - name: Checkout
               uses: actions/checkout@v7
-
-            - name: Set up Go
-              uses: actions/setup-go@v7
               with:
-                  go-version: '1.25.x'
-                  cache: false
-
-            - name: Install actionlint
-              run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
-
-            - name: Lint GitHub Actions workflows
-              run: actionlint -color
-
-    quality:
-        name: Quality gate (${{ matrix.os }})
-        runs-on: ${{ matrix.os }}
-        strategy:
-            fail-fast: false
-            matrix:
-                os: [ubuntu-24.04, windows-latest, macos-latest]
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v7
+                  persist-credentials: false
 
             - name: Set up Node.js
               uses: actions/setup-node@v7
@@ -49,23 +53,109 @@ jobs:
                   node-version: 26.x
                   cache: npm
 
+            - name: Install Node dependencies
+              run: npm ci
+
+            - name: Check documentation and package resources
+              env:
+                  CHANGE_SCOPE_JSON: ${{ needs.changes.outputs.plan }}
+              run: python3 scripts/quality/check_documentation.py
+
+    workflow-lint:
+        name: Workflow lint
+        needs: changes
+        if: ${{ always() }}
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Require successful scope discovery
+              env:
+                  SCOPE_RESULT: ${{ needs.changes.result }}
+              run: test "$SCOPE_RESULT" = success
+
+            - name: Checkout
+              if: needs.changes.outputs.workflow_lint == 'true'
+              uses: actions/checkout@v7
+
+            - name: Set up Go
+              if: needs.changes.outputs.workflow_lint == 'true'
+              uses: actions/setup-go@v7
+              with:
+                  go-version: '1.25.x'
+                  cache: false
+
+            - name: Install actionlint
+              if: needs.changes.outputs.workflow_lint == 'true'
+              run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+            - name: Lint GitHub Actions workflows
+              if: needs.changes.outputs.workflow_lint == 'true'
+              run: actionlint -color
+
+            - name: Explain unchanged workflow check
+              if: needs.changes.outputs.workflow_lint != 'true'
+              run: echo 'Workflow files unchanged; actionlint is not needed.' >> "$GITHUB_STEP_SUMMARY"
+
+    quality:
+        name: Quality gate (${{ matrix.os }})
+        needs: [changes, documentation]
+        if: ${{ always() }}
+        # Preserve protected check names. Docs run once above; these are Ubuntu
+        # status gates, not Windows/macOS machines pretending to run code tests.
+        runs-on: ${{ needs.changes.outputs.full == 'false' && 'ubuntu-24.04' || matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-24.04, windows-latest, macos-latest]
+        steps:
+            - name: Require successful scope and applicable documentation checks
+              shell: bash
+              env:
+                  SCOPE_RESULT: ${{ needs.changes.result }}
+                  FULL: ${{ needs.changes.outputs.full }}
+                  DOCS_RESULT: ${{ needs.documentation.result }}
+              run: |
+                  test "$SCOPE_RESULT" = success
+                  if [ "$FULL" = false ]; then test "$DOCS_RESULT" = success; fi
+
+            - name: Explain documentation-only check
+              if: needs.changes.outputs.full == 'false'
+              shell: bash
+              run: echo 'Documentation validated once on Ubuntu. This required check forwards that result; no OS-specific code suite ran.' >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Checkout
+              if: needs.changes.outputs.full == 'true'
+              uses: actions/checkout@v7
+
+            - name: Set up Node.js
+              if: needs.changes.outputs.full == 'true'
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 26.x
+                  cache: npm
+
             - name: Set up uv
+              if: needs.changes.outputs.full == 'true'
               uses: astral-sh/setup-uv@v10.3.2
               with:
                   enable-cache: true
                   python-version: '3.12'
 
             - name: Install Node dependencies
+              if: needs.changes.outputs.full == 'true'
               run: npm ci
 
             - name: Install Python tooling
+              if: needs.changes.outputs.full == 'true'
               run: uv sync --group dev
 
             - name: Check LF in raw index and worktree
+              if: needs.changes.outputs.full == 'true'
               run: uv run python scripts/quality/check_line_endings.py
 
             - name: Run TypeScript quality gate
+              if: needs.changes.outputs.full == 'true'
               run: npm run ci:check
 
             - name: Run Python quality gate
+              if: needs.changes.outputs.full == 'true'
               run: npm run python:quality

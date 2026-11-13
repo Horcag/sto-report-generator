@@ -10,8 +10,6 @@ interface PackResult {
 	files: PackedFile[];
 }
 
-const tsxCliPath = require.resolve('tsx/cli');
-
 const forbiddenPrefixes = [
 	'.github/',
 	'.omx/',
@@ -37,9 +35,22 @@ const forbiddenExactPaths = new Set([
 ]);
 
 function runPackDryRun(): PackResult[] {
-	const npmCliPath = process.env.npm_execpath;
+	const npmCliPath =
+		process.env.npm_execpath ??
+		[
+			path.join(
+				path.dirname(process.execPath),
+				'node_modules/npm/bin/npm-cli.js',
+			),
+			path.resolve(
+				path.dirname(process.execPath),
+				'../lib/node_modules/npm/bin/npm-cli.js',
+			),
+		].find(candidate => existsSync(candidate));
 	if (!npmCliPath) {
-		throw new Error('npm_execpath is required to run the package audit.');
+		throw new Error(
+			'Cannot locate the installed npm CLI for the package audit.',
+		);
 	}
 	const result = spawnSync(
 		process.execPath,
@@ -71,6 +82,7 @@ function runPackDryRun(): PackResult[] {
 }
 
 function runPortableExampleAudit(): void {
+	const tsxCliPath = require.resolve('tsx/cli');
 	const result = spawnSync(
 		process.execPath,
 		[
@@ -154,7 +166,7 @@ const generatedExampleDocx = path.join(
 const hadGeneratedExampleDocx = existsSync(generatedExampleDocx);
 
 try {
-	runPortableExampleAudit();
+	if (!process.argv.includes('--content-only')) runPortableExampleAudit();
 
 	const packResults = runPackDryRun();
 	const packedFiles = packResults.flatMap(result => result.files ?? []);
@@ -178,7 +190,7 @@ try {
 	assertRequiredFiles(packedFiles);
 
 	console.log(
-		`Package content check passed for ${packedFiles.length} files after portable example audit.`,
+		`Package content check passed for ${packedFiles.length} files${process.argv.includes('--content-only') ? ' (content only)' : ' after portable example audit'}.`,
 	);
 } finally {
 	if (!hadGeneratedExampleDocx && existsSync(generatedExampleDocx)) {

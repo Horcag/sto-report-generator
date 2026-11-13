@@ -67,7 +67,7 @@ repos:
             files: ^(src|tests|scripts)/.*\.(py|js|jsx|mjs|cjs|ts|tsx|json)$|^quality/file-size-.*\.json$
 
           - id: clean-index-quality
-            name: Full quality gate from prepared index
+            name: Scoped quality gate from pushed commit
             entry: uv run python scripts/quality/run_clean_index_quality.py
             language: system
             pass_filenames: false
