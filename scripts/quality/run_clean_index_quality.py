@@ -75,6 +75,11 @@ def main() -> int:
         export_snapshot(repository, snapshot, git, os.environ.get("PRE_COMMIT_TO_REF", ""))
         snapshot_env = isolated_git_environment(repository, git)
         if plan.full:
+            run(
+                [sys.executable, "scripts/quality/check_line_endings.py"],
+                cwd=snapshot,
+                env=snapshot_env,
+            )
             run([command("npm"), "ci"], cwd=snapshot, env=snapshot_env)
             run(
                 [command("uv"), "sync", "--frozen", "--group", "dev"],

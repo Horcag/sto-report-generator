@@ -16,6 +16,7 @@ from scripts.quality.change_scope import (
     parse_changes,
     protected_ref,
 )
+from scripts.quality.check_line_endings import check as check_line_endings
 from scripts.quality.run_clean_index_quality import export_snapshot, push_plan
 
 
@@ -161,6 +162,7 @@ class GitScopeTests(unittest.TestCase):
         self.git("init", "-q", "-b", "master")
         self.git("config", "user.email", "scope@example.invalid")
         self.git("config", "user.name", "Scope tests")
+        self.git("config", "core.autocrlf", "false")
         self.write("README.md", "# Initial\n")
         self.base = self.commit()
 
@@ -233,6 +235,17 @@ class GitScopeTests(unittest.TestCase):
         (self.root / "docs/guide.md").symlink_to("../README.md")
         head = self.commit()
         self.assertTrue(collect_plan(self.root, self.base, head).full)
+
+    def test_pushed_crlf_cannot_be_hidden_by_clean_staged_text(self):
+        (self.root / "README.md").write_bytes(b"# Committed CRLF\r\n")
+        pushed = self.commit()
+        (self.root / "README.md").write_bytes(b"# Clean staged text\n")
+        self.git("add", "README.md")
+        self.assertEqual(check_line_endings(self.root), [])
+        snapshot = Path(self.temporary.name) / "crlf-snapshot"
+        snapshot.mkdir()
+        export_snapshot(self.root, snapshot, "git", pushed)
+        self.assertTrue(check_line_endings(snapshot))
 
     def test_snapshot_checks_actual_push_not_dirty_index(self):
         self.write("README.md", "# Committed docs\n")

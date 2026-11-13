@@ -7,7 +7,8 @@ Pull requests are compared with the merge base of their exact base and head comm
 Ordinary documentation runs once on Ubuntu. The three protected quality checks then
 forward its result through short Ubuntu jobs; they do not claim to run Windows or
 macOS tests. A failed scope or documentation check fails those protected checks.
-Workflow lint installs and runs actionlint only when workflow files changed.
+For scoped pull requests, actionlint runs only when workflow files changed;
+protected or unknown scopes retain the full workflow check.
 
 Code changes run the complete existing quality gate on all three operating systems.
 Pushes to `master`, `main`, `release`, and `release/**`, manual runs, and merge groups
@@ -45,7 +46,7 @@ The hook uses the same classifier. It exports the actual pushed commit into a
 removed-after-use snapshot, so unrelated staged or working-tree edits cannot change
 what was tested. Documentation uses installed formatting tools without a fresh
 dependency install or the code suite. Code and protected branch/release pushes retain
-fresh dependency installation and `npm run quality`. If push revisions are absent,
+LF validation of the exported commit, fresh dependency installation, and `npm run quality`. If push revisions are absent,
 the prepared index is checked with the full gate.
 
 The package-content-only mode is `npm run check:pack -- --content-only`.

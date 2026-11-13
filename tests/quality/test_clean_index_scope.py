@@ -52,6 +52,7 @@ class PrePushExecutionTests(unittest.TestCase):
         self.assertEqual(
             [args for args, _, _ in calls],
             [
+                [sys.executable, "scripts/quality/check_line_endings.py"],
                 ["npm", "ci"],
                 ["uv", "sync", "--frozen", "--group", "dev"],
                 ["npm", "run", "quality"],
