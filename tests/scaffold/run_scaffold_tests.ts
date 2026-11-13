@@ -1,13 +1,21 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
 import { scaffoldReport } from '@/app/report-scaffold';
+import {
+	reportReadmeLinkTarget,
+	reportReadmeTemplate,
+} from '@/app/report-scaffold-readme';
 import { runSourcePreflight } from '@/shared/lib/source-preflight';
 
 const tempRoot = path.join(process.cwd(), '.agent-work', 'scaffold-tests');
 fs.rmSync(tempRoot, { recursive: true, force: true });
 fs.mkdirSync(tempRoot, { recursive: true });
+process.once('exit', () =>
+	fs.rmSync(tempRoot, { recursive: true, force: true }),
+);
 
 const result = scaffoldReport({
 	slug: 'demo_report',
@@ -41,14 +49,241 @@ for (const expectedFile of [
 
 assert.equal(result.gitInitialized, true);
 assert.ok(fs.existsSync(path.join(result.targetDir, '.git')));
-assert.match(
-	fs.readFileSync(path.join(result.targetDir, 'README.md'), 'utf8'),
-	/humanizer-ru из \.agents\/skills\/humanizer-ru\/SKILL\.md/,
+function verifyReadme(
+	targetDir: string,
+	runnerDir: string,
+	installed: boolean,
+): void {
+	const readme = fs.readFileSync(path.join(targetDir, 'README.md'), 'utf8');
+	const commands = readme
+		.split(/\r?\n/)
+		.filter(line => line.startsWith('    '))
+		.map(line => line.trim());
+	assert.equal(commands.length, 4);
+	assert.equal(path.resolve(targetDir, commands[0].slice(4, -1)), runnerDir);
+	const reportPath = `'${path.relative(runnerDir, targetDir).split(path.sep).join('/') || '.'}'`;
+	const check = installed
+		? 'npx sto-report-generator check'
+		: 'npm run check:source --';
+	const generate = installed
+		? 'npx sto-report-generator generate'
+		: 'npm run generate:report --';
+	assert.equal(commands[1], `${check} ${reportPath}`);
+	assert.equal(
+		commands[2],
+		`${generate} ${reportPath} --renderer portable --validate`,
+	);
+	assert.equal(
+		commands[3],
+		`${generate} ${reportPath} --renderer word --validate`,
+	);
+	const links = [...readme.matchAll(/\]\(<([^>]+)>\)/g)].map(
+		match => match[1],
+	);
+	assert.equal(links.length, 5);
+	for (const suffix of [
+		'.agents/skills/sto-report-generator/SKILL.md',
+		'.agents/skills/sto-report-generator/references/scientific-prose.md',
+		'.agents/skills/humanizer-ru/SKILL.md',
+		'docs/report-authoring.md',
+		'docs/case-studies/README.md',
+	]) {
+		const link = links.find(link => link.endsWith(suffix));
+		assert.ok(link, `README must link to ${suffix}`);
+		assert.ok(
+			fs.existsSync(path.resolve(targetDir, decodeURIComponent(link))),
+			`README link must resolve: ${link}`,
+		);
+	}
+	const checked = spawnSync(
+		process.platform === 'win32' ? 'powershell.exe' : '/bin/sh',
+		process.platform === 'win32'
+			? [
+					'-NoProfile',
+					'-NonInteractive',
+					'-ExecutionPolicy',
+					'Bypass',
+					'-Command',
+					commands[1],
+				]
+			: ['-c', commands[1]],
+		{
+			cwd: runnerDir,
+			encoding: 'utf8',
+			env: {
+				...process.env,
+				npm_config_offline: 'true',
+				npm_config_yes: 'false',
+			},
+			timeout: 30_000,
+		},
+	);
+	assert.equal(checked.status, 0, checked.stderr || checked.stdout);
+}
+
+verifyReadme(result.targetDir, process.cwd(), false);
+
+const consumerDir = path.join(tempRoot, 'consumer project');
+const packageLink = path.join(
+	consumerDir,
+	'node_modules',
+	'sto-report-generator',
 );
-assert.match(
-	fs.readFileSync(path.join(result.targetDir, 'README.md'), 'utf8'),
-	/\.agents\/skills\/sto-report-generator\/SKILL\.md и его references\/scientific-prose\.md/,
+fs.mkdirSync(path.join(consumerDir, 'node_modules', '.bin'), {
+	recursive: true,
+});
+fs.writeFileSync(
+	path.join(consumerDir, 'package.json'),
+	JSON.stringify({
+		private: true,
+		dependencies: { 'sto-report-generator': '*' },
+	}),
 );
+fs.symlinkSync(process.cwd(), packageLink, 'junction');
+const installedBin = path.join(packageLink, 'bin', 'sto-report-generator.cjs');
+const windows = process.platform === 'win32';
+fs.writeFileSync(
+	path.join(
+		consumerDir,
+		'node_modules',
+		'.bin',
+		windows ? 'sto-report-generator.cmd' : 'sto-report-generator',
+	),
+	windows
+		? `@echo off\r\n"${process.execPath}" "${installedBin}" %*\r\n`
+		: `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(installedBin)} "$@"\n`,
+	{ mode: 0o755 },
+);
+for (const dir of [
+	'nested/report with spaces',
+	path.join(tempRoot, 'absolute report with spaces'),
+]) {
+	const consumerReport = scaffoldReport({
+		slug: 'consumer_report',
+		profile: 'lab',
+		cwd: consumerDir,
+		dir,
+		initGit: false,
+	});
+	verifyReadme(consumerReport.targetDir, consumerDir, true);
+}
+const checkoutReport = scaffoldReport({
+	slug: 'checkout_report',
+	profile: 'lab',
+	dir: path.join(tempRoot, 'checkout report with spaces'),
+	initGit: false,
+});
+verifyReadme(checkoutReport.targetDir, process.cwd(), false);
+
+// Inspect shell text as data: never execute command-substitution fixtures.
+const literalPath =
+	'reports/$(__scaffold_must_not_execute__) `__scaffold_must_not_execute__`';
+const literalTarget = path.join(consumerDir, literalPath);
+const literalReadme = reportReadmeTemplate(
+	'literal_report',
+	literalTarget,
+	'lab',
+	consumerDir,
+);
+assert.match(literalReadme, /Bash\/zsh и PowerShell/);
+assert.ok(
+	literalReadme.includes(`npx sto-report-generator check '${literalPath}'`),
+);
+assert.ok(
+	!literalReadme.includes(`npx sto-report-generator check "${literalPath}"`),
+);
+
+const apostrophePath =
+	"reports/author's $(__scaffold_must_not_execute__) `literal`";
+const apostropheReadme = reportReadmeTemplate(
+	'apostrophe_report',
+	path.join(consumerDir, apostrophePath),
+	'lab',
+	consumerDir,
+);
+const [posixSection, powershellSection] = apostropheReadme.split('PowerShell:');
+assert.ok(
+	posixSection.includes(
+		`npx sto-report-generator check 'reports/author'"'"'s $(__scaffold_must_not_execute__) \`literal\`'`,
+	),
+);
+assert.ok(
+	powershellSection.includes(
+		"npx sto-report-generator check 'reports/author''s $(__scaffold_must_not_execute__) `literal`'",
+	),
+);
+assert.ok(powershellSection.includes('Set-Location -LiteralPath'));
+assert.ok(
+	!posixSection.includes("npx sto-report-generator check 'reports/author's"),
+);
+assert.ok(
+	!powershellSection.includes(
+		`npx sto-report-generator check 'reports/author'"'"'s`,
+	),
+);
+
+const literalConsumer = path.join(
+	tempRoot,
+	"consumer's $(__scaffold_must_not_execute__) `literal`",
+);
+fs.mkdirSync(path.join(literalConsumer, 'node_modules'), { recursive: true });
+fs.symlinkSync(
+	process.cwd(),
+	path.join(literalConsumer, 'node_modules', 'sto-report-generator'),
+	'junction',
+);
+const literalRunnerReadme = reportReadmeTemplate(
+	'runner_report',
+	path.join(tempRoot, 'runner report'),
+	'lab',
+	literalConsumer,
+);
+const [posixRunner, powershellRunner] =
+	literalRunnerReadme.split('PowerShell:');
+assert.ok(
+	posixRunner.includes(
+		`cd -- '../consumer'"'"'s $(__scaffold_must_not_execute__) \`literal\`'`,
+	),
+);
+assert.ok(
+	powershellRunner.includes(
+		"Set-Location -LiteralPath '../consumer''s $(__scaffold_must_not_execute__) `literal`'",
+	),
+);
+const runnerLinks = [...literalRunnerReadme.matchAll(/\]\(<([^>]+)>\)/g)];
+assert.equal(runnerLinks.length, 5);
+for (const [, link] of runnerLinks) {
+	assert.ok(
+		link.includes('%24(__scaffold_must_not_execute__)%20%60literal%60'),
+	);
+	assert.ok(
+		fs.existsSync(
+			path.resolve(tempRoot, 'runner report', decodeURIComponent(link)),
+		),
+	);
+}
+
+assert.equal(
+	reportReadmeLinkTarget('../docs/space # question? <tag> %.md'),
+	'../docs/space%20%23%20question%3F%20%3Ctag%3E%20%25.md',
+);
+const crossDrive = path.win32
+	.relative(
+		'D:\\reports\\new report',
+		'C:\\project files\\docs\\author #1.md',
+	)
+	.split('\\')
+	.join('/');
+assert.equal(crossDrive, 'C:/project files/docs/author #1.md');
+assert.equal(
+	reportReadmeLinkTarget(crossDrive),
+	'file:///C:/project%20files/docs/author%20%231.md',
+);
+assert.equal(
+	reportReadmeLinkTarget('//server/shared files/docs/author #1.md'),
+	'file://server/shared%20files/docs/author%20%231.md',
+);
+
 assert.match(
 	fs.readFileSync(path.join(result.targetDir, '01_referat.md'), 'utf8'),
 	/Пояснительная записка: \{\{PAGES\}\} с\., \{\{FIGURES\}\}, \{\{TABLES\}\}, \{\{SOURCES\}\}, \{\{APPENDICES\}\}\./,
@@ -206,4 +441,5 @@ assert.throws(
 	/Target report directory is not empty/,
 );
 
+fs.rmSync(tempRoot, { recursive: true, force: true });
 console.log('Scaffold tests passed.');

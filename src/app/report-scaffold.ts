@@ -9,6 +9,7 @@ import {
 	ReportProfile,
 } from '@/shared/lib/report-config';
 
+import { reportSkillFiles } from '../../scripts/install_project_skill.cjs';
 import {
 	reportGitignoreTemplate,
 	reportReadmeTemplate,
@@ -379,7 +380,6 @@ export function scaffoldReport(
 	ensureDirectoryIsEmpty(targetDir);
 	fs.mkdirSync(targetDir, { recursive: true });
 
-	const reportPath = toPosixPath(path.relative(cwd, targetDir)) || '.';
 	const includeBibliography = profile !== 'lab';
 	const bibliographyPath = includeBibliography
 		? toPosixPath(
@@ -392,7 +392,7 @@ export function scaffoldReport(
 	writeTextFile(
 		targetDir,
 		'README.md',
-		reportReadmeTemplate(options.slug, reportPath, profile),
+		reportReadmeTemplate(options.slug, targetDir, profile, cwd),
 		files,
 	);
 	writeTextFile(
@@ -431,8 +431,8 @@ export function scaffoldReport(
 		writeTextFile(targetDir, 'references.bib', referencesTemplate(), files);
 	}
 	writeTextFile(targetDir, 'images/.gitkeep', '', files);
-
 	const gitInitialized =
 		options.initGit === false ? false : initLocalGit(targetDir);
+	files.push(...reportSkillFiles(targetDir));
 	return { targetDir, files, gitInitialized };
 }

@@ -1,6 +1,6 @@
 {
 	"name": "sto-report-generator",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"description": "Generates docx reports complying with university STO requirements from Markdown",
 	"private": false,
 	"bin": {
@@ -54,7 +54,7 @@
 		"test:toc": "npx tsx tests/generator/toc_regression.ts",
 		"test:bib": "npx tsx tests/bibliography/bib-gost.test.ts && npx tsx tests/bibliography/bib-areas.test.ts && npx tsx tests/bibliography/bib-evidence.test.ts && npx tsx tests/bibliography/bib-presentation.test.ts && npx tsx tests/bibliography/bib-reconciliation.test.ts && npx tsx tests/bibliography/bib-dataset-lookup.test.ts",
 		"test:coverage": "npx tsx scripts/quality/run_coverage.ts",
-		"test:quality-policy": "uv run python -m unittest discover -s scripts/quality/tests -p \"test_*.py\" && uv run --with pymupdf==2.0 python -m unittest discover -s tests/quality -p \"test_*.py\"",
+		"test:quality-policy": "node --test scripts/quality/tests/project_skill.test.cjs && uv run python -m unittest discover -s scripts/quality/tests -p \"test_*.py\" && uv run --with pymupdf==2.0 python -m unittest discover -s tests/quality -p \"test_*.py\"",
 		"check:pack": "npx tsx tests/package/run_pack_content_check.ts",
 		"check:file-size": "uv run python scripts/quality/check_file_size.py",
 		"check:markdown-links": "uv run python scripts/quality/check_markdown_links.py --root .",
@@ -74,7 +74,7 @@
 		"hooks:run": "uv run pre-commit run --all-files",
 		"hooks:push": "uv run pre-commit run --hook-stage pre-push --all-files",
 		"test:wordcraft": "npx tsx tests/workflow/run_wordcraft_live_tests.ts",
-		"postinstall": "node scripts/quality/patch_steiger_zod.cjs",
+		"postinstall": "node scripts/quality/patch_steiger_zod.cjs && node scripts/install_project_skill.cjs",
 		"gallery:update": "uv run --with pymupdf==2.0 python scripts/quality/report_gallery.py update",
 		"gallery:check": "uv run python scripts/quality/report_gallery.py check"
 	},
