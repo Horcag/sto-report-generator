@@ -7,14 +7,20 @@ Pull requests are compared with the merge base of their exact base and head comm
 Ordinary documentation runs once on Ubuntu. The three protected quality checks then
 forward its result through short Ubuntu jobs; they do not claim to run Windows or
 macOS tests. A failed scope or documentation check fails those protected checks.
-For scoped pull requests, actionlint runs only when workflow files changed;
-protected or unknown scopes retain the full workflow check.
+For scoped pull requests and proven default-branch pushes, actionlint runs only
+when workflow files changed; unknown scopes retain the full workflow check.
 
 Code changes run the complete existing quality gate on all three operating systems.
-Pushes to `master`, `main`, `release`, and `release/**`, manual runs, and merge groups
-always receive full validation. Working branches use pull-request CI, avoiding a
-second matrix for the same push. Release publication and manual native Word
-acceptance retain their separate workflows and checks.
+A normal push to the configured default branch (`master` or `main`) uses the same
+classifier on its exact `before..after` commits. Both commits must exist, the old
+commit must be an ancestor of the new commit, and the event must explicitly exclude
+branch creation, deletion, and force-push. Diverged or unavailable history and empty
+ranges select full validation. A merge introducing code therefore still runs the
+complete suite, while merging a documentation-only PR does not repeat that suite.
+
+Release branches and tags, manual runs, and merge groups retain full validation.
+Working branches use pull-request CI, avoiding a second matrix for the same push.
+Release publication and manual native Word acceptance keep their existing checks.
 
 ## Documentation checks
 
@@ -47,7 +53,9 @@ removed-after-use snapshot, so unrelated staged or working-tree edits cannot cha
 what was tested. Documentation uses installed formatting tools without a fresh
 dependency install or the code suite. Code and protected branch/release pushes retain
 LF validation of the exported commit, fresh dependency installation, and `npm run quality`. If push revisions are absent,
-the prepared index is checked with the full gate.
+the prepared index is checked with the full gate. Local protected-branch pushes
+remain conservative: pre-commit does not provide the GitHub creation/deletion/force
+flags needed to prove the event contract above.
 
 The package-content-only mode is `npm run check:pack -- --content-only`.
 The normal `check:pack` command still builds and audits the portable example.

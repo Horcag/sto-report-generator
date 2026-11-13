@@ -132,7 +132,7 @@ class ScopeTests(unittest.TestCase):
             with self.assertRaises((ValueError, UnicodeError)):
                 parse_changes(raw)
 
-    def test_protected_push_and_non_pr_events_always_full(self):
+    def test_local_protected_refs_and_unproven_events_remain_full(self):
         for ref in [
             "refs/heads/master",
             "main",

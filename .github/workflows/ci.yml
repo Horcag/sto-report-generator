@@ -30,7 +30,7 @@ jobs:
                   persist-credentials: false
 
             - name: Test change discovery and conservative fallback
-              run: python3 -m unittest discover -s tests/quality -p test_change_scope.py -v
+              run: python3 -m unittest discover -s tests/quality -p 'test_*scope.py' -v
 
             - name: Classify changed paths and contents
               id: scope
