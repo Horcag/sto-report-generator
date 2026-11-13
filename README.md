@@ -28,11 +28,17 @@ PDF через установленный Microsoft Word в Windows.
 
 Для установки CLI без клонирования репозитория скачайте архив из
 [последнего релиза](https://github.com/Horcag/sto-report-generator/releases/latest) или соберите его командой `npm pack`. Установите
-`sto-report-generator-1.1.0.tgz` в отдельном проекте через `npm install <путь-к-tgz>` или `pnpm add <путь-к-tgz>`.
+`sto-report-generator-1.2.0.tgz` в отдельном проекте через `npm install <путь-к-tgz>` или `pnpm add <путь-к-tgz>`.
 После установки запускайте `npx sto-report-generator new <slug> --profile lab`,
 `npx sto-report-generator check <dir>` и `npx sto-report-generator generate <dir> --renderer portable --validate`.
 Шаблоны отчёта и TypeScript runtime входят в npm-пакет; для необязательного Python post-build нужен установленный `uv`.
 Публикация пакета в npm registry пока не выполнялась.
+
+При обычной прямой установке архива через npm проект получает `.agents/skills/sto-report-generator/SKILL.md`.
+Откройте проект в Codex и выберите `sto-report-generator`. Точка входа читает полную версию навыка из установленного пакета.
+Команда `new` добавляет такую точку входа и в папку нового отчёта, которую можно открыть отдельно.
+В README созданного отчёта есть ссылки на авторское руководство, `humanizer-ru` и базу испытаний.
+После установки каталог базы доступен по пути `node_modules/sto-report-generator/docs/case-studies/README.md`. [Содержание базы](docs/case-studies/README.md)
 
 Для работы из checkout:
 
