@@ -1,7 +1,8 @@
 import { AlignmentType, Paragraph, TextRun } from 'docx';
-import { Tokens as MarkedTokens, Token } from 'marked';
+import { marked, Tokens as MarkedTokens, Token } from 'marked';
 
 import { STO_RULES } from '@/shared/config';
+import { startsWithLowercaseSentence } from '@/shared/lib/math';
 
 import {
 	DocxElement,
@@ -10,6 +11,32 @@ import {
 	ProcessTokensContext,
 } from '../../types';
 import { handleBlockMath } from './math-handler';
+
+function visibleInlineText(tokens: Token[]): string {
+	return tokens
+		.map(token => {
+			if (token.type === 'math' || token.type === 'image')
+				return '\uFFFC';
+			if ('tokens' in token && token.tokens)
+				return visibleInlineText(token.tokens);
+			return 'text' in token ? token.text : token.raw;
+		})
+		.join('');
+}
+
+export function isFormulaSentenceContinuation(
+	previous: string,
+	following: string,
+): boolean {
+	return (
+		/,\s*(?:\((?:@eq:[a-zA-Z0-9_-]+|\d+)\))?\s*\$\$$/u.test(
+			previous.trim(),
+		) &&
+		startsWithLowercaseSentence(
+			visibleInlineText(marked.Lexer.lexInline(following.trim())),
+		)
+	);
+}
 
 function isReferatKeywordsParagraph(text: string): boolean {
 	const trimmed = text.trim();
@@ -93,6 +120,15 @@ export async function handleParagraph(
 				result.push(
 					new Paragraph({
 						style: 'Normal',
+						indent:
+							(partIndex === 0 &&
+								currentContext.continuesFormulaSentence) ||
+							isFormulaSentenceContinuation(
+								parts[partIndex - 1] ?? '',
+								part,
+							)
+								? { firstLine: 0 }
+								: undefined,
 						children: await parseInline([
 							{ type: 'text', raw: part, text: part } as Token,
 						]),
@@ -233,9 +269,11 @@ export async function handleParagraph(
 	return [
 		new Paragraph({
 			style: 'Normal',
-			indent: text.trim().startsWith('где')
-				? { firstLine: 0 }
-				: undefined,
+			indent:
+				text.trim().startsWith('где') ||
+				currentContext.continuesFormulaSentence
+					? { firstLine: 0 }
+					: undefined,
 			children: await parseInline(token.tokens || []),
 		}),
 	];

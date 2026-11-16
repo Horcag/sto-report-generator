@@ -12,6 +12,12 @@ from .constants import MATH_NS, SMALL_TILDE, WORD_NS
 from .fraction_delimiters import normalize_fraction_delimiters
 from .integral_arguments import normalize_empty_integral_arguments
 from .matrix_spacing import matrix_spacing_metadata, restore_matrix_spacing
+from .script_structure import (
+    normalize_limit_operators,
+    normalize_script_structure,
+    prepare_nary_operators,
+    restore_literal_nary,
+)
 
 ACCENT_CHARS = {
     "~": "\u0303",  # combining tilde
@@ -48,15 +54,14 @@ UPRIGHT_OPERATOR_COMMANDS = {
 }
 
 
-def normalize_mathml_operators(mathml: str) -> str:
+def normalize_mathml_operators(mathml: str, literals: dict[str, str]) -> str:
     """Preserve named functions and explicit TeX spacing through run merging."""
     root = etree.fromstring(mathml.encode("utf-8"))
-    changed = False
-    for identifier in root.iter(f"{{{MATHML_NS}}}mi"):
+    literals.update(prepare_nary_operators(root))
+    for identifier in root.iter(f"{{{MATHML_NS}}}mi", f"{{{MATHML_NS}}}mo"):
         command = identifier.get("data-latex", "")
         if command.startswith(r"\operatorname{") or command in UPRIGHT_OPERATOR_COMMANDS:
             identifier.tag = f"{{{MATHML_NS}}}mtext"
-            changed = True
     for space in root.iter(f"{{{MATHML_NS}}}mspace"):
         replacement = EXPLICIT_MATH_SPACES.get(space.get("data-latex", ""))
         if replacement is None:
@@ -65,11 +70,8 @@ def normalize_mathml_operators(mathml: str) -> str:
         marker.text = replacement[0]
         marker.tail = space.tail
         space.getparent().replace(space, marker)
-        changed = True
     # The converter trims literal NBSPs, but retains MathJax's numeric references.
-    return (
-        etree.tostring(root, encoding="unicode").replace("\u00a0", "&#xA0;") if changed else mathml
-    )
+    return etree.tostring(root, encoding="unicode").replace("\u00a0", "&#xA0;")
 
 
 def mark_mathml_fences(mathml: str) -> tuple[str, list[dict[str, str]]]:
@@ -287,7 +289,6 @@ def latex_to_mathml_batch(formulas: Sequence[str], repo_root: Path) -> list[str]
 const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
-
 (async () => {
   const mathjax = require('mathjax');
   const formulas = JSON.parse(fs.readFileSync(0, 'utf8'));
@@ -348,7 +349,6 @@ def mathml_to_omml_batch(mathml_values: Sequence[str], repo_root: Path) -> list[
     node_script = r"""
 const fs = require('fs');
 const { mml2omml } = require('@hungknguyen/mathml2omml');
-
 const mathmlValues = JSON.parse(fs.readFileSync(0, 'utf8'));
 const result = mathmlValues.map((mathml) => {
   try {
@@ -360,8 +360,10 @@ const result = mathmlValues.map((mathml) => {
 process.stdout.write(JSON.stringify(result));
 """
 
+    literal_maps: list[dict[str, str]] = [{} for _ in mathml_values]
     marked_values = [
-        mark_mathml_fences(normalize_mathml_operators(value)) for value in mathml_values
+        mark_mathml_fences(normalize_mathml_operators(value, literals))
+        for value, literals in zip(mathml_values, literal_maps, strict=True)
     ]
     results = run_node_json_batch(
         node_script, [value for value, _ in marked_values], repo_root, "MathML to OMML conversion"
@@ -380,6 +382,10 @@ process.stdout.write(JSON.stringify(result));
         )
         for item, (_, fences), mathml in zip(results, marked_values, mathml_values, strict=True)
     ]
+    values = [
+        restore_literal_nary(value, literals)
+        for value, literals in zip(values, literal_maps, strict=True)
+    ]
     for marker, spacing in EXPLICIT_MATH_SPACES.values():
         values = [value.replace(marker, spacing) for value in values]
     return values
@@ -389,8 +395,12 @@ def normalize_accents(root: Any) -> int:
     namespace = {"m": MATH_NS}
     fixed = 0
 
-    for lim_upp in root.xpath(".//m:limUpp", namespaces=namespace):
+    for lim_upp in reversed(root.xpath(".//m:limUpp | .//m:groupChr", namespaces=namespace)):
         accent_text = "".join(lim_upp.xpath("./m:lim//m:t/text()", namespaces=namespace)).strip()
+        if lim_upp.tag == f"{{{MATH_NS}}}groupChr":
+            accent_text = lim_upp.xpath("./m:groupChrPr/m:chr/@m:val", namespaces=namespace)[0]
+            if accent_text not in OVERBAR_CHARS:
+                continue
         if accent_text not in ACCENT_CHARS and accent_text not in OVERBAR_CHARS:
             continue
 
@@ -402,7 +412,10 @@ def normalize_accents(root: Any) -> int:
             accent = etree.Element(f"{{{MATH_NS}}}bar")
             properties = etree.SubElement(accent, f"{{{MATH_NS}}}barPr")
             position = etree.SubElement(properties, f"{{{MATH_NS}}}pos")
-            position.set(f"{{{MATH_NS}}}val", "top")
+            position_values = lim_upp.xpath(
+                "./m:groupChrPr/m:chr/@m:pos | ./m:groupChrPr/m:pos/@m:val", namespaces=namespace
+            )
+            position.set(f"{{{MATH_NS}}}val", position_values[0] if position_values else "top")
         else:
             accent = etree.Element(f"{{{MATH_NS}}}acc")
             properties = etree.SubElement(accent, f"{{{MATH_NS}}}accPr")
@@ -443,28 +456,6 @@ def normalize_accents(root: Any) -> int:
     return fixed
 
 
-def normalize_limit_operators(root: Any) -> int:
-    namespaces = {"m": MATH_NS}
-    fixed = 0
-    for run in root.xpath(".//m:limLow/m:e/m:r | .//m:limUpp/m:e/m:r", namespaces=namespaces):
-        if "".join(run.xpath("./m:t/text()", namespaces=namespaces)).strip() not in {
-            "min",
-            "max",
-            "lim",
-            "inf",
-            "sup",
-        }:
-            continue
-        properties = run.find(f"{{{MATH_NS}}}rPr")
-        if properties is None:
-            properties = etree.Element(f"{{{MATH_NS}}}rPr")
-            run.insert(0, properties)
-        if properties.find(f"{{{MATH_NS}}}nor") is None:
-            etree.SubElement(properties, f"{{{MATH_NS}}}nor")
-            fixed += 1
-    return fixed
-
-
 def parse_omath(omml: str, parser: Any) -> Any:
     omath = etree.fromstring(omml.encode("utf-8"), parser=parser)
     if omath.tag == f"{{{MATH_NS}}}oMath":
@@ -487,6 +478,7 @@ def convert_mathml_to_omath(mathml_values: Sequence[str], repo_root: Path) -> li
     for omml in omml_values:
         omath = parse_omath(omml, parser)
         omath_copy = etree.fromstring(etree.tostring(omath))
+        normalize_script_structure(omath_copy)
         normalize_accents(omath_copy)
         normalize_limit_operators(omath_copy)
         normalize_empty_integral_arguments(omath_copy)

@@ -72,48 +72,56 @@ export async function handleBlockMath(
 		};
 		return new TableRow({
 			cantSplit: true,
-			children: [
-				new TableCell({
-					width: { size: 15, type: WidthType.PERCENTAGE },
-					margins,
-					children: [
-						new Paragraph({
-							style: 'Formula',
-							indent: { firstLine: 0, left: 0, right: 0 },
-							spacing: { before: 0, after: 0, line: 240 },
-							keepNext,
+			children: !eqNumber
+				? [
+						new TableCell({
+							width: { size: 100, type: WidthType.PERCENTAGE },
+							margins,
+							children: [formulaParagraph],
 						}),
-					],
-				}),
-				new TableCell({
-					width: { size: 70, type: WidthType.PERCENTAGE },
-					margins,
-					children: [formulaParagraph],
-				}),
-				new TableCell({
-					width: { size: 15, type: WidthType.PERCENTAGE },
-					verticalAlign: VerticalAlign.CENTER,
-					margins,
-					children: [
-						new Paragraph({
-							style: 'TableTextRight',
-							alignment: AlignmentType.RIGHT,
-							indent: { firstLine: 0, left: 0, right: 0 },
-							spacing: { before: 0, after: 0, line: 240 },
-							keepNext,
+					]
+				: [
+						new TableCell({
+							width: { size: 15, type: WidthType.PERCENTAGE },
+							margins,
 							children: [
-								new TextRun({
-									text:
-										index === lines.length - 1
-											? eqNumber
-											: '',
-									italics: false,
+								new Paragraph({
+									style: 'Formula',
+									indent: { firstLine: 0, left: 0, right: 0 },
+									spacing: { before: 0, after: 0, line: 240 },
+									keepNext,
+								}),
+							],
+						}),
+						new TableCell({
+							width: { size: 70, type: WidthType.PERCENTAGE },
+							margins,
+							children: [formulaParagraph],
+						}),
+						new TableCell({
+							width: { size: 15, type: WidthType.PERCENTAGE },
+							verticalAlign: VerticalAlign.CENTER,
+							margins,
+							children: [
+								new Paragraph({
+									style: 'TableTextRight',
+									alignment: AlignmentType.RIGHT,
+									indent: { firstLine: 0, left: 0, right: 0 },
+									spacing: { before: 0, after: 0, line: 240 },
+									keepNext,
+									children: [
+										new TextRun({
+											text:
+												index === lines.length - 1
+													? eqNumber
+													: '',
+											italics: false,
+										}),
+									],
 								}),
 							],
 						}),
 					],
-				}),
-			],
 		});
 	});
 

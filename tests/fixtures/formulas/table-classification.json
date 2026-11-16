@@ -1,0 +1,80 @@
+[
+	{
+		"name": "single display",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr></w:tbl>",
+		"expected": true,
+		"styles": ""
+	},
+	{
+		"name": "single punctuation",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara><w:r><w:t>,</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+		"expected": true,
+		"styles": ""
+	},
+	{
+		"name": "single style",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:pStyle w:val=\"Formula\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr></w:tbl>",
+		"expected": true,
+		"styles": ""
+	},
+	{
+		"name": "single inherited remap",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:pStyle w:val=\"a42\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr></w:tbl>",
+		"expected": true,
+		"styles": "<w:styles xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:style w:styleId=\"a42\"><w:basedOn w:val=\"Base\"/></w:style><w:style w:styleId=\"Base\"><w:pPr><w:jc w:val=\"center\"/></w:pPr></w:style></w:styles>"
+	},
+	{
+		"name": "centered inline data",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></w:p></w:tc></w:tr></w:tbl>",
+		"expected": false,
+		"styles": ""
+	},
+	{
+		"name": "inline and display mixed",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></w:p></w:tc></w:tr></w:tbl>",
+		"expected": false,
+		"styles": ""
+	},
+	{
+		"name": "left display data",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"left\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr></w:tbl>",
+		"expected": false,
+		"styles": ""
+	},
+	{
+		"name": "text and display data",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara><w:r><w:t>Data</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+		"expected": false,
+		"styles": ""
+	},
+	{
+		"name": "bordered display data",
+		"xml": "<w:tbl><w:tblPr><w:tblBorders><w:top w:val=\"single\"/></w:tblBorders></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr></w:tbl>",
+		"expected": false,
+		"styles": ""
+	},
+	{
+		"name": "header display data",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:trPr><w:tblHeader/></w:trPr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr></w:tbl>",
+		"expected": false,
+		"styles": ""
+	},
+	{
+		"name": "nested display data",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr></w:tbl></w:p></w:tc></w:tr></w:tbl>",
+		"expected": false,
+		"styles": ""
+	},
+	{
+		"name": "two single display rows",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr></w:tbl>",
+		"expected": true,
+		"styles": ""
+	},
+	{
+		"name": "single mixed row data",
+		"xml": "<w:tbl><w:tblPr></w:tblPr><w:tr><w:tc><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><m:oMathPara><m:oMath><m:r><m:t>x</m:t></m:r></m:oMath></m:oMathPara></w:p></w:tc></w:tr><w:tr><w:tc><w:p><w:r><w:t>Data</w:t></w:r></w:p></w:tc></w:tr></w:tbl>",
+		"expected": false,
+		"styles": ""
+	}
+]

@@ -69,3 +69,31 @@ $$\operatorname{Array}:\left[\begin{array}{rl}x+y&=1,\\2x-y&=0.\end{array}\right
 Сумма со степенным слагаемым приведена в формуле @eq:mean_time:
 
 $$\operatorname{MeanTime}=\bar{t}=\frac{1}{M}\sum_{m=1}^{M}t^{(m)},\quad M=20. (@eq:mean_time)$$
+
+Crop interval boundaries:
+
+$$y\in[0,4081H;0,9919H),\qquad x\in[0,0359W;0,9641W),$$
+
+а для другой области границы изменяются:
+
+$$y\in[0,3324H;0,9135H),\qquad x\in[0,0359W;0,9641W).$$
+
+Prime attachment:
+
+$$I^{'}=\operatorname{clip}(I+\varepsilon,0,1),\qquad\varepsilon\sim\operatorname{N}(0,\sigma^2).$$
+
+Bare prime command:
+
+$$I'=\operatorname{clip}(\alpha I+\beta,0,1).$$
+
+Single-letter and extensible accents:
+
+$$\operatorname{Accents}=\hat{d}_i+\widehat{d}_i+\widehat{abc}.$$
+
+Empty upper summation limits:
+
+$$\operatorname{SILog}=100\sqrt{\frac{1}{N}\sum_{i\in\Omega}^{}g_i^2-\left(\frac{1}{N}\sum_{i\in\Omega}^{}g_i\right)^2}.$$
+
+Threshold domain:
+
+$$\delta_j=\frac{1}{N}\left|\left\{i\in\Omega:\max\left(\frac{\hat{d}_i}{d_i},\frac{d_i}{\hat{d}_i}\right)<1,25^j\right\}\right|,\qquad j\in\{1,2,3\}.$$

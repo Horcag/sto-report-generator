@@ -1,4 +1,5 @@
 import { normalizeFractionDelimiters } from './fraction-delimiters';
+import { normalizeScriptStructure } from './script-structure';
 
 const MATH_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math';
 const ACCENT_CHARS = new Map([
@@ -114,13 +115,31 @@ function normalizeLimitOperators(mathElement: Element): void {
 
 function normalizeAccents(mathElement: Element): void {
 	const document = mathElement.ownerDocument;
-	for (const upperLimit of [
-		...mathElement.getElementsByTagName('m:limUpp'),
-	]) {
+	for (const upperLimit of [...mathElement.getElementsByTagName('*')]
+		.filter(element => ['m:limUpp', 'm:groupChr'].includes(element.tagName))
+		.reverse()) {
 		const limit = [...upperLimit.children].find(
 			child => child.tagName === 'm:lim',
 		);
-		const mark = limit?.textContent?.trim() ?? '';
+		const groupProperties = [...upperLimit.children].find(
+			child => child.tagName === 'm:groupChrPr',
+		);
+		const groupCharacter =
+			groupProperties &&
+			[...groupProperties.children].find(
+				child => child.tagName === 'm:chr',
+			);
+		const groupPosition =
+			groupProperties &&
+			[...groupProperties.children].find(
+				child => child.tagName === 'm:pos',
+			);
+		const mark =
+			upperLimit.tagName === 'm:groupChr'
+				? (groupCharacter?.getAttribute('m:val') ?? '')
+				: (limit?.textContent?.trim() ?? '');
+		if (upperLimit.tagName === 'm:groupChr' && !OVERBAR_CHARS.has(mark))
+			continue;
 		if (!OVERBAR_CHARS.has(mark) && !ACCENT_CHARS.has(mark)) {
 			continue;
 		}
@@ -146,7 +165,11 @@ function normalizeAccents(mathElement: Element): void {
 		character.setAttributeNS(
 			MATH_NS,
 			'm:val',
-			isBar ? 'top' : ACCENT_CHARS.get(mark)!,
+			isBar
+				? (groupCharacter?.getAttribute('m:pos') ??
+						groupPosition?.getAttribute('m:val') ??
+						'top')
+				: ACCENT_CHARS.get(mark)!,
 		);
 		properties.appendChild(character);
 		replacement.appendChild(properties);
@@ -181,6 +204,7 @@ function normalizeEmptyAccentScripts(mathElement: Element): void {
 }
 
 export function normalizeOmmlMath(mathElement: Element): void {
+	normalizeScriptStructure(mathElement);
 	normalizeAccents(mathElement);
 	normalizeEmptyAccentScripts(mathElement);
 	normalizeLimitOperators(mathElement);

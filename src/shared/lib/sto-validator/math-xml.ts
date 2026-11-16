@@ -13,10 +13,69 @@ const UPRIGHT_LIMIT_OPERATORS = new Set(['min', 'max', 'lim', 'inf', 'sup']);
 export function inspectMathStructures(documentXml: string): {
 	accentLimits: number;
 	italicLimitOperators: number;
+	unhiddenNaryLimits: number;
+	detachedPrimes: number;
 	unparsedLatex: boolean;
 } {
 	const document = new JSDOM(documentXml, { contentType: 'text/xml' }).window
 		.document;
+	const direct = (node: Element, tag: string): Element | undefined =>
+		[...node.children].find(child => child.tagName === `m:${tag}`);
+	const hidden = (node: Element): boolean => {
+		for (
+			let ancestor = node.parentElement;
+			ancestor;
+			ancestor = ancestor.parentElement
+		) {
+			if (ancestor.tagName !== 'm:phant') continue;
+			const show = direct(ancestor, 'phantPr')?.getElementsByTagName(
+				'm:show',
+			)[0];
+			if (
+				show &&
+				['0', 'false', 'off'].includes(show.getAttribute('m:val') ?? '')
+			)
+				return true;
+		}
+		return false;
+	};
+	let unhiddenNaryLimits = 0;
+	for (const nary of [...document.getElementsByTagName('m:nary')]) {
+		if (hidden(nary)) continue;
+		for (const name of ['sub', 'sup']) {
+			const index = direct(nary, name);
+			const hide = direct(nary, 'naryPr')?.getElementsByTagName(
+				`m:${name}Hide`,
+			)[0];
+			if (
+				index &&
+				!index.textContent?.trim() &&
+				(!hide ||
+					['0', 'false', 'off'].includes(
+						hide.getAttribute('m:val') ?? '',
+					))
+			)
+				unhiddenNaryLimits++;
+		}
+	}
+	const detachedPrimes = [...document.getElementsByTagName('m:sSup')].filter(
+		script => {
+			if (hidden(script) || script.parentElement?.tagName !== 'm:sup')
+				return false;
+			const base = direct(script, 'e');
+			const sup = direct(script, 'sup');
+			return (
+				base &&
+				!base.textContent?.trim() &&
+				[...base.children].every(child =>
+					['m:r', 'm:argPr', 'm:ctrlPr'].includes(child.tagName),
+				) &&
+				sup &&
+				[...sup.children].every(child => child.tagName === 'm:r') &&
+				/^[′″‴⁗']+$/u.test(sup.textContent?.trim() ?? '')
+			);
+		},
+	).length;
 	let accentLimits = 0;
 	let italicLimitOperators = 0;
 	for (const upperLimit of [...document.getElementsByTagName('m:limUpp')]) {
@@ -70,7 +129,13 @@ export function inspectMathStructures(documentXml: string): {
 			return /\$\$|\$[^$]+\$/.test(prose);
 		},
 	);
-	return { accentLimits, italicLimitOperators, unparsedLatex };
+	return {
+		accentLimits,
+		italicLimitOperators,
+		unhiddenNaryLimits,
+		detachedPrimes,
+		unparsedLatex,
+	};
 }
 
 interface PunctuationBlock {
@@ -141,6 +206,29 @@ function formulaEnding(paragraph: Element): string | null {
 	return /^[,;.]/u.exec(after)?.[0] ?? mathEnding(math);
 }
 
+/** Read sentence punctuation from the last display row, before the equation number. */
+export function formulaEndsWithComma(
+	elementXml: string,
+	documentXml: string,
+): boolean {
+	// Word places extension namespaces on the document root, while body fragments
+	// retain their prefixed attributes. Keep that complete namespace context.
+	const opening = /<w:document\b[^>]*>/.exec(documentXml)?.[0];
+	if (!opening)
+		throw new Error('Formula punctuation requires a Word document root.');
+	const dom = new JSDOM(`${opening}${elementXml}</w:document>`, {
+		contentType: 'text/xml',
+	});
+	try {
+		const paragraph = [...dom.window.document.getElementsByTagName('w:p')]
+			.filter(value => value.getElementsByTagName('m:oMath').length > 0)
+			.at(-1);
+		return paragraph !== undefined && formulaEnding(paragraph) === ',';
+	} finally {
+		dom.window.close();
+	}
+}
+
 export function inspectFormulaPunctuation(
 	docXml: string,
 	stylesXml = '',
@@ -181,7 +269,7 @@ export function inspectFormulaPunctuation(
 						const cells = [...row.children].filter(
 							child => child.tagName === 'w:tc',
 						);
-						const cell = cells[1];
+						const cell = cells.length === 1 ? cells[0] : cells[1];
 						// Explicit continuation rows are kept with their next row; only
 						// the final row owns the equation's sentence punctuation.
 						const continued = [
@@ -195,7 +283,7 @@ export function inspectFormulaPunctuation(
 						if (
 							continued &&
 							rowIndex < rows.length - 1 &&
-							!proseText(cells[2]).trim()
+							(cells.length === 1 || !proseText(cells[2]).trim())
 						)
 							continue;
 						appendContainer(cell);

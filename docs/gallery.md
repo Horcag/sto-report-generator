@@ -7,7 +7,7 @@
 [Вернуться в README](../README.md) · [Как обновить галерею](gallery-workflow.md)
 
 - [Демонстрационный отчёт](#example) — страниц: 8.
-- [Формулы](#formulas) — страниц: 4.
+- [Формулы](#formulas) — страниц: 5.
 - [Матрицы](#matrices) — страниц: 4.
 - [Скобки и единичные матрицы](#fences) — страниц: 2.
 - [Стили и структурные элементы](#structure) — страниц: 11.
@@ -78,7 +78,7 @@
 
 [Исходник](../tests/fixtures/formulas/layout.md)
 
-Страницы: [1](#formulas-1) · [2](#formulas-2) · [3](#formulas-3) · [4](#formulas-4).
+Страницы: [1](#formulas-1) · [2](#formulas-2) · [3](#formulas-3) · [4](#formulas-4) · [5](#formulas-5).
 
 <a id="formulas-1"></a>
 
@@ -103,6 +103,12 @@
 ### Страница 4
 
 ![Формулы: страница 4](assets/gallery/formulas-page-4.png)
+
+<a id="formulas-5"></a>
+
+### Страница 5
+
+![Формулы: страница 5](assets/gallery/formulas-page-5.png)
 
 <a id="matrices"></a>
 

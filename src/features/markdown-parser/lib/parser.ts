@@ -19,6 +19,7 @@ import {
 	handleList,
 	handleParagraph,
 	handleTable,
+	isFormulaSentenceContinuation,
 } from './parser/handlers/block-handlers';
 import { parseInline } from './parser/handlers/inline-parser';
 import { handleStoFlag } from './parser/handlers/sto-handler';
@@ -155,8 +156,25 @@ class MarkdownParser {
 			)
 				nextIndex++;
 			const next = tokensToProcess[nextIndex];
+			let previousIndex = tokenIndex - 1;
+			while (
+				tokensToProcess[previousIndex]?.type === 'space' ||
+				(tokensToProcess[previousIndex]?.type === 'html' &&
+					/^<!--[\s\S]*-->$/u.test(
+						tokensToProcess[previousIndex].raw.trim(),
+					))
+			)
+				previousIndex--;
+			const previous = tokensToProcess[previousIndex];
 			const tokenContext: ProcessTokensContext = {
 				...currentContext,
+				continuesFormulaSentence:
+					token.type === 'paragraph' &&
+					previous?.type === 'paragraph' &&
+					isFormulaSentenceContinuation(
+						(previous as Tokens.Paragraph).text,
+						(token as Tokens.Paragraph).text,
+					),
 				keepFormulaWithExplanation:
 					next?.type === 'paragraph' &&
 					/^где(?:\s|:)/iu.test(

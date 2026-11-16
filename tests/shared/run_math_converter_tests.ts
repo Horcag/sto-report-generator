@@ -17,6 +17,7 @@ import {
 	testIntegralConversion,
 	testSumProductConversion,
 } from './integral_arguments.test';
+import { testScriptStructure } from './script_structure.test';
 
 assert.equal(
 	normalizeMathJaxImportSpecifier(
@@ -37,6 +38,7 @@ assert.equal(
 
 async function main(): Promise<void> {
 	await mathJaxReady();
+	await testScriptStructure();
 	await testIntegralConversion();
 	await testSumProductConversion();
 	await testFractionDelimiterConversion();
@@ -150,15 +152,14 @@ async function main(): Promise<void> {
 		);
 	}
 	assert.equal(math[9].getElementsByTagName('m:groupChr').length, 1);
-	assert.equal(math[10].getElementsByTagName('m:limUpp').length, 1);
+	const sum = math[10].getElementsByTagName('m:nary')[0];
+	assert.ok(sum);
 	assert.equal(
-		math[10].getElementsByTagName('m:limLow')[0]?.textContent,
-		'∑i=1',
+		sum.getElementsByTagName('m:chr')[0].getAttribute('m:val'),
+		'∑',
 	);
-	assert.equal(
-		math[10].getElementsByTagName('m:limUpp')[0]?.textContent,
-		'∑i=1n',
-	);
+	assert.equal(sum.getElementsByTagName('m:sub')[0].textContent, 'i=1');
+	assert.equal(sum.getElementsByTagName('m:sup')[0].textContent, 'n');
 	assert.equal(xml.includes('口'), false);
 	const nestedCases = [
 		String.raw`\frac{\frac{a}{b}}{c}`,
