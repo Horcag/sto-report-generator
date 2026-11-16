@@ -25,6 +25,25 @@ def is_math_layout_table(element: Any, namespace: dict[str, str], styles_root: A
         return False
     for row in rows:
         cells = row.findall(f"{WORD}tc")
+        if len(cells) == 1:
+            formula = cells[0]
+            math_paragraphs = [
+                paragraph
+                for paragraph in formula.findall(f"{WORD}p")
+                if paragraph.xpath(".//m:oMath", namespaces=namespace)
+            ]
+            if (
+                not formula.xpath(".//m:oMathPara", namespaces=namespace)
+                or formula.xpath(".//m:oMath[not(ancestor::m:oMathPara)]", namespaces=namespace)
+                or re.fullmatch(r"[,;.]?", element_text(formula)) is None
+                or not math_paragraphs
+                or not all(
+                    formula_paragraph_is_centered(paragraph, styles_root)
+                    for paragraph in math_paragraphs
+                )
+            ):
+                return False
+            continue
         if len(cells) != 3:
             return False
         left, formula, right = cells
@@ -35,7 +54,7 @@ def is_math_layout_table(element: Any, namespace: dict[str, str], styles_root: A
         ]
         if (
             element_text(left)
-            or element_text(formula)
+            or re.fullmatch(r"[,;.]?", element_text(formula)) is None
             or not formula.xpath(".//m:oMath", namespaces=namespace)
             or not math_paragraphs
             or not all(
@@ -49,7 +68,8 @@ def is_math_layout_table(element: Any, namespace: dict[str, str], styles_root: A
         number = element_text(right)
         if (
             number
-            and re.fullmatch(r"\((?:[A-Z\u0410-\u042f\u0401]\.)?\d+(?:\.\d+)*\)", number) is None
+            and re.fullmatch(r"\((?:[A-Z\u0410-\u042f\u0401]\.)?\d+(?:\.\d+)*\)[,;.]?", number)
+            is None
         ):
             return False
     borders = element.xpath(".//w:tblBorders/* | .//w:tcBorders/*", namespaces=namespace)

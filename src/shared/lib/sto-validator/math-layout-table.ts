@@ -50,6 +50,22 @@ export function isMathLayoutTable(tableXml: string, stylesXml = ''): boolean {
 	if (rows.length === 0) return false;
 	for (const row of rows) {
 		const cells = row.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
+		if (cells.length === 1) {
+			const formula = cells[0];
+			if (
+				!/<m:oMathPara\b/.test(formula) ||
+				/<m:oMath\b/.test(
+					formula.replace(
+						/<m:oMathPara\b[^>]*>[\s\S]*?<\/m:oMathPara>/g,
+						'',
+					),
+				) ||
+				!/^[,;.]?$/u.test(extractWordText(formula).trim()) ||
+				!hasCenteredMathParagraphs(formula, stylesXml)
+			)
+				return false;
+			continue;
+		}
 		if (cells.length !== 3) return false;
 		const [left, formula, right] = cells;
 		if (

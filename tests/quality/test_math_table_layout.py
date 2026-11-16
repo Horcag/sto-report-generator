@@ -1,4 +1,6 @@
+import json
 import unittest
+from pathlib import Path
 from typing import ClassVar
 
 from lxml import etree
@@ -32,6 +34,22 @@ class MathTableLayoutTests(unittest.TestCase):
             "</w:tr>"
         )
         return f"<w:tbl><w:tblPr>{borders}</w:tblPr>{row * rows}</w:tbl>"
+
+    def test_shared_single_cell_classification_contract(self) -> None:
+        cases = json.loads(
+            (Path(__file__).parents[1] / "fixtures/formulas/table-classification.json").read_text()
+        )
+        for case in cases:
+            with self.subTest(name=case["name"]):
+                document = self.document(case["xml"])
+                table = document.find(f"{{{WORD_NS}}}body/{{{WORD_NS}}}tbl")
+                styles = etree.fromstring(case["styles"].encode()) if case["styles"] else None
+                self.assertEqual(
+                    is_math_layout_table(table, self.namespace, styles), case["expected"]
+                )
+                self.assertEqual(
+                    add_spacing_after_data_tables(document, styles), 0 if case["expected"] else 1
+                )
 
     def test_inline_math_data_table_gets_spacing(self) -> None:
         table = (

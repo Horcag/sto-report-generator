@@ -36,14 +36,14 @@ export function runMathLayoutTableTests(): void {
 	const layoutRow = /<w:tr\b[\s\S]*?<\/w:tr>/.exec(layout)?.[0];
 	assert.ok(layoutRow);
 	const mergedLayout = layout.replace('</w:tbl>', layoutRow + '</w:tbl>');
-	const validate = (body: string, styles = '') => {
+	const validate = (body: string, styles = '', extensionNamespaces = '') => {
 		fs.writeFileSync(
 			path.join(wordDir, 'styles.xml'),
 			`<w:styles ${namespaces}>${styles}</w:styles>`,
 		);
 		fs.writeFileSync(
 			path.join(wordDir, 'document.xml'),
-			`<w:document ${namespaces}><w:body>${body}</w:body></w:document>`,
+			`<w:document ${namespaces} ${extensionNamespaces}><w:body>${body}</w:body></w:document>`,
 		);
 		return validateSTO(fixtureDir);
 	};
@@ -55,6 +55,97 @@ export function runMathLayoutTableTests(): void {
 		'Table Diagonal Borders',
 	];
 	try {
+		const parityCases = JSON.parse(
+			fs.readFileSync(
+				path.join(
+					__dirname,
+					'../fixtures/formulas/table-classification.json',
+				),
+				'utf8',
+			),
+		) as { name: string; xml: string; expected: boolean; styles: string }[];
+		for (const test of parityCases) {
+			assert.equal(
+				isMathLayoutTable(test.xml, test.styles),
+				test.expected,
+				test.name,
+			);
+			if (
+				test.expected &&
+				(test.styles || test.xml.includes('w:jc w:val="center"'))
+			) {
+				for (const check of checks)
+					assert.equal(
+						validate(
+							test.xml,
+							test.styles.replace(/<\/?w:styles[^>]*>/g, ''),
+						).find(result => result.check === check)?.passed,
+						true,
+						`${test.name}: ${check}`,
+					);
+			}
+		}
+		const normalStyle =
+			'<w:style w:styleId="Normal"><w:pPr><w:ind w:firstLine="709"/><w:jc w:val="both"/><w:spacing w:before="0" w:after="0" w:line="360"/></w:pPr></w:style>';
+		const continuation =
+			'<w:p><w:pPr><w:pStyle w:val="Normal"/><w:ind w:firstLine="0"/></w:pPr><w:r><w:t>а при альтернативном условии результат иной.</w:t></w:r></w:p>';
+		for (const [name, previous, expected] of [
+			[
+				'comma formula',
+				layout.replace('<m:t>x</m:t>', '<m:t>x,</m:t>'),
+				true,
+			],
+			[
+				'period formula',
+				layout.replace('<m:t>x</m:t>', '<m:t>x.</m:t>'),
+				false,
+			],
+			[
+				'intervening paragraph',
+				layout.replace('<m:t>x</m:t>', '<m:t>x,</m:t>') +
+					paragraph(text('Барьер.')),
+				false,
+			],
+			[
+				'inline data table',
+				layout
+					.replace('<m:t>x</m:t>', '<m:t>x,</m:t>')
+					.replace('w:val="center"', 'w:val="left"'),
+				false,
+			],
+		] as const) {
+			assert.equal(
+				validate(previous + continuation, normalStyle).find(
+					result =>
+						result.check === 'Direct Body Paragraph Formatting',
+				)?.passed,
+				expected,
+				name,
+			);
+		}
+		const wordExtensions =
+			'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:custom="urn:formula-regression:extension"';
+		for (const punctuation of [',', '.']) {
+			const wordFormula = layout
+				.replace('<m:t>x</m:t>', `<m:t>x${punctuation}</m:t>`)
+				.replace('<w:tbl>', '<w:tbl custom:marker="formula">')
+				.replace(
+					'<w:p>',
+					'<w:p w14:paraId="1234ABCD" w15:collapsed="0">',
+				);
+			assert.equal(
+				validate(
+					wordFormula + continuation,
+					normalStyle,
+					wordExtensions,
+				).find(
+					result =>
+						result.check === 'Direct Body Paragraph Formatting',
+				)?.passed,
+				punctuation === ',',
+				'Word and arbitrary namespaces inherit from the document root',
+			);
+		}
 		const misleading = layout
 			.replace('<w:jc w:val="center"/>', '<w:jc w:val="left"/>')
 			.replace(

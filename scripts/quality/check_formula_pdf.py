@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import re
+import unicodedata
 from pathlib import Path
 
 import pymupdf
@@ -25,6 +26,68 @@ ANCHORS = {
     14: "Array",
     15: "MeanTime",
 }
+
+
+def compact(text: str) -> str:
+    return re.sub(r"\s+", "", unicodedata.normalize("NFKC", text))
+
+
+def inspect_rendering_edges(document: pymupdf.Document) -> dict:
+    """Measure the unnumbered cases in the public corpus, including case discovery."""
+    crop_rows = []
+    domains = []
+    prime_gaps = []
+    for number, page in enumerate(document, 1):
+        domain_baselines = []
+        lines = [
+            line for block in page.get_text("dict")["blocks"] for line in block.get("lines", [])
+        ]
+        for line in lines:
+            text = compact("".join(span["text"] for span in line["spans"]))
+            for lower in ("0,4081", "0,3324"):
+                if lower in text:
+                    if not re.search(r"x∈\[0,0359W;0,9641W\)", text):
+                        raise AssertionError(
+                            f"Crop {lower}: x interval wrapped away from y interval"
+                        )
+                    crop_rows.append({"lower": lower, "page": number})
+            if "j∈{1,2,3}" in text:
+                domains.append(number)
+                domain_baselines.append(line["spans"][0]["origin"][1])
+        characters = [
+            character
+            for block in page.get_text("rawdict")["blocks"]
+            for line in block.get("lines", [])
+            for span in line["spans"]
+            for character in span["chars"]
+        ]
+        for baseline in domain_baselines:
+            if not any(
+                compact(char["c"]) == "δ" and abs(char["origin"][1] - baseline) <= 2
+                for char in characters
+            ):
+                raise AssertionError("Threshold domain wrapped away from the delta baseline")
+        for prime in (char for char in characters if char["c"] == "\u2032"):
+            bases = [
+                char
+                for char in characters
+                if compact(char["c"]) == "I"
+                and char["bbox"][0] < prime["bbox"][0]
+                and 0 < char["origin"][1] - prime["origin"][1] < 15
+            ]
+            if not bases:
+                raise AssertionError("Prime has no nearby I base")
+            base = max(bases, key=lambda char: char["bbox"][0])
+            gap = prime["bbox"][0] - base["bbox"][2]
+            # Cambria Math 14pt: detached empty-base scripts leave roughly 10pt.
+            if not -1 <= gap <= 3:
+                raise AssertionError(f"Prime-to-base gap {gap:.2f}pt exceeds fixture tolerance")
+            prime_gaps.append(round(gap, 3))
+    if sorted(row["lower"] for row in crop_rows) != ["0,3324", "0,4081"]:
+        raise AssertionError("Expected exactly two crop boundary regression cases")
+    if len(domains) != 1 or len(prime_gaps) != 2:
+        raise AssertionError("Missing or duplicated threshold-domain/prime regression cases")
+    return {"crop_rows": crop_rows, "threshold_domain_pages": domains, "prime_gaps_pt": prime_gaps}
 
 
 def inspect_sum_operand(characters: list[dict], baseline: float, anchor_right: float) -> float:
@@ -133,6 +196,7 @@ def inspect_pdf(pdf: Path) -> dict:
             "tolerance_pt": 2,
             "tolerance_basis": "fixture regression tolerance, not an STO allowance",
             "cases": cases,
+            "rendering_edges": inspect_rendering_edges(document),
         }
     finally:
         document.close()

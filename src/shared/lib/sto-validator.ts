@@ -3,7 +3,6 @@ import * as path from 'node:path';
 
 import { STO_RULES, STRUCTURAL_HEADING_STYLE_ID } from '../config';
 import {
-	getEffectiveBodyParagraphAttribute,
 	getEffectiveParagraphAttribute,
 	resolveWordStyleId,
 } from './docx/styles';
@@ -13,12 +12,11 @@ import {
 	validateTemplateStyleConformance,
 } from './sto-template-style-validator';
 import { validateBibliographyPresentation } from './sto-validator/bibliography-xml';
+import { hasInvalidDirectBodyFormatting } from './sto-validator/body-formatting';
 import {
 	extractWordText,
-	getBodyElements,
 	getContinuationFailures,
 	getNoteFailures,
-	getParagraphStyleId,
 	getReportBodyElements,
 	isParagraphXml,
 	isTableXml,
@@ -337,15 +335,6 @@ function findStyleXml(stylesXml: string, styleId: string): string | null {
 	);
 }
 
-function getStyleName(stylesXml: string, styleId: string): string | null {
-	const styleXml = findStyleXml(stylesXml, styleId);
-	if (!styleXml) {
-		return null;
-	}
-	const nameTag = /<w:name\b[^>]*\/>/.exec(styleXml)?.[0];
-	return nameTag ? getXmlAttribute(nameTag, 'w:val') : null;
-}
-
 function findStyleIdsByName(stylesXml: string, styleName: string): string[] {
 	const escapedStyleName = escapeRegExp(styleName);
 	const ids: string[] = [];
@@ -453,92 +442,6 @@ function hasStylePropertyOrInheritedByIdOrName(
 		expandStyleIdsByName(stylesXml, styleIdsOrNames),
 		propertyPattern,
 	);
-}
-
-function hasInvalidDirectBodyFormatting(
-	docXml: string,
-	stylesXml: string,
-	numberingXml: string | null,
-): boolean {
-	let inReferat = false;
-	return getBodyElements(docXml).some(paragraphXml => {
-		if (!isParagraphXml(paragraphXml) || !isVisibleParagraph(paragraphXml))
-			return false;
-		const text = extractWordText(paragraphXml).trim();
-		const headingText = text.toLocaleUpperCase('ru-RU');
-		if (headingText === 'РЕФЕРАТ') inReferat = true;
-		if (headingText === 'СОДЕРЖАНИЕ' || headingText === 'ВВЕДЕНИЕ')
-			inReferat = false;
-		const styleId = getParagraphStyleId(paragraphXml);
-		const runs = paragraphXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? [];
-		const isCodeBlock =
-			runs.length > 0 && runs.every(run => run.includes('Courier New'));
-		const styleName = styleId ? getStyleName(stylesXml, styleId) : null;
-		if (
-			styleId !== null &&
-			styleId !== 'Normal' &&
-			styleName !== 'Normal' &&
-			styleName !== '+Абзац с отступом 1-ой строки'
-		)
-			return false;
-		if (
-			paragraphXml.includes('<w:numPr') ||
-			paragraphXml.includes('<w:drawing') ||
-			isCodeBlock ||
-			(inReferat && paragraphXml.includes('<w:caps')) ||
-			/^где(?:\s|$)/iu.test(text)
-		)
-			return false;
-
-		const effective = (tag: string, attribute: string) =>
-			getEffectiveBodyParagraphAttribute(
-				paragraphXml,
-				stylesXml,
-				numberingXml,
-				styleId ?? 'Normal',
-				tag,
-				attribute,
-			);
-		const runSpacing = [
-			...paragraphXml.matchAll(/<w:rPr\b[^>]*>([\s\S]*?)<\/w:rPr>/g),
-		]
-			.map(match => /<w:spacing\b[^>]*\/>/.exec(match[1])?.[0] ?? '')
-			.filter(Boolean);
-		const invalidAttribute = (
-			tag: string,
-			name: string,
-			expected: number,
-		) => {
-			const value = effective(tag, name);
-			return value !== null && Number(value) !== expected;
-		};
-		return (
-			effective('jc', 'val') !== 'both' ||
-			invalidAttribute('ind', 'left', 0) ||
-			invalidAttribute('ind', 'right', 0) ||
-			invalidAttribute(
-				'ind',
-				'firstLine',
-				STO_RULES.typography.firstLineIndentDxa,
-			) ||
-			effective('ind', 'firstLine') === null ||
-			effective('ind', 'hanging') !== null ||
-			runSpacing.some(tag => {
-				const value = getXmlAttribute(tag, 'w:val');
-				return value !== null && Number(value) !== 0;
-			}) ||
-			invalidAttribute('spacing', 'before', 0) ||
-			invalidAttribute('spacing', 'after', 0) ||
-			invalidAttribute(
-				'spacing',
-				'line',
-				STO_RULES.typography.normalLineSpacingDxa,
-			) ||
-			effective('spacing', 'line') === null ||
-			(effective('spacing', 'lineRule') !== null &&
-				effective('spacing', 'lineRule') !== 'auto')
-		);
-	});
 }
 
 function validateHeadingText(input: ValidationInput): ValidationResult[] {
@@ -733,6 +636,16 @@ function validateMathAndCitations(input: ValidationInput): ValidationResult[] {
 			'Math Upright Limit Operators',
 			mathStructures.italicLimitOperators > 0,
 			'Detected min/max/lim operator without upright OMML formatting.',
+		),
+		resultFromFailure(
+			'Math Hidden Empty Limits',
+			mathStructures.unhiddenNaryLimits > 0,
+			'Detected absent n-ary limits without subHide/supHide; Word renders empty placeholders.',
+		),
+		resultFromFailure(
+			'Math Detached Prime',
+			mathStructures.detachedPrimes > 0,
+			'Detected a nested prime superscript with an empty base. Rebuild formulas with the current converter.',
 		),
 		resultFromFailure(
 			'Math Unsupported Placeholder',

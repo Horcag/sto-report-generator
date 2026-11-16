@@ -5,14 +5,12 @@ import {
 	Math as DocxMath,
 	ImportedXmlComponent,
 	MathFraction,
-	MathIntegral,
 	MathLimitLower,
 	MathLimitUpper,
 	MathRadical,
 	MathRun,
 	MathSubScript,
 	MathSubSuperScript,
-	MathSum,
 	MathSuperScript,
 } from 'docx';
 import { JSDOM } from 'jsdom';
@@ -27,17 +25,16 @@ import {
 	restoreMatrixDelimiters,
 } from './matrix-delimiters';
 import { normalizeOmmlMath } from './omml-normalizer';
+import { prepareNaryOperators } from './script-structure';
 
 type DocxMathChild =
 	| MathFraction
-	| MathIntegral
 	| MathLimitLower
 	| MathLimitUpper
 	| MathRadical
 	| MathRun
 	| MathSubScript
 	| MathSubSuperScript
-	| MathSum
 	| MathSuperScript;
 
 let mathJaxInstance: MathJaxApi | undefined;
@@ -154,9 +151,6 @@ function convertItem(item: Element): DocxMathChild | undefined {
 	if (tagName === 'm:limlow') {
 		return buildLimitLower(item);
 	}
-	if (tagName === 'm:nary') {
-		return buildNary(item);
-	}
 	// Preserve valid OMML constructs that docx-js has no dedicated math class for.
 	// Replacing them with a visible placeholder silently corrupts formulas.
 	return importMathProperty(item) as DocxMathChild;
@@ -264,32 +258,6 @@ function buildLimitLower(item: Element): MathLimitLower {
 	});
 }
 
-function buildNary(item: Element): DocxMathChild {
-	const properties = [...item.children].find(
-		child => child.tagName === 'm:naryPr',
-	);
-	const char = [...(properties?.children ?? [])].find(
-		child => child.tagName === 'm:chr',
-	);
-	const charValue = char?.getAttribute('m:val');
-	if (charValue !== '∑' && charValue !== '∫') {
-		return importMathProperty(item) as DocxMathChild;
-	}
-	const element = directChildByTagName(item, 'm:e');
-	const subScript = directChildByTagName(item, 'm:sub');
-	const superScript = directChildByTagName(item, 'm:sup');
-	const options = {
-		children: convertChildren(element.children),
-		subScript: convertChildren(subScript.children),
-		superScript: convertChildren(superScript.children),
-	};
-
-	if (charValue === '∑') {
-		return new MathSum(options);
-	}
-	return new MathIntegral(options);
-}
-
 export function convertOmml2Math(ommlString: string): DocxMath {
 	const document = new JSDOM(ommlString, { contentType: 'text/xml' }).window
 		.document;
@@ -328,7 +296,7 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 	// one italic run. Preserve the source role before that merge occurs.
 	const matrixDelimiters = markMatrixDelimiters(mathMl);
 	const matrixAlignments = collectMatrixAlignments(mathMl);
-	let changedOperator = matrixDelimiters.length > 0;
+	const literalNaryCharacters = prepareNaryOperators(mathMl);
 	// mathml2omml collapses MathML's 1em/2em mspace to an ordinary space.
 	// Carry explicit TeX spacing through its text merge, then restore it in OMML.
 	for (const space of [...mathMl.getElementsByTagName('mspace')]) {
@@ -342,9 +310,11 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 		);
 		marker.textContent = replacement[0];
 		space.replaceWith(marker);
-		changedOperator = true;
 	}
-	for (const identifier of [...mathMl.getElementsByTagName('mi')]) {
+	for (const identifier of [
+		...mathMl.getElementsByTagName('mi'),
+		...mathMl.getElementsByTagName('mo'),
+	]) {
 		const command = identifier.getAttribute('data-latex') ?? '';
 		if (
 			!command.startsWith('\\operatorname{') &&
@@ -359,17 +329,16 @@ export function convertMathMl2Math(mathMlString: string): DocxMath {
 			upright.setAttribute(attribute.name, attribute.value);
 		upright.textContent = identifier.textContent;
 		identifier.replaceWith(upright);
-		changedOperator = true;
 	}
+	// Resolve numeric character references before the converter classifies n-ary bases.
 	let ommlString = mml2omml(
-		changedOperator
-			? mathMl.documentElement.outerHTML.replaceAll('\u00a0', '&#xA0;')
-			: mathMlString,
-		{
-			disableDecode: true,
-		},
+		mathMl.documentElement.outerHTML.replaceAll('\u00a0', '&#xA0;'),
+		{ disableDecode: true },
 	);
-	for (const [marker, value] of EXPLICIT_MATH_SPACES.values()) {
+	for (const [marker, value] of [
+		...EXPLICIT_MATH_SPACES.values(),
+		...literalNaryCharacters,
+	]) {
 		ommlString = ommlString.replaceAll(marker, value);
 	}
 	return convertOmml2Math(

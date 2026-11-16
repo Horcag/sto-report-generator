@@ -43,13 +43,13 @@ class MathSemanticPostBuildTests(unittest.TestCase):
             )
         for element in omath[:5]:
             self.assertEqual(len(element.xpath(".//m:limUpp", namespaces=namespaces)), 0)
-        self.assertEqual(len(omath[5].xpath(".//m:limUpp", namespaces=namespaces)), 1)
+        self.assertEqual(len(omath[5].xpath(".//m:nary", namespaces=namespaces)), 1)
         self.assertEqual(
-            omath[5].xpath(".//m:limUpp/m:e/m:limLow/m:lim//m:t/text()", namespaces=namespaces),
+            omath[5].xpath(".//m:nary/m:sub//m:t/text()", namespaces=namespaces),
             ["i=1"],
         )
         self.assertEqual(
-            omath[5].xpath(".//m:limUpp/m:lim//m:t/text()", namespaces=namespaces),
+            omath[5].xpath(".//m:nary/m:sup//m:t/text()", namespaces=namespaces),
             ["n"],
         )
 

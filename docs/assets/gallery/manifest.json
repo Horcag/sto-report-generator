@@ -16,7 +16,7 @@
     "package.json": "17da416e11ee793e81c9902e09ba4eff60c7477e7402ebea3f56920fbaab2e2c",
     "pyproject.toml": "0eb1993c9e5c7883827776f4ba3efd6765a1dc9aff33111d691cc30ad8474655",
     "scripts/post_build.py": "ebc753b075107cdcb81b20eb44065fc5941543a7fd6796e22f7373fce5c6ef33",
-    "scripts/quality/check_formula_pdf.py": "2ebf15040d73f1d49330b55203bb32352c1a3cb6f77866b5135ef5f95b869608",
+    "scripts/quality/check_formula_pdf.py": "204775f0b316056cfe680fb5d61a35ce65b988b9fdcd4b71a0bd490b753fdfd6",
     "scripts/quality/inspect_pdf_images.py": "3c75bd1cb4c80d8233699b14411169070c98132a6fada66bb5ac39b76ab54996",
     "scripts/quality/preserve_pdf_images.py": "111ea4cfd664c7b8ae6835b1749546b5cee89f02d8db247819a7ef2e382e8924",
     "scripts/quality/report_gallery.py": "6da4b0087882d1f2e7f87e02ee0e2fa9bd5c19caff12f42a70cdef3d348a811f",
@@ -29,14 +29,15 @@
     "scripts/sto_post_build/fraction_delimiters.py": "dacce1f7e6179fc1535a79cd29ddf67cf9705b029cb8bdb83dbf05c6d37779ca",
     "scripts/sto_post_build/integral_arguments.py": "0634806c1787a63c75b155b7b2875c5ef3f08a934a2218b07d875d452e528ea9",
     "scripts/sto_post_build/markdown_formulas.py": "da659dc56391904b59bab65839d5a4ff7fb94768d4d625c9ce661de5e4d580d4",
-    "scripts/sto_post_build/math_conversion.py": "37886452356943af02026d2f715a1d449cc42437b9951624dd464771e6171304",
+    "scripts/sto_post_build/math_conversion.py": "37413ab5d6d1778d5dce64a5843e39cfd76a2c8de5e93e1cae3a37aee4908431",
     "scripts/sto_post_build/matrix_spacing.py": "40279282b0afd386ea8257855df326908e914f742001545ef8af821180161bcb",
     "scripts/sto_post_build/models.py": "f62fdd903783e4ae2d09d72d38bf0f8896a1aece63d55bae49b13b0dea32414c",
     "scripts/sto_post_build/orchestrator.py": "13a1246b1e53f92917c015db562852b703bc2dfcc2b76db2ef04487fc5c92181",
     "scripts/sto_post_build/pdf_export.py": "6214ea0a329c2d8cc8c0955ff5c7989d175524789ee41c32b2ff39f5d940804a",
     "scripts/sto_post_build/process_ownership.py": "a1a0a2d6f339d803ea68ccbf4b165ba08d277a1dd5bd8130e04e96d265c4e80d",
+    "scripts/sto_post_build/script_structure.py": "a8ee0e69fafb10ff7beb144eb8a85f52b3b07e1e9f79916a1eb0b2d4d70d3f23",
     "scripts/sto_post_build/statistics.py": "9b99dbf34494c4b642c8c78111a5db1ba651462ced859765c9a9c261390961fb",
-    "scripts/sto_post_build/table_spacing.py": "dfb9f268ad61abe661c3001c42feb1b27a6769b0330154a0d8483cb4ee5a87c1",
+    "scripts/sto_post_build/table_spacing.py": "28ff344cced5c6842495ae21e2885f1f318cb8b3b666581095f6a5a74c397640",
     "scripts/sto_post_build/timing.py": "0218c2bd2e482fde3173e7a37f0dcb6d9900ac84e83d79da0e0302c48dcb3102",
     "scripts/sto_post_build/word_application.py": "8203754c63f48ae2644c566e8093c4b23b6f144d638070ac974210e0c3af4f2d",
     "scripts/sto_post_build/word_automation.py": "76f6a09ce29d22c23583ecbe863ad777599cc89b3a9f6c079792c1380d4247b0",
@@ -89,17 +90,17 @@
     "src/features/markdown-parser/lib/parser/bibliography-loader.ts": "9d9d9519751b79b9a2dcbfca542058c318d478bf4dafa52f645dd4f0d1d24d4a",
     "src/features/markdown-parser/lib/parser/citation-registry.ts": "6e90833e74f26a8683874c34b7f3acc1011fcec6189f475f8a15e7a24a291461",
     "src/features/markdown-parser/lib/parser/handlers/appendix-toc-field.ts": "ea2103abf06826f5ea9f6bc61013f7259ee4d02c224443697041cec0b0b6521e",
-    "src/features/markdown-parser/lib/parser/handlers/block-handlers.ts": "5cf5599fdec0e63f56c36bbb389b2a789014c3ce5f0b8995b66c3d350253129a",
+    "src/features/markdown-parser/lib/parser/handlers/block-handlers.ts": "3dac848fed61b68df9fc7f5a4f378b52a47cacf7a851542f5885d03f27270309",
     "src/features/markdown-parser/lib/parser/handlers/image-handler.ts": "7f935c91df78e4ac5de03ebbfaf24fa85cda33e3e41511252c77e87b419a931c",
     "src/features/markdown-parser/lib/parser/handlers/inline-parser.ts": "01667e0e388684c2e90ba5e523571bb572a9bdd8f9f164122f2963fc327727a4",
-    "src/features/markdown-parser/lib/parser/handlers/math-handler.ts": "9f79cc47f739b6f15846ad2522a802f2f9068a9c861c4e5171ee279a09301dc7",
+    "src/features/markdown-parser/lib/parser/handlers/math-handler.ts": "708a10dad95c9b02b41e1e00ee941888616a2b0a9effa54a6170fdb24f20fba1",
     "src/features/markdown-parser/lib/parser/handlers/report-table-of-contents.ts": "6b637ecd3b2d02caa4de4f2c02165f6f9026f487ab4bee65950bd96d2667883e",
     "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "943ee0c5ef9fc4808075d3608f131547564a10a8b8221f6396c657efe994f71d",
     "src/features/markdown-parser/lib/parser/handlers/table-handler.ts": "3e65ebdcd28787fd9d245f3b5b1c1b2a177a4e58d08579445eb7cde8e68f93ef",
     "src/features/markdown-parser/lib/parser/reference-registry.ts": "533eb0e46e7efbcfd568d6e341a9c683c70035f5faf3f563d9eff56947de42fd",
     "src/features/markdown-parser/lib/parser/table-notes.ts": "c7c428ac9d0afba3349edc74dad105935f5eb38cf1ac5a5b17257a1015b414ff",
-    "src/features/markdown-parser/lib/parser.ts": "a09d87898f59eef2df8c0dae24c7857b8861ddd0ff08757b28eb4309b9abcfc2",
-    "src/features/markdown-parser/lib/types.ts": "9e2847965dae81c4259357d106509262771ad089bee4a4485f8d7aa2890aafce",
+    "src/features/markdown-parser/lib/parser.ts": "4cac9bcf75ca872312899f9b197d1392609d8bf64415c865fd035cf3f65d1bf0",
+    "src/features/markdown-parser/lib/types.ts": "ae9f9fe423898c592efad76cfabe6affe542534ba624a4bc7b7ac0e4bfd8db74",
     "src/features/markdown-parser/lib/utils/bib-author-names.ts": "6ed6fd47f8f6f5f96048434c9238016baf9df7dca82136d04b142cea3cb3db0d",
     "src/features/markdown-parser/lib/utils/bib-component-formatters.ts": "255fb1e4a7118d624026282cf290d9defce980b321ea2707062d2714ab695044",
     "src/features/markdown-parser/lib/utils/bib-description-areas.ts": "cd6ee6bdb7a79506a5f99269d40006f519c51869e682a7d5d28f9640259b53f3",
@@ -143,17 +144,19 @@
     "src/shared/lib/frontmatter.ts": "9bc4582d170fec070067cf4b5099661df4be62e2568092a602e7c3cc01b00c7c",
     "src/shared/lib/index.ts": "4d0aa9fddc8437016d028dff058f3981ecdce5bc39bf66d23059c3357b97eb94",
     "src/shared/lib/math/converter-deps.d.ts": "1652e123ba7ddc4d5555770faad638ad645c6a405fe67d57a0d9860e1aa9e03e",
-    "src/shared/lib/math/converter.ts": "5a9aaf5cfd3b75c321c9dd2ed5a356e36cbee5f4451602e6fad50e463634698d",
+    "src/shared/lib/math/converter.ts": "ba0c4ed32959b190db3a65b1cc0bb041870097ac61211bccf7fac089c453228f",
     "src/shared/lib/math/display-lines.ts": "1fa65a3edc163ebdfc5f7105233d256409da4c5d5dcb8ef8442dd2969b3b35cd",
     "src/shared/lib/math/formula-layout-validator.ts": "7e6c7ce78a804b7e2d7fa6223bd1f6c18e89cdc70c15241220c703cf657c8f9c",
     "src/shared/lib/math/formula-punctuation.ts": "42af88d03512e48693e858e8beb0cb2c5b1cf27dc5ac206afe115367584f15b1",
     "src/shared/lib/math/fraction-delimiters.ts": "de5b9b17050402513995cdb16f45dab68b227e0a93c1aa630c966cb3ff6ac8da",
-    "src/shared/lib/math/index.ts": "56be142fc96892a1711a7691b72e85f2e040cbbfeadf827960e8265ef87d763f",
+    "src/shared/lib/math/index.ts": "f990f8faee7ac442984ec1e241cfdc3b2b950589e95aa5cb2d609372d5bb990d",
     "src/shared/lib/math/markdown-spans.ts": "8e76364efed66eefb24e2f8a64d3b9d38027bf69ace512c2fe1467b7ced12a71",
     "src/shared/lib/math/matrix-alignment.ts": "5d40ee7e9fa83fec018c2118f52eccea32abe37fe579c84ad784291c056af581",
     "src/shared/lib/math/matrix-delimiters.ts": "ea2a289f4aaf98f99a816ca55cdff0f28c6d411157932624d93771e30accd3af",
     "src/shared/lib/math/matrix-spacing.ts": "24daf2778398457f97f4d57a82b75929b45578115a9b66141df2dd5e76d83b70",
-    "src/shared/lib/math/omml-normalizer.ts": "ba42c414d6d3695b4b3385d3c9ba7c77b90cb9a4a2bc13b838b4f89b9c326acb",
+    "src/shared/lib/math/omml-normalizer.ts": "e3141e4a74049d0b2b33e9d6682e52ffa4473b2f23ddae28b3e27e473405c4f5",
+    "src/shared/lib/math/script-structure.ts": "e9e91792dcf2f40741a68aede96a0b9e8089b42d8d174a35f8a2b04e7cb5e99f",
+    "src/shared/lib/math/sentence-continuation.ts": "aff69c546b60cbbadb055680f6265aa65ad3c6c86e687ce907b56b3f52901b7e",
     "src/shared/lib/report-config.ts": "8c0e1dcb8cb4e13db74c387e1428be1f534a7e0b08a8e10288ee0bae6724a9a3",
     "src/shared/lib/source-preflight/asset-checker.ts": "723600f4fd7fcfeabd1cef8acefb1378728c77e9b2e5d86155508168cd93320b",
     "src/shared/lib/source-preflight/bibliography-checker.ts": "80eda8f44e03f1af22752fbdf5f285f260eee5f22a9eab38473beaa10c44b031",
@@ -190,17 +193,18 @@
     "src/shared/lib/source-preflight.ts": "f1386098c3759ed161fb2ab3dd8a1062d0a8054bd879c2c6d631923978d6d354",
     "src/shared/lib/sto-template-style-validator.ts": "0d893bbbdc5a834f33701c7092966ac3b2eda79de525f14ddf1eb926269ebab7",
     "src/shared/lib/sto-validator/bibliography-xml.ts": "576983992f5703baea32476e7668789d17c68e7c0c3d72c918daeda33dc46a96",
+    "src/shared/lib/sto-validator/body-formatting.ts": "7cedfa850f886f5b73ea6b70c32a963972784489c4e7ce1103ca1a4ada09b4d5",
     "src/shared/lib/sto-validator/body-xml.ts": "ae20a1c69d4367d71283b1fefdb0ad82df4eb0fa47f64b4f6ff24a5e725f530b",
     "src/shared/lib/sto-validator/bold-formatting.ts": "b6506e1f375a5455ba04d2c5a4e9147810162099105623b0fad03ffd64515313",
     "src/shared/lib/sto-validator/layout-xml.ts": "282e5661463bc328a03a51add18baf652ba63bb623ba5d9166583384060cbf74",
-    "src/shared/lib/sto-validator/math-layout-table.ts": "cb4710e084c0094507cea9282d389e42f73bb0b575b0f1ae7ac15cb82d4dc0b5",
-    "src/shared/lib/sto-validator/math-xml.ts": "5e6dd012c37d5e4140c1dba966d65606af0f82c5c5991e923c5b9f3dc28a6c1b",
+    "src/shared/lib/sto-validator/math-layout-table.ts": "c5e7ef8c12c00da17e52ef57eea130b03ab275540b3507cf5ef0b22a1c0f96ef",
+    "src/shared/lib/sto-validator/math-xml.ts": "7f6dd0f0cef9c9af10ae8f76fd096b6e63885a708ae82bafbc7317cdc0535f05",
     "src/shared/lib/sto-validator/tab-xml.ts": "0cd23c545fe30e213f39a61416d0500486a8942c122e07732468089c0a78de47",
     "src/shared/lib/sto-validator/table-bottom-border.ts": "aef04f7555ea47e7b783847fc6a683bee4138e0515a9e45b177fdd2d489b5783",
     "src/shared/lib/sto-validator/table-caption-layout.ts": "c840bc95993146eb6cc134138942ea8d331da68470e0ce6aa070690c34307758",
     "src/shared/lib/sto-validator/table-layout.ts": "117f6f4e27d20d3f7a1af51ebc5e61a86de542d1fe2798e66f2852ee7ff53b62",
     "src/shared/lib/sto-validator/table-note-rows.ts": "0803faa3b186fa34e6517e70a8b47cfb671b94daaeeb86c6edfed206076d72e3",
-    "src/shared/lib/sto-validator.ts": "d4de277b77c78f0bb165e7462012cdb0fe5b85ab90ae23653c2511289b77f6ef",
+    "src/shared/lib/sto-validator.ts": "7eee12ec920a4b8b169c4747cbcdbd490ae7687ee051f72324c6c74eaa5ff2f4",
     "src/widgets/title-page/index.ts": "d2366f2552c11591cd5ca6e5c9442f22aa303f559c77a7fd6666f728e3f4a3c9",
     "src/widgets/title-page/lib/compact-lab-title-page.ts": "d3bfdc5bd78b6d6c6ed0e3aedbb36e33635e780376ef5461969bee0d0f84c1e6",
     "src/widgets/title-page/lib/ssau-course-project-title-page.ts": "3a0e06d53ae46a8b368afab7d198c9bba18864d0d76b10f0181e3f57cd42a7c6",
@@ -216,7 +220,7 @@
     "tests/fixtures/dotm-word-corpus/images/dummy.svg": "7a96e0b8747393124b1e1344dfac4ec5acd0913c0faf18ace06f6ebc0dc631ad",
     "tests/fixtures/dotm-word-corpus/references.bib": "887bc69b8d5c37b0d918803d822547320438978da00141e81ff7592b9d83b610",
     "tests/fixtures/formulas/fences.md": "21cf57a0444ddfcc789d76c31fa4c8d23c5c1585ae813d8d76391528206508c6",
-    "tests/fixtures/formulas/layout.md": "752f733487be2c87f9181c81f3a4dbe969444949910047b841ad6c0c0605a702",
+    "tests/fixtures/formulas/layout.md": "7989f2c50b766eb51b51cc21ccf96f2cfbf317d5c38dc8c56090241f690eb4c6",
     "tests/fixtures/wordcraft/matrix-controls.md": "2353f04b1d4556bda47819990017c4ceb7a46f8284d81b3834c424f64bc3cbda",
     "uv.lock": "c57352d8b26a1d9372032912b80e5de3ab996a902b85566fe32796d62c9f828d"
   },
@@ -230,7 +234,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "e338e46f6ae97c6f5d7485c13ffdb73b81875ca2634ae82ad15c414d97ee5a65",
+      "pdfSha256": "ecc0dadf5053097f5186de3fb996ffe35597b7d0ecf219364a75138eaff9ba58",
       "pageCount": 8,
       "pages": [
         {
@@ -276,8 +280,8 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "c5414a3e746c8c06b00d9470bb1f0e7b99c68e3fcd3bc0fe226a740b13ddf106",
-      "pageCount": 4,
+      "pdfSha256": "6a89f859d8105713258a1addd20d4341e7f3f7a9bee9f3f6c2c2bf1ccc3dfa38",
+      "pageCount": 5,
       "pages": [
         {
           "file": "formulas-page-1.png",
@@ -289,11 +293,15 @@
         },
         {
           "file": "formulas-page-3.png",
-          "sha256": "4addbf2601170e8f2efa670d7c174d53c66d55daeeb59d4abf1f5a98858520b0"
+          "sha256": "955dad18cf263c0e8361377e206d22d7d142e0919e21710b20fd9f28859f1f8e"
         },
         {
           "file": "formulas-page-4.png",
-          "sha256": "e9baf95d9081ed6d485ebce17cd800ac0a10dea1b9526880cc5eaba5894f2f9e"
+          "sha256": "144e00a73a6c9fa0a1c7be8260de94c03114afd6c52c0f3bf65e787f47872a65"
+        },
+        {
+          "file": "formulas-page-5.png",
+          "sha256": "69f94dcb96cac3186b62dd5742ef74c61fbce6ee9b9cbec1dca55ec1f894a7e9"
         }
       ],
       "formulaLayoutCases": [
@@ -323,7 +331,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "6293d1923107ab80ceef832f5554fb7c8eec544721a3a446494f7a6f05455b1b",
+      "pdfSha256": "8a54c1f5e4c94e645499eda900a1942a3872021df7d08cdf3fb4922cd1a3494e",
       "pageCount": 4,
       "pages": [
         {
@@ -332,15 +340,15 @@
         },
         {
           "file": "matrices-page-2.png",
-          "sha256": "69c77c735f2e2b1e35cbd3834312d1c6cdae8fcbbdfe39bd1492f850a7db3f35"
+          "sha256": "024c83c3ab0b8b7b6035fde725af1cad92a6e5b8f3a6f872f60e858875b13b7c"
         },
         {
           "file": "matrices-page-3.png",
-          "sha256": "f71f95fbe3ac67bf6bcd45d73d6d136cbc6cfe7753fa7179d0a8ac2bad5f7f6b"
+          "sha256": "2d00e9f03fef4e1a2c99fab5a7f8613b036587fb25c01b765615d569817fd20e"
         },
         {
           "file": "matrices-page-4.png",
-          "sha256": "948bf1dcdcf17cb1adee87e0fe1ead4b27f7190083a743ec6a02d0b389d6c09a"
+          "sha256": "0b29ecefe833f1980b2c7d7a9cd6d5074041810de5299e7fc68e5e45bc2e2397"
         }
       ]
     },
@@ -353,7 +361,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "5c1a663abaff726140f206a07a978766c05a02e42c489ce25c2fcb65cb75bfd1",
+      "pdfSha256": "459c0533b919f77ea964ddb37ea644d40ec3a40e2bede343a7816a039856684c",
       "pageCount": 2,
       "pages": [
         {
@@ -375,7 +383,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "f95d3f44b61328397c5a07499184e4036a30bd1c8a6acfcd62d1eb7d5a3dd6b4",
+      "pdfSha256": "c4dd0ed4995c1094dc8f8995f11a2a27fa656b40302e2a6168ce38b6477ace72",
       "pageCount": 11,
       "pages": [
         {
