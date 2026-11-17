@@ -71,7 +71,9 @@ citations require them. `--type` changes title-page text only; it is not a profi
   [the report prose workflow](references/scientific-prose.md). Use its ordinary authoring pass for short edits;
   prepare variants only when needed. Keep trial drafts outside the report input directory. For a requested detector
   comparison, consult the [shared study results and contribution guide](../../../docs/case-studies/README.md) to choose
-  a comparable control and record improvements, regressions, and unchanged outcomes.
+  a comparable control and record improvements, regressions, and unchanged outcomes. If only free overall scores
+  are available, use the bounded localization procedure in the prose workflow to prioritize reading; it does not recover
+  exact highlighted passages or replace a final full-document check.
 - Before source preflight, apply the bundled [`humanizer-ru`](../humanizer-ru/SKILL.md) skill to connected Russian prose
   that you draft or are asked to edit. Read its academic-genre exceptions and rewrite guide, remove actual chatbot
   artifacts and formulaic wording, then inspect the source diff. For a review-only request, report findings without
