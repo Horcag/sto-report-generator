@@ -74,7 +74,8 @@ citations require them. `--type` changes title-page text only; it is not a profi
   a comparable control and record improvements, regressions, and unchanged outcomes. If only free overall scores
   are available, use the bounded localization procedure in the prose workflow to prioritize reading; it does not recover
   exact highlighted passages or replace a final full-document check. If a detailed heatmap from a previous revision is
-  available, the same reference describes a local reading-priority experiment and its limited evidence.
+  available, the same reference describes local reading-priority experiments and controls without old colors;
+  an added benefit from the color information has not been established.
 - Before source preflight, apply the bundled [`humanizer-ru`](../humanizer-ru/SKILL.md) skill to connected Russian prose
   that you draft or are asked to edit. Read its academic-genre exceptions and rewrite guide, remove actual chatbot
   artifacts and formulaic wording, then inspect the source diff. For a review-only request, report findings without
