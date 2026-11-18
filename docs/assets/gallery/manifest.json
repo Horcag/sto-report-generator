@@ -13,7 +13,7 @@
     "example/images/dummy.svg": "bafeb4ccc7ef2795f2c2161dc6c9245494c500c9d8a2568c5eb10e12d2c63aa5",
     "example/references.bib": "887bc69b8d5c37b0d918803d822547320438978da00141e81ff7592b9d83b610",
     "package-lock.json": "83b637fc145e79d75f360b6916a99ee56972f089a8c0e8c727a525cb565d0607",
-    "package.json": "17da416e11ee793e81c9902e09ba4eff60c7477e7402ebea3f56920fbaab2e2c",
+    "package.json": "e73299237896b325ea0e3bc208ee5d17f29c21a155f1b33c815a8bbcd778c805",
     "pyproject.toml": "0eb1993c9e5c7883827776f4ba3efd6765a1dc9aff33111d691cc30ad8474655",
     "scripts/post_build.py": "ebc753b075107cdcb81b20eb44065fc5941543a7fd6796e22f7373fce5c6ef33",
     "scripts/quality/check_formula_pdf.py": "204775f0b316056cfe680fb5d61a35ce65b988b9fdcd4b71a0bd490b753fdfd6",
@@ -95,7 +95,7 @@
     "src/features/markdown-parser/lib/parser/handlers/inline-parser.ts": "01667e0e388684c2e90ba5e523571bb572a9bdd8f9f164122f2963fc327727a4",
     "src/features/markdown-parser/lib/parser/handlers/math-handler.ts": "708a10dad95c9b02b41e1e00ee941888616a2b0a9effa54a6170fdb24f20fba1",
     "src/features/markdown-parser/lib/parser/handlers/report-table-of-contents.ts": "6b637ecd3b2d02caa4de4f2c02165f6f9026f487ab4bee65950bd96d2667883e",
-    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "943ee0c5ef9fc4808075d3608f131547564a10a8b8221f6396c657efe994f71d",
+    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "91713747cfe422971731d9a243381a743aa2916ed3d0ca7669f33f7cffb2f217",
     "src/features/markdown-parser/lib/parser/handlers/table-handler.ts": "3e65ebdcd28787fd9d245f3b5b1c1b2a177a4e58d08579445eb7cde8e68f93ef",
     "src/features/markdown-parser/lib/parser/reference-registry.ts": "533eb0e46e7efbcfd568d6e341a9c683c70035f5faf3f563d9eff56947de42fd",
     "src/features/markdown-parser/lib/parser/table-notes.ts": "c7c428ac9d0afba3349edc74dad105935f5eb38cf1ac5a5b17257a1015b414ff",
@@ -234,7 +234,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "ecc0dadf5053097f5186de3fb996ffe35597b7d0ecf219364a75138eaff9ba58",
+      "pdfSha256": "275f99aeb958f9bae99067c9fb2a68dfc9056343bb79e81dacc0b76460ecd24b",
       "pageCount": 8,
       "pages": [
         {
@@ -280,7 +280,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "6a89f859d8105713258a1addd20d4341e7f3f7a9bee9f3f6c2c2bf1ccc3dfa38",
+      "pdfSha256": "7e3a1565e8c0e49a82e51e5802d139b91f6fcc0002bc447125351e864c20c68b",
       "pageCount": 5,
       "pages": [
         {
@@ -331,7 +331,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "8a54c1f5e4c94e645499eda900a1942a3872021df7d08cdf3fb4922cd1a3494e",
+      "pdfSha256": "2cac0b12c8d65c6443bfdff1edb2022c6c542e46ea6f8498dba5c3492d6ec386",
       "pageCount": 4,
       "pages": [
         {
@@ -361,7 +361,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "459c0533b919f77ea964ddb37ea644d40ec3a40e2bede343a7816a039856684c",
+      "pdfSha256": "e94177f3b59b2d6bcd7241ab7ab30285a3914058fe2ef4e7fc2adefa1797e7c2",
       "pageCount": 2,
       "pages": [
         {
@@ -383,7 +383,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "c4dd0ed4995c1094dc8f8995f11a2a27fa656b40302e2a6168ce38b6477ace72",
+      "pdfSha256": "585f3d545b7ed9c4daa9273cd9e8cbe4e1e2de8569ee74effb91f3276c737be5",
       "pageCount": 11,
       "pages": [
         {
