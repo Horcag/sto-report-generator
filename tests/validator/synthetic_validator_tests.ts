@@ -7,6 +7,7 @@ import { unpackDocx } from '@/shared/lib/docx';
 
 import { runFormulaPunctuationTests } from './formula_punctuation_test';
 import { runMathLayoutTableTests } from './math_layout_table_test';
+import { runNumberingXmlTests } from './numbering_xml_test';
 import { runSyntheticBoldTests } from './synthetic_bold_tests';
 import { runSyntheticLayoutTests } from './synthetic_layout_tests';
 import { runWordNormalizedStyleTests } from './synthetic_word_style_tests';
@@ -33,6 +34,7 @@ export function runSyntheticValidatorTests(
 	runFormulaPunctuationTests();
 	runUnparsedMathTests();
 	runMathLayoutTableTests();
+	runNumberingXmlTests();
 	runTabXmlTests();
 	const namespaces =
 		'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';

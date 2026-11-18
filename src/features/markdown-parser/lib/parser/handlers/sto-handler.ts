@@ -107,7 +107,7 @@ export async function handleStoFlag(
 		const sentenceCaseText = (
 			text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
 		).replace(
-			/^(Приложение\s+)([а-яёa-z0-9]+)$/i,
+			/^(Приложение\s+)([а-яёa-z]\d*|\d+)(?=$|[\s.,:;–—-])/iu,
 			(_, prefix: string, designator: string) =>
 				`${prefix}${designator.toUpperCase()}`,
 		);

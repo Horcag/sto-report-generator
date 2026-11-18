@@ -309,6 +309,20 @@ export function validateDocumentStructure(
 				),
 			);
 		}
+		if (
+			heading.appendixTitle === undefined &&
+			/^ПРИЛОЖЕНИЕ(?:\s|$)/iu.test(heading.upperText)
+		) {
+			issues.push(
+				issue(
+					'structural-heading-appendix',
+					'use \\sto_appendix{А}{Название} instead of \\sto_structural_heading for appendices.',
+					heading.file,
+					heading.line,
+					'warning',
+				),
+			);
+		}
 	}
 
 	let previousIndex = -1;

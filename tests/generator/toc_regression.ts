@@ -34,6 +34,10 @@ title: Тест ТОС
 \sto_structural_heading{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
 
 \sto_structural_heading{ПРИЛОЖЕНИЕ А}
+
+\sto_structural_heading{ПРИЛОЖЕНИЕ Б. ДОПОЛНЕНИЕ}
+
+\sto_structural_heading{ПРИЛОЖЕНИЕ АНАЛИЗ}
 `;
 
 function paragraphContaining(
@@ -198,6 +202,8 @@ async function main(): Promise<void> {
 		'ЗАКЛЮЧЕНИЕ',
 		'СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ',
 		'ПРИЛОЖЕНИЕ А',
+		'ПРИЛОЖЕНИЕ Б. ДОПОЛНЕНИЕ',
+		'ПРИЛОЖЕНИЕ АНАЛИЗ',
 	]) {
 		if (currentXml.includes(`>${heading}<`)) {
 			errors.push(
@@ -212,6 +218,30 @@ async function main(): Promise<void> {
 	assert.equal(
 		paragraphContaining(currentXml, 'Приложение а', 'StructuralHeading'),
 		undefined,
+	);
+	assert.ok(
+		paragraphContaining(
+			currentXml,
+			'Приложение Б. дополнение',
+			'StructuralHeading',
+		),
+		'ПРИЛОЖЕНИЕ Б. ДОПОЛНЕНИЕ must preserve uppercase appendix designator ("Приложение Б. дополнение") in XML.',
+	);
+	assert.equal(
+		paragraphContaining(
+			currentXml,
+			'Приложение б. дополнение',
+			'StructuralHeading',
+		),
+		undefined,
+	);
+	assert.ok(
+		paragraphContaining(
+			currentXml,
+			'Приложение анализ',
+			'StructuralHeading',
+		),
+		'Non-appendix word after "Приложение " must convert to sentence case ("Приложение анализ").',
 	);
 
 	fs.rmSync(tempRoot, { recursive: true, force: true });

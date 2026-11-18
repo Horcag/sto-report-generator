@@ -16,6 +16,7 @@ const tests = [
 	['tests/source-preflight/regression_checks.ts', 'example'],
 	['tests/source-preflight/masking_regression_test.ts'],
 	['tests/source-preflight/math_environment_preflight.test.ts'],
+	['tests/source-preflight/appendix_heading_warning.test.ts'],
 	['tests/parser/run_parser_tests.ts'],
 	['tests/parser/table_layout.test.ts'],
 	['tests/parser/table_headers.test.ts'],
@@ -77,6 +78,7 @@ const tests = [
 	['tests/bibliography/bib-dataset-lookup.test.ts'],
 	['tests/bibliography/bib-presentation.test.ts'],
 	['tests/generator/toc_regression.ts'],
+	['tests/generator/list_numbering_test.ts'],
 	['tests/generator/run_generator_snapshot_test.ts'],
 	['tests/quality/lcov_gate.test.ts'],
 ];
