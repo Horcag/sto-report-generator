@@ -3,6 +3,8 @@ import path from 'node:path';
 import AdmZip from 'adm-zip';
 import { JSDOM } from 'jsdom';
 
+import { hasXmlAncestor, MARKUP_COMPATIBILITY_NS } from '@/shared/lib/docx';
+
 const WORD = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const DRAWING = 'http://schemas.openxmlformats.org/drawingml/2006/main';
 const MATH = 'http://schemas.openxmlformats.org/officeDocument/2006/math';
@@ -198,12 +200,21 @@ export function preflightWordcraftFonts(
 			const family = symbol.getAttributeNS(WORD, 'font');
 			if (family) required.add(family);
 		}
-		if (document?.getElementsByTagNameNS(DRAWING, 't').length) {
+		if (
+			[...(document?.getElementsByTagNameNS(DRAWING, 't') ?? [])].some(
+				node =>
+					!hasXmlAncestor(node, [
+						[MARKUP_COMPATIBILITY_NS, 'Fallback'],
+					]),
+			)
+		) {
 			unverified(
 				'Wordcraft font preflight does not resolve DrawingML text fonts; drawing font substitution remains unverified.',
 			);
 		}
 		for (const run of descendants(document, 'r')) {
+			if (hasXmlAncestor(run, [[MARKUP_COMPATIBILITY_NS, 'Fallback']]))
+				continue;
 			const text = descendants(run, 't')
 				.map(node => node.textContent)
 				.join('');

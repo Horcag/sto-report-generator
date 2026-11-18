@@ -4,7 +4,7 @@ from typing import Any
 
 from lxml import etree
 
-from .constants import WORD_NS
+from .constants import MC_NS, WORD_NS
 from .docx_package import read_docx_part, rewrite_docx_part
 from .table_spacing import (
     add_spacing_after_data_tables,
@@ -118,7 +118,11 @@ def normalize_referat_keyword_paragraph(paragraph: Any) -> bool:
 
 def normalize_referat_keyword_paragraphs(document_root: Any) -> int:
     changed = 0
-    for paragraph in document_root.xpath(".//w:p", namespaces={"w": WORD_NS}):
+    for paragraph in document_root.xpath(
+        ".//w:p[not(ancestor::mc:Fallback or ancestor::w:txbxContent "
+        "or ancestor::w:drawing or ancestor::w:pict)]",
+        namespaces={"mc": MC_NS, "w": WORD_NS},
+    ):
         if normalize_referat_keyword_paragraph(paragraph):
             changed += 1
     return changed

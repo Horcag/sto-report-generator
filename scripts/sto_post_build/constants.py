@@ -11,6 +11,7 @@ WD_EXPORT_FORMAT_PDF = 17
 MAX_IMAGE_WIDTH_POINTS = 14 / 2.54 * 72
 DIRTY_TRUE_RE = re.compile(r'w:dirty="(?:true|1)"')
 MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
+MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006"
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 MATH_PATTERN = re.compile(r"\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$")
 TABLE_AFTER_SPACING_TWIPS = str(

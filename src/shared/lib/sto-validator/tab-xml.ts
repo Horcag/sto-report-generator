@@ -1,8 +1,13 @@
 import { findWordStyleXml, resolveWordStyleId } from '../docx/styles';
-import { extractWordText, getParagraphStyleId } from './body-xml';
+import {
+	extractWordText,
+	getAllDocumentParagraphs,
+	getBalancedWordElements,
+	getParagraphStyleId,
+} from './body-xml';
 
 function hasRunLevelTab(paragraphXml: string): boolean {
-	const runs = paragraphXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? [];
+	const runs = getBalancedWordElements(paragraphXml, 'r');
 	return runs.some(runXml => /<w:tab\b/.test(runXml));
 }
 
@@ -32,7 +37,9 @@ export function hasForbiddenTabCharacters(
 	docXml: string,
 	stylesXml: string,
 ): boolean {
-	const paragraphs = docXml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? [];
+	const paragraphs = getAllDocumentParagraphs(docXml, {
+		stripDrawings: true,
+	});
 	return paragraphs.some(
 		paragraphXml =>
 			(hasRunLevelTab(paragraphXml) ||

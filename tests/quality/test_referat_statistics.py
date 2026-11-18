@@ -88,6 +88,32 @@ class ReferatStatisticReadinessTests(unittest.TestCase):
                 )
             self.assertEqual(get_counts_from_docx(docx_path).appendices, 3)
 
+    def test_ignores_counts_inside_drawings_and_mc_fallback(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docx_path = Path(directory) / "report.docx"
+            with zipfile.ZipFile(docx_path, "w") as archive:
+                archive.writestr(
+                    "word/document.xml",
+                    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+                    'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" '
+                    'xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">'
+                    "<w:body>"
+                    '<w:p><w:pPr><w:pStyle w:val="FigureCaption"/></w:pPr><w:r><w:t>Рисунок 1</w:t></w:r></w:p>'
+                    "<w:p><w:r><w:drawing><wps:wsp><wps:txbx><w:txbxContent>"
+                    '<w:p><w:pPr><w:pStyle w:val="FigureCaption"/></w:pPr><w:r><w:t>Рисунок 99</w:t></w:r></w:p>'
+                    '<w:p><w:pPr><w:pStyle w:val="TableCaption"/></w:pPr><w:r><w:t>Таблица 99</w:t></w:r></w:p>'
+                    '<w:p><w:pPr><w:pStyle w:val="AppendixHeading"/></w:pPr><w:r><w:t>ПРИЛОЖЕНИЕ Я</w:t></w:r></w:p>'
+                    "<w:p><w:r><w:t>[99]</w:t></w:r></w:p>"
+                    "</w:txbxContent></wps:txbx></wps:wsp></w:drawing></w:r></w:p>"
+                    '<mc:AlternateContent><mc:Choice Requires="wpg"><w:p><w:r><w:t>OK [1]</w:t></w:r></w:p></mc:Choice>'
+                    '<mc:Fallback><w:p><w:pPr><w:pStyle w:val="FigureCaption"/></w:pPr><w:r><w:t>[88]</w:t></w:r></w:p></mc:Fallback></mc:AlternateContent>'
+                    "</w:body></w:document>",
+                )
+            counts = get_counts_from_docx(docx_path)
+            self.assertEqual(
+                (counts.figures, counts.tables, counts.sources, counts.appendices), (1, 0, 1, 0)
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

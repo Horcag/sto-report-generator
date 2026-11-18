@@ -27,7 +27,13 @@ def preserve_images(docx: Path, pdf: Path, output: Path) -> dict:
     mupdf = importlib.import_module("pymupdf")
     inspection = inspect_images(docx, pdf)
     if inspection["source_occurrences"] == inspection["pdf_occurrences"] == 0:
-        if inspection["issues"] != ["no supported body raster occurrences to verify"]:
+        allowed_vector_only = (
+            inspection.get("vector_occurrences", 0) > 0 and not inspection["issues"]
+        )
+        allowed_no_images = inspection["issues"] == [
+            "no supported body raster occurrences to verify"
+        ]
+        if not (allowed_vector_only or allowed_no_images):
             raise ValueError(f"Unsupported image layout: {inspection['issues']}")
     elif inspection["status"] == "inconclusive":
         raise ValueError(

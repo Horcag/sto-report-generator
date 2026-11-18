@@ -221,6 +221,72 @@ class InspectPdfImagesTests(unittest.TestCase):
         self.assertEqual(inspect_images(self.docx, self.pdf)["status"], "inconclusive")
         self.assertEqual(self.run_cli(require=True), 1)
 
+    def _write_shape_docx(self, *, fallback_vml=False, raw_vml=False, nested_pic=False):
+        pic = (
+            '<pic:pic><pic:blipFill><a:blip r:embed="rId1"/></pic:blipFill></pic:pic>'
+            if nested_pic
+            else ""
+        )
+        wpg = (
+            '<w:r><w:drawing><wp:inline><wp:extent cx="914400" cy="457200"/>'
+            f"<a:graphic><a:graphicData><wpg:wgp><wps:wsp><wps:txbx><w:txbxContent><w:p><w:r><w:t>Блок</w:t></w:r></w:p></w:txbxContent></wps:txbx></wps:wsp>{pic}</wpg:wgp></a:graphicData></a:graphic>"
+            "</wp:inline></w:drawing></w:r>"
+        )
+        vml = '<w:r><w:pict><v:shape><v:imagedata r:id="rId1"/></v:shape></w:pict></w:r>'
+        body = (
+            f'<mc:AlternateContent><mc:Choice Requires="wpg">{wpg}</mc:Choice>'
+            f"<mc:Fallback>{vml}</mc:Fallback></mc:AlternateContent>"
+            if fallback_vml
+            else (vml if raw_vml else wpg)
+        )
+        document = (
+            '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+            'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" '
+            'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+            'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" '
+            'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" '
+            'xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" '
+            'xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" '
+            'xmlns:v="urn:schemas-microsoft-com:vml" '
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            f"<w:body><w:p>{body}</w:p></w:body></w:document>"
+        )
+        with ZipFile(self.docx, "w") as archive:
+            archive.writestr("word/document.xml", document)
+
+    def _write_pdf_with_transparent_ghost(self):
+        import pymupdf
+
+        ghost = pymupdf.Pixmap(pymupdf.csRGB, (0, 0, 8, 8), True)
+        ghost.clear_with(0)
+        ghost.set_alpha(bytes([0] * 64))
+        with pymupdf.open() as document:
+            page = document.new_page()
+            page.insert_text((30, 30), "Векторная диаграмма")
+            page.insert_image(pymupdf.Rect(30, 40, 60, 60), stream=ghost.tobytes("png"))
+            document.save(self.pdf)
+
+    def test_vector_shape_group_with_transparent_ghost_passes(self):
+        self._write_shape_docx(fallback_vml=True)
+        self._write_pdf_with_transparent_ghost()
+        result = inspect_images(self.docx, self.pdf)
+        self.assertEqual(result["status"], "retained")
+        self.assertEqual(result["vector_occurrences"], 1)
+        self.assertEqual(result["source_occurrences"], 0)
+        self.assertEqual(result["pdf_occurrences"], 0)
+        self.assertEqual(self.run_cli(require=True), 0)
+
+    def test_vector_shape_group_negative_controls(self):
+        self.make_pdf(count=1)
+        self._write_shape_docx()
+        self.assertEqual(inspect_images(self.docx, self.pdf)["status"], "inconclusive")
+        self.make_pdf(count=0)
+        for opts in [{"raw_vml": True}, {"nested_pic": True}]:
+            with self.subTest(opts=opts):
+                self._write_shape_docx(**opts)
+                self.assertEqual(inspect_images(self.docx, self.pdf)["status"], "inconclusive")
+                self.assertEqual(self.run_cli(require=True), 1)
+
 
 class OptionalDependencyTests(unittest.TestCase):
     def test_missing_pymupdf_is_actionable(self):

@@ -89,6 +89,37 @@ export function runWordAcceptanceIntegrityTests(): void {
 			),
 		/changed or reordered document text/,
 	);
+
+	// Drawing textboxes and mc:Fallback copies must never perturb body paragraph integrity.
+	const withDrawingAndFallback = document([
+		paragraph('Первый абзац'),
+		`<w:p><w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData><wpg:wgp xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"><wps:wsp xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"><wps:txbx><w:txbxContent><w:p><w:r><w:t>Внутри фигуры</w:t></w:r></w:p></w:txbxContent></wps:txbx></wps:wsp></wpg:wgp></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>` +
+			`<mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><mc:Choice Requires="wpg">${paragraph('Активный выбор')}</mc:Choice><mc:Fallback>${paragraph('Игнорируемый фоллбэк')}</mc:Fallback></mc:AlternateContent>`,
+		paragraph('Второй абзац'),
+	]);
+	const matchingChoiceOnly = document([
+		paragraph('Первый абзац'),
+		paragraph('Активный выбор'),
+		paragraph('Второй абзац'),
+	]);
+	assert.doesNotThrow(() =>
+		assertPreservedParagraphOrder(
+			withDrawingAndFallback,
+			matchingChoiceOnly,
+		),
+	);
+	assert.throws(
+		() =>
+			assertPreservedParagraphOrder(
+				withDrawingAndFallback,
+				document([
+					paragraph('Первый абзац'),
+					paragraph('Игнорируемый фоллбэк'),
+					paragraph('Второй абзац'),
+				]),
+			),
+		/changed or reordered document text/,
+	);
 }
 
 runWordAcceptanceIntegrityTests();

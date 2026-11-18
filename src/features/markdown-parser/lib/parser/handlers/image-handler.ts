@@ -2,7 +2,11 @@ import fs from 'node:fs';
 import { ImageRun } from 'docx';
 import { Tokens } from 'marked';
 
-import { loadFigureSettings, planFigure } from '@/shared/lib/figures';
+import {
+	compileSvgToShapeGroup,
+	loadFigureSettings,
+	planFigure,
+} from '@/shared/lib/figures';
 
 import { InlineDocxElement, ParserContext } from '../../types';
 
@@ -27,6 +31,19 @@ export async function handleImage(
 	for (const issue of plan.issues) {
 		if (issue.severity === 'error') throw new Error(issue.message);
 		console.warn(issue.message);
+	}
+	if (plan.type === 'svg' && plan.svgMode === 'shapes') {
+		return [
+			compileSvgToShapeGroup({
+				sourcePath: plan.sourcePath,
+				figureId: id,
+				widthMm: plan.widthMm,
+				heightMm: plan.heightMm,
+				crop: plan.crop,
+				title: token.title ?? '',
+				description: token.text,
+			}),
+		];
 	}
 	const options = {
 		data: fs.readFileSync(plan.sourcePath),

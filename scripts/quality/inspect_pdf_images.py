@@ -23,6 +23,20 @@ NS = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
     "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
     "pic": "http://schemas.openxmlformats.org/drawingml/2006/picture",
+    "mc": "http://schemas.openxmlformats.org/markup-compatibility/2006",
+    "wpg": "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
+    "wps": "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
+    "wpc": "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas",
+}
+MC_FALLBACK_TAG = f"{{{NS['mc']}}}Fallback"
+VECTOR_DRAWING_TAGS = {
+    f"{{{NS['wpg']}}}wgp",
+    f"{{{NS['wps']}}}wsp",
+    f"{{{NS['wpc']}}}wpc",
+}
+RASTER_OR_BLIP_TAGS = {
+    f"{{{NS['pic']}}}pic",
+    f"{{{NS['a']}}}blip",
 }
 RASTERS = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff"}
 LIMITATIONS = [
@@ -126,41 +140,90 @@ def drawing_source(drawing: Any, relationships: dict, archive: ZipFile, mupdf: A
     return result
 
 
-def source_images(docx: Path, mupdf: Any) -> tuple[list[dict], list[str]]:
+def iter_active_elements(node: Any):
+    if node.tag == MC_FALLBACK_TAG:
+        return
+    yield node
+    for child in node:
+        yield from iter_active_elements(child)
+
+
+def active_drawings(node: Any) -> list[Any]:
+    drawing_tag = f"{{{NS['w']}}}drawing"
+    return [element for element in iter_active_elements(node) if element.tag == drawing_tag]
+
+
+def is_pure_vector_drawing(drawing: Any) -> bool:
+    nodes = list(iter_active_elements(drawing))
+    has_vector = any(node.tag in VECTOR_DRAWING_TAGS for node in nodes)
+    if not has_vector:
+        return False
+    has_raster = any(
+        node.tag in RASTER_OR_BLIP_TAGS
+        or node.tag.endswith("}svgBlip")
+        or node.tag.endswith("}imagedata")
+        for node in nodes
+    )
+    return not has_raster
+
+
+def source_images(docx: Path, mupdf: Any) -> tuple[list[dict], list[str], int]:
     issues = []
+    images = []
+    vector_occurrences = 0
     with ZipFile(docx) as archive:
         document = ElementTree.fromstring(archive.read("word/document.xml"))
         body = document.find("w:body", NS)
         if body is None:
-            return [], ["DOCX has no document body"]
+            return [], ["DOCX has no document body"], 0
         relationships = {}
         if "word/_rels/document.xml.rels" in archive.namelist():
             relationships = {
                 item.get("Id"): item
                 for item in ElementTree.fromstring(archive.read("word/_rels/document.xml.rels"))
             }
-        images = [
-            drawing_source(item, relationships, archive, mupdf)
-            for item in body.findall(".//w:drawing", NS)
-        ]
+        body_drawings = active_drawings(body)
+        for item in body_drawings:
+            if is_pure_vector_drawing(item):
+                inline = item.find("wp:inline", NS)
+                if inline is None or len(item) != 1:
+                    issues.append("vector drawing group must be a single inline drawing")
+                else:
+                    extent = inline.find("wp:extent", NS)
+                    if extent is not None:
+                        size = [int(extent.get(axis, "0")) / 12700 for axis in ("cx", "cy")]
+                        if min(size) <= 0:
+                            issues.append("inline vector drawing has invalid display extent")
+                vector_occurrences += 1
+                continue
+            images.append(drawing_source(item, relationships, archive, mupdf))
         for name in archive.namelist():
             if not name.startswith("word/") or not name.endswith(".xml"):
                 continue
             tree = ElementTree.fromstring(archive.read(name))
-            if any(node.tag.endswith("}imagedata") for node in tree.iter()):
+            active_nodes = list(iter_active_elements(tree))
+            if any(node.tag.endswith("}imagedata") for node in active_nodes):
                 issues.append(f"legacy VML images are unsupported: {name}")
-            if name != "word/document.xml" and tree.findall(".//w:drawing", NS):
+            if name != "word/document.xml" and any(
+                node.tag == f"{{{NS['w']}}}drawing" for node in active_nodes
+            ):
                 issues.append(f"pictures outside document body are unsupported: {name}")
-        if len(document.findall(".//w:drawing", NS)) != len(images):
+        if len(active_drawings(document)) != len(body_drawings):
             issues.append("drawings outside document body are unsupported")
-    return images, issues
+    return images, issues, vector_occurrences
 
 
 def displayed_images(pdf: Path, mupdf: Any) -> list[dict]:
     images = []
     with mupdf.open(pdf) as document:
         for page_number, page in enumerate(document, 1):
+            smasks = {image[0]: image[1] for image in page.get_images(full=True)}
             for info in page.get_image_info(xrefs=True):
+                smask = smasks.get(info["xref"], 0)
+                if smask:
+                    smask_pixmap = mupdf.Pixmap(document, smask)
+                    if max(smask_pixmap.samples, default=0) == 0:
+                        continue
                 a, b, c, d, _x, _y = info["transform"]
                 size = [math.hypot(a, b), math.hypot(c, d)]
                 issues = []
@@ -196,9 +259,9 @@ def inspect_images(docx: Path, pdf: Path) -> dict:
             "PyMuPDF is optional. Run: uv run --with pymupdf python "
             "scripts/quality/inspect_pdf_images.py <docx> <pdf> --output receipt.json"
         ) from error
-    source, issues = source_images(docx, mupdf)
+    source, issues, vector_occurrences = source_images(docx, mupdf)
     displayed = displayed_images(pdf, mupdf)
-    if not source:
+    if not source and vector_occurrences == 0:
         issues.append("no supported body raster occurrences to verify")
     if len(source) != len(displayed):
         issues.append("source and displayed PDF image occurrence counts differ")
@@ -238,6 +301,7 @@ def inspect_images(docx: Path, pdf: Path) -> dict:
         "docx_sha256": sha256(docx),
         "pdf_sha256": sha256(pdf),
         "source_occurrences": len(source),
+        "vector_occurrences": vector_occurrences,
         "pdf_occurrences": len(displayed),
         "source_images": source,
         "pdf_images": displayed,
