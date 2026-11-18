@@ -5,3 +5,4 @@ export {
 	splitSharedAbstractNumbering,
 } from './numbering';
 export { applyDataTableSpacing } from './table-spacing';
+export * from './xml-elements';

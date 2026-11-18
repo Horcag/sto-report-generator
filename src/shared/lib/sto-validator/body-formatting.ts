@@ -7,10 +7,14 @@ import { startsWithLowercaseSentence } from '../math/sentence-continuation';
 import {
 	decodeXmlText,
 	extractWordText,
+	getBalancedWordElements,
 	getBodyElements,
 	getParagraphStyleId,
 	isParagraphXml,
 	isVisibleParagraph,
+	paragraphHasDrawing,
+	stripAlternateFallbacks,
+	stripDrawingContainers,
 } from './body-xml';
 import { isMathLayoutTable } from './math-layout-table';
 import { formulaEndsWithComma } from './math-xml';
@@ -31,7 +35,8 @@ export function hasInvalidDirectBodyFormatting(
 		if (headingText === 'СОДЕРЖАНИЕ' || headingText === 'ВВЕДЕНИЕ')
 			inReferat = false;
 		const styleId = getParagraphStyleId(paragraphXml);
-		const runs = paragraphXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? [];
+		const proseParagraphXml = stripDrawingContainers(paragraphXml);
+		const runs = getBalancedWordElements(proseParagraphXml, 'r');
 		const isCodeBlock =
 			runs.length > 0 && runs.every(run => run.includes('Courier New'));
 		const styleName = styleId
@@ -46,11 +51,15 @@ export function hasInvalidDirectBodyFormatting(
 			styleName !== '+Абзац с отступом 1-ой строки'
 		)
 			return false;
+		const hasOnlyPict =
+			/<w:pict\b/.test(stripAlternateFallbacks(paragraphXml)) &&
+			text === '';
 		if (
-			paragraphXml.includes('<w:numPr') ||
-			paragraphXml.includes('<w:drawing') ||
+			proseParagraphXml.includes('<w:numPr') ||
+			paragraphHasDrawing(paragraphXml) ||
+			hasOnlyPict ||
 			isCodeBlock ||
-			(inReferat && paragraphXml.includes('<w:caps')) ||
+			(inReferat && proseParagraphXml.includes('<w:caps')) ||
 			/^где(?:\s|$)/iu.test(text)
 		)
 			return false;
@@ -66,8 +75,8 @@ export function hasInvalidDirectBodyFormatting(
 			);
 		const previous = elements[index - 1];
 		const visibleText = [
-			...paragraphXml.matchAll(
-				/<m:oMath\b[^>]*>[\s\S]*?<\/m:oMath>|<w:drawing\b[^>]*>[\s\S]*?<\/w:drawing>|<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g,
+			...proseParagraphXml.matchAll(
+				/<m:oMath\b[^>]*>[\s\S]*?<\/m:oMath>|<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g,
 			),
 		]
 			.map(match =>
@@ -80,7 +89,7 @@ export function hasInvalidDirectBodyFormatting(
 			isMathLayoutTable(previous, stylesXml) &&
 			formulaEndsWithComma(previous, docXml);
 		const runSpacing = [
-			...paragraphXml.matchAll(/<w:rPr\b[^>]*>([\s\S]*?)<\/w:rPr>/g),
+			...proseParagraphXml.matchAll(/<w:rPr\b[^>]*>([\s\S]*?)<\/w:rPr>/g),
 		]
 			.map(match => /<w:spacing\b[^>]*\/>/.exec(match[1])?.[0] ?? '')
 			.filter(Boolean);

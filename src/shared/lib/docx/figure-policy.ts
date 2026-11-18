@@ -8,6 +8,7 @@ const WP =
 	'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing';
 const A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
 const PIC = 'http://schemas.openxmlformats.org/drawingml/2006/picture';
+const WPG = 'http://schemas.microsoft.com/office/word/2010/wordprocessingGroup';
 
 /** Preserve original media; cropping changes only the DrawingML visible rectangle. */
 export function applyFigureDocumentPolicy(
@@ -74,6 +75,13 @@ export function applyFigureDocumentPolicy(
 				throw new Error(`Missing or duplicate figure plan: ${id}`);
 			used.add(id);
 			const fill = drawing.getElementsByTagNameNS(PIC, 'blipFill')[0];
+			const shapeGroup = drawing.getElementsByTagNameNS(WPG, 'wgp')[0];
+			if (!fill && shapeGroup) {
+				if (plan.type !== 'svg' || plan.svgMode !== 'shapes') {
+					throw new Error(`Missing figure image fill: ${id}`);
+				}
+				continue;
+			}
 			if (!fill) throw new Error(`Missing figure image fill: ${id}`);
 			let rectangle = fill.getElementsByTagNameNS(A, 'srcRect')[0];
 			if (!rectangle) {

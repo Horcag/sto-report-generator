@@ -36,6 +36,21 @@ export const ELEMENT_STYLES: NonNullable<IStylesOptions['paragraphStyles']> = [
 		},
 	},
 	{
+		id: 'DiagramText',
+		name: 'Diagram Text',
+		next: 'DiagramText',
+		paragraph: {
+			alignment: AlignmentType.LEFT,
+			indent: { left: 0, right: 0, firstLine: 0 },
+			spacing: { before: 0, after: 0, line: 240, lineRule: 'auto' },
+		},
+		run: {
+			font: STO_RULES.typography.fontFamily,
+			size: 20,
+			color: '000000',
+		},
+	},
+	{
 		id: 'CenteredParagraph',
 		name: 'Centered Paragraph',
 		basedOn: 'Normal',

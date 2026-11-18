@@ -7,8 +7,13 @@ from pathlib import Path
 
 from lxml import etree
 
-from .constants import WORD_NS
+from .constants import MC_NS, WORD_NS
 from .models import DocumentCounts
+
+OUTER_PROSE_PREDICATE = (
+    "not(ancestor::mc:Fallback or ancestor::w:txbxContent "
+    "or ancestor::w:drawing or ancestor::w:pict)"
+)
 
 
 def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
@@ -28,7 +33,7 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
 
         tree = etree.parse(str(document_path))
         root = tree.getroot()
-        namespace = {"w": WORD_NS}
+        namespace = {"mc": MC_NS, "w": WORD_NS}
         style_names: dict[str, str] = {}
         styles_path = Path(temp_dir) / "word" / "styles.xml"
         if styles_path.exists():
@@ -39,7 +44,7 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
                 if style_id and name is not None:
                     style_names[style_id] = name.get(f"{{{WORD_NS}}}val", "")
 
-        for paragraph in root.xpath(".//w:p", namespaces=namespace):
+        for paragraph in root.xpath(f".//w:p[{OUTER_PROSE_PREDICATE}]", namespaces=namespace):
             style_values = paragraph.xpath("./w:pPr/w:pStyle/@w:val", namespaces=namespace)
             if not style_values:
                 continue
@@ -48,7 +53,9 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
             if style == "FigureCaption" or style_name == "+№ - Название рисунка":
                 figures += 1
             elif style == "TableCaption" or style_name == "+№ - Название таблицы":
-                text = "".join(paragraph.xpath(".//w:t/text()", namespaces=namespace))
+                text = "".join(
+                    paragraph.xpath(f".//w:t[{OUTER_PROSE_PREDICATE}]/text()", namespaces=namespace)
+                )
                 # Later page-sized segments reuse TableCaption but belong to the
                 # same numbered table in the referat statistics.
                 if re.match(r"\s*Таблица(?:\s|$)", text, re.IGNORECASE):
@@ -56,14 +63,16 @@ def get_counts_from_docx(docx_path: str | Path) -> DocumentCounts:
             elif style == "AppendixHeading":
                 appendices += 1
             elif style == "StructuralHeading":
-                text = "".join(paragraph.xpath(".//w:t/text()", namespaces=namespace))
+                text = "".join(
+                    paragraph.xpath(f".//w:t[{OUTER_PROSE_PREDICATE}]/text()", namespaces=namespace)
+                )
                 if re.fullmatch(r"\s*ПРИЛОЖЕНИЕ\s+[\u0410-\u042f\u0401]\s*", text, re.IGNORECASE):
                     appendices += 1
 
         # The bibliography builder emits only cited sources and numbers them densely
         # by first use, so the used-source count is the highest citation number.
         max_source = 0
-        for text in root.xpath(".//w:t/text()", namespaces=namespace):
+        for text in root.xpath(f".//w:t[{OUTER_PROSE_PREDICATE}]/text()", namespaces=namespace):
             matches = re.findall(r"\[([\d,\s]+)\]", text)
             for match in matches:
                 numbers = [

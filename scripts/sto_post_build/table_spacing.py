@@ -5,13 +5,17 @@ from typing import Any
 
 from lxml import etree
 
-from .constants import MATH_NS, TABLE_AFTER_SPACING_TWIPS, WORD_NS
+from .constants import MATH_NS, MC_NS, TABLE_AFTER_SPACING_TWIPS, WORD_NS
 
 WORD = f"{{{WORD_NS}}}"
+OUTER_PROSE_XPATH = (
+    ".//w:t[not(ancestor::mc:Fallback or ancestor::w:txbxContent "
+    "or ancestor::w:drawing or ancestor::w:pict)]/text()"
+)
 
 
 def element_text(element: Any) -> str:
-    return "".join(element.xpath(".//w:t/text()", namespaces={"w": WORD_NS})).strip()
+    return "".join(element.xpath(OUTER_PROSE_XPATH, namespaces={"mc": MC_NS, "w": WORD_NS})).strip()
 
 
 def is_math_layout_table(element: Any, namespace: dict[str, str], styles_root: Any = None) -> bool:

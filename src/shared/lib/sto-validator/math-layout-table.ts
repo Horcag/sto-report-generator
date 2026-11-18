@@ -1,20 +1,27 @@
 import { getEffectiveParagraphAttribute } from '../docx/styles';
-import { extractWordText, getParagraphStyleId } from './body-xml';
+import {
+	extractWordText,
+	getAllDocumentParagraphs,
+	getBalancedWordElements,
+	getParagraphPropertiesContent,
+	getParagraphStyleId,
+	stripAlternateFallbacks,
+} from './body-xml';
 
 function hasCenteredMathParagraphs(
 	cellXml: string,
 	stylesXml: string,
 ): boolean {
-	const paragraphs =
-		cellXml.match(/<w:p\b(?![^>]*\/>)[^>]*>[\s\S]*?<\/w:p>/g) ?? [];
+	const paragraphs = getAllDocumentParagraphs(cellXml, {
+		stripDrawings: true,
+	});
 	const mathParagraphs = paragraphs.filter(paragraph =>
 		paragraph.includes('<m:oMath'),
 	);
 	return (
 		mathParagraphs.length > 0 &&
 		mathParagraphs.every(paragraph => {
-			const properties =
-				/<w:pPr\b[^>]*>([\s\S]*?)<\/w:pPr>/.exec(paragraph)?.[1] ?? '';
+			const properties = getParagraphPropertiesContent(paragraph);
 			const direct = /<w:jc\b[^>]*\bw:val="([^"]+)"/.exec(
 				properties,
 			)?.[1];
@@ -39,17 +46,18 @@ function hasCenteredMathParagraphs(
 
 /** Recognize formula wrappers, including adjacent wrappers merged by Word. */
 export function isMathLayoutTable(tableXml: string, stylesXml = ''): boolean {
+	const activeTable = stripAlternateFallbacks(tableXml);
 	if (
-		(tableXml.match(/<w:tbl\b/g)?.length ?? 0) !== 1 ||
-		/<w:tblHeader\b/.test(tableXml) ||
-		tableXml.includes('<w:drawing')
+		(activeTable.match(/<w:tbl\b/g)?.length ?? 0) !== 1 ||
+		/<w:tblHeader\b/.test(activeTable) ||
+		activeTable.includes('<w:drawing')
 	) {
 		return false;
 	}
-	const rows = tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/g) ?? [];
+	const rows = getBalancedWordElements(activeTable, 'tr');
 	if (rows.length === 0) return false;
 	for (const row of rows) {
-		const cells = row.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
+		const cells = getBalancedWordElements(row, 'tc');
 		if (cells.length === 1) {
 			const formula = cells[0];
 			if (

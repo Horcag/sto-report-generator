@@ -15,6 +15,7 @@ import { validateBibliographyPresentation } from './sto-validator/bibliography-x
 import { hasInvalidDirectBodyFormatting } from './sto-validator/body-formatting';
 import {
 	extractWordText,
+	getAllDocumentParagraphs,
 	getContinuationFailures,
 	getNoteFailures,
 	getReportBodyElements,
@@ -23,6 +24,7 @@ import {
 	isVisibleParagraph,
 	paragraphHasDrawing,
 	paragraphHasStyle,
+	stripDrawingContainers,
 } from './sto-validator/body-xml';
 import { hasBoldOrdinaryBodyText } from './sto-validator/bold-formatting';
 import {
@@ -32,6 +34,7 @@ import {
 	countTableHeaderFinalPeriods,
 	countTablesWithDiagonalBorders,
 	countUncenteredImageParagraphs,
+	hasOversizedImages,
 } from './sto-validator/layout-xml';
 import { isMathLayoutTable } from './sto-validator/math-layout-table';
 import {
@@ -180,14 +183,6 @@ function getMissingCitationNumbers(
 	}
 
 	return missingNumbers;
-}
-
-function hasOversizedImages(docXml: string): boolean {
-	const maxWidthEmu = STO_RULES.page.imageMaxWidthEmu;
-
-	return [...docXml.matchAll(/<wp:extent\b[^>]*\bcx="(\d+)"/g)].some(
-		match => Number(match[1]) > maxWidthEmu,
-	);
 }
 
 function hasExpectedPageMargins(docXml: string): boolean {
@@ -428,24 +423,25 @@ function hasStylePropertyOrInheritedByIdOrName(
 }
 
 function validateHeadingText(input: ValidationInput): ValidationResult[] {
+	const proseDocXml = stripDrawingContainers(input.docXml);
 	const capsHeading1 = regexMatches(
 		new RegExp(
-			String.raw`${input.heading1StyleRef}(?:(?!<\/w:p>).)*?<w:t>([^<]*[А-ЯA-Z]{5,}[^<]*)<\/w:t>`,
+			String.raw`${input.heading1StyleRef}(?:(?!<\/w:p>).)*?<w:t\b[^>]*>([^<]*[А-ЯA-Z]{5,}[^<]*)<\/w:t>`,
 			's',
 		),
-		input.docXml,
+		proseDocXml,
 	);
 	const structuralHeadingLowerText = regexMatches(
 		new RegExp(
-			String.raw`${input.structuralHeadingStyleRef}(?:(?!<\/w:p>).)*?<w:t>[^<]*[a-zа-яё][^<]*<\/w:t>`,
+			String.raw`${input.structuralHeadingStyleRef}(?:(?!<\/w:p>).)*?<w:t\b[^>]*>[^<]*[a-zа-яё][^<]*<\/w:t>`,
 			's',
 		),
-		input.docXml,
+		proseDocXml,
 	);
 	const hasAllCapsStyle = hasStyleProperty(
 		input.stylesXml,
 		[STRUCTURAL_HEADING_STYLE_ID],
-		/<w:caps\/>/,
+		/<w:caps\b(?![^>]*w:val="(?:0|false)")/,
 	);
 	const structuralCasingPassed = structuralHeadingLowerText
 		? hasAllCapsStyle
@@ -555,7 +551,7 @@ function hasCenteredPageNumber(footerXml: string | undefined): boolean {
 	if (!footerXml || !regexMatches(/\bPAGE\b/, footerXml)) {
 		return false;
 	}
-	return (footerXml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? []).some(
+	return getAllDocumentParagraphs(footerXml).some(
 		paragraphXml =>
 			regexMatches(/\bPAGE\b/, paragraphXml) &&
 			regexMatches(/<w:jc\b[^>]*w:val="center"[^>]*\/>/, paragraphXml),

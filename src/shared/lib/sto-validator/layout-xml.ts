@@ -2,22 +2,35 @@ import { STO_RULES } from '../../config';
 import { getEffectiveBodyParagraphAttribute } from '../docx/styles';
 import {
 	extractWordText,
+	getAllDocumentParagraphs,
+	getBalancedWordElements,
 	getBodyElements,
 	getParagraphStyleId,
 	getReportTables,
 	isParagraphXml,
+	paragraphHasDrawing,
+	stripAlternateFallbacks,
+	stripTextboxAndFallbackContainers,
 } from './body-xml';
 import { isMathLayoutTable } from './math-layout-table';
+
+export function hasOversizedImages(docXml: string): boolean {
+	const maxWidthEmu = STO_RULES.page.imageMaxWidthEmu;
+	return [
+		...stripAlternateFallbacks(docXml).matchAll(
+			/<wp:extent\b[^>]*\bcx="(\d+)"/g,
+		),
+	].some(match => Number(match[1]) > maxWidthEmu);
+}
 
 export function countUncenteredImageParagraphs(
 	docXml: string,
 	stylesXml = '',
 ): number {
-	const paragraphs =
-		docXml.match(/<w:p\b(?![^>]*\/>)[^>]*>[\s\S]*?<\/w:p>/g) ?? [];
+	const paragraphs = getAllDocumentParagraphs(docXml);
 	return paragraphs.filter(
 		paragraph =>
-			paragraph.includes('<w:drawing') &&
+			paragraphHasDrawing(paragraph) &&
 			getEffectiveBodyParagraphAttribute(
 				paragraph,
 				stylesXml,
@@ -33,7 +46,8 @@ export function countEmptyTableCells(docXml: string, stylesXml = ''): number {
 	let empty = 0;
 	for (const table of getReportTables(docXml)) {
 		if (isMathLayoutTable(table, stylesXml)) continue;
-		for (const cell of table.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? []) {
+		const cleanTable = stripTextboxAndFallbackContainers(table);
+		for (const cell of getBalancedWordElements(cleanTable, 'tc')) {
 			const properties =
 				/<w:tcPr\b[^>]*>([\s\S]*?)<\/w:tcPr>/.exec(cell)?.[1] ?? '';
 			// A continuation of a merged cell is not an absent data value.
@@ -109,8 +123,10 @@ export function countTableCellsWithInsufficientPadding(
 		if (isMathLayoutTable(tableXml, stylesXml)) continue;
 		const tableProperties =
 			/<w:tblPr\b[\s\S]*?<\/w:tblPr>/.exec(tableXml)?.[0] ?? '';
-		for (const cellXml of tableXml.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ??
-			[]) {
+		for (const cellXml of getBalancedWordElements(
+			stripTextboxAndFallbackContainers(tableXml),
+			'tc',
+		)) {
 			const cellProperties =
 				/<w:tcPr\b[\s\S]*?<\/w:tcPr>/.exec(cellXml)?.[0] ?? '';
 			const hasInsufficientSide = Object.entries(minimums).some(
@@ -187,7 +203,10 @@ export function countTableHeaderFinalPeriods(
 			continue;
 		}
 
-		const rows = tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/g) ?? [];
+		const rows = getBalancedWordElements(
+			stripTextboxAndFallbackContainers(tableXml),
+			'tr',
+		);
 		for (const [index, rowXml] of rows.entries()) {
 			const rowProperties =
 				/<w:trPr\b[\s\S]*?<\/w:trPr>/.exec(rowXml)?.[0] ?? '';
@@ -197,7 +216,7 @@ export function countTableHeaderFinalPeriods(
 				(!repeat || /\bw:val="(?:0|false|off)"/.test(repeat))
 			)
 				break;
-			const cells = rowXml.match(/<w:tc\b[\s\S]*?<\/w:tc>/g) ?? [];
+			const cells = getBalancedWordElements(rowXml, 'tc');
 			cellsWithFinalPeriod += cells.filter(cellXml =>
 				/[.]$/.test(extractWordText(cellXml).trim()),
 			).length;

@@ -6,6 +6,8 @@ export type { FigureOccurrence, FigureTokenOccurrence } from './occurrences';
 export { planFigure } from './planning';
 export { validatePng } from './png';
 export { loadFigureSettings, validateFigureSettings } from './settings';
+export { compileSvgToShapeGroup, inspectSvgForShapes } from './svg';
+export type { CompileSvgOptions } from './svg';
 export type {
 	FigureCrop,
 	FigureDefaults,
@@ -13,4 +15,5 @@ export type {
 	FigurePlan,
 	FigureSettings,
 	FigureSpec,
+	SvgRenderMode,
 } from './types';
