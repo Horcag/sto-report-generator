@@ -1,11 +1,24 @@
 # Dependency Security Audit
 
-Date: 2026-09-21
+<!-- cspell:words picomatch extglobs steiger -->
+
+Date: 2026-11-18
 
 ## Result
 
-`npm audit` reports zero known vulnerabilities for the committed lockfile. CI runs the same check through
-`npm run security:audit` and fails at `low` severity or higher.
+`npm audit --omit=dev --audit-level=low` reports zero known vulnerabilities in production
+runtime dependencies for the committed lockfile.
+
+`npm run security:audit` (`scripts/quality/check_security_audit.cjs`) runs both:
+
+- `npm audit --omit=dev --audit-level=low --json` with zero tolerance for any production
+  advisory; and
+- a full lockfile `npm audit --audit-level=low --json` check that fails on any other
+  advisory or as soon as a non-breaking patch ships for `picomatch`, while temporarily
+  waiving the single upstream-unpatched dev-only ReDoS advisory
+  `https://github.com/advisories/GHSA-fc5q-39xc-vjpf` (`picomatch <=4.0.7`,
+  `first_patched_version: null`, pulled transitively only by dev tools `cspell`,
+  `steiger`, and `typescript-eslint` on static repository globs).
 
 ## Remediated dependencies
 
