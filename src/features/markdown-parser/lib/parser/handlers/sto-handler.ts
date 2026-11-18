@@ -102,10 +102,15 @@ export async function handleStoFlag(
 		const text = token.text.trim();
 		const upperText = text.toUpperCase();
 
-		// Convert to Sentence Case: first letter capitalized, rest lowercase
-		// This ensures they look correct in TOC, while StructuralHeading style handles caps in the document body
-		const sentenceCaseText =
-			text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+		// Convert to Sentence Case: first letter capitalized, rest lowercase,
+		// while preserving uppercase appendix designators (e.g. "Приложение А").
+		const sentenceCaseText = (
+			text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
+		).replace(
+			/^(Приложение\s+)([а-яёa-z0-9]+)$/i,
+			(_, prefix: string, designator: string) =>
+				`${prefix}${designator.toUpperCase()}`,
+		);
 
 		const useNoTocStyle =
 			STO_RULES.headings.structuralNoTocUppercase.includes(upperText);

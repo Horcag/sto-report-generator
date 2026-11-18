@@ -75,7 +75,10 @@ citations require them. `--type` changes title-page text only; it is not a profi
   are available, use the bounded localization procedure in the prose workflow to prioritize reading; it does not recover
   exact highlighted passages or replace a final full-document check. If a detailed heatmap from a previous revision is
   available, the same reference describes local reading-priority experiments and controls without old colors;
-  an added benefit from the color information has not been established.
+  an added benefit from the color information has not been established. When a full report JSON bundle (`text.json` +
+  `ai_plain_layout.json`) is available, extract `level = 3` (`high`) character spans directly (`high_chars / textCharsCount`)
+  without PDF or OCR, and do not rely on the report chat assistant's post-hoc stylistic explanations (`get_ai` returns
+  only snippets and levels without detector reasons).
 - Before source preflight, apply the bundled [`humanizer-ru`](../humanizer-ru/SKILL.md) skill to connected Russian prose
   that you draft or are asked to edit. Read its academic-genre exceptions and rewrite guide, remove actual chatbot
   artifacts and formulaic wording, then inspect the source diff. For a review-only request, report findings without

@@ -32,6 +32,8 @@ title: Тест ТОС
 \sto_structural_heading{ЗАКЛЮЧЕНИЕ}
 
 \sto_structural_heading{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
+
+\sto_structural_heading{ПРИЛОЖЕНИЕ А}
 `;
 
 function paragraphContaining(
@@ -195,6 +197,7 @@ async function main(): Promise<void> {
 		'ВВЕДЕНИЕ',
 		'ЗАКЛЮЧЕНИЕ',
 		'СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ',
+		'ПРИЛОЖЕНИЕ А',
 	]) {
 		if (currentXml.includes(`>${heading}<`)) {
 			errors.push(
@@ -202,6 +205,14 @@ async function main(): Promise<void> {
 			);
 		}
 	}
+	assert.ok(
+		paragraphContaining(currentXml, 'Приложение А', 'StructuralHeading'),
+		'ПРИЛОЖЕНИЕ А must preserve uppercase appendix designator ("Приложение А") in XML for TOC.',
+	);
+	assert.equal(
+		paragraphContaining(currentXml, 'Приложение а', 'StructuralHeading'),
+		undefined,
+	);
 
 	fs.rmSync(tempRoot, { recursive: true, force: true });
 	if (errors.length > 0) {
