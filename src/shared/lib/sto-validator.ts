@@ -38,6 +38,7 @@ import {
 	inspectMathStructures,
 	validateFormulaPunctuation,
 } from './sto-validator/math-xml';
+import { validateNumbering } from './sto-validator/numbering-xml';
 import { hasForbiddenTabCharacters } from './sto-validator/tab-xml';
 import {
 	countTablesWithoutHeaderRepeat,
@@ -287,24 +288,6 @@ function countImagesWithoutFollowingCaption(
 	}
 
 	return count;
-}
-
-function getNumberingLevels(numberingXml: string): string[] {
-	return numberingXml.match(/<w:lvl\b[\s\S]*?<\/w:lvl>/g) ?? [];
-}
-
-function hasExpectedBibliographyNumbering(numberingXml: string): boolean {
-	const bibliographyParagraph = STO_RULES.bibliography.paragraph;
-	const bibliographyIndentPattern = new RegExp(
-		String.raw`<w:ind\b(?=[^>]*w:left="${bibliographyParagraph.leftIndentDxa}")(?=[^>]*w:hanging="${bibliographyParagraph.hangingIndentDxa}")`,
-	);
-
-	return getNumberingLevels(numberingXml).some(
-		levelXml =>
-			regexMatches(/<w:lvlText w:val="%1"\/>/, levelXml) &&
-			regexMatches(bibliographyIndentPattern, levelXml) &&
-			!regexMatches(/<w:suff\b[^>]*w:val="space"/, levelXml),
-	);
 }
 
 function hasExpectedDefaultFont(stylesXml: string): boolean {
@@ -778,36 +761,6 @@ function validateFieldsTablesAndImages(
 		),
 	];
 }
-function validateNumbering(numberingXml: string | null): ValidationResult[] {
-	if (numberingXml === null) {
-		return [];
-	}
-
-	const firstLineIndent = STO_RULES.typography.firstLineIndentDxa;
-	const bibliographyParagraph = STO_RULES.bibliography.paragraph;
-	const bibLevelMatch = hasExpectedBibliographyNumbering(numberingXml);
-	const listLevelMatch = regexMatches(
-		new RegExp(
-			String.raw`<w:lvlText w:val="${escapeRegExp(STO_RULES.typography.listMarker)}"/>.*?<w:ind[^>]*w:left="0"[^>]*w:firstLine="${firstLineIndent}"`,
-			's',
-		),
-		numberingXml,
-	);
-
-	return [
-		resultFromPass(
-			'Bibliography Numbering Indent & Format',
-			bibLevelMatch,
-			`Bibliography numbering missing or has incorrect indent/suffix (expected left ${bibliographyParagraph.leftIndentDxa}, hanging ${bibliographyParagraph.hangingIndentDxa}, tab after number) / dot format.`,
-		),
-		resultFromPass(
-			'List Numbering Indent & Format',
-			listLevelMatch,
-			`List numbering missing ${STO_RULES.typography.listMarker} marker or has incorrect indent (expected left 0, firstLine ${firstLineIndent}).`,
-		),
-	];
-}
-
 function createValidationInput(
 	docXml: string,
 	stylesXml: string,
@@ -881,7 +834,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 		...validateTypography(input),
 		...validatePageNumbering(input),
 		...validateMathAndCitations(input),
-		...validateNumbering(input.numberingXml),
+		...validateNumbering(input.docXml, input.numberingXml),
 		...validateFieldsTablesAndImages(input),
 		...validateTemplateStyleConformance(
 			input.stylesXml,

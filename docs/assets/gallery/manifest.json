@@ -13,7 +13,7 @@
     "example/images/dummy.svg": "bafeb4ccc7ef2795f2c2161dc6c9245494c500c9d8a2568c5eb10e12d2c63aa5",
     "example/references.bib": "887bc69b8d5c37b0d918803d822547320438978da00141e81ff7592b9d83b610",
     "package-lock.json": "83b637fc145e79d75f360b6916a99ee56972f089a8c0e8c727a525cb565d0607",
-    "package.json": "e73299237896b325ea0e3bc208ee5d17f29c21a155f1b33c815a8bbcd778c805",
+    "package.json": "3cfc96c4bcbe63b2d1dece5bf8d91f45ceef9c02662f85570ef139fc52e1aa25",
     "pyproject.toml": "0eb1993c9e5c7883827776f4ba3efd6765a1dc9aff33111d691cc30ad8474655",
     "scripts/post_build.py": "ebc753b075107cdcb81b20eb44065fc5941543a7fd6796e22f7373fce5c6ef33",
     "scripts/quality/check_formula_pdf.py": "204775f0b316056cfe680fb5d61a35ce65b988b9fdcd4b71a0bd490b753fdfd6",
@@ -52,7 +52,7 @@
     "src/app/bibliography-dataset-lookup.ts": "90ed60fbf77cf4aad92f494756f02e3f16b4efc027586a7fb9b1e204afbdcb67",
     "src/app/bibliography-lookup.ts": "60c8a86cdf915d90502612ee780bcfb965bff22b57fbaab70be34fac93d4c076",
     "src/app/bibliography-reconciliation.ts": "386e654c6fbf0c3d8e8507c2fb9a2a04a285829671c2a9ddb321521c24b209ac",
-    "src/app/builder.ts": "290824a848ce6f6cfe2b798f8b0cdabf3d9825c5c1373136af4074d77d6df243",
+    "src/app/builder.ts": "99d27cc1ecc792ba168b6f81f7798c610149413e1bc3da895e7f01c04f4a791b",
     "src/app/cli-args.ts": "07c305ad66c3c9ac5b15c22f5857b387fc71d06f3b2bf127580313f4214aac33",
     "src/app/cli-help.ts": "b847b8b7100d8c0df4ec1c9989e4ae7ce8540117f30f0d52b8b126b2cfa173b0",
     "src/app/cli-preview.ts": "03c5143db35c836682358c88d9f5fec54de3562596ae7f488e7311d966d9f4a5",
@@ -95,7 +95,7 @@
     "src/features/markdown-parser/lib/parser/handlers/inline-parser.ts": "01667e0e388684c2e90ba5e523571bb572a9bdd8f9f164122f2963fc327727a4",
     "src/features/markdown-parser/lib/parser/handlers/math-handler.ts": "708a10dad95c9b02b41e1e00ee941888616a2b0a9effa54a6170fdb24f20fba1",
     "src/features/markdown-parser/lib/parser/handlers/report-table-of-contents.ts": "6b637ecd3b2d02caa4de4f2c02165f6f9026f487ab4bee65950bd96d2667883e",
-    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "91713747cfe422971731d9a243381a743aa2916ed3d0ca7669f33f7cffb2f217",
+    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "e6ced107e215771ef0b9c3ed5b44b12b700e67f29123ec4595d59609ccbc5430",
     "src/features/markdown-parser/lib/parser/handlers/table-handler.ts": "3e65ebdcd28787fd9d245f3b5b1c1b2a177a4e58d08579445eb7cde8e68f93ef",
     "src/features/markdown-parser/lib/parser/reference-registry.ts": "533eb0e46e7efbcfd568d6e341a9c683c70035f5faf3f563d9eff56947de42fd",
     "src/features/markdown-parser/lib/parser/table-notes.ts": "c7c428ac9d0afba3349edc74dad105935f5eb38cf1ac5a5b17257a1015b414ff",
@@ -130,7 +130,8 @@
     "src/shared/lib/citation-syntax.ts": "330c556502ee5a23baf59c06d3f87477821c4113a5ea6cfc3831acc17a03ceb9",
     "src/shared/lib/docx/archive.ts": "a8da9b9e92541b6c64166b8054ef5885d6eb0ce8dcb49699e64408b3da0b6ed0",
     "src/shared/lib/docx/figure-policy.ts": "69689116f174081e17fd0f8fcc03c70c7c610d6d4ff464ad7c9ee5897e051b45",
-    "src/shared/lib/docx/index.ts": "19804b25e17588b052cccf1e41df4edc85cb410ed577210cc87814ddd534668a",
+    "src/shared/lib/docx/index.ts": "c4d93d847f37cdefea79714522c80cacb5dc0b88e73fed3ad7dfda5ac69539b3",
+    "src/shared/lib/docx/numbering.ts": "9e24df63fec9ffb1e3fb6f5854e0c7caebaaf39efa79f794c8d6dba0c1f31c30",
     "src/shared/lib/docx/styles.ts": "53c1165ab8c0ff4bd7e211e5a9ad1544b861a48cb0fc3ecb9bc91c619033dd3f",
     "src/shared/lib/docx/table-spacing.ts": "bdab40fdfb9840e1642a6121080a89f609fc98f34854c99208d952c467affd20",
     "src/shared/lib/dotm-style-contract.ts": "450d56ac6232ce05e2dfc8be0dde021ebe123943463084ac5810fd99afb6157a",
@@ -183,7 +184,7 @@
     "src/shared/lib/source-preflight/referat-checker.ts": "9016697d7cd1f0e5d5c9eade84a47432008f2dff41af2656bb3d5c404c3a715d",
     "src/shared/lib/source-preflight/reference-checker.ts": "0d18d8616da9dfaf724d122e62171327edf96b1c15a6c0659f979856b4f63f05",
     "src/shared/lib/source-preflight/soft-text-checker.ts": "05853cb0afa1e39ad1e36f338ba8d45c20184d4ec2f2a9ceaf76017571147d9c",
-    "src/shared/lib/source-preflight/structure-checker.ts": "de1892733ae46f466d58131b4c79de1565eed022e78637f80b5ce4147088ee27",
+    "src/shared/lib/source-preflight/structure-checker.ts": "4a0385acdc80690f8d6816d3cc03ec7d93ce309403b0461663cfa449b9728103",
     "src/shared/lib/source-preflight/table-cell-checker.ts": "bb1d2d6879f0471153f01e1986e5fa982db37c29223fab3a118c31b139d33513",
     "src/shared/lib/source-preflight/table-figure-checker.ts": "3efcf025b035d9e82759028cf0a60ac99a15be820d6d13df581f712e8032e209",
     "src/shared/lib/source-preflight/terms-checker.ts": "2cab046910238a7e50698ca1a5f62af624b186c3c990a1c277193a20c1e9a202",
@@ -199,12 +200,13 @@
     "src/shared/lib/sto-validator/layout-xml.ts": "282e5661463bc328a03a51add18baf652ba63bb623ba5d9166583384060cbf74",
     "src/shared/lib/sto-validator/math-layout-table.ts": "c5e7ef8c12c00da17e52ef57eea130b03ab275540b3507cf5ef0b22a1c0f96ef",
     "src/shared/lib/sto-validator/math-xml.ts": "7f6dd0f0cef9c9af10ae8f76fd096b6e63885a708ae82bafbc7317cdc0535f05",
+    "src/shared/lib/sto-validator/numbering-xml.ts": "7ad6351f6c00d4495aebab0fb5c050fb93232e40756c8a60f32b718c19394a41",
     "src/shared/lib/sto-validator/tab-xml.ts": "0cd23c545fe30e213f39a61416d0500486a8942c122e07732468089c0a78de47",
     "src/shared/lib/sto-validator/table-bottom-border.ts": "aef04f7555ea47e7b783847fc6a683bee4138e0515a9e45b177fdd2d489b5783",
     "src/shared/lib/sto-validator/table-caption-layout.ts": "c840bc95993146eb6cc134138942ea8d331da68470e0ce6aa070690c34307758",
     "src/shared/lib/sto-validator/table-layout.ts": "117f6f4e27d20d3f7a1af51ebc5e61a86de542d1fe2798e66f2852ee7ff53b62",
     "src/shared/lib/sto-validator/table-note-rows.ts": "0803faa3b186fa34e6517e70a8b47cfb671b94daaeeb86c6edfed206076d72e3",
-    "src/shared/lib/sto-validator.ts": "7eee12ec920a4b8b169c4747cbcdbd490ae7687ee051f72324c6c74eaa5ff2f4",
+    "src/shared/lib/sto-validator.ts": "74878af6632cdfb2478256950f7d004cfd90b10eebe740101a7874635e2ae029",
     "src/widgets/title-page/index.ts": "d2366f2552c11591cd5ca6e5c9442f22aa303f559c77a7fd6666f728e3f4a3c9",
     "src/widgets/title-page/lib/compact-lab-title-page.ts": "d3bfdc5bd78b6d6c6ed0e3aedbb36e33635e780376ef5461969bee0d0f84c1e6",
     "src/widgets/title-page/lib/ssau-course-project-title-page.ts": "3a0e06d53ae46a8b368afab7d198c9bba18864d0d76b10f0181e3f57cd42a7c6",
@@ -234,7 +236,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "275f99aeb958f9bae99067c9fb2a68dfc9056343bb79e81dacc0b76460ecd24b",
+      "pdfSha256": "19e28e6aff00f371e4701a422870569b7d14e49e4b64915fd05a9453dd1ca90c",
       "pageCount": 8,
       "pages": [
         {
@@ -280,7 +282,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "7e3a1565e8c0e49a82e51e5802d139b91f6fcc0002bc447125351e864c20c68b",
+      "pdfSha256": "87f58b6b7fb30a19a5f6ee41181bf686bf9303b74e478124e4200fb1fb378827",
       "pageCount": 5,
       "pages": [
         {
@@ -331,7 +333,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "2cac0b12c8d65c6443bfdff1edb2022c6c542e46ea6f8498dba5c3492d6ec386",
+      "pdfSha256": "c32fbc0ef6ff724d142e16bb36b64c8358862f3b4bb45700113edfed521a4aad",
       "pageCount": 4,
       "pages": [
         {
@@ -361,7 +363,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "e94177f3b59b2d6bcd7241ab7ab30285a3914058fe2ef4e7fc2adefa1797e7c2",
+      "pdfSha256": "1d35d62d630b401b495cd1378c1dabcaa683f28715adae030c6b32e1427d2cbf",
       "pageCount": 2,
       "pages": [
         {
@@ -383,7 +385,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "585f3d545b7ed9c4daa9273cd9e8cbe4e1e2de8569ee74effb91f3276c737be5",
+      "pdfSha256": "f7762e8efd4cc5d2142e45a4ad8d15876268260b12c194021d8ac553fb370d49",
       "pageCount": 11,
       "pages": [
         {

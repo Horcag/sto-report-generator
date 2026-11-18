@@ -30,6 +30,7 @@ import {
 	applyDataTableSpacing,
 	applyFigureDocumentPolicy,
 	clearDirtyFieldFlags,
+	normalizeDocxNumbering,
 } from '@/shared/lib/docx';
 import { FigurePlan } from '@/shared/lib/figures';
 import { FormulaConversionError } from '@/shared/lib/math';
@@ -226,7 +227,10 @@ export async function buildReport(
 
 	const buffer = clearDirtyFieldFlags(
 		applyDataTableSpacing(
-			applyFigureDocumentPolicy(await Packer.toBuffer(doc), figurePlans),
+			applyFigureDocumentPolicy(
+				normalizeDocxNumbering(await Packer.toBuffer(doc)),
+				figurePlans,
+			),
 		),
 	);
 	fs.writeFileSync(outputPath, buffer);
