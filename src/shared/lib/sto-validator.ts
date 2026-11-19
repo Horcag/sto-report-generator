@@ -743,7 +743,7 @@ function validateFieldsTablesAndImages(
 		resultFromFailure(
 			'Image Width Limit',
 			hasOversizedImages(doc),
-			'Detected image width above 14 cm. Run post_build.py to scale large figures.',
+			`Detected image width above ${STO_RULES.page.imageMaxWidthEmu / 36_000} mm (STO printable text width). Adjust figure width in figures.json and rebuild.`,
 		),
 		resultFromFailure(
 			'Image Paragraph Alignment',

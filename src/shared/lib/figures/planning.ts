@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 
 import { validatePng } from './png';
 import {
+	MAX_FIGURE_WIDTH_MM,
 	resolveFigurePath,
 	validateFigureId,
 	validateFigureSettings,
@@ -129,7 +130,7 @@ export function planFigure(
 		dimensions.width * (1 - (crop.left + crop.right) / 100);
 	const visibleHeight =
 		dimensions.height * (1 - (crop.top + crop.bottom) / 100);
-	const maxWidth = settings.defaults.maxWidthMm ?? 140;
+	const maxWidth = settings.defaults.maxWidthMm ?? MAX_FIGURE_WIDTH_MM;
 	const maxHeight = Math.min(
 		spec.maxHeightMm ?? Infinity,
 		settings.defaults.maxHeightMm ?? 230,

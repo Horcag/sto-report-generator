@@ -266,6 +266,7 @@ export async function runFigurePlanningTests(): Promise<void> {
 		fs.writeFileSync(path.join(root, 'vector.png'), png(1200, 600));
 		const vector = planFigure(root, 'vector.svg', 'vector', defaults);
 		assert.ok(vector.fallbackHash);
+		assert.equal(vector.widthMm, 165);
 		assert.ok(vector.minTextPt! > 9);
 		fs.writeFileSync(
 			path.join(root, 'vector.svg'),
@@ -406,13 +407,45 @@ export async function runFigurePlanningTests(): Promise<void> {
 		fs.writeFileSync(path.join(root, 'small.png'), png(100, 50));
 		const natural = planFigure(root, 'small.png', 'natural', defaults);
 		assert.equal(natural.widthMm, (100 * 25.4) / 96);
+		const wideDefault = planFigure(
+			root,
+			'wide.png',
+			'wide-default',
+			defaults,
+		);
+		assert.equal(wideDefault.widthMm, 165);
+		assert.equal(wideDefault.heightMm, 82.5);
+		const widened = planFigure(root, 'small.png', 'widened', {
+			defaults: {},
+			figures: { widened: { widthMm: 165 } },
+		});
+		assert.equal(widened.widthMm, 165);
+		const reportNarrowed = planFigure(root, 'wide.png', 'narrow-default', {
+			defaults: { maxWidthMm: 140 },
+			figures: {},
+		});
+		assert.equal(reportNarrowed.widthMm, 140);
+		assert.throws(
+			() =>
+				planFigure(root, 'wide.png', 'over-narrow-default', {
+					defaults: { maxWidthMm: 140 },
+					figures: { 'over-narrow-default': { widthMm: 150 } },
+				}),
+			/maximum width or height/,
+		);
+		assert.doesNotThrow(() =>
+			validateFigureSettings({
+				defaults: { maxWidthMm: 165 },
+				figures: {},
+			}),
+		);
 		assert.throws(
 			() =>
 				validateFigureSettings({
-					defaults: { maxWidthMm: 141 },
+					defaults: { maxWidthMm: 166 },
 					figures: {},
 				}),
-			/cannot exceed/,
+			/cannot exceed 165 mm/,
 		);
 		assert.ok(
 			cropped.issues.some(
