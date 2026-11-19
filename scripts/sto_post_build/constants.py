@@ -8,18 +8,17 @@ WD_REPLACE_ALL = 2
 WD_STATISTIC_PAGES = 2
 WD_ACTIVE_END_PAGE_NUMBER = 3
 WD_EXPORT_FORMAT_PDF = 17
-MAX_IMAGE_WIDTH_POINTS = 14 / 2.54 * 72
+_STO_RULES = json.loads(
+    (Path(__file__).resolve().parents[2] / "src/shared/config/sto-rules.json").read_text(
+        encoding="utf-8"
+    )
+)
+MAX_IMAGE_WIDTH_POINTS = _STO_RULES["page"]["imageMaxWidthEmu"] / 12700
 DIRTY_TRUE_RE = re.compile(r'w:dirty="(?:true|1)"')
 MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006"
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 MATH_PATTERN = re.compile(r"\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$")
-TABLE_AFTER_SPACING_TWIPS = str(
-    json.loads(
-        (Path(__file__).resolve().parents[2] / "src/shared/config/sto-rules.json").read_text(
-            encoding="utf-8"
-        )
-    )["tables"]["afterSpacingDxa"]
-)
+TABLE_AFTER_SPACING_TWIPS = str(_STO_RULES["tables"]["afterSpacingDxa"])
 SMALL_TILDE = "\u02dc"
 BROKEN_REFERENCE_MARKERS = ("Источник не найден", "NOT FOUND")

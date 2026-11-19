@@ -392,4 +392,32 @@ export function runSyntheticLayoutTests(
 			.passed,
 		false,
 	);
+
+	const wpNamespace =
+		'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"';
+	const imageWidthOkFixture = writeXmlFixture(
+		'image-width-ok',
+		`<w:document ${namespaces} ${wpNamespace}><w:body>
+			<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline><wp:extent cx="5940000" cy="2970000"/></wp:inline></w:drawing></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	assert.equal(
+		getCheck(imageWidthOkFixture, 'Image Width Limit').passed,
+		true,
+	);
+
+	const imageWidthExceededFixture = writeXmlFixture(
+		'image-width-exceeded',
+		`<w:document ${namespaces} ${wpNamespace}><w:body>
+			<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline><wp:extent cx="5940001" cy="2970000"/></wp:inline></w:drawing></w:r></w:p>
+		</w:body></w:document>`,
+		`<w:styles ${namespaces}/>`,
+	);
+	const imageWidthExceededCheck = getCheck(
+		imageWidthExceededFixture,
+		'Image Width Limit',
+	);
+	assert.equal(imageWidthExceededCheck.passed, false);
+	assert.match(imageWidthExceededCheck.error ?? '', /165 mm/);
 }

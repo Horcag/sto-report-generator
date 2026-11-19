@@ -23,7 +23,7 @@
     "scripts/sto_post_build/__init__.py": "b613a60043b41da26e0574efa62e41b71b065b62e12f83f2d709d5201e68fe48",
     "scripts/sto_post_build/acceptance_statistics.py": "3818d850d20f8d80acfeb0937f25033cd67befb69517efe5e8ec6051062f9d0d",
     "scripts/sto_post_build/cli.py": "1c07665da4d37c1665c8942d6b2d922027a4c6ffdc9d511753701bdc9f774376",
-    "scripts/sto_post_build/constants.py": "f817d01d35328271ecea34e8291d97fdfae99525ffd653b33d950f72961b4a19",
+    "scripts/sto_post_build/constants.py": "14dc38fe63beaac727cfa87bcbaaa26d7b24bc132e2b0d0392c0801ddf34ec3c",
     "scripts/sto_post_build/docx_package.py": "bb92bf825128388091e3d2dc642b820f8cd7ed9be2719d387c439aac10af3e6e",
     "scripts/sto_post_build/formula_replacement.py": "09ca41c2ab5e38ef4bed0a4fdb8491004c7be3c91354c2e2a1512e0f50f28e82",
     "scripts/sto_post_build/fraction_delimiters.py": "dacce1f7e6179fc1535a79cd29ddf67cf9705b029cb8bdb83dbf05c6d37779ca",
@@ -58,7 +58,7 @@
     "src/app/cli-preview.ts": "03c5143db35c836682358c88d9f5fec54de3562596ae7f488e7311d966d9f4a5",
     "src/app/doctor.ts": "e515f271e3c28bd09af9991815632025b366c8862e83e2d68f0088716553a597",
     "src/app/figure-command.ts": "c87280b1178e6719702578181663cb5c18e9321dc926378056fa06cbdf27f8b4",
-    "src/app/figure-inspector-html.ts": "cdd63a550f7ed8d8b7b5ff0f0b6f7d34e5059c7488f1a6b5a65baae5d4153635",
+    "src/app/figure-inspector-html.ts": "b96881c0e43f08b0d3767458cb2200611b8907e6b7a16bcbb71ac9500e7c982d",
     "src/app/figure-inspector.ts": "0375d914f063e290aa1b108d8bb8f7f2aba1db56b1f2d4b11705a604f9b5eeee",
     "src/app/libreoffice-preview.ts": "98de1c6c26b9d432093626623367fb1a559754bc856e3df0fb8da0e041454d2b",
     "src/app/report-scaffold-readme.ts": "413658614bbd42a52c20fc48dcf7f283ec13b4dfbe1bdf57d498b662ab0aab5f",
@@ -117,7 +117,7 @@
     "src/shared/config/sto-element-styles.ts": "3cbc3d8edd5a97b73a18176c0d9bfbae0a80883f1cdfa366ba353bb6a263e73b",
     "src/shared/config/sto-heading-styles.ts": "94ac872c33fa666e3f9e026b8baec1b8930bc40abc363136c1771cd8b2ea636c",
     "src/shared/config/sto-inline-list.ts": "5831a1e5ad89635bb5479edd3c18013ac6a546f1761b0a43dd8e3167aad30075",
-    "src/shared/config/sto-rules.json": "c26282c19df30848267c5828b59fb5f2e7f002ce2e34c2e485730a44c4a85e56",
+    "src/shared/config/sto-rules.json": "fb7ea66f5be0ecde098beaf4093b404464626bdf70efa94eb65f7f0d4efc4455",
     "src/shared/config/sto-rules.ts": "b862ac52ba8b2746a1ce7bab70a40f2efb2f33857b748cd512743d60fab63637",
     "src/shared/config/sto-styles.ts": "36e03f02a514ca3ce75cc8bd49d7605a7bcde938179b9267b226bca4e0127b03",
     "src/shared/config/sto-template-bold.ts": "719a71b3a8c7830ffab25a2ca43212909857d58540e85e0c89a9cde3bae444f6",
@@ -136,11 +136,11 @@
     "src/shared/lib/docx/table-spacing.ts": "bdab40fdfb9840e1642a6121080a89f609fc98f34854c99208d952c467affd20",
     "src/shared/lib/docx/xml-elements.ts": "160b963eb13aa0e64447448d7d549e83900c4b18b1f1134f1218641c3a999426",
     "src/shared/lib/dotm-style-contract.ts": "450d56ac6232ce05e2dfc8be0dde021ebe123943463084ac5810fd99afb6157a",
-    "src/shared/lib/figures/index.ts": "ebc4e7c5fd213ae846f2448ad434535f6be591a15d9a6670eeae7b08247f007c",
+    "src/shared/lib/figures/index.ts": "615b753ca2ee1efb779d96f2fc3eefa61e14cfa8d2d15d9f7c34787fd795cf04",
     "src/shared/lib/figures/occurrences.ts": "c2e918c5ec19f4f5ed5d9d549ddbf56a1cbc5ce95840587627a52a703ed0b3a8",
-    "src/shared/lib/figures/planning.ts": "a2cada0a81099d7cc4d359d815cef2cdf9d9f5dd9366e1b949119519727d1768",
+    "src/shared/lib/figures/planning.ts": "4903707de9a01000df8ac02a08e9a24a0467c405b25d15411e0c166f20d99007",
     "src/shared/lib/figures/png.ts": "026fe024d951e28c9c7874bc95dac43e85a7345d8f92690a656425d0bc34c95b",
-    "src/shared/lib/figures/settings.ts": "ac9f1d807a9abacae55fbf94e889fc6aefe7fb34ff0cd92f8624ff69625112ac",
+    "src/shared/lib/figures/settings.ts": "d93c75a091c31531b66fd8b7413c0d3c240675d41f41ce64a9b388007d8c2c2d",
     "src/shared/lib/figures/svg/color.ts": "d4d28fc7420683b1ffecc0e3a97dfdc03a5558bc9ceccc366b1d253e15cd6323",
     "src/shared/lib/figures/svg/compiler.ts": "83506185299897402dbad14c080d85bac18b7b1e9305a086ebcee51c3cd6e3f8",
     "src/shared/lib/figures/svg/index.ts": "947750446f31f204ce874fb0c459eeb7647934240eea1bf16570bf0cb017eb48",
@@ -222,7 +222,7 @@
     "src/shared/lib/sto-validator/table-caption-layout.ts": "c840bc95993146eb6cc134138942ea8d331da68470e0ce6aa070690c34307758",
     "src/shared/lib/sto-validator/table-layout.ts": "117f6f4e27d20d3f7a1af51ebc5e61a86de542d1fe2798e66f2852ee7ff53b62",
     "src/shared/lib/sto-validator/table-note-rows.ts": "0803faa3b186fa34e6517e70a8b47cfb671b94daaeeb86c6edfed206076d72e3",
-    "src/shared/lib/sto-validator.ts": "e6f44b8414411262f0aec46b7c0ed8d8d4c68ae4e78a84c6d673df28be73f931",
+    "src/shared/lib/sto-validator.ts": "5ec5fcb7ea117f85adab5d41807b9071ebbe312aefb706d6bc6743f6b9182554",
     "src/widgets/title-page/index.ts": "d2366f2552c11591cd5ca6e5c9442f22aa303f559c77a7fd6666f728e3f4a3c9",
     "src/widgets/title-page/lib/compact-lab-title-page.ts": "d3bfdc5bd78b6d6c6ed0e3aedbb36e33635e780376ef5461969bee0d0f84c1e6",
     "src/widgets/title-page/lib/ssau-course-project-title-page.ts": "3a0e06d53ae46a8b368afab7d198c9bba18864d0d76b10f0181e3f57cd42a7c6",
@@ -252,7 +252,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "d65fe313aea940f1e323dc41e6f1c37f2e71e7e1e565e3b140745cd26610f97d",
+      "pdfSha256": "e6ee568eb4da2eeeb7e8f9642d0d6d8e8cb045710f9d4788450ff9119529e2be",
       "pageCount": 8,
       "pages": [
         {
@@ -277,7 +277,7 @@
         },
         {
           "file": "example-page-6.png",
-          "sha256": "c3023820871b170b5c50e8abfa60019e321f1c0375088bcc2229257d68c48f65"
+          "sha256": "76011db32cbaeb3c9a764522b09edc90273bb758144cfb32ca7911a330045a71"
         },
         {
           "file": "example-page-7.png",
@@ -298,7 +298,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "29641461d73aad5a244efa0fbde7b6ce4321ed7f005bf5a1396f4276ab76dfa9",
+      "pdfSha256": "7fac550816fdc1640650e22b96adf86975e6a14a4f4e2a18b2f539e9c216fa7c",
       "pageCount": 5,
       "pages": [
         {
@@ -349,7 +349,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "ca2044410590a2d57042eb3c4e101c8bc08426cbc8219a9262efae63711ec32a",
+      "pdfSha256": "7ff65911e0ad0487f189b5ce76e74f9dfa077b833a23ff9b95ce100bfcec2693",
       "pageCount": 4,
       "pages": [
         {
@@ -379,7 +379,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "029d7dd34604c3d2214da921a936b554f473e1d028e5d54490697070e6ba44c6",
+      "pdfSha256": "53d2236a3b0a8e152d202d450083268f90bea2ef9a8ba559415ab09805856c9f",
       "pageCount": 2,
       "pages": [
         {
@@ -401,7 +401,7 @@
       "wordVersion": "16.0",
       "wordBuild": "16.0.20527",
       "pdfImageQuality": "print",
-      "pdfSha256": "04a25bd87c829831fce3d6c997e1b53cd48d8dd696670f9154abc33ce5fe97d6",
+      "pdfSha256": "dafe618a7b00149428184eaadeaa466c82a355e2b5b8b5177f141ca9b6ca9ac6",
       "pageCount": 11,
       "pages": [
         {
@@ -422,23 +422,23 @@
         },
         {
           "file": "structure-page-5.png",
-          "sha256": "87e1a26f79d416827633bfc1ef5c7a8a3cd371151357ad33e7c47655bcb40bc0"
+          "sha256": "602c8dac71c2891b7128ae9c5811a520a06e3324c6b0302f0f8227ee327da5c3"
         },
         {
           "file": "structure-page-6.png",
-          "sha256": "68243eddcff90320d597830aebcb1401b384b820704d46efab55628960371ddf"
+          "sha256": "61bf8b547a34719d889a7c4248869dae605542c589512a797e2e0a65503c6f06"
         },
         {
           "file": "structure-page-7.png",
-          "sha256": "89babad8924f58d2703d9c11ea707062e0fc29042ea098ac19383c1afac9b9ec"
+          "sha256": "928edadb1ee0be22401357daaff0e44002a5207922cf92affaa9e93b6bd3be04"
         },
         {
           "file": "structure-page-8.png",
-          "sha256": "ea706d6e65c60f87ec41a80e4050c0cebbc0df65105f2abe1325093f7c043d60"
+          "sha256": "3aa64518f9cc2b9abcf01bc9044aef92e1156bb4fdf14ad5ffd359310523f0ad"
         },
         {
           "file": "structure-page-9.png",
-          "sha256": "26719c6d890d507430338307f4006e97eb43dda7fad22de59b74623d06ac1d67"
+          "sha256": "5dc00ff3311317c026081d3f95b25445936582a5406af099cf1d84f682dee8a8"
         },
         {
           "file": "structure-page-10.png",

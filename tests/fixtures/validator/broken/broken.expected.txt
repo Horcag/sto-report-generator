@@ -1,5 +1,4 @@
 Citation Number Sequence: Citation numbers must be dense from [1] to [10]; missing: 5.
-Image Width Limit: Detected image width above 14 cm. Run post_build.py to scale large figures.
 Math Multiplication Sign: Detected asterisk (*) as multiplication sign in formula. Use LaTeX multiplication commands instead.
 Normal Line Spacing (1.5): Normal style line spacing is not 1.5 (360 DXA).
 Ordinary Body Bold Text: Ordinary body text, including referat fields, must not be bold.
