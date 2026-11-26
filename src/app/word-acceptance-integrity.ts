@@ -1,12 +1,18 @@
 import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
 
-import { readDocxEntry } from '@/shared/lib/docx';
+import {
+	hasXmlAncestor,
+	MARKUP_COMPATIBILITY_NS,
+	NON_BODY_PROSE_ANCESTORS,
+	readDocxEntry,
+	WORD_ML_NS,
+} from '@/shared/lib/docx';
 import { validateTableLayout } from '@/shared/lib/sto-validator';
 
 import { compareFigureEvidence, FigureChecks } from './word-acceptance-figures';
 
-const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+const WORD_NS = WORD_ML_NS;
 
 function stableParagraphs(xml: string): string[] {
 	const document = new JSDOM(xml, { contentType: 'text/xml' }).window
@@ -15,19 +21,79 @@ function stableParagraphs(xml: string): string[] {
 	if (!body) throw new Error('Word document is missing its body.');
 	return [...body.children]
 		.flatMap(element => {
+			if (
+				element.namespaceURI === MARKUP_COMPATIBILITY_NS &&
+				element.localName === 'AlternateContent'
+			) {
+				const choice = [...element.children].find(
+					child =>
+						child.namespaceURI === MARKUP_COMPATIBILITY_NS &&
+						child.localName === 'Choice',
+				);
+				return choice
+					? [...choice.children].flatMap(inner =>
+							inner.namespaceURI === WORD_NS &&
+							inner.localName === 'p'
+								? [inner]
+								: inner.namespaceURI === WORD_NS &&
+									  inner.localName === 'tbl'
+									? [
+											...inner.getElementsByTagNameNS(
+												WORD_NS,
+												'p',
+											),
+										].filter(
+											p =>
+												!hasXmlAncestor(
+													p,
+													NON_BODY_PROSE_ANCESTORS,
+													inner,
+												),
+										)
+									: [],
+						)
+					: [];
+			}
 			if (element.namespaceURI !== WORD_NS) return [];
 			if (element.localName === 'p') return [element];
 			if (element.localName === 'tbl')
-				return [...element.getElementsByTagNameNS(WORD_NS, 'p')];
+				return [...element.getElementsByTagNameNS(WORD_NS, 'p')].filter(
+					p => !hasXmlAncestor(p, NON_BODY_PROSE_ANCESTORS, element),
+				);
 			return [];
 		})
 		.filter(
 			paragraph =>
-				!paragraph.getElementsByTagNameNS(WORD_NS, 'fldChar').length &&
-				!paragraph.getElementsByTagNameNS(WORD_NS, 'fldSimple').length,
+				!hasXmlAncestor(paragraph, NON_BODY_PROSE_ANCESTORS, body) &&
+				![...paragraph.getElementsByTagNameNS(WORD_NS, 'fldChar')].some(
+					node =>
+						!hasXmlAncestor(
+							node,
+							NON_BODY_PROSE_ANCESTORS,
+							paragraph,
+						),
+				) &&
+				![
+					...paragraph.getElementsByTagNameNS(WORD_NS, 'fldSimple'),
+				].some(
+					node =>
+						!hasXmlAncestor(
+							node,
+							NON_BODY_PROSE_ANCESTORS,
+							paragraph,
+						),
+				),
 		)
 		.map(paragraph =>
 			[...paragraph.getElementsByTagNameNS(WORD_NS, '*')]
+				.filter(
+					element =>
+						!hasXmlAncestor(
+							element,
+							NON_BODY_PROSE_ANCESTORS,
+							paragraph,
+						),
+				)
 				.flatMap(element => {
 					if (element.localName === 't')
 						return [element.textContent ?? ''];

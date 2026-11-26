@@ -11,6 +11,7 @@ import {
 	validateFigureId,
 	validateFigureSettings,
 } from './settings';
+import { inspectSvgForShapes } from './svg';
 import { svgBaselineRisks } from './svg-baselines';
 import { FigurePlan, FigureSettings } from './types';
 
@@ -170,43 +171,59 @@ export function planFigure(
 		},
 		issues: [],
 	};
+	if (extension !== 'svg' && spec.svgMode === 'shapes')
+		throw new Error(
+			`Figure ${id}: svgMode "shapes" is only supported for SVG assets (got .${extension})`,
+		);
+	const svgMode =
+		extension === 'svg'
+			? (spec.svgMode ?? settings.defaults.svgMode ?? 'image')
+			: undefined;
+	let shapesInfo: ReturnType<typeof inspectSvgForShapes> | undefined;
 	if (extension === 'svg') {
-		const fallback =
-			spec.fallback ??
-			path
-				.relative(fs.realpathSync(sourceDir), sourcePath)
-				.replaceAll('\\', '/')
-				.replace(/\.svg$/iu, '.png');
-		plan.fallbackPath = resolveFigurePath(sourceDir, fallback);
-		const png = fs.readFileSync(plan.fallbackPath);
-		validatePng(png);
-		const fallbackDimensions = imageSize(png);
-		if (
-			fallbackDimensions.type !== 'png' ||
-			!fallbackDimensions.width ||
-			!fallbackDimensions.height
-		)
-			throw new Error('Invalid PNG fallback dimensions');
-		if (
-			Math.abs(
-				fallbackDimensions.width / fallbackDimensions.height -
-					dimensions.width / dimensions.height,
-			) > 0.01
-		)
-			throw new Error('SVG fallback aspect ratio differs from source');
-		plan.fallbackHash = hash(png);
-		plan.effectiveDpi = {
-			x:
-				(fallbackDimensions.width *
-					(1 - (crop.left + crop.right) / 100) *
-					25.4) /
-				widthMm,
-			y:
-				(fallbackDimensions.height *
-					(1 - (crop.top + crop.bottom) / 100) *
-					25.4) /
-				heightMm,
-		};
+		plan.svgMode = svgMode;
+		if (svgMode === 'shapes') {
+			shapesInfo = inspectSvgForShapes(data.toString('utf8'), crop);
+		} else {
+			const fallback =
+				spec.fallback ??
+				path
+					.relative(fs.realpathSync(sourceDir), sourcePath)
+					.replaceAll('\\', '/')
+					.replace(/\.svg$/iu, '.png');
+			plan.fallbackPath = resolveFigurePath(sourceDir, fallback);
+			const png = fs.readFileSync(plan.fallbackPath);
+			validatePng(png);
+			const fallbackDimensions = imageSize(png);
+			if (
+				fallbackDimensions.type !== 'png' ||
+				!fallbackDimensions.width ||
+				!fallbackDimensions.height
+			)
+				throw new Error('Invalid PNG fallback dimensions');
+			if (
+				Math.abs(
+					fallbackDimensions.width / fallbackDimensions.height -
+						dimensions.width / dimensions.height,
+				) > 0.01
+			)
+				throw new Error(
+					'SVG fallback aspect ratio differs from source',
+				);
+			plan.fallbackHash = hash(png);
+			plan.effectiveDpi = {
+				x:
+					(fallbackDimensions.width *
+						(1 - (crop.left + crop.right) / 100) *
+						25.4) /
+					widthMm,
+				y:
+					(fallbackDimensions.height *
+						(1 - (crop.top + crop.bottom) / 100) *
+						25.4) /
+					heightMm,
+			};
+		}
 	}
 	const severity = settings.defaults.quality ?? 'warn';
 	const issue = (code: string, message: string): void => {
@@ -222,29 +239,54 @@ export function planFigure(
 			'crop geometry is valid; retention of text and diagram elements requires visual review',
 		);
 	if (
+		svgMode !== 'shapes' &&
 		Math.min(plan.effectiveDpi.x, plan.effectiveDpi.y) <
-		(settings.defaults.minDpi ?? 150)
+			(settings.defaults.minDpi ?? 150)
 	)
 		issue(
 			'low-dpi',
 			`effective resolution ${Math.min(plan.effectiveDpi.x, plan.effectiveDpi.y).toFixed(1)} DPI is below ${settings.defaults.minDpi ?? 150}`,
 		);
-	const svg = extension === 'svg' ? svgTextAnalysis(data) : undefined;
-	if (svg?.baselineRisks.length)
-		issue(
-			'svg-baseline-compatibility',
-			`SVG baseline positioning (${svg.baselineRisks.join(', ')}) may shift labels in Word; use explicit alphabetic baseline coordinates and verify the rendered page`,
-		);
-	const fontPx = svg ? svg.fontPx : spec.textSizePx;
-	if (fontPx === undefined)
-		issue('unknown-text-size', 'smallest text size cannot be established');
-	else {
-		plan.minTextPt = (((fontPx * heightMm) / visibleHeight) * 72) / 25.4;
-		if (plan.minTextPt < (settings.defaults.minTextPt ?? 9))
+	if (shapesInfo) {
+		if (!shapesInfo.fontSizesPx.length)
 			issue(
-				'small-text',
-				`smallest text ${plan.minTextPt.toFixed(1)} pt is below ${settings.defaults.minTextPt ?? 9} pt`,
+				'unknown-text-size',
+				'smallest text size cannot be established',
 			);
+		else {
+			const vbH = shapesInfo.viewBox.bottom - shapesInfo.viewBox.top;
+			const targetH = (heightMm * 96) / 25.4;
+			const sy = targetH / vbH;
+			plan.minTextPt =
+				Math.min(...shapesInfo.fontSizesPx) * sy * (72 / 96);
+			if (plan.minTextPt < (settings.defaults.minTextPt ?? 9))
+				issue(
+					'small-text',
+					`smallest text ${plan.minTextPt.toFixed(1)} pt is below ${settings.defaults.minTextPt ?? 9} pt`,
+				);
+		}
+	} else {
+		const svg = extension === 'svg' ? svgTextAnalysis(data) : undefined;
+		if (svg?.baselineRisks.length)
+			issue(
+				'svg-baseline-compatibility',
+				`SVG baseline positioning (${svg.baselineRisks.join(', ')}) may shift labels in Word; use explicit alphabetic baseline coordinates and verify the rendered page`,
+			);
+		const fontPx = svg ? svg.fontPx : spec.textSizePx;
+		if (fontPx === undefined)
+			issue(
+				'unknown-text-size',
+				'smallest text size cannot be established',
+			);
+		else {
+			plan.minTextPt =
+				(((fontPx * heightMm) / visibleHeight) * 72) / 25.4;
+			if (plan.minTextPt < (settings.defaults.minTextPt ?? 9))
+				issue(
+					'small-text',
+					`smallest text ${plan.minTextPt.toFixed(1)} pt is below ${settings.defaults.minTextPt ?? 9} pt`,
+				);
+		}
 	}
 	return plan;
 }

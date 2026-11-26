@@ -17,6 +17,7 @@ import { validateBibliographyPresentation } from './sto-validator/bibliography-x
 import { hasInvalidDirectBodyFormatting } from './sto-validator/body-formatting';
 import {
 	extractWordText,
+	getAllDocumentParagraphs,
 	getContinuationFailures,
 	getNoteFailures,
 	getReportBodyElements,
@@ -25,6 +26,7 @@ import {
 	isVisibleParagraph,
 	paragraphHasDrawing,
 	paragraphHasStyle,
+	stripDrawingContainers,
 } from './sto-validator/body-xml';
 import { hasBoldOrdinaryBodyText } from './sto-validator/bold-formatting';
 import {
@@ -34,12 +36,14 @@ import {
 	countTableHeaderFinalPeriods,
 	countTablesWithDiagonalBorders,
 	countUncenteredImageParagraphs,
+	hasOversizedImages,
 } from './sto-validator/layout-xml';
 import { isMathLayoutTable } from './sto-validator/math-layout-table';
 import {
 	inspectMathStructures,
 	validateFormulaPunctuation,
 } from './sto-validator/math-xml';
+import { validateNumbering } from './sto-validator/numbering-xml';
 import { hasForbiddenTabCharacters } from './sto-validator/tab-xml';
 import {
 	countTablesWithoutHeaderRepeat,
@@ -187,14 +191,6 @@ function getMissingCitationNumbers(
 	return missingNumbers;
 }
 
-function hasOversizedImages(docXml: string): boolean {
-	const maxWidthEmu = STO_RULES.page.imageMaxWidthEmu;
-
-	return [...docXml.matchAll(/<wp:extent\b[^>]*\bcx="(\d+)"/g)].some(
-		match => Number(match[1]) > maxWidthEmu,
-	);
-}
-
 function hasExpectedPageMargins(docXml: string): boolean {
 	const margins = STO_RULES.page.marginsDxa;
 	const marginTags = docXml.match(/<w:pgMar\b[^>]*\/>/g) ?? [];
@@ -293,24 +289,6 @@ function countImagesWithoutFollowingCaption(
 	}
 
 	return count;
-}
-
-function getNumberingLevels(numberingXml: string): string[] {
-	return numberingXml.match(/<w:lvl\b[\s\S]*?<\/w:lvl>/g) ?? [];
-}
-
-function hasExpectedBibliographyNumbering(numberingXml: string): boolean {
-	const bibliographyParagraph = STO_RULES.bibliography.paragraph;
-	const bibliographyIndentPattern = new RegExp(
-		String.raw`<w:ind\b(?=[^>]*w:left="${bibliographyParagraph.leftIndentDxa}")(?=[^>]*w:hanging="${bibliographyParagraph.hangingIndentDxa}")`,
-	);
-
-	return getNumberingLevels(numberingXml).some(
-		levelXml =>
-			regexMatches(/<w:lvlText w:val="%1"\/>/, levelXml) &&
-			regexMatches(bibliographyIndentPattern, levelXml) &&
-			!regexMatches(/<w:suff\b[^>]*w:val="space"/, levelXml),
-	);
 }
 
 function findStyleXml(stylesXml: string, styleId: string): string | null {
@@ -432,24 +410,25 @@ function hasStylePropertyOrInheritedByIdOrName(
 }
 
 function validateHeadingText(input: ValidationInput): ValidationResult[] {
+	const proseDocXml = stripDrawingContainers(input.docXml);
 	const capsHeading1 = regexMatches(
 		new RegExp(
-			String.raw`${input.heading1StyleRef}(?:(?!<\/w:p>).)*?<w:t>([^<]*[А-ЯA-Z]{5,}[^<]*)<\/w:t>`,
+			String.raw`${input.heading1StyleRef}(?:(?!<\/w:p>).)*?<w:t\b[^>]*>([^<]*[А-ЯA-Z]{5,}[^<]*)<\/w:t>`,
 			's',
 		),
-		input.docXml,
+		proseDocXml,
 	);
 	const structuralHeadingLowerText = regexMatches(
 		new RegExp(
-			String.raw`${input.structuralHeadingStyleRef}(?:(?!<\/w:p>).)*?<w:t>[^<]*[a-zа-яё][^<]*<\/w:t>`,
+			String.raw`${input.structuralHeadingStyleRef}(?:(?!<\/w:p>).)*?<w:t\b[^>]*>[^<]*[a-zа-яё][^<]*<\/w:t>`,
 			's',
 		),
-		input.docXml,
+		proseDocXml,
 	);
 	const hasAllCapsStyle = hasStyleProperty(
 		input.stylesXml,
 		[STRUCTURAL_HEADING_STYLE_ID],
-		/<w:caps\/>/,
+		/<w:caps\b(?![^>]*w:val="(?:0|false)")/,
 	);
 	const structuralCasingPassed = structuralHeadingLowerText
 		? hasAllCapsStyle
@@ -559,7 +538,7 @@ function hasCenteredPageNumber(footerXml: string | undefined): boolean {
 	if (!footerXml || !regexMatches(/\bPAGE\b/, footerXml)) {
 		return false;
 	}
-	return (footerXml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? []).some(
+	return getAllDocumentParagraphs(footerXml).some(
 		paragraphXml =>
 			regexMatches(/\bPAGE\b/, paragraphXml) &&
 			regexMatches(/<w:jc\b[^>]*w:val="center"[^>]*\/>/, paragraphXml),
@@ -765,36 +744,6 @@ function validateFieldsTablesAndImages(
 		),
 	];
 }
-function validateNumbering(numberingXml: string | null): ValidationResult[] {
-	if (numberingXml === null) {
-		return [];
-	}
-
-	const firstLineIndent = STO_RULES.typography.firstLineIndentDxa;
-	const bibliographyParagraph = STO_RULES.bibliography.paragraph;
-	const bibLevelMatch = hasExpectedBibliographyNumbering(numberingXml);
-	const listLevelMatch = regexMatches(
-		new RegExp(
-			String.raw`<w:lvlText w:val="${escapeRegExp(STO_RULES.typography.listMarker)}"/>.*?<w:ind[^>]*w:left="0"[^>]*w:firstLine="${firstLineIndent}"`,
-			's',
-		),
-		numberingXml,
-	);
-
-	return [
-		resultFromPass(
-			'Bibliography Numbering Indent & Format',
-			bibLevelMatch,
-			`Bibliography numbering missing or has incorrect indent/suffix (expected left ${bibliographyParagraph.leftIndentDxa}, hanging ${bibliographyParagraph.hangingIndentDxa}, tab after number) / dot format.`,
-		),
-		resultFromPass(
-			'List Numbering Indent & Format',
-			listLevelMatch,
-			`List numbering missing ${STO_RULES.typography.listMarker} marker or has incorrect indent (expected left 0, firstLine ${firstLineIndent}).`,
-		),
-	];
-}
-
 function createValidationInput(
 	docXml: string,
 	stylesXml: string,
@@ -875,7 +824,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 		...validateTypography(input),
 		...validatePageNumbering(input),
 		...validateMathAndCitations(input),
-		...validateNumbering(input.numberingXml),
+		...validateNumbering(input.docXml, input.numberingXml),
 		...validateFieldsTablesAndImages(input),
 		...(strictSto
 			? strictStoChecks(unpackedDirPath)

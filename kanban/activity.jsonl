@@ -198,3 +198,8 @@
 {"timestamp":"2026-10-17T16:30:05.390678616+04:00","action":"release","task_id":32,"detail":"lime-linen"}
 {"timestamp":"2026-10-17T16:30:05.426136574+04:00","action":"move","task_id":32,"detail":"in-progress -\u003e done"}
 {"timestamp":"2026-10-17T16:55:55.366467537+04:00","action":"edit","task_id":32,"detail":"Экспериментальный Wordcraft renderer для PDF и диагностики совместимости"}
+{"timestamp":"2026-11-26T04:49:37.178284813+04:00","action":"create","task_id":33,"detail":"Обновление WordCraft до 0.19.1 и сверка с Word"}
+{"timestamp":"2026-11-26T05:09:04.243029538+04:00","action":"edit","task_id":33,"detail":"Обновление WordCraft до 0.19.1 и сверка с Word"}
+{"timestamp":"2026-11-26T05:09:04.279691806+04:00","action":"move","task_id":33,"detail":"in-progress -\u003e done"}
+{"timestamp":"2026-11-26T05:09:08.870095578+04:00","action":"edit","task_id":33,"detail":"Обновление WordCraft до 0.19.1 и сверка с Word"}
+{"timestamp":"2026-11-26T05:09:08.870193991+04:00","action":"release","task_id":33,"detail":"stone-halo"}

@@ -1,3 +1,5 @@
+export type SvgRenderMode = 'image' | 'shapes';
+
 export interface FigureCrop {
 	left: number;
 	right: number;
@@ -11,6 +13,7 @@ export interface FigureDefaults {
 	minDpi?: number;
 	minTextPt?: number;
 	quality?: 'warn' | 'error';
+	svgMode?: SvgRenderMode;
 }
 
 export interface FigureSpec {
@@ -20,6 +23,7 @@ export interface FigureSpec {
 	crop?: FigureCrop;
 	fallback?: string;
 	textSizePx?: number;
+	svgMode?: SvgRenderMode;
 }
 
 export interface FigureSettings {
@@ -47,5 +51,6 @@ export interface FigurePlan {
 	minTextPt?: number;
 	fallbackPath?: string;
 	fallbackHash?: string;
+	svgMode?: SvgRenderMode;
 	issues: FigureIssue[];
 }

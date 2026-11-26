@@ -373,5 +373,43 @@ export function validateTemplateStyleConformance(
 				hasSpacing(stylesXml, ['TableText'], { 'w:line': captionLine }),
 			`TableText style must have no first-line indent and use single line spacing (${captionLine} DXA).`,
 		),
+		...(resolveWordStyleId(stylesXml, 'DiagramText') !== null
+			? (() => {
+					const diagramId =
+						resolveWordStyleId(stylesXml, 'DiagramText') ??
+						'DiagramText';
+					const normalId = resolveWordStyleId(stylesXml, 'Normal');
+					const basedOn = getBasedOnStyleId(
+						findStyleXml(stylesXml, diagramId) ?? '',
+					);
+					const inheritsNormal =
+						basedOn === 'Normal' ||
+						(normalId !== null && basedOn === normalId);
+					const effectiveFirstLine =
+						getEffectiveParagraphAttribute(
+							stylesXml,
+							diagramId,
+							'ind',
+							'firstLine',
+						) ?? '0';
+					return [
+						check(
+							'Diagram Text Style',
+							!inheritsNormal &&
+								effectiveFirstLine === '0' &&
+								hasSpacing(stylesXml, [diagramId], {
+									'w:line': captionLine,
+								}) &&
+								getEffectiveParagraphAttribute(
+									stylesXml,
+									diagramId,
+									'jc',
+									'val',
+								) !== 'both',
+							`DiagramText style must not inherit from Normal, must have no first-line indent, single line spacing (${captionLine} DXA), and must not use justified alignment.`,
+						),
+					];
+				})()
+			: []),
 	];
 }

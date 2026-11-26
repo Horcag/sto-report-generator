@@ -5,6 +5,12 @@ import imageSize from 'image-size';
 import { JSDOM } from 'jsdom';
 
 import {
+	directXmlChildren,
+	hasXmlAncestor,
+	MARKUP_COMPATIBILITY_NS,
+} from '@/shared/lib/docx';
+
+import {
 	compareFigurePayloads,
 	FigurePayloadChecks,
 	inspectRasterValidity,
@@ -19,17 +25,24 @@ const R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 const REL = 'http://schemas.openxmlformats.org/package/2006/relationships';
 const A14 = 'http://schemas.microsoft.com/office/drawing/2010/main';
 const SVG = 'http://schemas.microsoft.com/office/drawing/2016/SVG/main';
+const WPG = 'http://schemas.microsoft.com/office/word/2010/wordprocessingGroup';
+const WPS = 'http://schemas.microsoft.com/office/word/2010/wordprocessingShape';
+const WPC =
+	'http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas';
 const EMU_PER_INCH = 914400;
 
 interface FigureEvidence {
 	identity: string;
 	managed: boolean;
+	kind: 'image' | 'shapes';
 	placement: 'inline' | 'anchor';
 	extent: { cx: string | null; cy: string | null };
 	geometry: Record<string, string | null>[];
 	crop: Record<string, string | null>[];
 	localDpi: (string | null)[];
 	paragraphClipsImage: boolean;
+	shapeCount?: number;
+	shapeTexts?: string[];
 	payloads: PayloadEvidence[];
 	payloadIssues: string[];
 }
@@ -165,11 +178,17 @@ export function readFigureEvidence(docxPath: string): DocumentFigures {
 	const counts = new Map<string, number>();
 	const occurrences: FigureEvidence[] = [];
 	for (const drawing of document.getElementsByTagNameNS(W, 'drawing')) {
+		if (hasXmlAncestor(drawing, [[MARKUP_COMPATIBILITY_NS, 'Fallback']]))
+			continue;
 		const blips = [
 			...drawing.getElementsByTagNameNS(A, 'blip'),
 			...drawing.getElementsByTagNameNS(SVG, 'svgBlip'),
 		];
-		if (!blips.length) continue;
+		const isShapeDrawing =
+			drawing.getElementsByTagNameNS(WPG, 'wgp').length > 0 ||
+			drawing.getElementsByTagNameNS(WPC, 'wpc').length > 0 ||
+			drawing.getElementsByTagNameNS(WPS, 'wsp').length > 0;
+		if (!blips.length && !isShapeDrawing) continue;
 		const name =
 			drawing
 				.getElementsByTagNameNS(WP, 'docPr')[0]
@@ -187,14 +206,20 @@ export function readFigureEvidence(docxPath: string): DocumentFigures {
 			!(paragraph.namespaceURI === W && paragraph.localName === 'p')
 		)
 			paragraph = paragraph.parentElement;
-		const spacing = paragraph
-			?.getElementsByTagNameNS(W, 'pPr')[0]
-			?.getElementsByTagNameNS(W, 'spacing')[0];
+		const spacing = directXmlChildren(
+			directXmlChildren(paragraph, W, 'pPr')[0],
+			W,
+			'spacing',
+		)[0];
 		const exactLine = spacing?.getAttributeNS(W, 'lineRule') === 'exact';
 		const lineHeightEmu = Number(spacing?.getAttributeNS(W, 'line')) * 635;
+		const kind: FigureEvidence['kind'] = isShapeDrawing
+			? 'shapes'
+			: 'image';
 		const evidence: FigureEvidence = {
 			identity: `${baseIdentity}#${occurrence}`,
 			managed,
+			kind,
 			placement: drawing.getElementsByTagNameNS(WP, 'inline').length
 				? 'inline'
 				: 'anchor',
@@ -213,10 +238,36 @@ export function readFigureEvidence(docxPath: string): DocumentFigures {
 				drawing.getElementsByTagNameNS(WP, 'inline').length > 0 &&
 				exactLine &&
 				lineHeightEmu < Number(extent?.getAttribute('cy')),
+			...(kind === 'shapes'
+				? {
+						shapeCount: drawing.getElementsByTagNameNS(WPS, 'wsp')
+							.length,
+						shapeTexts: [
+							...drawing.getElementsByTagNameNS(W, 'txbxContent'),
+						].map(box =>
+							[...box.getElementsByTagNameNS(W, 't')]
+								.map(t => t.textContent ?? '')
+								.join('')
+								.replace(/\s+/g, ' ')
+								.trim(),
+						),
+					}
+				: {}),
 			payloads: [],
 			payloadIssues: [],
 		};
 		if (!evidence.crop.length) evidence.crop.push(cropAttributes());
+		if (kind === 'shapes') {
+			if (blips.length > 0) {
+				evidence.payloadIssues.push(
+					'Vector shape group unexpectedly contains embedded image blips.',
+				);
+			}
+			const topXfrm = drawing.getElementsByTagNameNS(A, 'xfrm')[0];
+			evidence.geometry = [transformAttributes(topXfrm, evidence.extent)];
+			occurrences.push(evidence);
+			continue;
+		}
 		const transforms = [...drawing.getElementsByTagNameNS(A, 'xfrm')];
 		evidence.geometry = (transforms.length ? transforms : [undefined]).map(
 			item => transformAttributes(item, evidence.extent),
@@ -282,10 +333,13 @@ export function compareFigureEvidence(
 				changes.push('Managed figure identity or occurrence was lost.');
 			else {
 				for (const key of [
+					'kind',
 					'placement',
 					'extent',
 					'geometry',
 					'crop',
+					'shapeCount',
+					'shapeTexts',
 				] as const) {
 					if (
 						JSON.stringify(before[key]) !==
@@ -293,7 +347,7 @@ export function compareFigureEvidence(
 					)
 						changes.push(`Figure ${key} changed.`);
 				}
-				if (!payloadChecks.preserved)
+				if (before.kind === 'image' && !payloadChecks.preserved)
 					changes.push('Figure payloads changed.');
 				if (after.paragraphClipsImage)
 					changes.push(

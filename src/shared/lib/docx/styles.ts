@@ -1,4 +1,5 @@
 import { getSamaraTemplate2022StyleName } from '../../config/sto-styles';
+import { getParagraphPropertiesContent } from './xml-elements';
 
 function escapeRegExp(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
@@ -83,7 +84,7 @@ function readAttribute(
 }
 
 function paragraphProperties(xml: string): string {
-	return /<w:pPr\b[^>]*>([\s\S]*?)<\/w:pPr>/.exec(xml)?.[1] ?? '';
+	return getParagraphPropertiesContent(xml);
 }
 
 /** Resolve one paragraph property in Word's direct, numbering, style, defaults order. */

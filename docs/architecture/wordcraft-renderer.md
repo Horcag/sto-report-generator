@@ -25,7 +25,7 @@ the separate Microsoft Word acceptance command.
 
 Wordcraft 0.19.1 uses `craft-libs` for DOCX and RTF. Its PDF exporter resolves unlocked
 body `PAGEREF` fields against the export layout. The adapter still explicitly updates
-fields and prepares the TOC on a copy. See the [0.19.1 audit](https://github.com/Horcag/sto-report-generator/blob/e258a5da7ec2833319087fbd592651c7847b91a8/docs/audits/2026-11-26-wordcraft-0191.md)
+fields and prepares the TOC on a copy. See the [0.19.1 audit](../audits/2026-11-26-wordcraft-0191.md)
 for the matched inputs, layout measurements, and remaining differences with Word.
 
 ## Render sequence

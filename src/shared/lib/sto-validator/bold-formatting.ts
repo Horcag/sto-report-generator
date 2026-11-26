@@ -1,10 +1,12 @@
 import { findWordStyleXml } from '../docx/styles';
 import {
 	extractWordText,
+	getBalancedWordElements,
 	getParagraphStyleId,
 	getReportBodyElements,
 	isParagraphXml,
 	isVisibleParagraph,
+	stripDrawingContainers,
 } from './body-xml';
 
 function boldProperty(propertiesXml: string): boolean | null {
@@ -55,27 +57,25 @@ export function hasBoldOrdinaryBodyText(
 		const styleId = getParagraphStyleId(paragraphXml) ?? 'Normal';
 		if (!isOrdinaryBodyStyle(stylesXml, styleId)) return false;
 		const paragraphBold = styleBold(stylesXml, styleId);
-		return (paragraphXml.match(/<w:r\b[\s\S]*?<\/w:r>/g) ?? []).some(
-			runXml => {
-				if (!extractWordText(runXml).trim()) return false;
-				const runProperties =
-					/<w:rPr\b[^>]*>([\s\S]*?)<\/w:rPr>/.exec(runXml)?.[1] ?? '';
-				const directBold = boldProperty(runProperties);
-				if (directBold !== null) return directBold;
-				const characterStyleId =
-					/<w:rStyle\b[^>]*\bw:val="([^"]+)"/.exec(
-						runProperties,
-					)?.[1];
-				const characterBold = characterStyleId
-					? styleBold(stylesXml, characterStyleId)
-					: null;
-				return (
-					characterBold ??
-					paragraphBold ??
-					boldProperty(defaultProperties) ??
-					false
-				);
-			},
-		);
+		const proseParagraphXml = stripDrawingContainers(paragraphXml);
+		return getBalancedWordElements(proseParagraphXml, 'r').some(runXml => {
+			if (!extractWordText(runXml).trim()) return false;
+			const runProperties =
+				/<w:rPr\b[^>]*>([\s\S]*?)<\/w:rPr>/.exec(runXml)?.[1] ?? '';
+			const directBold = boldProperty(runProperties);
+			if (directBold !== null) return directBold;
+			const characterStyleId = /<w:rStyle\b[^>]*\bw:val="([^"]+)"/.exec(
+				runProperties,
+			)?.[1];
+			const characterBold = characterStyleId
+				? styleBold(stylesXml, characterStyleId)
+				: null;
+			return (
+				characterBold ??
+				paragraphBold ??
+				boldProperty(defaultProperties) ??
+				false
+			);
+		});
 	});
 }

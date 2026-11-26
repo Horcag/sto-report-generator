@@ -105,6 +105,9 @@ export function validateFigureSettings(value: unknown): FigureSettings {
 		if (key === 'quality') {
 			if (value !== 'warn' && value !== 'error')
 				throw new Error('Invalid figure quality');
+		} else if (key === 'svgMode') {
+			if (value !== 'image' && value !== 'shapes')
+				throw new Error('Invalid figure svgMode');
 		} else if (
 			['maxWidthMm', 'maxHeightMm', 'minDpi', 'minTextPt'].includes(key)
 		)
@@ -129,7 +132,10 @@ export function validateFigureSettings(value: unknown): FigureSettings {
 		for (const [key, value] of Object.entries(spec)) {
 			if (['widthMm', 'maxHeightMm', 'textSizePx'].includes(key))
 				positive(value, key);
-			else if (key === 'source' || key === 'fallback') {
+			else if (key === 'svgMode') {
+				if (value !== 'image' && value !== 'shapes')
+					throw new Error('Invalid figure svgMode');
+			} else if (key === 'source' || key === 'fallback') {
 				if (
 					typeof value !== 'string' ||
 					!value ||

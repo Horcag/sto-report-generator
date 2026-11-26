@@ -71,20 +71,18 @@ citations require them. `--type` changes title-page text only; it is not a profi
   [the report prose workflow](references/scientific-prose.md). Use its ordinary authoring pass for short edits;
   prepare variants only when needed. Keep trial drafts outside the report input directory. For a requested detector
   comparison, consult the [shared study results and contribution guide](../../../docs/case-studies/README.md) to choose
-  a comparable control and record improvements, regressions, and unchanged outcomes.
-  Start editorial trials with paired TXT exports. Use the full extracted text
-  when the surrounding report can affect the result. Build Word when checking
-  the final DOCX, its extraction, or its layout.
-  When an authorized corporate/institutional full-map cabinet is available, it provides unlimited checks and a full
-  4-level color map (red `L3`, orange `L2`, yellow `L1`, clean `L0`), which is needed even when the headline red score
-  is `0%` to inspect and reduce remaining orange/yellow highlights. Empirical corporate runs (19 consecutive checks spaced
-  2–6 minutes apart) showed flat latencies (64–99 s) and zero rate-limit/throttling errors; still, prefer disciplined
-  per-pass updates from one map rather than redundant rapid-fire retries without substantive edits. Note that an
-  un-updated `portable` TOC adds ~4 percentage points of false red that disappears after real Word COM acceptance.
-- Use the [Russian prose review checklist](references/russian-prose-review/SKILL.md)
-  when drafting and rereading connected Russian prose. Check that paragraphs make supported claims, use consistent
-  terminology, and add information to the report. Treat Wikipedia-specific markup examples in the bundled
-  references in the context of the report format.
+  a comparable control and record improvements, regressions, and unchanged outcomes. If only free overall scores
+  are available, use the bounded localization procedure in the prose workflow to prioritize reading; it does not recover
+  exact highlighted passages or replace a final full-document check. If a detailed heatmap from a previous revision is
+  available, the same reference describes local reading-priority experiments and controls without old colors;
+  an added benefit from the color information has not been established. When a full report JSON bundle (`text.json` +
+  `ai_plain_layout.json`) is available, extract `level = 3` (`high`) character spans directly (`high_chars / textCharsCount`)
+  without PDF or OCR, and do not rely on the report chat assistant's post-hoc stylistic explanations (`get_ai` returns
+  only snippets and levels without detector reasons). When an authorized corporate/institutional 4-level cabinet is
+  available, use its full map (red `L3`, orange `L2`, yellow `L1`, clean `L0`) even at `0%` red to inspect and reduce
+  remaining orange/yellow spans; empirical runs (19 consecutive checks spaced 2–6 minutes apart) showed flat latencies
+  (64–99 s) and zero throttling, though working from one map per pass remains good practice. Note that an un-updated
+  `portable` TOC adds ~4 percentage points of false red that disappears after real Word COM acceptance.
 - Before source preflight, apply the bundled [`humanizer-ru`](../humanizer-ru/SKILL.md) skill to connected Russian prose
   that you draft or are asked to edit. Read its academic-genre exceptions and rewrite guide, remove actual chatbot
   artifacts and formulaic wording, then inspect the source diff. For a review-only request, report findings without
@@ -198,7 +196,7 @@ local absolute paths there.
 - After a block formula immediately followed by a structured `где $x$ – ...` explanation, put a comma before the equation label and do not write `где:`. Separate consecutive block formulas with a comma or semicolon. In LaTeX
   formulas, write upright functions as commands (`\sin`, `\ln`, `\max`) and use `\ldots`, `\dots` or `\cdots` instead
   of raw `...`. Do not use raw `×`, `∙` or `…`; do not put `\cdot` between a number and a letter symbol.
-- Prefer Russian terms in the report when a standard Russian equivalent exists, and always use authentic domain terminology established in Russian academic literature and engineering practice: never replace standard domain/CS/ML terms with awkward calques, colloquialisms, or artificial synonyms, never introduce 1st-person «мы» or conversational filler ("5th-grader" simplification) just to lower detector scores, and never chop sentences into telegraphic fragments. Equally, avoid dense passive-reflexive `-ся` chains (`задаются`, `проверяются`, `вычисляется`, `сохраняются`), multi-word genitive noun stacks, 3-clause parallel triplets, and textbook LLM meta-narration (`На первом шаге… Затем… Наконец…`, `Следующий этап…`, `Детализация блока…`). Instead, write authoritative impersonal Russian engineering prose (СТО / ГОСТ 7.32): use indefinite-personal active 3rd-person plural (`оценивают`, `выбирают`, `проверяют`, `хранят`, `вычисляют`), concrete technical subjects with direct transitive verbs (`Приложение проверяет…`, `Связи классов ограничивают…`), verb clauses instead of abstract nominalizations, varied figure-caption openings, and sentence-length contrast. Before final Word COM acceptance, run an independent Russian scientific-register, terminology, and contract QA audit on all modified `.md` modules so detector optimization never degrades factual precision or ГОСТ 7.32 structure.
+- Prefer Russian terms in the report when a standard Russian equivalent exists, and always use authentic domain terminology established in Russian academic literature and engineering practice: never replace standard domain/CS/ML terms (`ансамбль`, `ветви ансамбля`, `признаки`, `валидационный AP`, `пропуски в отдельных ячейках`, `самоконтролируемое предобучение (SSL)`, `правило подстановки фоновых значений`) with awkward calques, colloquialisms, or artificial synonyms, never introduce 1st-person «мы» or conversational filler ("5th-grader" simplification) just to lower detector scores, and never chop sentences into telegraphic fragments. Equally, avoid dense passive-reflexive `-ся` chains (`задаются`, `проверяются`, `вычисляется`, `сохраняются`), multi-word genitive noun stacks, 3-clause parallel triplets, and textbook LLM meta-narration (`На первом шаге… Затем… Наконец…`, `Следующий этап…`, `Детализация блока…`). Instead, write authoritative impersonal Russian engineering prose (СТО / ГОСТ 7.32): use indefinite-personal active 3rd-person plural (`оценивают`, `выбирают`, `проверяют`, `хранят`, `вычисляют`), concrete technical subjects with direct transitive verbs (`Приложение проверяет…`, `Связи классов ограничивают…`), verb clauses instead of abstract nominalizations, varied figure-caption openings, and sentence-length contrast. Before final Word COM acceptance, run an independent Russian scientific-register, terminology, and contract QA audit on all modified `.md` modules so detector optimization never degrades factual precision or ГОСТ 7.32 structure.
 - Do not use unknown `\begin{...}` environments; add them to `sto-rules.json`, parser handling, tests, and README
   together if support is needed.
 

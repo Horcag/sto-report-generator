@@ -1,6 +1,21 @@
 import { resolveWordStyleId } from '../docx/styles';
+import {
+	getBalancedXmlElements,
+	getParagraphPropertiesContent,
+	stripAlternateFallbacks,
+	stripDrawingContainers,
+	stripTextboxAndFallbackContainers,
+} from '../docx/xml-elements';
 import { hasVisibleOrUnverifiedTableBottom } from './table-bottom-border';
 import { inspectTableNoteRows } from './table-note-rows';
+
+export {
+	getBalancedXmlElements,
+	getParagraphPropertiesContent,
+	stripAlternateFallbacks,
+	stripDrawingContainers,
+	stripTextboxAndFallbackContainers,
+} from '../docx/xml-elements';
 
 export function decodeXmlText(value: string): string {
 	return value
@@ -12,47 +27,25 @@ export function decodeXmlText(value: string): string {
 }
 
 export function extractWordText(xml: string): string {
-	return [...xml.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g)]
+	const proseXml = stripDrawingContainers(xml);
+	return [...proseXml.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g)]
 		.map(item => decodeXmlText(item[1]))
 		.join('');
 }
 
-function getBalancedWordElements(xml: string, names: string): string[] {
-	const elements: string[] = [];
+export function getBalancedWordElements(xml: string, names: string): string[] {
+	const qualifiedNames = names
+		.split('|')
+		.map(name => `w:${name.trim()}`)
+		.join('|');
 	// Preserve paragraphs in wrappers such as TOC content controls, but consume a
 	// complete table before continuing so its cells never become body paragraphs.
-	const ignored = '<!--[\\s\\S]*?-->|<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';
-	const openings = new RegExp(`${ignored}|<w:(${names})\\b[^>]*>`, 'g');
-	let opening: RegExpExecArray | null;
-	while ((opening = openings.exec(xml))) {
-		if (!opening[1]) continue;
-		const start = opening.index;
-		if (opening[0].endsWith('/>')) {
-			elements.push(opening[0]);
-			continue;
-		}
-		const tags = new RegExp(
-			`${ignored}|<\\/?w:${opening[1]}\\b[^>]*>`,
-			'g',
-		);
-		tags.lastIndex = openings.lastIndex;
-		let depth = 1;
-		let tag: RegExpExecArray | null;
-		while (depth && (tag = tags.exec(xml))) {
-			if (tag[0].startsWith('<!')) continue;
-			if (tag[0].startsWith('</')) depth--;
-			else if (!tag[0].endsWith('/>')) depth++;
-		}
-		if (depth)
-			throw new Error(`Unclosed Word body element w:${opening[1]}.`);
-		elements.push(xml.slice(start, tags.lastIndex));
-		openings.lastIndex = tags.lastIndex;
-	}
-	return elements;
+	return getBalancedXmlElements(xml, qualifiedNames);
 }
 
 export function getBodyElements(docXml: string): string[] {
-	const bodyXml = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/.exec(docXml)?.[1];
+	const activeXml = stripAlternateFallbacks(docXml);
+	const bodyXml = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/.exec(activeXml)?.[1];
 	return bodyXml ? getBalancedWordElements(bodyXml, 'p|tbl') : [];
 }
 
@@ -105,8 +98,28 @@ export function isTableXml(elementXml: string): boolean {
 	return elementXml.startsWith('<w:tbl');
 }
 
+/** Extract outer `<w:p>` elements from body and table cells, skipping textbox and fallback contents. */
+export function getAllDocumentParagraphs(
+	xml: string,
+	options: { stripDrawings?: boolean } = {},
+): string[] {
+	const cleaned = options.stripDrawings
+		? stripDrawingContainers(xml)
+		: stripTextboxAndFallbackContainers(xml);
+	return getBalancedWordElements(cleaned, 'p|tbl').flatMap(element =>
+		isTableXml(element)
+			? getBalancedXmlElements(element, 'w:tc').flatMap(cell =>
+					getAllDocumentParagraphs(
+						cell.replace(/^<w:tc\b[^>]*>|<\/w:tc>$/g, ''),
+						options,
+					),
+				)
+			: [element],
+	);
+}
+
 export function paragraphHasDrawing(paragraphXml: string): boolean {
-	return paragraphXml.includes('<w:drawing');
+	return /<w:drawing\b/.test(stripAlternateFallbacks(paragraphXml));
 }
 
 export function isVisibleParagraph(paragraphXml: string): boolean {
@@ -162,7 +175,9 @@ export function getContinuationFailures(
 			/^Таблица\s+((?:[А-Я]\.)?\d+(?:\.\d+)?)/u.exec(
 				extractWordText(previousCaption).trim(),
 			)?.[1];
-		const alignment = /<w:jc\b[^>]*w:val="([^"]+)"/.exec(paragraph)?.[1];
+		const alignment = /<w:jc\b[^>]*w:val="([^"]+)"/.exec(
+			getParagraphPropertiesContent(paragraph),
+		)?.[1];
 		if (
 			!number ||
 			number !== captionNumber ||
@@ -247,6 +262,7 @@ export function getNoteFailures(docXml: string): {
 }
 
 export function getParagraphStyleId(paragraphXml: string): string | null {
-	const styleTag = /<w:pStyle\b[^>]*\/>/.exec(paragraphXml)?.[0];
+	const properties = getParagraphPropertiesContent(paragraphXml);
+	const styleTag = /<w:pStyle\b[^>]*\/>/.exec(properties)?.[0];
 	return styleTag ? (/\bw:val="([^"]+)"/.exec(styleTag)?.[1] ?? null) : null;
 }

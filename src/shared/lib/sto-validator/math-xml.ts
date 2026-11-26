@@ -1,6 +1,11 @@
 import { JSDOM } from 'jsdom';
 
 import {
+	hasXmlAncestor,
+	MARKUP_COMPATIBILITY_NS,
+	NON_BODY_PROSE_ANCESTORS,
+} from '../docx/xml-elements';
+import {
 	hasExplanationFinalPeriod,
 	inspectFormulaExplanation,
 	startsSymbolDefinition,
@@ -110,9 +115,20 @@ export function inspectMathStructures(documentXml: string): {
 			}
 		}
 	}
-	const unparsedLatex = [...document.getElementsByTagName('w:p')].some(
-		paragraph => {
+	const unparsedLatex = [...document.getElementsByTagName('w:p')]
+		.filter(
+			paragraph => !hasXmlAncestor(paragraph, NON_BODY_PROSE_ANCESTORS),
+		)
+		.some(paragraph => {
 			const prose = [...paragraph.getElementsByTagName('w:r')]
+				.filter(
+					run =>
+						!hasXmlAncestor(
+							run,
+							NON_BODY_PROSE_ANCESTORS,
+							paragraph,
+						),
+				)
 				.filter(run => {
 					const fonts = run.getElementsByTagName('w:rFonts')[0];
 					return !['w:ascii', 'w:hAnsi'].some(
@@ -122,13 +138,20 @@ export function inspectMathStructures(documentXml: string): {
 				})
 				.map(run =>
 					[...run.getElementsByTagName('w:t')]
+						.filter(
+							text =>
+								!hasXmlAncestor(
+									text,
+									NON_BODY_PROSE_ANCESTORS,
+									run,
+								),
+						)
 						.map(text => text.textContent ?? '')
 						.join(''),
 				)
 				.join('');
 			return /\$\$|\$[^$]+\$/.test(prose);
-		},
-	);
+		});
 	return {
 		accentLimits,
 		italicLimitOperators,
@@ -160,6 +183,13 @@ function mathEnding(element: Element): string {
 
 function proseText(element: Element): string {
 	if (
+		['mc:Fallback', 'w:txbxContent', 'w:drawing', 'w:pict'].includes(
+			element.tagName,
+		)
+	) {
+		return '';
+	}
+	if (
 		element.tagName === 'w:r' &&
 		[...element.getElementsByTagName('w:rFonts')].some(fonts =>
 			['w:ascii', 'w:hAnsi'].some(
@@ -180,7 +210,11 @@ function formulaEnding(paragraph: Element): string | null {
 	if (maths.length !== 1) return null;
 	const math = maths[0];
 	const outside = [...paragraph.getElementsByTagName('w:t')]
-		.filter(text => !math.contains(text))
+		.filter(
+			text =>
+				!math.contains(text) &&
+				!hasXmlAncestor(text, NON_BODY_PROSE_ANCESTORS, paragraph),
+		)
 		.map(text => text.textContent ?? '')
 		.join('')
 		.trim();
@@ -241,11 +275,23 @@ export function inspectFormulaPunctuation(
 } {
 	const document = new JSDOM(docXml, { contentType: 'text/xml' }).window
 		.document;
-	const paragraphs = [...document.getElementsByTagName('w:p')];
+	const paragraphs = [...document.getElementsByTagName('w:p')].filter(
+		paragraph => !hasXmlAncestor(paragraph, NON_BODY_PROSE_ANCESTORS),
+	);
 	const blocks: PunctuationBlock[] = [];
 	const appendParagraph = (paragraph: Element): void => {
 		const position = paragraphs.indexOf(paragraph) + 1;
-		if (paragraph.getElementsByTagName('w:drawing').length) {
+		const hasActiveDrawing = [
+			...paragraph.getElementsByTagName('w:drawing'),
+		].some(
+			drawing =>
+				!hasXmlAncestor(
+					drawing,
+					[[MARKUP_COMPATIBILITY_NS, 'Fallback']],
+					paragraph,
+				),
+		);
+		if (hasActiveDrawing) {
 			blocks.push({ kind: 'barrier', text: '', paragraph: position });
 			return;
 		}

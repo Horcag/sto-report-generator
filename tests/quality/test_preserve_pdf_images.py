@@ -197,6 +197,61 @@ class PreservePdfImagesTests(unittest.TestCase):
             self.assertEqual(original[0].get_text(), restored[0].get_text())
             self.assertEqual(original[0].rect, restored[0].rect)
 
+    def test_vector_shapes_only_and_mixed_report_preserve_originals(self):
+        wpg = (
+            '<w:r><w:drawing><wp:inline><wp:extent cx="914400" cy="457200"/>'
+            "<a:graphic><a:graphicData><wpg:wgp><wps:wsp><wps:txbx><w:txbxContent><w:p><w:r><w:t>Схема</w:t></w:r></w:p></w:txbxContent></wps:txbx></wps:wsp></wpg:wgp></a:graphicData></a:graphic>"
+            "</wp:inline></w:drawing></w:r>"
+        )
+        raster = (
+            '<w:r><w:drawing><wp:inline><wp:extent cx="914400" cy="457200"/>'
+            '<a:graphic><a:graphicData><pic:pic><pic:blipFill><a:blip r:embed="rId1"/></pic:blipFill>'
+            "<pic:spPr><a:xfrm/></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>"
+        )
+        ns = (
+            'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+            'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" '
+            'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+            'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" '
+            'xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" '
+            'xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" '
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+        )
+        ghost = self.mupdf.Pixmap(self.mupdf.csRGB, (0, 0, 8, 8), True)
+        ghost.clear_with(0)
+        ghost.set_alpha(bytes([0] * 64))
+
+        # Pure vector shape group report
+        self.update_docx(
+            {
+                "word/document.xml": f"<w:document {ns}><w:body><w:p>{wpg}</w:p></w:body></w:document>".encode()
+            }
+        )
+        with self.mupdf.open() as doc:
+            page = doc.new_page(width=400, height=500)
+            page.insert_text((30, 20), "Вектор")
+            page.insert_image(self.mupdf.Rect(30, 40, 60, 60), stream=ghost.tobytes("png"))
+            doc.save(self.pdf)
+        receipt = preserve_images(self.docx, self.pdf, self.output)
+        self.assertEqual(receipt["status"], "originalPixelsVerified")
+        self.assertEqual(receipt["replaced_image_objects"], 0)
+
+        # Mixed raster + vector shape group report
+        self.update_docx(
+            {
+                "word/document.xml": f"<w:document {ns}><w:body><w:p>{raster}{wpg}</w:p></w:body></w:document>".encode()
+            }
+        )
+        degraded = self.mupdf.Pixmap(self.mupdf.Pixmap(png()), 24, 12).tobytes("png")
+        with self.mupdf.open() as doc:
+            page = doc.new_page(width=400, height=500)
+            page.insert_image(self.mupdf.Rect(30, 40, 102, 76), stream=degraded)
+            page.insert_image(self.mupdf.Rect(120, 40, 150, 60), stream=ghost.tobytes("png"))
+            doc.save(self.pdf)
+        mixed_receipt = preserve_images(self.docx, self.pdf, self.output)
+        self.assertEqual(mixed_receipt["status"], "originalPixelsVerified")
+        self.assertEqual(mixed_receipt["replaced_image_objects"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
