@@ -182,7 +182,7 @@ class StrictStoTests(unittest.TestCase):
                 self.assertEqual(archive.read("word/charts/custom.xml"), b"unrelated malformed XML")
 
     def test_native_normalizer_journals_python_ownership(self):
-        script = Path("scripts/word_acceptance.ps1").read_text()
+        script = Path("scripts/word_acceptance.ps1").read_text(encoding="utf-8")
         helper = script[
             script.index("function Invoke-StrictStoNormalization") : script.index(
                 "function Get-StyleChecks"
@@ -194,7 +194,7 @@ class StrictStoTests(unittest.TestCase):
         )
         self.assertIn("finally", helper)
         self.assertIn("$env:STO_WORD_OWNERSHIP_DIR = $previousOwnership", helper)
-        standalone = Path("scripts/sto_post_build/strict_sto.py").read_text()
+        standalone = Path("scripts/sto_post_build/strict_sto.py").read_text(encoding="utf-8")
         self.assertLess(
             standalone.index('record_process(os.getpid(), "post-build-python")'),
             standalone.index("normalize(sys.argv[1])"),
@@ -289,7 +289,7 @@ class StrictStoTests(unittest.TestCase):
                     orchestrator.post_build(target)
 
     def test_native_acceptance_normalizes_after_save_and_before_export(self):
-        script = Path("scripts/word_acceptance.ps1").read_text()
+        script = Path("scripts/word_acceptance.ps1").read_text(encoding="utf-8")
         close = script.index(
             "$document.Close($WdDoNotSaveChanges)", script.index("$document.Save()")
         )
