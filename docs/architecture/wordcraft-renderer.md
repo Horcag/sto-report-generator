@@ -8,8 +8,8 @@ the separate Microsoft Word acceptance command.
 
 ## Runtime contract
 
-- Supported CLI: **0.18.1**, release commit `079f478bd85df7bcc567e3bafa7d7219096f9c3c`.
-- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.18.1).
+- Supported CLI: **0.19.1**, release commit `5d658dc033f3139926839bffd6ae0eef558c210c`.
+- Install `wordcraft-cli` from its [official release](https://github.com/storytold/wordcraft/releases/tag/v0.19.1).
   Use `PATH`, `WORDCRAFT_CLI`, or the `--wordcraft` argument. Nothing is downloaded at render time.
 - Run `uv sync` in the generator installation directory. The renderer executes that directory's
   `.venv` Python directly; the helper uses the existing XML/statistics package and never invokes COM.
@@ -23,11 +23,10 @@ the separate Microsoft Word acceptance command.
 - Adapter `--strict-fonts` checks font families; it is distinct from upstream CLI `--strict`
   on `convert` and `render`. The adapter does not claim upstream strict checks for `run` or `script`.
 
-The 0.18.1 upstream patch changes packaging, CI and Flatpak files, not rendering code relative
-to 0.18.0. See the [0.18.1 audit](../audits/2026-11-12-wordcraft-0181.md) for the
-comparison boundary and remaining limitations. Across 46 tested inputs, 43 PDFs match 0.17.0
-byte for byte; all 46 outputs match between Linux/WSL and native Windows. Fresh Word exports
-cover 44 of those inputs and do not establish full layout parity.
+Wordcraft 0.19.1 uses `craft-libs` for DOCX and RTF. Its PDF exporter resolves unlocked
+body `PAGEREF` fields against the export layout. The adapter still explicitly updates
+fields and prepares the TOC on a copy. See the [0.19.1 audit](../audits/2026-11-26-wordcraft-0191.md)
+for the matched inputs, layout measurements, and remaining differences with Word.
 
 ## Render sequence
 
@@ -38,7 +37,7 @@ cover 44 of those inputs and do not establish full layout parity.
 4. Query the engine's font catalog. Select local files for missing families when supplied, load them,
    query the catalog again, and enforce strict mode when requested. Reuse the selected fonts in every
    layout, field-update and export command.
-5. Run `references.updateFields` explicitly. A plain Wordcraft `convert` does not update the TOC.
+5. Run `references.updateFields` explicitly. A plain Wordcraft `convert` does not rebuild TOC entries.
 6. Probe supported numbered tables on physical pages, split at safe row boundaries, add continuation
    captions and repeated headers, and refresh fields after each layout change.
 7. Reopen the staged document to measure layout pages, export PDF, and repeat the layout measurement.
