@@ -1,4 +1,4 @@
-version: 12
+version: 11
 board:
     name: STO Report Generator
 tasks_dir: tasks
@@ -32,8 +32,6 @@ classes:
     - name: standard
     - name: intangible
 tui:
-    card_fields:
-        - priority
     title_lines: 2
     age_thresholds:
         - after: 0s
@@ -46,8 +44,4 @@ tui:
           color: "208"
         - after: 168h
           color: "196"
-display:
-    compact_fields:
-        - status
-        - priority
 next_id: 34
