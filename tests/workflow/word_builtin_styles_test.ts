@@ -46,5 +46,9 @@ if (available.error) {
 		result.stdout,
 		/Localized TOC Heading effective bold lookup passed/,
 	);
+	assert.match(
+		result.stdout,
+		/Strict Word heading styles: 8 nonbold roles and 8 bold rejection cases passed/,
+	);
 	console.log(result.stdout.trim());
 }

@@ -1,6 +1,11 @@
 import path from 'node:path';
 
-import { insertDocxBodyBeforeText, unpackDocx } from '@/shared/lib/docx';
+import { StoStylePreset } from '@/shared/config';
+import {
+	enforceStrictStoDocx,
+	insertDocxBodyBeforeText,
+	unpackDocx,
+} from '@/shared/lib/docx';
 import {
 	ReportRenderer,
 	resolveReportConfig,
@@ -23,6 +28,7 @@ import {
 } from './wordcraft-renderer';
 
 export interface GenerateReportOptions {
+	stylePreset?: StoStylePreset;
 	pdfImageQuality?: string;
 	wordTimeoutSeconds?: number;
 	reportDir: string;
@@ -69,6 +75,7 @@ export async function generateReport(
 	const reportDir = path.resolve(options.reportDir);
 	const { config, diagnostics } = resolveReportConfig(reportDir, {
 		outputPath: options.outputPath,
+		stylePreset: options.stylePreset,
 		pdfImageQuality: options.pdfImageQuality,
 		renderer: options.renderer,
 		postBuild: options.postBuild,
@@ -152,6 +159,10 @@ export async function generateReport(
 				),
 				beforeText: 'Реферат',
 			});
+		}
+
+		if (config.stylePreset === 'sto-strict') {
+			enforceStrictStoDocx(buildDocx);
 		}
 
 		if (config.postBuild.enabled) {

@@ -2,20 +2,24 @@ export function printHelp(): void {
 	console.log(`STO Report Generator
 
 Usage:
-  npx tsx src/index.ts build <input.md|report_dir> <output.docx>
+  npx tsx src/index.ts build <input.md|report_dir> <output.docx> [--style-preset samara-template-2022|default|sto-strict]
   npx tsx src/index.ts new <slug> --profile nir|coursework|lab|vkr-bachelor|vkr-master [--title "..."] [--dir reports/<slug>] [--no-git]
-  npx tsx src/index.ts check <report_dir> [--strict]
+  npx tsx src/index.ts check <report_dir> [--strict] [--style-preset samara-template-2022|default|sto-strict]
   npx tsx src/index.ts bibliography <report_dir> [--require-evidence] [--extracted <rows.json>] [--lookup-dataset <bibkey>] [--json]
-  npx tsx src/index.ts generate <report_dir> [--output build/report.docx] [--renderer portable|word|wordcraft] [--post-build] [--validate] [--wordcraft /path/to/wordcraft-cli] [--pdf report.pdf] [--pdf-image-quality original|print|screen] [--word-timeout-seconds 30..3600]
-  npx tsx src/index.ts audit <report_dir> [--output build/report.docx] [--renderer portable|word|wordcraft] [--wordcraft /path/to/wordcraft-cli] [--pdf report.pdf] [--pdf-image-quality original|print|screen] [--word-timeout-seconds 30..3600]
+  npx tsx src/index.ts generate <report_dir> [--style-preset samara-template-2022|default|sto-strict] [--output build/report.docx] [--renderer portable|word|wordcraft] [--post-build] [--validate] [--wordcraft /path/to/wordcraft-cli] [--pdf report.pdf] [--pdf-image-quality original|print|screen] [--word-timeout-seconds 30..3600]
+  npx tsx src/index.ts audit <report_dir> [--style-preset samara-template-2022|default|sto-strict] [--output build/report.docx] [--renderer portable|word|wordcraft] [--wordcraft /path/to/wordcraft-cli] [--pdf report.pdf] [--pdf-image-quality original|print|screen] [--word-timeout-seconds 30..3600]
   npx tsx src/index.ts preview <input.docx> [--renderer libreoffice|wordcraft] [--pdf preview.pdf] [--soffice /path/to/soffice] [--wordcraft /path/to/wordcraft-cli]
-  npx tsx src/index.ts accept-word <input.docx> [--accepted-docx accepted.docx] [--pdf accepted.pdf] [--manifest acceptance.json] [--pdf-image-quality original|print|screen] [--background-only] [--style-preset samara-template-2022|default]
+  npx tsx src/index.ts accept-word <input.docx> [--accepted-docx accepted.docx] [--pdf accepted.pdf] [--manifest acceptance.json] [--pdf-image-quality original|print|screen] [--background-only] [--style-preset samara-template-2022|default|sto-strict]
   npx tsx src/index.ts validate-docx <report.docx> [unpack_dir]
   npx tsx src/index.ts doctor
   npx tsx src/index.ts figures inspect <report_dir> [--json]
   npx tsx src/index.ts figures preview <report_dir> [--output build/figures.html]
   npx tsx src/index.ts figures set <report_dir> --id <figure_id> --spec '<JSON>'
   npx tsx src/index.ts figures set <report_dir> --settings <figures.json>
+
+Style preset: --style-preset overrides report.config.json or build metadata; defaults stay unchanged.
+sto-strict selects bounded STO typography; --strict still promotes source warnings to errors.
+validate-docx detects the embedded strict preset marker automatically.
 
 Word renderer: Windows or WSL with Windows Word, Node.js and uv.exe; final DOCX/PDF plus acceptance manifest.
 Word acceptance: --background-only disables interactive Word fallback.
@@ -27,5 +31,5 @@ Wordcraft is experimental; it requires wordcraft-cli 0.18.1 and uv/Python.
 It produces a separate PDF and diagnostic JSON, preserving the generated DOCX.
 
 Backward-compatible form still works:
-  npx tsx src/index.ts <input.md|report_dir> <output.docx>`);
+  npx tsx src/index.ts <input.md|report_dir> <output.docx> [--style-preset samara-template-2022|default|sto-strict]`);
 }

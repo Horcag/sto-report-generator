@@ -501,6 +501,36 @@ format-repair из `scripts/sto_post_build/`. Это только финальн
 
 Отступ после таблицы задаётся интервалом перед следующим абзацем. Принудительный пустой абзац не добавляется. Источники, рекомендации лектора, отличия редакций СТО и границы проверки приведены в [матрице таблиц](docs/audits/2026-10-25-table-compatibility.md) и [аудите стилей](docs/architecture/dotm-template-style-audit.md).
 
+## Строгая типографика СТО
+
+Опциональный preset `sto-strict` применяет выбранную буквальную трактовку оформления
+СТО 2018 года в издании 2019 года. Штатным режимом остаётся `samara-template-2022`.
+
+```json
+{
+	"stylePreset": "sto-strict"
+}
+```
+
+Параметр CLI имеет приоритет над конфигурацией:
+
+```bash
+npx tsx src/index.ts check reports/my_report --style-preset sto-strict
+npx tsx src/index.ts generate reports/my_report --style-preset sto-strict --renderer portable --validate
+npx tsx src/index.ts audit reports/my_report --style-preset sto-strict --renderer portable
+npx tsx src/index.ts build input.md output.docx --style-preset sto-strict
+```
+
+Режим убирает полужирное выделение текста, включая заголовки, задаёт чёрный Times New Roman 14 пт,
+переводит код в то же оформление и устанавливает полуторный интервал с исключениями
+для многострочных подписей таблиц и математической разметки. Семантика OMML, включая
+математическое полужирное начертание и шрифты, сохраняется. `validate-docx` определяет
+режим по встроенному маркеру DOCX. Флаг `check --strict` по-прежнему делает предупреждения
+исходного текста блокирующими и сам по себе не выбирает `sto-strict`.
+
+Границы режима и проверки описаны в [docs/strict-sto.md](docs/strict-sto.md).
+Режим не подтверждает полное содержательное соответствие любому СТО.
+
 ## Проверки
 
 ```bash

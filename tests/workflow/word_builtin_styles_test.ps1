@@ -108,3 +108,18 @@ Write-Output 'Word effective bold: 8 roles, 8 rejection cases and 2 localized he
 $localizedToc = @(Get-StyleChecks (New-StyleDocument (-267)) @([pscustomobject]@{ styleId = 'TOCHeading'; displayName = 'TOC Heading' }))
 if ($localizedToc.Count -ne 1 -or $localizedToc[0].effectiveBold -ne -1) { throw 'Localized TOC Heading effective bold lookup failed.' }
 Write-Output 'Localized TOC Heading effective bold lookup passed.'
+foreach ($id in $boldRoles) {
+    $document = New-StyleDocument (-1)
+    $document.Styles.Named['Strict heading'] = [pscustomobject]@{ Font = [pscustomobject]@{ Bold = 0 } }
+    $expected = @([pscustomobject]@{ styleId = $id; displayName = 'Strict heading' })
+    $checks = @(Get-StyleChecks $document $expected 'sto-strict')
+    if ($checks.Count -ne 1 -or $checks[0].effectiveBold -ne 0) { throw "Strict heading rejected for $id" }
+    $document.Styles.Named['Strict heading'].Font.Bold = -1
+    $rejected = $false
+    try { Get-StyleChecks $document $expected 'sto-strict' | Out-Null } catch {
+        if ($_.Exception.Message -notmatch 'expected=0') { throw }
+        $rejected = $true
+    }
+    if (-not $rejected) { throw "Strict bold heading accepted for $id" }
+}
+Write-Output 'Strict Word heading styles: 8 nonbold roles and 8 bold rejection cases passed.'

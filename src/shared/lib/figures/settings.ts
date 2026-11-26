@@ -1,7 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { STO_RULES } from '@/shared/config';
+
 import { FigureSettings } from './types';
+
+export const MAX_FIGURE_WIDTH_MM = STO_RULES.page.imageMaxWidthEmu / 36_000;
 
 function record(value: unknown, label: string): Record<string, unknown> {
 	if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -109,9 +113,11 @@ export function validateFigureSettings(value: unknown): FigureSettings {
 	}
 	if (
 		(defaults.maxWidthMm as number | undefined) !== undefined &&
-		(defaults.maxWidthMm as number) > 140
+		(defaults.maxWidthMm as number) > MAX_FIGURE_WIDTH_MM
 	)
-		throw new Error('Figure maximum width cannot exceed 140 mm');
+		throw new Error(
+			`Figure maximum width cannot exceed ${MAX_FIGURE_WIDTH_MM} mm`,
+		);
 	if (
 		(defaults.maxHeightMm as number | undefined) !== undefined &&
 		(defaults.maxHeightMm as number) > 230

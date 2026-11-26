@@ -130,6 +130,7 @@ function assertRequiredFiles(packedFiles: PackedFile[]): void {
 	const requiredPaths = [
 		'.agents/skills/sto-report-generator/SKILL.md',
 		'.agents/skills/sto-report-generator/references/scientific-prose.md',
+		'.agents/skills/sto-report-generator/references/russian-prose-review/SKILL.md',
 		'.agents/skills/sto-report-generator/references/repository-map.md',
 		'.agents/skills/sto-report-generator/references/vkr-author-adapted-features.md',
 		'docs/report-authoring.md',

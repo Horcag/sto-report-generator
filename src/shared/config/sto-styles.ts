@@ -13,6 +13,7 @@ import {
 	NUMBERED_HEADING_STYLE_IDS,
 } from './sto-heading-styles';
 import { STO_RULES } from './sto-rules';
+import { DEFAULT_STO_STYLE_PRESET, StoStylePreset } from './sto-style-preset';
 import {
 	getTemplateStyleNames,
 	importSamaraTemplateStyles,
@@ -24,6 +25,7 @@ import {
 } from './sto-toc-styles';
 
 export { TOC_HEADING_STYLE_ID } from './sto-toc-styles';
+export * from './sto-style-preset';
 
 export {
 	getNumberedHeadingStyleId,
@@ -37,24 +39,9 @@ const BIBLIOGRAPHY_PARAGRAPH = STO_RULES.bibliography.paragraph;
 
 export const STRUCTURAL_HEADING_STYLE_ID = 'StructuralHeading';
 export const STRUCTURAL_HEADING_NO_TOC_STYLE_ID = 'StructuralHeadingNoTOC';
-export const STO_STYLE_PRESET_NAMES = [
-	'samara-template-2022',
-	'default',
-] as const;
-export const DEFAULT_STO_STYLE_PRESET = 'samara-template-2022';
-
-export type StoStylePreset = (typeof STO_STYLE_PRESET_NAMES)[number];
-
 type ParagraphStyle = NonNullable<IStylesOptions['paragraphStyles']>[number];
 
 const SAMARA_TEMPLATE_2022_STYLE_NAMES = getTemplateStyleNames();
-
-export function isStoStylePreset(value: unknown): value is StoStylePreset {
-	return (
-		typeof value === 'string' &&
-		STO_STYLE_PRESET_NAMES.includes(value as StoStylePreset)
-	);
-}
 
 export function getSamaraTemplate2022StyleName(
 	styleId: string,
@@ -242,7 +229,7 @@ export const STO_STYLES: IStylesOptions = {
 export function getStoStyles(
 	stylePreset: StoStylePreset = DEFAULT_STO_STYLE_PRESET,
 ): IStylesOptions {
-	if (stylePreset === 'default') {
+	if (stylePreset === 'default' || stylePreset === 'sto-strict') {
 		return STO_STYLES;
 	}
 

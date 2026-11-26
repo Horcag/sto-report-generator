@@ -3,12 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import {
-	DEFAULT_STO_STYLE_PRESET,
-	getStoStylePresetDisplayNames,
-	isStoStylePreset,
-	StoStylePreset,
-} from '@/shared/config';
+import { StoStylePreset } from '@/shared/config';
 
 import { assertNoOrdinaryBodyBold } from './word-acceptance-bold';
 import { stopOwnedWordAcceptanceProcesses } from './word-acceptance-cleanup';
@@ -25,6 +20,11 @@ import {
 	readAcceptanceStatistics,
 	StatisticCounts,
 } from './word-acceptance-statistics';
+import {
+	assertStrictStoMarker,
+	getWordAcceptanceExpectedStyles,
+	resolveWordAcceptanceStylePreset,
+} from './word-acceptance-styles';
 import { preserveWordPdfImages } from './word-pdf-quality';
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
@@ -112,14 +112,6 @@ function assertDifferentPaths(inputDocx: string, acceptedDocx: string): void {
 	}
 }
 
-function getExpectedStyles(
-	stylePreset: StoStylePreset,
-): WordAcceptanceExpectedStyle[] {
-	return Object.entries(getStoStylePresetDisplayNames(stylePreset)).map(
-		([styleId, displayName]) => ({ styleId, displayName }),
-	);
-}
-
 export function detectWordAcceptanceHost(): WordAcceptanceHostKind {
 	if (process.platform === 'win32') {
 		return 'windows';
@@ -182,12 +174,10 @@ export function createWordAcceptancePlan(
 		options.manifest,
 		'.acceptance.json',
 	);
-	const stylePreset = options.stylePreset ?? DEFAULT_STO_STYLE_PRESET;
-	if (!isStoStylePreset(stylePreset)) {
-		throw new Error(
-			'Supported style presets for Word acceptance: samara-template-2022, default.',
-		);
-	}
+	const stylePreset = resolveWordAcceptanceStylePreset(
+		inputDocx,
+		options.stylePreset,
+	);
 	const pdfImageQuality = options.pdfImageQuality ?? 'original';
 	if (!['original', 'print', 'screen'].includes(pdfImageQuality))
 		throw new Error('PDF image quality must be original, print or screen.');
@@ -214,7 +204,7 @@ export function createWordAcceptancePlan(
 		manifest: environment.toHostPath(manifest),
 		requiredFont: 'Times New Roman',
 		stylePreset,
-		expectedStyles: getExpectedStyles(stylePreset),
+		expectedStyles: getWordAcceptanceExpectedStyles(stylePreset),
 		runnerPidPath: environment.toHostPath(
 			path.join(path.dirname(requestJsonPath), 'runner.pid'),
 		),
@@ -460,6 +450,7 @@ function runWordAcceptanceAttempt(
 			plan.localManifest,
 			manifest,
 		);
+		assertStrictStoMarker(plan.localAcceptedDocx, plan.request.stylePreset);
 		assertNoOrdinaryBodyBold(plan.localAcceptedDocx);
 		manifest.status = 'accepted';
 		const pendingPath = `${plan.localManifest}.pending`;

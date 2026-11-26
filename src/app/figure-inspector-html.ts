@@ -1,4 +1,4 @@
-import { FigureSettings } from '@/shared/lib/figures';
+import { FigureSettings, MAX_FIGURE_WIDTH_MM } from '@/shared/lib/figures';
 
 import type { InspectedFigure } from './figure-inspector';
 
@@ -35,7 +35,8 @@ body{font:16px system-ui;margin:24px;color:#17202a;background:#f5f6f8}h1{font-si
 'use strict';
 const model=JSON.parse(document.getElementById('figure-data').textContent);
 const el=id=>document.getElementById(id), fields=['widthMm','maxHeightMm','left','right','top','bottom','textSizePx'];
-const defaults=Object.assign({maxWidthMm:140,maxHeightMm:230,minDpi:150,minTextPt:9,quality:'warn'},model.settings.defaults);
+const defaults=Object.assign({maxWidthMm:${MAX_FIGURE_WIDTH_MM},maxHeightMm:230,minDpi:150,minTextPt:9,quality:'warn'},model.settings.defaults);
+el('widthMm').max=String(defaults.maxWidthMm);
 let current, valid=true;
 model.figures.forEach((f,i)=>{const option=document.createElement('option');option.value=String(i);option.textContent=f.occurrence+'. '+f.plan.id+' — '+f.module;el('selection').append(option);});
 function view(id,f,c,w,h){const node=el(id),img=node.querySelector('img');node.style.width=w+'px';node.style.height=h+'px';img.src=f.dataUri;img.style.width=(w/(1-(c.left+c.right)/100))+'px';img.style.height=(h/(1-(c.top+c.bottom)/100))+'px';img.style.left=(-w*c.left/(100-c.left-c.right))+'px';img.style.top=(-h*c.top/(100-c.top-c.bottom))+'px';}

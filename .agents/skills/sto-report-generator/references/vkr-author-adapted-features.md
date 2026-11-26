@@ -12,7 +12,7 @@ Implemented in `scripts/sto_post_build/` via the `scripts/post_build.py` compati
 
 - repeat first table row as a Word header row;
 - center inline images;
-- scale images wider than 14 cm;
+- original 14 cm width scaling heuristic from `vkr-author` was replaced: `post_build.py` no longer rescales images (`word_automation.py` preserves author-selected sizes), and image width is controlled via `figures.json` up to the 165 mm (16.5 cm) STO printable text width;
 - clear `w:dirty="true"` / `w:dirty="1"` field flags after Word field updates.
 
 ### Generated DOCX validation
@@ -22,7 +22,7 @@ Implemented in `src/shared/lib/sto-validator.ts`:
 - formula before lowercase `где` must not end with a period;
 - dirty Word fields are rejected;
 - tables without repeated header rows are rejected;
-- images wider than 14 cm are rejected;
+- images wider than 165 mm (16.5 cm, full STO A4 printable text width; originally 14 cm in `vkr-author`) are rejected;
 - image paragraphs without center alignment are rejected.
 
 ### Source Markdown preflight

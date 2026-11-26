@@ -728,7 +728,37 @@ function Test-StyleExists($Document, $DisplayName) {
     return $false
 }
 
-function Get-StyleChecks($Document, $ExpectedStyles) {
+function Invoke-StrictStoNormalization($Request, $InputDocx) {
+    if ([string]$Request.stylePreset -ne 'sto-strict') { return }
+    $uv = (Get-Command uv.exe -ErrorAction Stop).Source
+    $script = Join-Path $PSScriptRoot 'sto_post_build/strict_sto.py'
+    $arguments = @('run', '--no-project', '--with', 'lxml>=6.0.2', 'python', $script, $InputDocx)
+    $quoted = @($arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' })
+    $ownershipDirectory = Split-Path -Parent $Request.runnerPidPath
+    $previousOwnership = $env:STO_WORD_OWNERSHIP_DIR
+    try {
+        $env:STO_WORD_OWNERSHIP_DIR = $ownershipDirectory
+        $process = Start-Process -FilePath $uv -ArgumentList $quoted -PassThru -NoNewWindow
+        $nativeHandle = $process.Handle
+        Write-Utf8Json (Join-Path $ownershipDirectory 'post-build-uv.json') ([ordered]@{
+            pid = $process.Id
+            startTimeUtcTicks = $process.StartTime.ToUniversalTime().Ticks.ToString()
+            executablePath = $process.Path
+        })
+        [System.IO.File]::WriteAllText((Join-Path $ownershipDirectory 'post-build-uv.pid'), [string]$process.Id)
+        $process.WaitForExit()
+        Ensure-NativeMethods
+        $exitCode = [uint32]0
+        if (-not [WordAcceptance.NativeMethods]::GetExitCodeProcess($nativeHandle, [ref]$exitCode)) {
+            throw 'Cannot verify strict STO normalization process exit code.'
+        }
+        if ($exitCode -ne 0) { throw "Strict STO normalization failed (exit $exitCode)." }
+    } finally {
+        $env:STO_WORD_OWNERSHIP_DIR = $previousOwnership
+    }
+}
+
+function Get-StyleChecks($Document, $ExpectedStyles, $StylePreset) {
     $checks = @()
     foreach ($expected in @($ExpectedStyles)) {
         $exists = Test-StyleExists $Document $expected.displayName
@@ -743,8 +773,12 @@ function Get-StyleChecks($Document, $ExpectedStyles) {
                 } else { throw }
             }
             $effectiveBold = [int]$headingStyle.Font.Bold
-            if ($effectiveBold -ne -1) {
-                throw "Required heading style '$($expected.displayName)' does not render bold in Word (Font.Bold=$effectiveBold)."
+            $requiredBold = if ([string]$StylePreset -eq 'sto-strict') { 0 } else { -1 }
+            if ($effectiveBold -ne $requiredBold) {
+                if ([string]$StylePreset -ne 'sto-strict') {
+                    throw "Required heading style '$($expected.displayName)' does not render bold in Word (Font.Bold=$effectiveBold)."
+                }
+                throw "Required heading style '$($expected.displayName)' has unexpected bold in Word (Font.Bold=$effectiveBold, expected=$requiredBold)."
             }
         }
         $checks += [ordered]@{
@@ -808,6 +842,7 @@ try {
 
     . (Join-Path $PSScriptRoot 'word_renderer_post_build.ps1')
     Invoke-RendererPostBuild $request $stagedInputDocx
+    Invoke-StrictStoNormalization $request $stagedInputDocx
 
     $licenseDiagnostic = Get-LicenseDiagnostic
 
@@ -894,7 +929,10 @@ try {
     # Export from a fresh Word document object. Updating fields and the TOC
     # leaves a large undo/layout transaction on the original object; desktop
     # Word's successful UI path reopens the saved file before publishing.
-    $document = $word.Documents.Open($stagedAcceptedDocx, $false, $false)
+    Invoke-StrictStoNormalization $request $stagedAcceptedDocx
+    Copy-Item -LiteralPath $stagedAcceptedDocx -Destination $request.acceptedDocx
+    $strictReadOnly = [string]$request.stylePreset -eq 'sto-strict'
+    $document = $word.Documents.Open($stagedAcceptedDocx, $false, $strictReadOnly)
     $pageCountAfterReopen = Get-SavedDocumentPageCount $document
     Write-Output "Word acceptance stage: verify-referat-statistics."
     $referatPageTextVerified = Assert-ReferatPageStatistics $document $referatPageStatistics $pageCountAfterReopen
@@ -926,7 +964,7 @@ try {
     # Querying Word styles creates additional COM proxies. Keep those lookups
     # after fixed-format export so they cannot interfere with Word's PDF path.
     Write-Output "Word acceptance stage: verify-styles."
-    $styleChecks = Get-StyleChecks $document $request.expectedStyles
+    $styleChecks = Get-StyleChecks $document $request.expectedStyles $request.stylePreset
     $missingStyles = @($styleChecks | Where-Object { -not $_.exists })
     if ($missingStyles.Count -gt 0) {
         $missingNames = ($missingStyles | ForEach-Object { $_.displayName }) -join ", "

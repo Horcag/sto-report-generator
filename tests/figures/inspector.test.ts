@@ -89,6 +89,10 @@ try {
 		'Validated update must roundtrip',
 	);
 	assert.throws(
+		() => updateFigureSettings(report, 'sample', { widthMm: 166 }),
+		/exceeds/,
+	);
+	assert.throws(
 		() => updateFigureSettings(report, 'sample', { widthMm: 200 }),
 		/exceeds/,
 	);
@@ -162,6 +166,22 @@ try {
 			'60px',
 			'Page preview rescales with the viewport while preserving physical size',
 		);
+		width.value = '165';
+		width.dispatchEvent(new dom.window.Event('input'));
+		assert.equal(
+			(document.getElementById('download') as HTMLButtonElement).disabled,
+			false,
+		);
+		assert.match(
+			document.getElementById('diagnostics')!.textContent!,
+			/165\.0 ×/,
+		);
+		width.value = '166';
+		width.dispatchEvent(new dom.window.Event('input'));
+		assert.equal(
+			(document.getElementById('download') as HTMLButtonElement).disabled,
+			true,
+		);
 		width.value = '200';
 		width.dispatchEvent(new dom.window.Event('input'));
 		assert.equal(
@@ -193,6 +213,8 @@ try {
 	fs.writeFileSync(filename, JSON.stringify(missingOverride));
 	updateFigureSettings(report, 'sample', { widthMm: 55 });
 	assert.equal(inspectReportFigures(report).figures[0].plan.widthMm, 55);
+	updateFigureSettings(report, 'sample', { widthMm: 165 });
+	assert.equal(inspectReportFigures(report).figures[0].plan.widthMm, 165);
 	const messages: string[] = [];
 	const originalLog = console.log;
 	console.log = value => messages.push(String(value));
