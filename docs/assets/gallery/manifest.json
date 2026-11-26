@@ -54,9 +54,9 @@
     "src/app/bibliography-reconciliation.ts": "386e654c6fbf0c3d8e8507c2fb9a2a04a285829671c2a9ddb321521c24b209ac",
     "src/app/builder.ts": "99d27cc1ecc792ba168b6f81f7798c610149413e1bc3da895e7f01c04f4a791b",
     "src/app/cli-args.ts": "07c305ad66c3c9ac5b15c22f5857b387fc71d06f3b2bf127580313f4214aac33",
-    "src/app/cli-help.ts": "b847b8b7100d8c0df4ec1c9989e4ae7ce8540117f30f0d52b8b126b2cfa173b0",
+    "src/app/cli-help.ts": "806c4968c0a473aca698cef04ceda99dcefb752323bbe5956da273450df84a79",
     "src/app/cli-preview.ts": "03c5143db35c836682358c88d9f5fec54de3562596ae7f488e7311d966d9f4a5",
-    "src/app/doctor.ts": "e515f271e3c28bd09af9991815632025b366c8862e83e2d68f0088716553a597",
+    "src/app/doctor.ts": "9d37c58dd967fe8362e3f463afbe339fcb8bfe85eb16ff085ee2f6b8f3dfbcf5",
     "src/app/figure-command.ts": "c87280b1178e6719702578181663cb5c18e9321dc926378056fa06cbdf27f8b4",
     "src/app/figure-inspector-html.ts": "b96881c0e43f08b0d3767458cb2200611b8907e6b7a16bcbb71ac9500e7c982d",
     "src/app/figure-inspector.ts": "0375d914f063e290aa1b108d8bb8f7f2aba1db56b1f2d4b11705a604f9b5eeee",
@@ -80,7 +80,7 @@
     "src/app/wordcraft-font-files.ts": "7ee3a27bea4d71d004eacbc364f8892207af4f3c321f4d2017c46fc1d40080c1",
     "src/app/wordcraft-fonts.ts": "cb52c6265ee45d603a975008914cae7908d0cb0b68be109810f563be0570e312",
     "src/app/wordcraft-layout.ts": "378f10329d292df97d9ae6048806f0cc2613d0e784665598c942aa83e2339876",
-    "src/app/wordcraft-renderer.ts": "6f4772462af65a26aa2033bc4abaee5cc8ec20bd047089b4e00c72c1a0b74306",
+    "src/app/wordcraft-renderer.ts": "44c90ba2abca7b307e29cd4133ab56d759a46b57c58e26dd3a988232dbec6f28",
     "src/app/wordcraft-statistics.ts": "d8b6a3524b1f90ae163695bde2022acfd4e020e130c9869de37fdb9e3dff2ae9",
     "src/app/wordcraft-tables.ts": "9bebd28c7f49abe36bbfe78615bbf05d80c2339b123dca3866abc7d9c36bd4d8",
     "src/entities/report/index.ts": "aae201a825b0337402b6463fe90727046ed10248da3b9ee1b1aaa370d10aa200",
@@ -250,9 +250,9 @@
       "description": "Титульный лист, реферат, оглавление, текст, таблица, рисунок, списки и источники.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "e6ee568eb4da2eeeb7e8f9642d0d6d8e8cb045710f9d4788450ff9119529e2be",
+      "pdfSha256": "088bf93eaefc559dfca97a3701f8a94b841410b3f2ec2bf4cfba7107975435d8",
       "pageCount": 8,
       "pages": [
         {
@@ -296,9 +296,9 @@
       "description": "Дроби, суммы, интегралы, системы, кусочные функции, переносы и номера формул.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "7fac550816fdc1640650e22b96adf86975e6a14a4f4e2a18b2f539e9c216fa7c",
+      "pdfSha256": "c4989c816267cdd524e2ea7717dec7e750d7b912a39b2dccbb6a37f6969edb4f",
       "pageCount": 5,
       "pages": [
         {
@@ -347,9 +347,9 @@
       "description": "Матрицы разных размеров, скобки, определители и вложенные конструкции.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "7ff65911e0ad0487f189b5ce76e74f9dfa077b833a23ff9b95ce100bfcec2693",
+      "pdfSha256": "62f7bce5731baecd30e065882d235d1c0ced03a624a7965ad575df96b0fd5c53",
       "pageCount": 4,
       "pages": [
         {
@@ -377,9 +377,9 @@
       "description": "Квадратные и круглые скобки, единичные матрицы 2×2–4×4 и вложенные дроби.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "53d2236a3b0a8e152d202d450083268f90bea2ef9a8ba559415ab09805856c9f",
+      "pdfSha256": "067cbf6c530d1ba8526d58ef71634742b7f7aa435e1190d947f73c2db5229083",
       "pageCount": 2,
       "pages": [
         {
@@ -399,9 +399,9 @@
       "description": "Уровни заголовков, оглавление, рисунок, длинная таблица с продолжением и библиография.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "dafe618a7b00149428184eaadeaa466c82a355e2b5b8b5177f141ca9b6ca9ac6",
+      "pdfSha256": "dd662953a810d6ccea1f96244d37311d458d17b3b9441752d27afa4fd36c9cdc",
       "pageCount": 11,
       "pages": [
         {
