@@ -23,7 +23,7 @@
     "scripts/sto_post_build/__init__.py": "b613a60043b41da26e0574efa62e41b71b065b62e12f83f2d709d5201e68fe48",
     "scripts/sto_post_build/acceptance_statistics.py": "3818d850d20f8d80acfeb0937f25033cd67befb69517efe5e8ec6051062f9d0d",
     "scripts/sto_post_build/cli.py": "1c07665da4d37c1665c8942d6b2d922027a4c6ffdc9d511753701bdc9f774376",
-    "scripts/sto_post_build/constants.py": "69d297335c9080e35f92a5873688e162c3b9b922775aa1455f58f99ad1cbeb2f",
+    "scripts/sto_post_build/constants.py": "3fbda78fccedd0e9abda8659a4268d580ea706e52d7af0dbf6ea7d66931f9390",
     "scripts/sto_post_build/docx_package.py": "bb92bf825128388091e3d2dc642b820f8cd7ed9be2719d387c439aac10af3e6e",
     "scripts/sto_post_build/formula_replacement.py": "09ca41c2ab5e38ef4bed0a4fdb8491004c7be3c91354c2e2a1512e0f50f28e82",
     "scripts/sto_post_build/fraction_delimiters.py": "dacce1f7e6179fc1535a79cd29ddf67cf9705b029cb8bdb83dbf05c6d37779ca",
@@ -55,11 +55,11 @@
     "src/app/bibliography-reconciliation.ts": "386e654c6fbf0c3d8e8507c2fb9a2a04a285829671c2a9ddb321521c24b209ac",
     "src/app/builder.ts": "328bebd3b951835f146348f8b0df8980accffbf32024f5adf7f691a5d0df3031",
     "src/app/cli-args.ts": "07c305ad66c3c9ac5b15c22f5857b387fc71d06f3b2bf127580313f4214aac33",
-    "src/app/cli-help.ts": "e1d77021a9914bf7eb94f1a0defaa7cafb9c79705a212a3b7ddd5db583892582",
+    "src/app/cli-help.ts": "0d380d4067a4567edb6c9538bedf6ed52d5c2f0ca5f7644dfff7020841033984",
     "src/app/cli-preview.ts": "03c5143db35c836682358c88d9f5fec54de3562596ae7f488e7311d966d9f4a5",
-    "src/app/doctor.ts": "e515f271e3c28bd09af9991815632025b366c8862e83e2d68f0088716553a597",
+    "src/app/doctor.ts": "9d37c58dd967fe8362e3f463afbe339fcb8bfe85eb16ff085ee2f6b8f3dfbcf5",
     "src/app/figure-command.ts": "c87280b1178e6719702578181663cb5c18e9321dc926378056fa06cbdf27f8b4",
-    "src/app/figure-inspector-html.ts": "ab423f8fe92c85d7c75479ddd76f0971a1871221d4367a639dede44b59544cd1",
+    "src/app/figure-inspector-html.ts": "ea94a1fd972006b832300649c9db8981629c219580609280e2c5be287290b28c",
     "src/app/figure-inspector.ts": "0375d914f063e290aa1b108d8bb8f7f2aba1db56b1f2d4b11705a604f9b5eeee",
     "src/app/libreoffice-preview.ts": "98de1c6c26b9d432093626623367fb1a559754bc856e3df0fb8da0e041454d2b",
     "src/app/report-scaffold-readme.ts": "413658614bbd42a52c20fc48dcf7f283ec13b4dfbe1bdf57d498b662ab0aab5f",
@@ -82,7 +82,7 @@
     "src/app/wordcraft-font-files.ts": "7ee3a27bea4d71d004eacbc364f8892207af4f3c321f4d2017c46fc1d40080c1",
     "src/app/wordcraft-fonts.ts": "61597116dd363b66f27bf37fca8c9cb497a030d70ece11f28b7254022f45f0e7",
     "src/app/wordcraft-layout.ts": "378f10329d292df97d9ae6048806f0cc2613d0e784665598c942aa83e2339876",
-    "src/app/wordcraft-renderer.ts": "6f4772462af65a26aa2033bc4abaee5cc8ec20bd047089b4e00c72c1a0b74306",
+    "src/app/wordcraft-renderer.ts": "44c90ba2abca7b307e29cd4133ab56d759a46b57c58e26dd3a988232dbec6f28",
     "src/app/wordcraft-statistics.ts": "d8b6a3524b1f90ae163695bde2022acfd4e020e130c9869de37fdb9e3dff2ae9",
     "src/app/wordcraft-tables.ts": "9bebd28c7f49abe36bbfe78615bbf05d80c2339b123dca3866abc7d9c36bd4d8",
     "src/entities/report/index.ts": "aae201a825b0337402b6463fe90727046ed10248da3b9ee1b1aaa370d10aa200",
@@ -97,7 +97,7 @@
     "src/features/markdown-parser/lib/parser/handlers/inline-parser.ts": "01667e0e388684c2e90ba5e523571bb572a9bdd8f9f164122f2963fc327727a4",
     "src/features/markdown-parser/lib/parser/handlers/math-handler.ts": "708a10dad95c9b02b41e1e00ee941888616a2b0a9effa54a6170fdb24f20fba1",
     "src/features/markdown-parser/lib/parser/handlers/report-table-of-contents.ts": "6b637ecd3b2d02caa4de4f2c02165f6f9026f487ab4bee65950bd96d2667883e",
-    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "943ee0c5ef9fc4808075d3608f131547564a10a8b8221f6396c657efe994f71d",
+    "src/features/markdown-parser/lib/parser/handlers/sto-handler.ts": "91713747cfe422971731d9a243381a743aa2916ed3d0ca7669f33f7cffb2f217",
     "src/features/markdown-parser/lib/parser/handlers/table-handler.ts": "3e65ebdcd28787fd9d245f3b5b1c1b2a177a4e58d08579445eb7cde8e68f93ef",
     "src/features/markdown-parser/lib/parser/reference-registry.ts": "533eb0e46e7efbcfd568d6e341a9c683c70035f5faf3f563d9eff56947de42fd",
     "src/features/markdown-parser/lib/parser/table-notes.ts": "c7c428ac9d0afba3349edc74dad105935f5eb38cf1ac5a5b17257a1015b414ff",
@@ -119,7 +119,7 @@
     "src/shared/config/sto-element-styles.ts": "941c5e83255254d82eaa71205336846299f96f4dce511ec9c07796f3cbeecea6",
     "src/shared/config/sto-heading-styles.ts": "94ac872c33fa666e3f9e026b8baec1b8930bc40abc363136c1771cd8b2ea636c",
     "src/shared/config/sto-inline-list.ts": "5831a1e5ad89635bb5479edd3c18013ac6a546f1761b0a43dd8e3167aad30075",
-    "src/shared/config/sto-rules.json": "c26282c19df30848267c5828b59fb5f2e7f002ce2e34c2e485730a44c4a85e56",
+    "src/shared/config/sto-rules.json": "fb7ea66f5be0ecde098beaf4093b404464626bdf70efa94eb65f7f0d4efc4455",
     "src/shared/config/sto-rules.ts": "b862ac52ba8b2746a1ce7bab70a40f2efb2f33857b748cd512743d60fab63637",
     "src/shared/config/sto-style-preset.ts": "e2cbd9409fd3aadb7328f19ad349f6297d5d7173cf2670c5072964ffbb35c707",
     "src/shared/config/sto-styles.ts": "27a4ab2d87714d9516b319b5b2c3e14d59f3750afc73a3695e1bf0b06f7146cc",
@@ -142,11 +142,11 @@
     "src/shared/lib/docx/styles.ts": "53c1165ab8c0ff4bd7e211e5a9ad1544b861a48cb0fc3ecb9bc91c619033dd3f",
     "src/shared/lib/docx/table-spacing.ts": "bdab40fdfb9840e1642a6121080a89f609fc98f34854c99208d952c467affd20",
     "src/shared/lib/dotm-style-contract.ts": "450d56ac6232ce05e2dfc8be0dde021ebe123943463084ac5810fd99afb6157a",
-    "src/shared/lib/figures/index.ts": "9501df24c24fede5f34caa96031c75a9c4529fb68110b1cba7c2d38090615017",
+    "src/shared/lib/figures/index.ts": "ddc2a60b40a34c4fa462b7e94bacc696658e2fcfb54787953c8652e3f84873c9",
     "src/shared/lib/figures/occurrences.ts": "c2e918c5ec19f4f5ed5d9d549ddbf56a1cbc5ce95840587627a52a703ed0b3a8",
-    "src/shared/lib/figures/planning.ts": "def30935cad4fb8de6f396ee0800cb0285fd8899db3f56b57f4da22ff071593a",
+    "src/shared/lib/figures/planning.ts": "d6a25bf3d1d6a2bdf1b0a517ffad66919968bf9fe1ed6d7c132d5ce3a75182cd",
     "src/shared/lib/figures/png.ts": "026fe024d951e28c9c7874bc95dac43e85a7345d8f92690a656425d0bc34c95b",
-    "src/shared/lib/figures/settings.ts": "9993075165822f7ac8110a19be980085edf60a9d49e4d9c35c0c9a3bea06b4a6",
+    "src/shared/lib/figures/settings.ts": "660b06f2ce261e8ec5462d065d0f79220643a183e4b58e06d1c0f42854ddcd77",
     "src/shared/lib/figures/svg-baselines.ts": "4b68c298824052295be0e3862633f89c9e4fa69cd595e7a9533420b6739a8b5e",
     "src/shared/lib/figures/types.ts": "77b16f79c0ddcc76b50c4045ca73c9aa63ec91659913b7e456c0d9cb756c9287",
     "src/shared/lib/frontmatter.ts": "9bc4582d170fec070067cf4b5099661df4be62e2568092a602e7c3cc01b00c7c",
@@ -213,7 +213,7 @@
     "src/shared/lib/sto-validator/table-layout.ts": "117f6f4e27d20d3f7a1af51ebc5e61a86de542d1fe2798e66f2852ee7ff53b62",
     "src/shared/lib/sto-validator/table-note-rows.ts": "0803faa3b186fa34e6517e70a8b47cfb671b94daaeeb86c6edfed206076d72e3",
     "src/shared/lib/sto-validator/typography-defaults.ts": "24cdc4e889fd42dfe3c8ba02754a621e462fb430f1f8ccdf58d2aff397b19e9f",
-    "src/shared/lib/sto-validator.ts": "19d295e0f57b97d7e71caaab17f39e6003f097281728fd05cbb3f1090f63570f",
+    "src/shared/lib/sto-validator.ts": "e3e2cf9657fab481138e1dd3632a32e03f6e24ff46cfd87dd3ea2f6f8d730876",
     "src/widgets/title-page/index.ts": "d2366f2552c11591cd5ca6e5c9442f22aa303f559c77a7fd6666f728e3f4a3c9",
     "src/widgets/title-page/lib/compact-lab-title-page.ts": "d3bfdc5bd78b6d6c6ed0e3aedbb36e33635e780376ef5461969bee0d0f84c1e6",
     "src/widgets/title-page/lib/ssau-course-project-title-page.ts": "3a0e06d53ae46a8b368afab7d198c9bba18864d0d76b10f0181e3f57cd42a7c6",
@@ -241,9 +241,9 @@
       "description": "Титульный лист, реферат, оглавление, текст, таблица, рисунок, списки и источники.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "07436c9094cf32515a964d419c6670640debf4c13d2e5f5d76e6649f992a2540",
+      "pdfSha256": "6294349b7852da45bc3bc8387f5fdcee528c62f272c74caa7997c6b37d8fa24e",
       "pageCount": 8,
       "pages": [
         {
@@ -268,7 +268,7 @@
         },
         {
           "file": "example-page-6.png",
-          "sha256": "c3023820871b170b5c50e8abfa60019e321f1c0375088bcc2229257d68c48f65"
+          "sha256": "76011db32cbaeb3c9a764522b09edc90273bb758144cfb32ca7911a330045a71"
         },
         {
           "file": "example-page-7.png",
@@ -287,9 +287,9 @@
       "description": "Дроби, суммы, интегралы, системы, кусочные функции, переносы и номера формул.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "d6b304ada0d86ff6801a17db9cedeb5b8d83cd782cf115d6638a3bdba89110ac",
+      "pdfSha256": "68d5eb459f08b3e0b80d2b3d687a9d5cf2472bd57134d3e31cad542c9dac47d0",
       "pageCount": 5,
       "pages": [
         {
@@ -338,9 +338,9 @@
       "description": "Матрицы разных размеров, скобки, определители и вложенные конструкции.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "f4820b5f20e3e898996854bec3fcd6acf7b40e607f63ffc0e0bc6265e4731d67",
+      "pdfSha256": "f1ce2540940ff08b642229851351ac39b49e09cb2c09bf09a3601e7c26a44441",
       "pageCount": 4,
       "pages": [
         {
@@ -368,9 +368,9 @@
       "description": "Квадратные и круглые скобки, единичные матрицы 2×2–4×4 и вложенные дроби.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "3fae16e3a832f1e98a6534c9efc3932cd7336f43e7dfcd4d9bea3593ae163e04",
+      "pdfSha256": "2b6df8e3257263adb22e208f98425257d09efd10b2ecfb9d585020dea0c7a28f",
       "pageCount": 2,
       "pages": [
         {
@@ -390,9 +390,9 @@
       "description": "Уровни заголовков, оглавление, рисунок, длинная таблица с продолжением и библиография.",
       "renderer": "word-desktop-interactive",
       "wordVersion": "16.0",
-      "wordBuild": "16.0.20527",
+      "wordBuild": "16.0.20625",
       "pdfImageQuality": "print",
-      "pdfSha256": "fc1f5739f32c734ed9333e1bf5fc0b747ae86c001ba103eefced9a66c3600928",
+      "pdfSha256": "b3bd3f7c4019d84ef9d9f38ee7b0c5f7748b3f00c179b2803ca0fc36a4ee111a",
       "pageCount": 11,
       "pages": [
         {
@@ -413,23 +413,23 @@
         },
         {
           "file": "structure-page-5.png",
-          "sha256": "87e1a26f79d416827633bfc1ef5c7a8a3cd371151357ad33e7c47655bcb40bc0"
+          "sha256": "602c8dac71c2891b7128ae9c5811a520a06e3324c6b0302f0f8227ee327da5c3"
         },
         {
           "file": "structure-page-6.png",
-          "sha256": "68243eddcff90320d597830aebcb1401b384b820704d46efab55628960371ddf"
+          "sha256": "61bf8b547a34719d889a7c4248869dae605542c589512a797e2e0a65503c6f06"
         },
         {
           "file": "structure-page-7.png",
-          "sha256": "89babad8924f58d2703d9c11ea707062e0fc29042ea098ac19383c1afac9b9ec"
+          "sha256": "928edadb1ee0be22401357daaff0e44002a5207922cf92affaa9e93b6bd3be04"
         },
         {
           "file": "structure-page-8.png",
-          "sha256": "ea706d6e65c60f87ec41a80e4050c0cebbc0df65105f2abe1325093f7c043d60"
+          "sha256": "3aa64518f9cc2b9abcf01bc9044aef92e1156bb4fdf14ad5ffd359310523f0ad"
         },
         {
           "file": "structure-page-9.png",
-          "sha256": "26719c6d890d507430338307f4006e97eb43dda7fad22de59b74623d06ac1d67"
+          "sha256": "5dc00ff3311317c026081d3f95b25445936582a5406af099cf1d84f682dee8a8"
         },
         {
           "file": "structure-page-10.png",
