@@ -2,6 +2,8 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { STO_RULES, STRUCTURAL_HEADING_STYLE_ID } from '../config';
+import { isStrictStoProperty } from './docx/strict-sto';
+import { strictStoChecks } from './docx/strict-sto/checks';
 import {
 	getEffectiveParagraphAttribute,
 	resolveWordStyleId,
@@ -47,6 +49,10 @@ import {
 	countTablesWithoutHeaderRepeat,
 	validateTableLayout,
 } from './sto-validator/table-layout';
+import {
+	hasExpectedDefaultFont,
+	hasExpectedDefaultFontSize,
+} from './sto-validator/typography-defaults';
 
 export { validateTableLayout } from './sto-validator/table-layout';
 
@@ -59,6 +65,7 @@ export interface ValidationResult {
 }
 
 interface ValidationInput {
+	strictSto: boolean;
 	docXml: string;
 	stylesXml: string;
 	numberingXml: string | null;
@@ -69,7 +76,6 @@ interface ValidationInput {
 }
 
 const REGEXP_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
-const HANSI_ATTRIBUTE = 'w:h' + 'Ansi';
 
 function escapeRegExp(value: string): string {
 	return value.replaceAll(REGEXP_SPECIAL_CHARS, String.raw`\$&`);
@@ -285,25 +291,6 @@ function countImagesWithoutFollowingCaption(
 	return count;
 }
 
-function hasExpectedDefaultFont(stylesXml: string): boolean {
-	const font = escapeRegExp(STO_RULES.typography.fontFamily);
-	return regexMatches(
-		new RegExp(
-			String.raw`<w:rFonts\b[^>]*(?:w:ascii="${font}"|${HANSI_ATTRIBUTE}="${font}")`,
-		),
-		stylesXml,
-	);
-}
-
-function hasExpectedDefaultFontSize(stylesXml: string): boolean {
-	return regexMatches(
-		new RegExp(
-			String.raw`<w:sz\b[^>]*w:val="${STO_RULES.typography.fontSizeHalfPoints}"`,
-		),
-		stylesXml,
-	);
-}
-
 function findStyleXml(stylesXml: string, styleId: string): string | null {
 	const escapedStyleId = escapeRegExp(styleId);
 	return (
@@ -512,8 +499,8 @@ function validateTypography(input: ValidationInput): ValidationResult[] {
 		),
 		resultFromPass(
 			'Default Font Size',
-			hasExpectedDefaultFontSize(input.stylesXml),
-			`Default font size must be ${STO_RULES.typography.fontSizePoints} pt.`,
+			hasExpectedDefaultFontSize(input.stylesXml, input.strictSto),
+			`Default font size must be ${input.strictSto ? '12–14' : STO_RULES.typography.fontSizePoints} pt.`,
 		),
 		resultFromPass(
 			'Normal Paragraph Indent & Alignment',
@@ -762,6 +749,7 @@ function createValidationInput(
 	stylesXml: string,
 	numberingXml: string | null,
 	footerXmlByType: Partial<Record<string, string>>,
+	strictSto = false,
 ): ValidationInput {
 	const heading1StyleIds = activeHeading1StyleIds(stylesXml, docXml);
 	const resolvedHeading1StyleIds = heading1StyleIds
@@ -775,6 +763,7 @@ function createValidationInput(
 	const structuralHeadingStyleRef = `<w:pStyle w:val="${escapeRegExp(resolvedStructuralHeadingStyleId ?? STRUCTURAL_HEADING_STYLE_ID)}"/>`;
 
 	return {
+		strictSto,
 		docXml,
 		stylesXml,
 		numberingXml,
@@ -815,6 +804,10 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 		];
 	}
 
+	const customXml = readXmlIfExists(
+		path.join(unpackedDirPath, 'docProps', 'custom.xml'),
+	);
+	const strictSto = customXml !== null && isStrictStoProperty(customXml);
 	const input = createValidationInput(
 		fs.readFileSync(documentXmlPath, 'utf8'),
 		stylesXml,
@@ -823,6 +816,7 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 			unpackedDirPath,
 			fs.readFileSync(documentXmlPath, 'utf8'),
 		),
+		strictSto,
 	);
 
 	return [
@@ -832,11 +826,13 @@ export function validateSTO(unpackedDirPath: string): ValidationResult[] {
 		...validateMathAndCitations(input),
 		...validateNumbering(input.docXml, input.numberingXml),
 		...validateFieldsTablesAndImages(input),
-		...validateTemplateStyleConformance(
-			input.stylesXml,
-			input.numberingXml,
-			input.heading1StyleIds,
-		),
+		...(strictSto
+			? strictStoChecks(unpackedDirPath)
+			: validateTemplateStyleConformance(
+					input.stylesXml,
+					input.numberingXml,
+					input.heading1StyleIds,
+				)),
 	];
 }
 

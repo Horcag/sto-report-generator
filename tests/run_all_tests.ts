@@ -3,6 +3,10 @@ import { spawnSync } from 'node:child_process';
 const tsxCliPath = require.resolve('tsx/cli');
 
 const tests = [
+	['tests/generator/strict_sto_test.ts'],
+	['tests/generator/strict_sto_xml_test.ts'],
+	['tests/workflow/strict_preset_config_test.ts'],
+	['tests/workflow/word_acceptance_strict_test.ts'],
 	['tests/figures/planning_tests.ts'],
 	['tests/figures/png_validation.test.ts'],
 	['tests/figures/svg_baseline.test.ts'],

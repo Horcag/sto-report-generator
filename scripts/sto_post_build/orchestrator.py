@@ -8,6 +8,7 @@ from .docx_package import assert_no_statistic_placeholders, clear_dirty_fields, 
 from .formula_replacement import replace_formulas_from_markdown
 from .models import PostBuildResult
 from .statistics import get_counts_from_docx
+from .strict_sto import normalize_strict_sto_docx
 from .timing import timed_stage
 from .word_automation import (
     count_pdf_pages,
@@ -84,6 +85,7 @@ def post_build(
         else 0
     )
     table_spacing_changes = timed_stage("xml-layout", normalize_docx_xml_layout, absolute_docx_path)
+    timed_stage("strict-sto-input", normalize_strict_sto_docx, absolute_docx_path)
     counts = timed_stage("xml-counts", get_counts_from_docx, absolute_docx_path)
 
     word_result = timed_stage(
@@ -117,6 +119,16 @@ def post_build(
             "Word post-build: saved DOCX/PDF pages agree; no post-XML layout resync needed.",
             flush=True,
         )
+    if timed_stage("strict-sto-final", normalize_strict_sto_docx, absolute_docx_path):
+        # The read-only export opens precisely the normalized final package.
+        pdf_path = export_docx_to_pdf(absolute_docx_path, pdf_output_path)
+        strict_pages = count_pdf_pages(pdf_path)
+        if strict_pages != final_pages:
+            raise RuntimeError(
+                "Strict STO normalization changed pagination after native statistics "
+                f"({final_pages} -> {strict_pages}); final statistics require regeneration."
+            )
+        final_pages = strict_pages
     assert_no_statistic_placeholders(absolute_docx_path)
 
     return PostBuildResult(

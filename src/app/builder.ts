@@ -24,6 +24,7 @@ import {
 	isStoStylePreset,
 	MARGINS,
 	STO_NUMBERING,
+	STO_STYLE_PRESET_NAMES,
 	StoStylePreset,
 } from '@/shared/config';
 import {
@@ -31,6 +32,7 @@ import {
 	applyFigureDocumentPolicy,
 	clearDirtyFieldFlags,
 	normalizeDocxNumbering,
+	normalizeStrictStoBuffer,
 } from '@/shared/lib/docx';
 import { FigurePlan } from '@/shared/lib/figures';
 import { FormulaConversionError } from '@/shared/lib/math';
@@ -50,7 +52,7 @@ function getMetadataStylePreset(
 		return metadata.stylePreset;
 	}
 	throw new Error(
-		`Unsupported stylePreset "${String(metadata.stylePreset)}". Supported presets: samara-template-2022, default.`,
+		`Unsupported stylePreset "${String(metadata.stylePreset)}". Supported presets: ${STO_STYLE_PRESET_NAMES.join(', ')}.`,
 	);
 }
 
@@ -169,6 +171,14 @@ export async function buildReport(
 		);
 	}
 	const doc = new Document({
+		compatibility:
+			stylePreset === 'sto-strict'
+				? { doNotExpandShiftReturn: true }
+				: undefined,
+		customProperties:
+			stylePreset === 'sto-strict'
+				? [{ name: 'STOStylePreset', value: 'sto-strict' }]
+				: undefined,
 		styles: getStoStyles(stylePreset),
 		numbering: STO_NUMBERING,
 		sections: [
@@ -191,6 +201,10 @@ export async function buildReport(
 										? 'a8'
 										: 'Normal',
 								alignment: AlignmentType.CENTER,
+								indent:
+									stylePreset === 'sto-strict'
+										? { firstLine: 0 }
+										: undefined,
 								children: [
 									new TextRun({
 										style:
@@ -233,7 +247,12 @@ export async function buildReport(
 			),
 		),
 	);
-	fs.writeFileSync(outputPath, buffer);
+	fs.writeFileSync(
+		outputPath,
+		stylePreset === 'sto-strict'
+			? normalizeStrictStoBuffer(buffer)
+			: buffer,
+	);
 	fs.writeFileSync(
 		outputPath.replace(/\.docx$/i, '') + '.figures.json',
 		`${JSON.stringify({ schemaVersion: 1, figures: figurePlans }, null, 2)}\n`,

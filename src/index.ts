@@ -14,7 +14,11 @@ import { runFigureCommand } from '@/app/figure-command';
 import { scaffoldReport } from '@/app/report-scaffold';
 import { generateReport, validateDocxFile } from '@/app/report-workflow';
 import { runWordAcceptance } from '@/app/word-acceptance';
-import { isStoStylePreset, StoStylePreset } from '@/shared/config';
+import {
+	isStoStylePreset,
+	STO_STYLE_PRESET_NAMES,
+	StoStylePreset,
+} from '@/shared/config';
 import {
 	isReportProfile,
 	isReportRenderer,
@@ -22,6 +26,7 @@ import {
 	REPORT_RENDERERS,
 	ReportProfile,
 	ReportRenderer,
+	resolveReportConfig,
 } from '@/shared/lib/report-config';
 import {
 	formatSourcePreflightIssue,
@@ -69,12 +74,15 @@ function optionRenderer(args: ParsedArgs): ReportRenderer | undefined {
 
 function optionStylePreset(args: ParsedArgs): StoStylePreset | undefined {
 	const value = optionString(args, 'style-preset');
+	if (args.options.has('style-preset') && value === undefined) {
+		throw new Error('--style-preset requires a preset name.');
+	}
 	if (value === undefined) {
 		return undefined;
 	}
 	if (!isStoStylePreset(value)) {
 		throw new Error(
-			'Supported style presets: samara-template-2022, default.',
+			`Supported style presets: ${STO_STYLE_PRESET_NAMES.join(', ')}.`,
 		);
 	}
 	return value;
@@ -86,7 +94,9 @@ async function runBuild(args: ParsedArgs): Promise<void> {
 	if (!inputPath) {
 		throw new Error('build command requires an input path.');
 	}
-	await buildReport(inputPath, outputPath);
+	await buildReport(inputPath, outputPath, {
+		stylePreset: optionStylePreset(args),
+	});
 }
 
 function runNew(args: ParsedArgs): void {
@@ -128,9 +138,14 @@ function runCheck(args: ParsedArgs): void {
 		throw new Error('check command requires a report directory.');
 	}
 
-	const result = runSourcePreflight(reportDir, {
+	const { config, diagnostics } = resolveReportConfig(reportDir, {
 		strict: optionBoolean(args, 'strict'),
+		stylePreset: optionStylePreset(args),
 	});
+	if (diagnostics.some(item => item.severity === 'error')) {
+		throw new Error(diagnostics.map(item => item.message).join('\n'));
+	}
+	const result = runSourcePreflight(reportDir, { config });
 	if (!result.passed) {
 		throw new Error(
 			result.issues.map(formatSourcePreflightIssue).join('\n'),
@@ -166,6 +181,7 @@ async function runGenerate(args: ParsedArgs): Promise<void> {
 	const result = await generateReport({
 		reportDir,
 		outputPath: optionString(args, 'output'),
+		stylePreset: optionStylePreset(args),
 		renderer,
 		postBuild,
 		validate: optionBoolean(args, 'validate'),
@@ -206,6 +222,7 @@ async function runAudit(args: ParsedArgs): Promise<void> {
 	const result = await generateReport({
 		reportDir,
 		outputPath: optionString(args, 'output'),
+		stylePreset: optionStylePreset(args),
 		renderer,
 		validate: true,
 		outputPdf: optionString(args, 'pdf'),
@@ -286,6 +303,7 @@ async function main(): Promise<void> {
 		await buildReport(
 			commandOrInput,
 			args.positionals[1] ?? 'test_report.docx',
+			{ stylePreset: optionStylePreset(args) },
 		);
 		return;
 	}

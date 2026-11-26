@@ -2,11 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import {
-	DEFAULT_STO_STYLE_PRESET,
 	isStoStylePreset,
 	ReportPostBuildConfig,
 	ReportPreflightConfig,
 	ReportValidateConfig,
+	resolveStoStylePreset,
 	resolveWordPdfQuality,
 	STO_RULES,
 	STO_STYLE_PRESET_NAMES,
@@ -62,6 +62,7 @@ export interface ReportConfigDiagnostic {
 }
 
 export interface ResolveReportConfigOptions {
+	stylePreset?: StoStylePreset;
 	pdfImageQuality?: string;
 	cwd?: string;
 	outputPath?: string;
@@ -573,6 +574,7 @@ export function resolveReportConfig(
 	reportDir: string,
 	options: ResolveReportConfigOptions = {},
 ): { config: ReportConfig; diagnostics: ReportConfigDiagnostic[] } {
+	const { stylePreset } = options;
 	const cwd = options.cwd ?? process.cwd();
 	const absoluteReportDir = path.resolve(cwd, reportDir);
 	const rawResult = readRawReportConfig(absoluteReportDir);
@@ -595,9 +597,7 @@ export function resolveReportConfig(
 		profile,
 		profileExplicit,
 		renderer,
-		stylePreset: isStoStylePreset(raw.stylePreset)
-			? raw.stylePreset
-			: DEFAULT_STO_STYLE_PRESET,
+		stylePreset: resolveStoStylePreset(stylePreset, raw.stylePreset),
 		sourceDir: asString(raw.sourceDir) ?? '.',
 		outputDocx:
 			options.outputPath ??
